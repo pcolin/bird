@@ -1,0 +1,30 @@
+#ifndef MODEL_PRODUCT_MANAGER_H
+#define MODEL_PRODUCT_MANAGER_H
+
+#include <mutex>
+#include <vector>
+#include <unordered_map>
+#include <functional>
+#include "Instrument.h"
+
+class ProductManager
+{
+  public:
+    static ProductManager* GetInstance();
+    ~ProductManager();
+
+    const Instrument* Add(Instrument* instrument);
+    void Remove(const Instrument* instrument);
+    const Instrument* FindId(const std::string& id);
+    const Instrument* FindSymbol(const std::string& symbol);
+    const std::vector<const Instrument*>
+      FindInstruments(std::function<bool(const Instrument*)> filter );
+
+  private:
+    ProductManager() {}
+    std::unordered_map<std::string, Instrument*> instruments_;
+
+    std::mutex mtx_;
+};
+
+#endif

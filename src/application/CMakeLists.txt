@@ -1,0 +1,3 @@
+ADD_SUBDIRECTORY(server)
+ADD_SUBDIRECTORY(databased)
+ADD_SUBDIRECTORY(client_proxy)
