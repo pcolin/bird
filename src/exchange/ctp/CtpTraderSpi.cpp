@@ -99,7 +99,7 @@ void CtpTraderSpi::OnRspQryInstrument(CThostFtdcInstrumentField *pInstrument,
 
   static std::unordered_map<Option*, const std::string> options;
   Exchanges exchange = GetExchange(pInstrument->ExchangeID);
-  std::string id = GetInstrumentId(pInstrument->InstrumentID, exchange);
+  std::string id = GetInstrumentId(pInstrument->InstrumentID, pInstrument->ExchangeID);
   Instrument* inst = nullptr;
   if (pInstrument->ProductClass == THOST_FTDC_PC_Futures)
   {
@@ -107,7 +107,7 @@ void CtpTraderSpi::OnRspQryInstrument(CThostFtdcInstrumentField *pInstrument,
   }
   else if (pInstrument->ProductClass = THOST_FTDC_PC_Options)
   {
-    std::string undl = GetInstrumentId(pInstrument->UnderlyingInstrID, exchange);
+    std::string undl = GetInstrumentId(pInstrument->UnderlyingInstrID, pInstrument->ExchangeID);
     if (config_.find(undl) != config_.end())
     {
       Option* op = new Option();
@@ -293,6 +293,29 @@ void CtpTraderSpi::OnRtnForQuoteRsp(CThostFtdcForQuoteRspField *pForQuoteRsp)
 
 }
 
+std::string CtpTraderSpi::GetInstrumentId(char* id, char *exchange)
+{
+  assert (strlen(exchange) > 2);
+  std::string ret(id);
+  switch (exchange[1])
+  {
+    case 'C':
+    case 'c':
+      return ret += "DE";
+    case 'Z':
+    case 'z':
+      return ret += "ZE";
+    case 'F':
+    case 'f':
+      return ret += "CF";
+    case 'H':
+    case 'h':
+      return ret += "SF";
+    default:
+      assert(false);
+  }
+}
+
 Exchanges CtpTraderSpi::GetExchange(const char* exchange) const
 {
   assert (strlen(exchange) > 2);
@@ -312,25 +335,6 @@ Exchanges CtpTraderSpi::GetExchange(const char* exchange) const
       return Exchanges::SF;
     default:
       assert(false);
-  }
-}
-
-std::string CtpTraderSpi::GetInstrumentId(char* id, Exchanges exchange) const
-{
-  std::string ret(id);
-  switch (exchange)
-  {
-    case Exchanges::DE:
-      return ret += "DE";
-    case Exchanges::ZE:
-      return ret += "ZE";
-    case Exchanges::CF:
-      return ret += "CF";
-    case Exchanges::SF:
-      return ret += "SF";
-    default:
-      assert(false);
-      return "";
   }
 }
 

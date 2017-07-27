@@ -1,9 +1,13 @@
 #include "CtpMdSpi.h"
 #include "CtpMdApi.h"
+#include "CtpTraderSpi.h"
 #include "base/common/Likely.h"
 #include "base/common/CodeConverter.h"
 #include "base/logger/Logging.h"
+#include "model/PriceManager.h"
+#include "model/ProductManager.h"
 
+#include <cfloat>
 #include <boost/format.hpp>
 
 using namespace base;
@@ -81,6 +85,48 @@ void CtpMdSpi::OnRtnDepthMarketData(CThostFtdcDepthMarketDataField *pDepthMarket
       % pDepthMarketData->UpperLimitPrice % pDepthMarketData->LowerLimitPrice
       % pDepthMarketData->BidPrice1 % pDepthMarketData->BidVolume1 % pDepthMarketData->AskPrice1
       % pDepthMarketData->AskVolume1 % pDepthMarketData->ActionDay;
+  std::string id = CtpTraderSpi::GetInstrumentId(
+      pDepthMarketData->InstrumentID, pDepthMarketData->ExchangeID);
+  const Instrument *inst = ProductManager::GetInstance()->FindId(id);
+  if (inst)
+  {
+    std::shared_ptr<Price> price = PriceManager::GetInstance()->Allocate();
+    price->header.SetTime();
+    price->instrument = inst;
+    price->last = (pDepthMarketData->LastPrice < DBL_MAX) ?
+      pDepthMarketData->LastPrice : PRICE_UNDEFINED;
+    price->bid = (pDepthMarketData->BidPrice1 < DBL_MAX) ?
+      pDepthMarketData->BidPrice1 : PRICE_UNDEFINED;
+    price->bid_volume = (pDepthMarketData->BidVolume1 < DBL_MAX) ?
+      pDepthMarketData->BidVolume1 : VOLUME_UNDEFINED;
+    price->ask = (pDepthMarketData->AskPrice1 < DBL_MAX) ?
+      pDepthMarketData->AskPrice1 : PRICE_UNDEFINED;
+    price->ask_volume = (pDepthMarketData->AskVolume1 < DBL_MAX) ?
+      pDepthMarketData->AskVolume1 : VOLUME_UNDEFINED;
+    price->open = (pDepthMarketData->OpenPrice < DBL_MAX) ?
+      pDepthMarketData->OpenPrice : PRICE_UNDEFINED;
+    price->high = (pDepthMarketData->HighestPrice < DBL_MAX) ?
+      pDepthMarketData->HighestPrice : PRICE_UNDEFINED;
+    price->low = (pDepthMarketData->LowestPrice < DBL_MAX) ?
+      pDepthMarketData->LowestPrice : PRICE_UNDEFINED;
+    price->close = (pDepthMarketData->ClosePrice < DBL_MAX) ?
+      pDepthMarketData->ClosePrice : PRICE_UNDEFINED;
+    price->volume = (pDepthMarketData->Volume < DBL_MAX) ?
+      pDepthMarketData->Volume : VOLUME_UNDEFINED;
+    price->amount = (pDepthMarketData->Turnover < DBL_MAX) ?
+      pDepthMarketData->Turnover : PRICE_UNDEFINED;
+
+    if (unlikely(inst->Highest() == PRICE_UNDEFINED || inst->Lowest() == PRICE_UNDEFINED))
+    {
+      Instrument *p = const_cast<Instrument*>(inst);
+      if (pDepthMarketData->UpperLimitPrice < DBL_MAX)
+        p->Highest(pDepthMarketData->UpperLimitPrice);
+      if (pDepthMarketData->LowerLimitPrice < DBL_MAX)
+        p->Lowest(pDepthMarketData->LowerLimitPrice);
+      LOG_INF << boost::format("Lowest/Highest price update: %1% - %2%/%3%") %
+        p->Id() % p->Lowest() % p->Highest();
+    }
+  }
 }
 
 void CtpMdSpi::OnRtnForQuoteRsp(CThostFtdcForQuoteRspField *pForQuoteRsp)

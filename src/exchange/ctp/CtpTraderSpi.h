@@ -99,9 +99,11 @@ class CtpTraderSpi : public CThostFtdcTraderSpi
     /// 做市商接收询价
     virtual void OnRtnForQuoteRsp(CThostFtdcForQuoteRspField *pForQuoteRsp) override;
 
+  public:
+    static std::string GetInstrumentId(char *id, char *exchange);
   private:
-    Exchanges GetExchange(const char* exchange) const;
-    std::string GetInstrumentId(char* id, Exchanges exchange) const;
+    Exchanges GetExchange(const char *exchange) const;
+    // std::string GetInstrumentId(char* id, Exchanges exchange) const;
     InstrumentStatus GetInstrumentStatus(TThostFtdcInstrumentStatusType status) const;
 
     CtpTraderApi *api_ = nullptr;

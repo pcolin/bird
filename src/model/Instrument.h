@@ -4,8 +4,6 @@
 #include <string>
 #include "base/common/Types.h"
 
-// namespace base
-// {
 enum class InstrumentType : int8_t
 {
   Stock = 0,
@@ -45,7 +43,6 @@ enum class Exchanges : int8_t
   DE, /// DCE
   ZE, /// CZCE
 };
-// }
 
 class Instrument
 {
@@ -95,10 +92,10 @@ class Instrument
     InstrumentType type_;
     InstrumentStatus status_;
     Currencies currency_;
-    base::PriceType tick_ = 0;
-    base::PriceType multiplier_ = 0;
-    base::PriceType highest_ = 0;
-    base::PriceType lowest_ = 0;
+    base::PriceType tick_ = base::PRICE_UNDEFINED;
+    base::PriceType multiplier_ = base::PRICE_UNDEFINED;
+    base::PriceType highest_ = base::PRICE_UNDEFINED;
+    base::PriceType lowest_ = base::PRICE_UNDEFINED;
 
     const Instrument* underlying_ = nullptr;
     const Instrument* hedge_underlying_ = nullptr;
