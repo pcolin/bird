@@ -3,7 +3,7 @@ file(GLOB TEST_SOURCE_FILES ${PROJECT_SOURCE_DIR}/test/ "*.cpp")
 foreach(SOURCE_FILE ${TEST_SOURCE_FILES})
   get_filename_component(TEST_EXCUTABLE_NAME ${SOURCE_FILE} NAME_WE)
   add_executable(${TEST_EXCUTABLE_NAME} ${SOURCE_FILE})
-  target_link_libraries(${TEST_EXCUTABLE_NAME} model)
+  target_link_libraries(${TEST_EXCUTABLE_NAME} disruptor model)
 
   file(READ "${SOURCE_FILE}" SOURCE_FILE_CONTENTS)
   string(REGEX MATCHALL "BOOST_AUTO_TEST_CASE\\( *([A-Za-z_0-9]+) *\\)" FOUND_TESTS ${SOURCE_FILE_CONTENTS})

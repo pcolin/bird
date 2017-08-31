@@ -1,2 +1,2 @@
 add_subdirectory(logger)
-#add_subdirectory(test)
+add_subdirectory(disruptor)
