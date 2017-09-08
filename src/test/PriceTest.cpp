@@ -1,8 +1,8 @@
 // #define BOOST_TEST_DYN_LINK
-#define BOOST_TEST_MODULE "PriceManagerModule"
+#define BOOST_TEST_MODULE "PriceModule"
 
 #include <boost/test/included/unit_test.hpp>
-#include "model/PriceManager.h"
+#include "model/Price.h"
 #include <iostream>
 
 using namespace std;
@@ -14,9 +14,9 @@ BOOST_AUTO_TEST_CASE(test1)
   BOOST_CHECK(!out);
   {
     cout << "inner group begin" << endl;
-    shared_ptr<Price> p = PriceManager::GetInstance()->Allocate();
+    PricePtr p = Message::NewPrice();
     out = p;
-    shared_ptr<Price> p2 = PriceManager::GetInstance()->Allocate();
+    PricePtr p2 = Message::NewPrice();
     cout << "inner group end" << endl;
   }
   cout << "After inner gourp" << endl;

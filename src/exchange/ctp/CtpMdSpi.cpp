@@ -4,8 +4,10 @@
 #include "base/common/Likely.h"
 #include "base/common/CodeConverter.h"
 #include "base/logger/Logging.h"
-#include "model/PriceManager.h"
+#include "model/Price.h"
 #include "model/ProductManager.h"
+#include "strategy/ClusterManager.h"
+#include "strategy/DeviceManager.h"
 
 #include <cfloat>
 #include <boost/format.hpp>
@@ -85,12 +87,18 @@ void CtpMdSpi::OnRtnDepthMarketData(CThostFtdcDepthMarketDataField *pDepthMarket
       % pDepthMarketData->UpperLimitPrice % pDepthMarketData->LowerLimitPrice
       % pDepthMarketData->BidPrice1 % pDepthMarketData->BidVolume1 % pDepthMarketData->AskPrice1
       % pDepthMarketData->AskVolume1 % pDepthMarketData->ActionDay;
-  std::string id = CtpTraderSpi::GetInstrumentId(
-      pDepthMarketData->InstrumentID, pDepthMarketData->ExchangeID);
-  const Instrument *inst = ProductManager::GetInstance()->FindId(id);
+  // std::string id = CtpTraderSpi::GetInstrumentId(
+  //     pDepthMarketData->InstrumentID, pDepthMarketData->ExchangeID);
+  const Instrument *inst = ProductManager::GetInstance()->FindId(pDepthMarketData->InstrumentID);
   if (inst)
   {
-    std::shared_ptr<Price> price = PriceManager::GetInstance()->Allocate();
+    auto *dm = ClusterManager::GetInstance()->FindDevice(inst->HedgeUnderlying());
+    if (dm == nullptr)
+    {
+      LOG_ERR << "Can't find device manager for " << inst->HedgeUnderlying();
+      return;
+    }
+    PricePtr price = Message::NewPrice();
     price->header.SetTime();
     price->instrument = inst;
     price->last = (pDepthMarketData->LastPrice < DBL_MAX) ?
@@ -126,6 +134,7 @@ void CtpMdSpi::OnRtnDepthMarketData(CThostFtdcDepthMarketDataField *pDepthMarket
       LOG_INF << boost::format("Lowest/Highest price update: %1% - %2%/%3%") %
         p->Id() % p->Lowest() % p->Highest();
     }
+    dm->Publish(price);
   }
 }
 

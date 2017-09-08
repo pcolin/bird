@@ -1,2 +1,2 @@
 ADD_EXECUTABLE(bird Server.cpp)
-TARGET_LINK_LIBRARIES(bird logger exchangemanager)
+TARGET_LINK_LIBRARIES(bird logger exchangemanager strategy)

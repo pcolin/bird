@@ -4,9 +4,11 @@
 #include "base/common/CodeConverter.h"
 #include "base/common/CsvReader.h"
 #include "base/logger/Logging.h"
+#include "config/EnvConfig.h"
 #include "model/Future.h"
 #include "model/Option.h"
 #include "model/ProductManager.h"
+#include "strategy/ClusterManager.h"
 
 #include <boost/format.hpp>
 
@@ -14,7 +16,7 @@
 
 CtpTraderSpi::CtpTraderSpi(CtpTraderApi* api) : api_(api)
 {
-  base::CsvReader reader("INSTRUMENT_CONFIG.csv");
+  base::CsvReader reader(EnvConfig::GetInstance()->GetString(EnvVar::CONFIG_FILE));
   // auto &lines = reader.GetLines();
   for (auto& line : reader.GetLines())
   {
@@ -98,30 +100,47 @@ void CtpTraderSpi::OnRspQryInstrument(CThostFtdcInstrumentField *pInstrument,
     % pInstrument->StrikePrice % (pRspInfo != 0) % nRequestID % bIsLast;
 
   static std::unordered_map<Option*, const std::string> options;
+  static std::unordered_map<Future*, const std::string> futures;
   Exchanges exchange = GetExchange(pInstrument->ExchangeID);
-  std::string id = GetInstrumentId(pInstrument->InstrumentID, pInstrument->ExchangeID);
+  // std::string id = GetInstrumentId(pInstrument->InstrumentID, pInstrument->ExchangeID);
+  const std::string id = pInstrument->InstrumentID;
   Instrument* inst = nullptr;
   if (pInstrument->ProductClass == THOST_FTDC_PC_Futures)
   {
-    if (config_.find(id) != config_.end()) inst = new Future();
+    auto it = config_.find(id);
+    if (it != config_.end())
+    {
+      Future *future = new Future();
+      future->Id(id);
+      future->Underlying(future);
+      if (id == it->second.hedge_underlying)
+      {
+        future->HedgeUnderlying(future);
+        ProductManager::GetInstance()->Add(future);
+        LOG_INF << "Add Future " << id;
+      }
+      futures.emplace(future, it->second.hedge_underlying);
+      inst = future;
+    }
   }
   else if (pInstrument->ProductClass = THOST_FTDC_PC_Options)
   {
-    std::string undl = GetInstrumentId(pInstrument->UnderlyingInstrID, pInstrument->ExchangeID);
+    // std::string undl = GetInstrumentId(pInstrument->UnderlyingInstrID, pInstrument->ExchangeID);
+    std::string undl = pInstrument->UnderlyingInstrID;
     if (config_.find(undl) != config_.end())
     {
       Option* op = new Option();
+      op->Id(id);
       op->CallPut(pInstrument->OptionsType == THOST_FTDC_CP_CallOptions ? base::Call : base::Put);
       op->Strike(pInstrument->StrikePrice);
       op->SettlementType(base::PhysicalSettlement);
-      options.insert(std::make_pair(op, undl));  
+      options.emplace(op, undl);
       inst = op;
     }
   }
 
   if (inst)
   {
-    inst->Id(id);
     inst->Symbol(pInstrument->InstrumentID);
     inst->Exchange(exchange);
     if (pInstrument->IsTrading == 0) inst->Status(InstrumentStatus::Halt);
@@ -129,16 +148,32 @@ void CtpTraderSpi::OnRspQryInstrument(CThostFtdcInstrumentField *pInstrument,
     inst->Tick(pInstrument->PriceTick);
     inst->Multiplier(pInstrument->VolumeMultiple);
 
-    if (inst->Type() == InstrumentType::Future)
-    {
-      ProductManager::GetInstance()->Add(inst);
-      LOG_INF << "Add Future " << id;
-    }
+    // if (inst->Type() == InstrumentType::Future)
+    // {
+    //   ProductManager::GetInstance()->Add(inst);
+    //   LOG_INF << "Add Future " << id;
+    // }
   }
 
   if (bIsLast)
   {
-    for (auto& it : options)
+    for (auto &it : futures)
+    {
+      if (it.first->HedgeUnderlying() != nullptr)
+      {
+        ClusterManager::GetInstance()->AddDevice(it.first);
+      }
+      else
+      {
+        LOG_DBG << "Begin to deal with future " << it.second;
+        const Instrument* undl = ProductManager::GetInstance()->FindId(it.second);
+        assert (undl);
+        it.first->HedgeUnderlying(undl);
+        ProductManager::GetInstance()->Add(it.first);
+        LOG_INF << "Add Future " << it.first->Id();
+      }
+    }
+    for (auto &it : options)
     {
       const Instrument* undl = ProductManager::GetInstance()->FindId(it.second);
       assert (undl);

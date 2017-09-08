@@ -19,6 +19,7 @@ EnvConfig::EnvConfig()
   {
     { static_cast<int8_t>(EnvVar::APP_NAME), "APP_NAME" },
     { static_cast<int8_t>(EnvVar::NIC), "NIC" },
+    { static_cast<int8_t>(EnvVar::CONFIG_FILE), "CONFIG_FILE" },
     /// database
     { static_cast<int8_t>(EnvVar::CONFIG_DB_FILE), "CONFIG_DB_FILE" },
     { static_cast<int8_t>(EnvVar::ORDER_DB_FILE), "ORDER_DB_FILE" },

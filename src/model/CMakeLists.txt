@@ -1,2 +1,2 @@
-ADD_LIBRARY(model Message.cpp PriceManager.cpp ProductManager.cpp)
+ADD_LIBRARY(model Message.cpp Price.cpp Order.cpp ProductManager.cpp)
 TARGET_LINK_LIBRARIES(model logger)

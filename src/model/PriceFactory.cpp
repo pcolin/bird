@@ -1,13 +1,13 @@
-#include "PriceManager.h"
+#include "PriceFactory.h"
 // #include <iostream>
 
-PriceManager* PriceManager::GetInstance()
+PriceFactory* PriceFactory::GetInstance()
 {
-  static PriceManager manager;
-  return &manager;
+  static PriceFactory factory;
+  return &factory;
 }
 
-std::shared_ptr<Price> PriceManager::Allocate()
+std::shared_ptr<Price> PriceFactory::Allocate()
 {
   Price *price = nullptr;
   {

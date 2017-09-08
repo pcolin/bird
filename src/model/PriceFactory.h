@@ -1,22 +1,22 @@
-#ifndef MODEL_PRICE_MANAGER_H
-#define MODEL_PRICE_MANAGER_H
+#ifndef MODEL_PRICE_FACTORY_H
+#define MODEL_PRICE_FACTORY_H
 
-#include "Message.h"
+#include "Price.h"
 #include "base/memory/MemoryPool.h"
 
 #include <mutex>
 #include <memory>
 
-class PriceManager
+class PriceFactory
 {
   public:
-    static PriceManager* GetInstance();
+    static PriceFactory* GetInstance();
     // Price* Allocate();
     std::shared_ptr<Price> Allocate();
     // void Deallocate(Price *price);
 
   private:
-    PriceManager() {}
+    PriceFactory() {}
     MemoryPool<Price, 1000*sizeof(Price)> pool_;
     std::mutex mtx_;
 };

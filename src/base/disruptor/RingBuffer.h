@@ -21,6 +21,11 @@ class RingBuffer
       return events_[sequence & (N - 1)];
     }
 
+    int64_t GetCursor()
+    {
+      return sequencer_->GetCursor();
+    }
+
     int64_t Next()
     {
       return sequencer_->Next();

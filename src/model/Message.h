@@ -2,7 +2,7 @@
 #define MODEL_MESSAGE_H
 
 #include "base/common/Types.h"
-#include "Instrument.h"
+#include <memory>
 
 enum class MsgType : int8_t
 {
@@ -22,40 +22,15 @@ struct MsgHeader
   void SetInterval(int idx);
 };
 
-struct Price
+class Price;
+class Order;
+class Trade;
+class Message
 {
-  Price() : header(MsgType::Price) {}
-
-  MsgHeader header;
-  const Instrument *instrument;
-  base::PriceType last;
-  base::PriceType bid;
-  base::PriceType ask;
-  base::PriceType open;
-  base::PriceType high;
-  base::PriceType low;
-  base::PriceType close;
-  double amount;
-  // base::VolumeType last_volume;
-  base::VolumeType bid_volume;
-  base::VolumeType ask_volume;
-  base::VolumeType volume;
-};
-
-struct Order
-{
-  Order() : header(MsgType::Order) {}
-
-  MsgHeader header;
-  const Instrument *instrument;
-};
-
-struct Trade
-{
-  Trade() : header(MsgType::Trade) {}
-
-  MsgHeader header;
-  const Instrument *instrument;
+public:
+  static std::shared_ptr<Price> NewPrice();
+  static std::shared_ptr<Order> NewOrder();
+  static std::shared_ptr<Trade> NewTrade();
 };
 
 #endif

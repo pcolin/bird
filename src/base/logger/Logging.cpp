@@ -171,7 +171,7 @@ Logger::Logger(SourceFile file, int line, bool toAbort)
 Logger::~Logger()
 {
   impl_.finish();
-  const LogStream::Buffer& buf(stream().buffer());
+  const LogStream::Buffer& buf(Stream().buffer());
   g_output(buf.data(), buf.length());
   if (unlikely(impl_.level_ == FATAL))
   {
@@ -180,17 +180,17 @@ Logger::~Logger()
   }
 }
 
-void Logger::setLogLevel(Logger::LogLevel level)
+void Logger::SetLogLevel(Logger::LogLevel level)
 {
   g_logLevel = level;
 }
 
-void Logger::setOutput(std::function<void(const char*, int)> out)
+void Logger::SetOutput(std::function<void(const char*, int)> out)
 {
   g_output = out;
 }
 
-void Logger::setFlush(std::function<void()> flush)
+void Logger::SetFlush(std::function<void()> flush)
 {
   g_flush = flush;
 }
@@ -204,12 +204,12 @@ void Logger::InitFileLogger(const char* dir, const char* prefix, bool sync)
   if (sync)
   {
     static SyncLogging logger(dir, fmt.str());
-    Logger::setOutput([&](const char* msg, int len) { logger.append(msg, len); });
+    Logger::SetOutput([&](const char* msg, int len) { logger.append(msg, len); });
   }
   else
   {
     static AsyncLogging logger(dir, fmt.str());
-    Logger::setOutput([&](const char* msg, int len) { logger.append(msg, len); });
+    Logger::SetOutput([&](const char* msg, int len) { logger.append(msg, len); });
     logger.start();
   }
 }

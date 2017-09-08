@@ -5,6 +5,7 @@
 #include "WaitStrategy.h"
 
 #include <cmath>
+#include <thread>
 
 namespace base
 {

@@ -7,6 +7,7 @@ enum class EnvVar : int8_t
 {
   APP_NAME = 0,
   NIC,
+  CONFIG_FILE,
 
   /// database
   CONFIG_DB_FILE,

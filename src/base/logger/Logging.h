@@ -58,11 +58,11 @@ public:
   Logger(SourceFile file, int line, LogLevel level, const char* func);
   Logger(SourceFile file, int line, bool toAbort);
   ~Logger();
-  LogStream& stream() { return impl_.stream_; }
+  LogStream& Stream() { return impl_.stream_; }
   static LogLevel logLevel();
-  static void setLogLevel(LogLevel level);
-  static void setOutput(std::function<void(const char*, int)>);
-  static void setFlush(std::function<void()>);
+  static void SetLogLevel(LogLevel level);
+  static void SetOutput(std::function<void(const char*, int)>);
+  static void SetFlush(std::function<void()>);
   static void InitFileLogger(const char *dir, const char* prefix, bool sync);
 
 private:
@@ -110,14 +110,14 @@ inline Logger::LogLevel Logger::logLevel()
 ///     logWarnStream << "Bad news";
 ///
 #define LOG_TRA if (base::Logger::logLevel() <= base::Logger::TRACE) \
-  base::Logger(__FILE__, __LINE__, base::Logger::TRACE, __func__).stream()
+  base::Logger(__FILE__, __LINE__, base::Logger::TRACE, __func__).Stream()
 #define LOG_DBG if (base::Logger::logLevel() <= base::Logger::DEBUG) \
-  base::Logger(__FILE__, __LINE__, base::Logger::DEBUG, __func__).stream()
+  base::Logger(__FILE__, __LINE__, base::Logger::DEBUG, __func__).Stream()
 #define LOG_INF if (base::Logger::logLevel() <= base::Logger::INFO) \
-  base::Logger(__FILE__, __LINE__).stream()
-#define LOG_WAN base::Logger(__FILE__, __LINE__, base::Logger::WARN).stream()
-#define LOG_ERR base::Logger(__FILE__, __LINE__, base::Logger::ERROR).stream()
-#define LOG_FAT base::Logger(__FILE__, __LINE__, base::Logger::FATAL).stream()
+  base::Logger(__FILE__, __LINE__).Stream()
+#define LOG_WAN base::Logger(__FILE__, __LINE__, base::Logger::WARN).Stream()
+#define LOG_ERR base::Logger(__FILE__, __LINE__, base::Logger::ERROR).Stream()
+#define LOG_FAT base::Logger(__FILE__, __LINE__, base::Logger::FATAL).Stream()
 
 const char* strerror_tl(int savedErrno);
 
@@ -135,7 +135,7 @@ T* CheckNotNull(Logger::SourceFile file, int line, const char *names, T* ptr)
 {
   if (ptr == NULL)
   {
-   Logger(file, line, Logger::FATAL).stream() << names;
+   Logger(file, line, Logger::FATAL).Stream() << names;
   }
   return ptr;
 }

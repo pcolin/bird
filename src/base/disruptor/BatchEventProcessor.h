@@ -27,8 +27,13 @@ class BatchEventProcessor
 
     void Halt()
     {
-      running_ = false;
+      running_.store(false);
       barrier_->Alert();
+    }
+
+    void IsRunning()
+    {
+      return running_.load();
     }
 
     void Run()
