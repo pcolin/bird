@@ -20,6 +20,11 @@ enum class EnvVar : int8_t
   ASYNC_LOGGING,
   ASYNC_FLUSH_INT,
 
+  /// exchange
+  EXCHANGE,
+  WASH_TRADE_PROT,
+  ORDER_GC_THRESHOLD, 
+
   /// ctp
   CTP_TRADE_ADDR,
   CTP_MD_ADDR,

@@ -20,19 +20,25 @@ DeviceManager::~DeviceManager()
 void DeviceManager::Init()
 {
   /// Sync config from db to be done...
-  std::unique_ptr<Strategy> strategy(new TestStrategy(this));
-  auto d = std::make_shared<StrategyDevice>("test", strategy, rb_, barrier_);
+  std::unique_ptr<Strategy> strategy(new TestStrategy("test", this));
+  auto d = std::make_shared<StrategyDevice>(strategy, rb_, barrier_);
   devices_.emplace("test", std::move(d));
 
   /// initialize market monitor
-  std::unique_ptr<Strategy> monitor(new MarketMonitor(this));
-  monitor_ = std::make_unique<StrategyDevice>("MarketMonitor", monitor, rb_, barrier_); 
+  std::unique_ptr<Strategy> monitor(new MarketMonitor("MarketMonitor", this));
+  monitor_ = std::make_unique<StrategyDevice>(monitor, rb_, barrier_);
   monitor_->Start();
 }
 
-void DeviceManager::Publish(PricePtr &price)
+// void DeviceManager::Publish(PricePtr &price)
+// {
+//   int64_t seq = rb_.Next();
+//   rb_.Get(seq) = std::move(price);
+//   rb_.Publish(seq);
+// }
+
+std::shared_ptr<StrategyDevice> DeviceManager::FindStrategyDevice(const std::string &name) const
 {
-  int64_t seq = rb_.Next();
-  rb_.Get(seq) = std::move(price);
-  rb_.Publish(seq);
+  auto it = devices_.find(name);
+  return it != devices_.end() ? it->second : nullptr;
 }

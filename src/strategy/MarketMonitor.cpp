@@ -4,9 +4,14 @@
 #include <boost/format.hpp>
 #include <sys/time.h>
 
-MarketMonitor::MarketMonitor(DeviceManager *dm)
-  : Strategy(dm)
-{}
+MarketMonitor::MarketMonitor(const std::string &name, DeviceManager *dm)
+  : Strategy(name, dm)
+{
+  struct timeval tv;
+  gettimeofday(&tv, NULL);
+  und_price_time_ = tv.tv_sec;
+  opt_price_time_ = tv.tv_sec;
+}
 
 void MarketMonitor::OnStart()
 {
@@ -20,27 +25,29 @@ void MarketMonitor::OnStop()
 
 void MarketMonitor::OnPrice(const PricePtr &price)
 {
-  LOG_INF << "OnPrice : " << price->DebugString();
+  LOG_INF << "OnPrice : " << price->Dump();
   struct timeval tv;
   gettimeofday(&tv, NULL);
   int now = tv.tv_sec;
   const int max_interval = 15;
+  int interval = now - opt_price_time_;
+  if (interval >= max_interval)
+  {
+    LOG_ERR << boost::format("%1% : Option price feed timeout for %2%s") %
+      dm_->GetUnderlying()->Id() % interval;
+  }
+  interval = now - und_price_time_;
+  if (interval >= max_interval)
+  {
+    LOG_ERR << boost::format("%1% : Underlying price feed timeout for %2%s") %
+      dm_->GetUnderlying()->Id() % interval;
+  }
   if (price->instrument->Type() == InstrumentType::Option)
   {
-    int interval = now - opt_price_time_;
-    if (interval >= max_interval)
-    {
-      LOG_ERR << boost::format("Option price feed timeout for %1%s") % interval;
-    }
     opt_price_time_ = now;
   }
   else
   {
-    int interval = now - und_price_time_;
-    if (interval >= max_interval)
-    {
-      LOG_ERR << boost::format("Underlying price feed timeout for %1%s") % interval;
-    }
     und_price_time_ = now;
   }
 }

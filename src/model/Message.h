@@ -30,6 +30,7 @@ class Message
 public:
   static std::shared_ptr<Price> NewPrice();
   static std::shared_ptr<Order> NewOrder();
+  static std::shared_ptr<Order> NewOrder(const std::shared_ptr<Order> &ord);
   static std::shared_ptr<Trade> NewTrade();
 };
 

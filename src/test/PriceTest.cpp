@@ -7,7 +7,7 @@
 
 using namespace std;
 
-BOOST_AUTO_TEST_CASE(test1)
+BOOST_AUTO_TEST_CASE(testPrice)
 {
   cout << "Begin" << endl;
   shared_ptr<Price> out;

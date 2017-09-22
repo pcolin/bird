@@ -9,14 +9,16 @@ class ExchangeManager
 {
   public:
     static ExchangeManager* GetInstance();
+    ~ExchangeManager();
 
     void Init();
+    TraderApi* GetTraderApi() { return trader_; }
 
   private:
     ExchangeManager() {}
 
-    std::shared_ptr<TraderApi> trader_;
-    std::shared_ptr<MdApi> md_;
+    TraderApi *trader_ = nullptr;
+    MdApi *md_;
 };
 
 #endif

@@ -31,6 +31,11 @@ EnvConfig::EnvConfig()
     { static_cast<int8_t>(EnvVar::ASYNC_LOGGING), "ASYNC_LOGGING" },
     { static_cast<int8_t>(EnvVar::ASYNC_FLUSH_INT), "ASYNC_FLUSH_INT" },
 
+    /// exchange
+    { static_cast<int8_t>(EnvVar::EXCHANGE), "EXCHANGE" },
+    { static_cast<int8_t>(EnvVar::WASH_TRADE_PROT), "WASH_TRADE_PROT" },
+    { static_cast<int8_t>(EnvVar::ORDER_GC_THRESHOLD), "GC_THRESHOLD" },
+
     /// ctp
     { static_cast<int8_t>(EnvVar::CTP_TRADE_ADDR), "CTP_TRADE_ADDR" },
     { static_cast<int8_t>(EnvVar::CTP_MD_ADDR), "CTP_MD_ADDR" },

@@ -3,10 +3,11 @@
 
 #include "Strategy.h"
 
+class TraderApi;
 class TestStrategy : public Strategy
 {
 public:
-  TestStrategy(DeviceManager *dm);
+  TestStrategy(const std::string &name, DeviceManager *dm);
 
   virtual void OnStart() override;
   virtual void OnStop() override;
@@ -15,6 +16,13 @@ protected:
   virtual void OnPrice(const PricePtr &price) override;
   virtual void OnOrder(const OrderPtr &order) override;
   virtual void OnTrade(const TradePtr &trade) override;
+
+private:
+  OrderPtr NewOrder(const Instrument *inst, Side side, base::PriceType price);
+  TraderApi *api_ = nullptr;
+
+  std::unordered_map<const Instrument*, OrderPtr> orders_;
+  std::unordered_map<const Instrument*, base::PriceType> prices_;
 };
 
 #endif

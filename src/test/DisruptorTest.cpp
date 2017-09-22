@@ -11,7 +11,7 @@
 
 using namespace std;
 
-BOOST_AUTO_TEST_CASE(testPublish)
+BOOST_AUTO_TEST_CASE(testDisruptor)
 {
   // base::Sequence seq;
   const int size = 1024 * 64;
@@ -42,49 +42,3 @@ BOOST_AUTO_TEST_CASE(testPublish)
   // BOOST_CHECK_EQUAL(rb.Get(0), 8);
   // BOOST_CHECK_EQUAL(rb.Get(1), 5);
 }
-/*
-BOOST_AUTO_TEST_CASE(test1)
-{
-  // base::Sequence seq;
-  const int size = 1024 * 64;
-  const int iterators = 1000 * 1000 * 100;
-  base::YieldingWaitStrategy strategy;
-  base::SingleProducerSequencer sequencer(size, &strategy);
-  vector<base::Sequence*> sequences;
-  base::SequenceBarrier *barrier = sequencer.NewBarrier(sequences);
-  base::RingBuffer<int64_t, size> rb(&sequencer);
-
-  int64_t total = 0;
-  base::Sequence sequence;
-  std::atomic<bool> running(true);
-  thread t([&]
-      {
-        int64_t next_sequence = sequence.Get() + 1L;
-        while (running.load(std::memory_order::memory_order_acquire))
-        {
-          int64_t available_sequence = barrier->WaitFor(next_sequence);
-          while (next_sequence <= available_sequence)
-          {
-            total += rb.Get(next_sequence);
-          }
-          sequence.Set(available_sequence);
-        }
-      });
-
-  for (int i = 0; i < iterators; ++i)
-  {
-    int64_t seq = rb.Next();
-    rb.Get(seq) = i;
-    rb.Publish(seq);
-  }
-
-  int64_t expect_count = iterators - 1;
-  while (sequence.Get() != expect_count)
-  {
-    std::this_thread::sleep_for(std::chrono::microseconds(1));
-  }
-  running.store(false, std::memory_order::memory_order_release);
-  t.join();
-  BOOST_CHECK_EQUAL(total, 1);
-}
-*/

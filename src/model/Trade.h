@@ -8,6 +8,7 @@
 struct Trade
 {
   Trade() : header(MsgType::Trade) {}
+  std::string Dump() const;
 
   MsgHeader header;
   const Instrument *instrument;

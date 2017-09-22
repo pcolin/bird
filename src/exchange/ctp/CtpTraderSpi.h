@@ -2,6 +2,7 @@
 #define CTP_TRADER_SPI_H
 
 #include "model/Instrument.h"
+#include "model/Order.h"
 #include "3rd_library/ctp/include/ThostFtdcTraderApi.h"
 
 #include <unordered_map>
@@ -105,6 +106,7 @@ class CtpTraderSpi : public CThostFtdcTraderSpi
     Exchanges GetExchange(const char *exchange) const;
     // std::string GetInstrumentId(char* id, Exchanges exchange) const;
     InstrumentStatus GetInstrumentStatus(TThostFtdcInstrumentStatusType status) const;
+    void UpdateOrder(const char *exchange_id, base::VolumeType volume, OrderStatus status);
 
     CtpTraderApi *api_ = nullptr;
     InstrumentConfigMap config_;

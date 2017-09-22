@@ -4,9 +4,12 @@
 
 #include <boost/format.hpp>
 
-StrategyDevice::StrategyDevice(const std::string &name, std::unique_ptr<Strategy> &strategy,
+StrategyDevice::StrategyDevice(std::unique_ptr<Strategy> &strategy,
     StrategyRingBuffer &rb, base::SequenceBarrier *barrier)
-  : name_(name), strategy_(std::move(strategy)), rb_(rb), barrier_(barrier), running_(false)
+  : strategy_(std::move(strategy)), rb_(rb), barrier_(barrier), running_(false)
+{}
+
+StrategyDevice::~StrategyDevice()
 {}
 
 void StrategyDevice::Start()
@@ -20,7 +23,7 @@ void StrategyDevice::Start()
 
 void StrategyDevice::Stop()
 {
-  LOG_INF << "Stopping device " << name_;
+  LOG_INF << "Stopping device " << strategy_->Name();
   bool expected = true;
   if (running_.compare_exchange_strong(expected, false))
   {
@@ -31,17 +34,24 @@ void StrategyDevice::Stop()
     thread_->join();
     thread_.reset();
   }
-  LOG_INF << boost::format("Device %1% was stopped") % name_;
+  LOG_INF << boost::format("Device %1% was stopped") % strategy_->Name();
+}
+
+const std::string& StrategyDevice::Name() const
+{
+  return strategy_->Name();
 }
 
 void StrategyDevice::Run()
 {
-  LOG_INF << boost::format("Device %1% start running") % name_;
+  LOG_INF << boost::format("Device %1% start running") % strategy_->Name();
   barrier_->ClearAlert();
   strategy_->OnStart();
   rb_.AddGatingSequence(&sequence_);
 
-  int64_t next = std::max(rb_.GetCursor(), 0l);
+  int64_t begin = std::max(rb_.GetCursor(), 0l);
+  sequence_.Set(begin - 1);
+  int64_t next = begin;
   while (running_)
   {
     int64_t available = barrier_->WaitFor(next);
@@ -55,5 +65,5 @@ void StrategyDevice::Run()
 
   strategy_->OnStop();
   rb_.RemoveGatingSequence(&sequence_);
-  LOG_INF << boost::format("Device %1% was stopped(seq:%2%)") % name_ % next;
+  LOG_INF << boost::format("Device %1% was stopped(seq:%2%->%3%)") % strategy_->Name() % begin % next;
 }

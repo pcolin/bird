@@ -6,7 +6,7 @@
 class MarketMonitor : public Strategy
 {
 public:
-  MarketMonitor(DeviceManager *dm);
+  MarketMonitor(const std::string &name, DeviceManager *dm);
 
   virtual void OnStart() override;
   virtual void OnStop() override;

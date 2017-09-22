@@ -11,12 +11,26 @@ ExchangeManager* ExchangeManager::GetInstance()
   return &manager;
 }
 
+ExchangeManager::~ExchangeManager()
+{
+  if (trader_)
+  {
+    delete trader_;
+    trader_ = nullptr;
+  }
+  if (md_)
+  {
+    delete md_;
+    md_ = nullptr;
+  }
+}
+
 void ExchangeManager::Init()
 {
   LOG_INF << "Start Exchange API";
-  trader_ = std::make_shared<CtpTraderApi>();
+  trader_ = new CtpTraderApi();
   trader_->Init();
 
-  md_ = std::make_shared<CtpMdApi>();
+  md_ = new CtpMdApi();
   md_->Init();
 }

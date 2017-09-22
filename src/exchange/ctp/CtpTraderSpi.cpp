@@ -8,6 +8,9 @@
 #include "model/Future.h"
 #include "model/Option.h"
 #include "model/ProductManager.h"
+#include "model/OrderManager.h"
+#include "model/TradeManager.h"
+#include "strategy/DeviceManager.h"
 #include "strategy/ClusterManager.h"
 
 #include <boost/format.hpp>
@@ -49,7 +52,12 @@ void CtpTraderSpi::OnRspUserLogin(CThostFtdcRspUserLoginField *pRspUserLogin,
       pRspInfo->ErrorID % base::GB2312ToUtf8(pRspInfo->ErrorMsg);
     return;
   }
-  LOG_INF << boost::format("Success to login ctp trader %1%") % pRspUserLogin->UserID;
+  LOG_INF << boost::format("Success to login ctp trader %1% with MaxOrderRef(%2%), FrontID(%3%)"
+      "SessionID(%4%)") % pRspUserLogin->UserID % pRspUserLogin->MaxOrderRef %pRspUserLogin->FrontID %
+    pRspUserLogin->SessionID;
+  // api_->SetMaxOrderRef(atoi(pRspUserLogin->MaxOrderRef));
+  api_->OnUserLogin(atoi(pRspUserLogin->MaxOrderRef), pRspUserLogin->FrontID,
+      pRspUserLogin->SessionID);
   api_->QueryInstruments();
 }
 
@@ -218,24 +226,170 @@ void CtpTraderSpi::OnRspQryTradingAccount(CThostFtdcTradingAccountField *pTradin
 void CtpTraderSpi::OnRspOrderInsert(CThostFtdcInputOrderField *pInputOrder,
     CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
 {
-
+  assert(pInputOrder && pRspInfo);
+  const std::string err = base::GB2312ToUtf8(pRspInfo->ErrorMsg);
+  LOG_INF << boost::format("OnRspOrderInsert: InstrumentID(%1%), OrderRef(%2%), ErrorID(%3%), "
+      "ErrorMsg(%4%), nRequestID(%5%), bIsLast(%6%)") %
+    pInputOrder->InstrumentID % pInputOrder->OrderRef % pRspInfo->ErrorID % err % nRequestID %
+    bIsLast;
+  auto ord = api_->RemoveOrder(atoi(pInputOrder->OrderRef));
+  if (ord)
+  {
+    auto update = Message::NewOrder(ord);
+    update->status = OrderStatus::Rejected;
+    update->note = std::move(err);
+    api_->OnOrderResponse(update);
+  }
+  else
+  {
+    LOG_ERR << "Can't find order " << pInputOrder->OrderRef;
+  }
 }
 
 /// 交易所认为报单非法
 void CtpTraderSpi::OnErrRtnOrderInsert(CThostFtdcInputOrderField *pInputOrder,
     CThostFtdcRspInfoField *pRspInfo)
 {
-
+  assert(pInputOrder && pRspInfo);
+  const std::string err = base::GB2312ToUtf8(pRspInfo->ErrorMsg);
+  LOG_INF << boost::format("OnRspOrderInsert: InstrumentID(%1%), OrderRef(%2%), ErrorID(%3%), "
+      "ErrorMsg(%4%)") %
+    pInputOrder->InstrumentID % pInputOrder->OrderRef % pRspInfo->ErrorID % err;
+  auto ord = api_->RemoveOrder(atoi(pInputOrder->OrderRef));
+  if (ord)
+  {
+    auto update = Message::NewOrder(ord);
+    update->status = OrderStatus::Rejected;
+    update->note = err;
+    api_->OnOrderResponse(update);
+  }
+  else
+  {
+    LOG_ERR << "Can't find order " << pInputOrder->OrderRef;
+  }
 }
 
 void CtpTraderSpi::OnRtnOrder(CThostFtdcOrderField *pOrder)
 {
-
+  assert(pOrder);
+  LOG_INF << boost::format("OnRtnOrder: InstrumentID(%1%), OrderRef(%2%), Direction(%3%), LimitPrice(%4%), "
+      "VolumeTotalOriginal(%5%), TimeCondition(%6%), OrderLocalID(%7%), ExchangeID(%8%), OrderSysID(%9%), "
+      "OrderStatus(%10%), VolumeTraded(%11%), VolumeTotal(%12%), StatusMsg(%13%)") %
+    pOrder->InstrumentID % pOrder->OrderRef % pOrder->Direction % pOrder->LimitPrice %
+    pOrder->VolumeTotalOriginal % pOrder->TimeCondition % pOrder->OrderLocalID % pOrder->ExchangeID %
+    pOrder->OrderSysID % pOrder->OrderStatus % pOrder->VolumeTraded % pOrder->VolumeTotal %
+    pOrder->StatusMsg;
+  if (pOrder->OrderStatus == THOST_FTDC_OST_Unknown)
+  {
+    auto ord = api_->FindOrder(atoi(pOrder->OrderRef));
+    if (ord)
+    {
+      auto update = Message::NewOrder(ord);
+      update->counter_id = pOrder->OrderSysID;
+      update->status = OrderStatus::Submitted;
+      update->header.SetInterval(1);
+      api_->OnOrderResponse(update);
+    }
+    else
+    {
+      LOG_ERR << "Failed to find order by order ref " << pOrder->OrderRef;
+    }
+  }
+  else if (pOrder->OrderStatus == THOST_FTDC_OST_NoTradeQueueing)
+  {
+    auto ord = api_->RemoveOrder(atoi(pOrder->OrderRef));
+    if (ord)
+    {
+      auto update = Message::NewOrder(ord);
+      update->exchange_id = pOrder->OrderSysID;
+      update->status = OrderStatus::New;
+      update->header.SetInterval(2);
+      api_->OnOrderResponse(update);
+    }
+    else
+    {
+      LOG_ERR << "Failed to find order by order ref " << pOrder->OrderRef;
+    }
+  }
+  else if (pOrder->OrderStatus == THOST_FTDC_OST_Canceled)
+  {
+    if (strlen(pOrder->OrderSysID) > 0)
+    {
+      UpdateOrder(pOrder->OrderSysID, 0, OrderStatus::Canceled);
+    }
+    else
+    {
+      auto ord = api_->RemoveOrder(atoi(pOrder->OrderRef));
+      if (ord)
+      {
+        auto update = Message::NewOrder(ord);
+        update->status = OrderStatus::Rejected;
+        update->note = base::GB2312ToUtf8(pOrder->StatusMsg);
+        api_->OnOrderResponse(update);
+      }
+      else
+      {
+        LOG_ERR << "Failed to find order by order ref " << pOrder->OrderRef;
+      }
+    }
+  }
+  else if (pOrder->OrderStatus == THOST_FTDC_OST_AllTraded)
+  {
+    UpdateOrder(pOrder->OrderSysID, pOrder->VolumeTraded, OrderStatus::Filled);
+  }
+  else if (pOrder->OrderStatus == THOST_FTDC_OST_PartTradedQueueing)
+  {
+    UpdateOrder(pOrder->OrderSysID, pOrder->VolumeTraded, OrderStatus::PartialFilled);
+  }
+  else
+  {
+    LOG_WAN << "Unexpected order status " << pOrder->OrderStatus;
+  }
 }
 
 void CtpTraderSpi::OnRtnTrade(CThostFtdcTradeField *pTrade)
 {
-
+  assert(pTrade);
+  LOG_INF << boost::format("OnRtnTrade: InstrumentID(%1%), OrderRef(%2%), OrderLocalID(%3%) "
+      "OrderSysID(%4%), TradeID(%5%), Direction(%6%), Price(%7%), Volume(%8%), TradeDate(%9%), "
+      "TradeTime(%10%)") %
+    pTrade->InstrumentID % pTrade->OrderRef % pTrade->OrderLocalID % pTrade->OrderSysID %
+    pTrade->TradeID % pTrade->Direction % pTrade->Price % pTrade->Volume % pTrade->TradeDate %
+    pTrade->TradeTime;
+  const Instrument *inst = ProductManager::GetInstance()->FindId(pTrade->InstrumentID);
+  if (inst)
+  {
+    auto trade = Message::NewTrade();
+    trade->instrument = inst;
+    auto ord = OrderManager::GetInstance()->FindOrder(pTrade->OrderSysID);
+    if (ord)
+    {
+      trade->order_id = ord->id;
+      auto update = Message::NewOrder(ord);
+      if (update->executed_volume == pTrade->Volume)
+      {
+        update->avg_executed_price = pTrade->Price;
+      }
+      else if (update->executed_volume > pTrade->Volume)
+      {
+        update->avg_executed_price = (update->avg_executed_price * (update->executed_volume -
+              pTrade->Volume) + pTrade->Price * pTrade->Volume) / update->executed_volume;
+      }
+      api_->OnOrderResponse(update);
+    }
+    else
+    {
+      LOG_ERR << "Received a trade with unkown exchange order id " << pTrade->OrderSysID;
+    }
+    trade->price = pTrade->Price;
+    trade->volume = pTrade->Volume;
+    TradeManager::GetInstance()->OnTrade(trade);
+    ClusterManager::GetInstance()->FindDevice(inst)->Publish(trade);
+  }
+  else
+  {
+    LOG_ERR << "Received a trade with unkown instrument " << pTrade->InstrumentID;
+  }
 }
 
 /// CTP认为Quote单非法
@@ -376,4 +530,20 @@ Exchanges CtpTraderSpi::GetExchange(const char* exchange) const
 InstrumentStatus CtpTraderSpi::GetInstrumentStatus(TThostFtdcInstrumentStatusType status) const
 {
 
+}
+
+void CtpTraderSpi::UpdateOrder(const char *exchange_id, base::VolumeType volume, OrderStatus status)
+{
+  auto ord = OrderManager::GetInstance()->FindOrder(exchange_id);
+  if (ord)
+  {
+    auto update = Message::NewOrder(ord);
+    update->executed_volume = volume;
+    update->status = status;
+    api_->OnOrderResponse(update);
+  }
+  else
+  {
+    LOG_ERR << "Failed to find order by exchange id " << exchange_id;
+  }
 }

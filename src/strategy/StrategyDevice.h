@@ -10,22 +10,16 @@ class Strategy;
 class StrategyDevice
 {
 public:
-  StrategyDevice(const std::string &name, std::unique_ptr<Strategy> &strategy, StrategyRingBuffer &rb,
+  StrategyDevice(std::unique_ptr<Strategy> &strategy, StrategyRingBuffer &rb,
       base::SequenceBarrier *barrier);
-  ~StrategyDevice() {}
+  ~StrategyDevice();
 
   void Start();
   void Stop();
-
-  const std::string& Name() const
-  {
-    return name_;
-  }
+  const std::string& Name() const;
 
 private:
   void Run();
-
-  const std::string &name_;
 
   std::unique_ptr<Strategy> strategy_;
   StrategyRingBuffer &rb_;

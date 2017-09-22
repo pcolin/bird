@@ -24,7 +24,6 @@ private:
   ClusterManager();
 
   std::unordered_map<const Instrument*, DeviceManager*> devices_;
-
 };
 
 #endif

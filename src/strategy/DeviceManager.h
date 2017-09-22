@@ -17,8 +17,20 @@ public:
   ~DeviceManager();
 
   void Init();
+  const Instrument* GetUnderlying() const
+  {
+    return underlying_;
+  }
 
-  void Publish(std::shared_ptr<Price> &price);
+  template<class E> void Publish(E &e)
+  {
+    int64_t seq = rb_.Next();
+    rb_.Get(seq) = std::move(e);
+    rb_.Publish(seq);
+  }
+
+  // void Publish(std::shared_ptr<Price> &price);
+  std::shared_ptr<StrategyDevice> FindStrategyDevice(const std::string &name) const;
 
 private:
   const Instrument *underlying_;

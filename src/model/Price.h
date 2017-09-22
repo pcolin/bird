@@ -11,20 +11,20 @@ struct Price
 
   MsgHeader header;
   const Instrument *instrument;
-  base::PriceType last;
-  base::PriceType bid;
-  base::PriceType ask;
-  base::PriceType open;
-  base::PriceType high;
-  base::PriceType low;
-  base::PriceType close;
-  double amount;
+  base::PriceType last = base::PRICE_UNDEFINED;
+  base::PriceType bid = base::PRICE_UNDEFINED;
+  base::PriceType ask = base::PRICE_UNDEFINED;
+  base::PriceType open = base::PRICE_UNDEFINED;
+  base::PriceType high = base::PRICE_UNDEFINED;
+  base::PriceType low = base::PRICE_UNDEFINED;
+  base::PriceType close = base::PRICE_UNDEFINED;
+  double amount = base::PRICE_UNDEFINED;
   // base::VolumeType last_volume;
-  base::VolumeType bid_volume;
-  base::VolumeType ask_volume;
-  base::VolumeType volume;
+  base::VolumeType bid_volume = base::VOLUME_UNDEFINED;
+  base::VolumeType ask_volume = base::VOLUME_UNDEFINED;
+  base::VolumeType volume = base::VOLUME_UNDEFINED;
 
-  std::string DebugString();
+  std::string Dump();
 };
 
 typedef std::shared_ptr<Price> PricePtr;
