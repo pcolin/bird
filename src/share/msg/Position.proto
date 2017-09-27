@@ -1,0 +1,14 @@
+package PROTO;
+
+message Position
+{
+  required string instrument = 1;
+
+  optional int32 total_long = 2 [default = 0];
+  optional int32 liquid_long = 3 [default = 0];
+  optional int32 yesterday_long = 4 [default = 0];
+
+  optional int32 total_short = 5 [default = 0];
+  optional int32 liquid_short = 6 [default = 0];
+  optional int32 yesterday_short = 7 [default = 0];
+}
