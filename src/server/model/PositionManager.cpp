@@ -17,7 +17,9 @@ void PositionManager::Init()
   std::lock_guard<std::mutex> lck(mtx_);
   for (auto &inst : insts)
   {
-    positions_.emplace(inst, std::make_shared<PROTO::Position>());
+    auto pos = std::make_shared<PROTO::Position>();
+    pos->set_instrument(inst->Id());
+    positions_.emplace(inst, pos);
   }
 }
 
@@ -72,16 +74,18 @@ void PositionManager::Release(const OrderPtr &order)
   }
 }
 
-void PositionManager::UpdatePosition(const Instrument *inst, const PositionPtr &position)
+void PositionManager::UpdatePosition(const PositionPtr &position)
 {
+  const Instrument *inst = ProductManager::GetInstance()->FindId(position->instrument());
+  assert(inst);
   std::lock_guard<std::mutex> lck(mtx_);
   auto &pos = positions_[inst];
   assert(pos);
   LOG_INF << boost::format("%1% pos update: liquid(%2%/%3%->%4%/%5%), total(%6%/%7%->%8%/%9%), "
       "yesterday(%10%,%11%)") %
-    pos->liquid_long() % pos->liquid_short() % position->liquid_long() % position->liquid_short() %
-    pos->total_long() % pos->total_short() % position->total_long() % position->total_short() %
-    position->yesterday_long() % position->yesterday_short();
+    position->instrument() % pos->liquid_long() % pos->liquid_short() % position->liquid_long() %
+    position->liquid_short() % pos->total_long() % pos->total_short() % position->total_long() %
+    position->total_short() % position->yesterday_long() % position->yesterday_short();
   positions_[inst] = position;
 }
 
@@ -96,10 +100,24 @@ void PositionManager::OnTrade(const TradePtr &trade)
     LOG_INF << boost::format("%1% long pos update: %2%(%3%)/%4%") % trade->instrument->Id() %
       pos->liquid_long() % (pos->total_long() - pos->liquid_long()) % pos->total_long();
   }
-  else
+  else if (trade->side == Side::Sell)
   {
     pos->set_total_short(pos->total_short() + trade->volume);
     LOG_INF << boost::format("%1% short pos update: %2%(%3%)/%4%") % trade->instrument->Id() %
       pos->liquid_short() % (pos->total_short() - pos->liquid_short()) % pos->total_short();
+  }
+  else if (trade->side == Side::BuyCover || trade->side == Side::BuyCoverToday ||
+      trade->side == Side::BuyCoverYesterday)
+  {
+    pos->set_total_short(pos->total_short() - trade->volume);
+    LOG_INF << boost::format("%1% short pos update: %2%(%3%)/%4%") % trade->instrument->Id() %
+      pos->liquid_short() % (pos->total_short() - pos->liquid_short()) % pos->total_short();
+  }
+  else if (trade->side == Side::SellCover || trade->side == Side::SellCoverToday ||
+      trade->side == Side::SellCoverYesterday)
+  {
+    pos->set_total_long(pos->total_long() - trade->volume);
+    LOG_INF << boost::format("%1% long pos update: %2%(%3%)/%4%") % trade->instrument->Id() %
+      pos->liquid_long() % (pos->total_long() - pos->liquid_long()) % pos->total_long();
   }
 }

@@ -32,7 +32,7 @@ public:
   bool TryFreeze(const OrderPtr &order);
   void Release(const OrderPtr &order);
 
-  void UpdatePosition(const Instrument *inst, const PositionPtr &position);
+  void UpdatePosition(const PositionPtr &position);
   void OnTrade(const TradePtr &trade);
 
 private:

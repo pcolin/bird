@@ -1,4 +1,5 @@
 set(PROTO_FILES
+  ../../share/msg/Cash.proto
   ../../share/msg/Position.proto)
 
 set(CC_FILES)

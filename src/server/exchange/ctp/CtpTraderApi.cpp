@@ -40,10 +40,11 @@ void CtpTraderApi::Init()
   LOG_INF << "Wait until instrument query finished...";
   std::unique_lock<std::mutex> lck(inst_mtx_);
   inst_cv_.wait(lck, [this]{ return inst_ready_; });
-  StartRequestWork();
+  // StartRequestWork();
+  TraderApi::Init();
   pulling_thread_ = std::make_unique<std::thread>([&]()
     {
-      LOG_INF << "Start to pull saved orders...";
+      LOG_INF << "Start thread to pull saved orders...";
       size_t ids[capacity_];
       while (true)
       {
@@ -225,7 +226,7 @@ void CtpTraderApi::PullOrder(const OrderPtr &order)
   if (ret == 0)
   {
     LOG_INF << boost::format("Success to send order action request %1% (InstrumentID:%2%, FrontID:"
-        "%3%, SessionID:%4%, OrderRef:%5%") %
+        "%3%, SessionID:%4%, OrderRef:%5%)") %
       id % field.InstrumentID % field.FrontID % field.SessionID % field.OrderRef;
   }
   else
@@ -261,7 +262,7 @@ void CtpTraderApi::QueryInstruments()
 
 void CtpTraderApi::QueryOrders()
 {
-  LOG_INF << "Query orders";
+  LOG_TRA << "Query orders";
   CThostFtdcQryOrderField field;
   memset(&field, 0, sizeof(field));
   strcpy(field.BrokerID, broker_.c_str());
@@ -278,7 +279,7 @@ void CtpTraderApi::QueryOrders()
 
 void CtpTraderApi::QueryTrades()
 {
-  LOG_INF << "Query trades";
+  LOG_TRA << "Query trades";
   CThostFtdcQryTradeField field;
   memset(&field, 0, sizeof(field));
   strcpy(field.BrokerID, broker_.c_str());
@@ -295,7 +296,7 @@ void CtpTraderApi::QueryTrades()
 
 void CtpTraderApi::QueryPositions()
 {
-  LOG_INF << "Query positions";
+  LOG_TRA << "Query positions";
   CThostFtdcQryInvestorPositionField field;
   memset(&field, 0, sizeof(field));
   strcpy(field.BrokerID, broker_.c_str());
@@ -311,7 +312,7 @@ void CtpTraderApi::QueryPositions()
 
 void CtpTraderApi::QueryCash()
 {
-  LOG_INF << "Query cash";
+  LOG_TRA << "Query cash";
   CThostFtdcQryTradingAccountField field;
   memset(&field, 0, sizeof(field));
   strcpy(field.BrokerID, broker_.c_str());

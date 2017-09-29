@@ -24,7 +24,6 @@ public:
   void QueryOrders();
   void QueryTrades();
   void QueryPositions();
-  void QueryCash();
   void NotifyInstrumentReady();
   // void SetMaxOrderRef(int order_ref)
   // {
@@ -41,6 +40,8 @@ protected:
   void AmendQuote(const OrderPtr &bid, const OrderPtr &ask) override;
   void PullOrder(const OrderPtr &order) override;
   void PullQuote(const OrderPtr &bid, const OrderPtr &ask) override;
+  
+  virtual void QueryCash() override;
 
 private:
   void BuildTemplate();

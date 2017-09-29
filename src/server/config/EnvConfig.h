@@ -22,6 +22,9 @@ enum class EnvVar : int8_t
 
   /// exchange
   EXCHANGE,
+  QRY_CASH_INTERVAL,
+  OPT_CASH_LIMIT,
+  SPOT_CASH_LIMIT,
   WASH_TRADE_PROT,
   ORDER_GC_THRESHOLD, 
 

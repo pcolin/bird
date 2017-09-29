@@ -16,11 +16,16 @@ protected:
   virtual void OnPrice(const PricePtr &price) override;
   virtual void OnOrder(const OrderPtr &order) override;
   virtual void OnTrade(const TradePtr &trade) override;
+  virtual void OnLastEvent() override;
 
 private:
   void OnMessage(const std::shared_ptr<PROTO::Position> &position);
   int und_price_time_;
   int opt_price_time_;
+
+  std::vector<OrderPtr> orders_;
+
+  // std::unique_ptr<std::thread> cash_thread_;
 
 };
 

@@ -29,6 +29,8 @@ public:
     rb_.Publish(seq);
   }
 
+  void Stop(const std::string& name);
+  void StopAll();
   // void Publish(std::shared_ptr<Price> &price);
   std::shared_ptr<StrategyDevice> FindStrategyDevice(const std::string &name) const;
 

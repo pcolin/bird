@@ -1,10 +1,11 @@
 #ifndef STRATEGY_CLUSTER_MANAGER_H
 #define STRATEGY_CLUSTER_MANAGER_H
 
+#include "Cash.pb.h"
 #include "model/Instrument.h"
 
 #include <unordered_map>
-// #include <memory>
+#include <memory>
 
 class DeviceManager;
 class ClusterManager
@@ -18,7 +19,7 @@ public:
   DeviceManager* AddDevice(const Instrument *underlying);
   DeviceManager* FindDevice(const Instrument *underlying) const;
 
-  void OnCash();
+  void OnCash(const std::shared_ptr<PROTO::Cash> &cash);
 
 private:
   ClusterManager();

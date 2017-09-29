@@ -224,7 +224,7 @@ void CtpTraderSpi::OnRspQryInvestorPosition(CThostFtdcInvestorPositionField *pIn
   static std::unordered_map<const Instrument*, PositionPtr> positions;
   if (pInvestorPosition)
   {
-    LOG_INF << boost::format("OnRspQryInvestorPosition: InstrumentID(%1%), PosiDirection(%2%)"
+    LOG_INF << boost::format("OnRspQryInvestorPosition: InstrumentID(%1%), PosiDirection(%2%) "
         "YdPosition(%3%), Position(%4%), LongFrozen(%5%), ShortFrozen(%6%), PositionDate(%7%)") %
       pInvestorPosition->InstrumentID % pInvestorPosition->PosiDirection %
       pInvestorPosition->YdPosition % pInvestorPosition->Position % pInvestorPosition->LongFrozen %
@@ -233,9 +233,10 @@ void CtpTraderSpi::OnRspQryInvestorPosition(CThostFtdcInvestorPositionField *pIn
     if (inst)
     {
       PositionPtr pos = positions[inst];
-      if (!pos) 
+      if (!pos)
       {
         pos = std::make_shared<PROTO::Position>();
+        pos->set_instrument(inst->Id());
         positions[inst] = pos;
       }
       if (pInvestorPosition->PosiDirection == THOST_FTDC_PD_Long)
@@ -265,7 +266,28 @@ void CtpTraderSpi::OnRspQryInvestorPosition(CThostFtdcInvestorPositionField *pIn
 void CtpTraderSpi::OnRspQryTradingAccount(CThostFtdcTradingAccountField *pTradingAccount,
     CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
 {
-
+  if (pRspInfo && pRspInfo->ErrorID != 0)
+  {
+    LOG_ERR << boost::format("Failed to query cash: %1%(%2%).") %
+      pRspInfo->ErrorID % base::GB2312ToUtf8(pRspInfo->ErrorMsg);
+    return;
+  }
+  if (pTradingAccount)
+  {
+    LOG_INF << boost::format("OnRspQryTradingAccount: AccountID(%1%), FrozenMargin(%2%), "
+        "CurrMargin(%3%), FrozenCash(%4%), Available(%5%)") %
+      pTradingAccount->AccountID % pTradingAccount->FrozenMargin % pTradingAccount->CurrMargin %
+      pTradingAccount->FrozenCash % pTradingAccount->Available;
+    auto cash = std::make_shared<PROTO::Cash>();
+    cash->set_currency(PROTO::CNY);
+    cash->set_account(pTradingAccount->AccountID);
+    cash->set_total(pTradingAccount->Available + pTradingAccount->FrozenCash);
+    cash->set_available(pTradingAccount->Available);
+    cash->set_margin(pTradingAccount->CurrMargin);
+    static const double limit = EnvConfig::GetInstance()->GetDouble(EnvVar::OPT_CASH_LIMIT);
+    cash->set_is_enough(pTradingAccount->Available >= limit);
+    ClusterManager::GetInstance()->OnCash(cash);
+  }
 }
 
 /// CTP认为报单非法
@@ -363,7 +385,10 @@ void CtpTraderSpi::OnRtnOrder(CThostFtdcOrderField *pOrder)
   {
     if (strlen(pOrder->OrderSysID) > 0)
     {
-      UpdateOrder(pOrder->OrderSysID, 0, OrderStatus::Canceled);
+      if (pOrder->VolumeTraded == 0)
+        UpdateOrder(pOrder->OrderSysID, 0, OrderStatus::Canceled);
+      else
+        UpdateOrder(pOrder->OrderSysID, pOrder->VolumeTraded, OrderStatus::PartialFilledCanceled);
     }
     else
     {
@@ -408,11 +433,11 @@ void CtpTraderSpi::OnRtnTrade(CThostFtdcTradeField *pTrade)
   const Instrument *inst = ProductManager::GetInstance()->FindId(pTrade->InstrumentID);
   if (inst)
   {
-    auto trade = Message::NewTrade();
-    trade->instrument = inst;
     auto ord = OrderManager::GetInstance()->FindOrder(pTrade->OrderSysID);
     if (ord)
     {
+      auto trade = Message::NewTrade();
+      trade->instrument = inst;
       trade->order_id = ord->id;
       auto update = Message::NewOrder(ord);
       if (update->executed_volume == pTrade->Volume)
@@ -424,16 +449,18 @@ void CtpTraderSpi::OnRtnTrade(CThostFtdcTradeField *pTrade)
         update->avg_executed_price = (update->avg_executed_price * (update->executed_volume -
               pTrade->Volume) + pTrade->Price * pTrade->Volume) / update->executed_volume;
       }
+      trade->side = ord->side;
+      trade->id = (boost::format("%1%%2%") % (ord->IsBid() ? 'B' : 'A') % pTrade->TradeID).str();
+      trade->price = pTrade->Price;
+      trade->volume = pTrade->Volume;
+      TradeManager::GetInstance()->OnTrade(trade);
+      ClusterManager::GetInstance()->FindDevice(inst->HedgeUnderlying())->Publish(trade);
       api_->OnOrderResponse(update);
     }
     else
     {
       LOG_ERR << "Received a trade with unkown exchange order id " << pTrade->OrderSysID;
     }
-    trade->price = pTrade->Price;
-    trade->volume = pTrade->Volume;
-    TradeManager::GetInstance()->OnTrade(trade);
-    ClusterManager::GetInstance()->FindDevice(inst->HedgeUnderlying())->Publish(trade);
   }
   else
   {

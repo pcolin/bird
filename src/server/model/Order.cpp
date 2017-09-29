@@ -42,7 +42,7 @@ std::string Order::Dump() const
     ss << boost::format(" ExchangeID(%1%)") % exchange_id;
   if (!strategy.empty())
     ss << boost::format(" Strategy(%1%)") % strategy;
-  if (executed_volume > 0)
+  if (avg_executed_price > 0)
     ss << boost::format(" Executed(%1%@%2%)") % executed_volume % avg_executed_price;
   if (header.interval[2] > 0)
     ss << boost::format(" Delay(%1%,%2%,%3%,%4%)") %

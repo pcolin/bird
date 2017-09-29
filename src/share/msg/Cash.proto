@@ -1,0 +1,21 @@
+package PROTO;
+
+enum Currency
+{
+  CNY = 0;
+  HKD = 1;
+  USD = 2;
+  EUR = 3;
+  JPY = 4;
+  SGD = 5;
+}
+
+message Cash
+{
+  required Currency currency = 1;
+  required string account = 2;
+  required double total = 3;
+  required double available = 4;
+  required bool is_enough = 5;
+  optional double margin = 6;
+}

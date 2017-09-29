@@ -37,6 +37,23 @@ void DeviceManager::Init()
 //   rb_.Publish(seq);
 // }
 
+void DeviceManager::Stop(const std::string& name)
+{
+  auto it = devices_.find(name);
+  if (it != devices_.end())
+  {
+    it->second->Stop();
+  }
+}
+
+void DeviceManager::StopAll()
+{
+  for (auto &it : devices_)
+  {
+    it.second->Stop();
+  }
+}
+
 std::shared_ptr<StrategyDevice> DeviceManager::FindStrategyDevice(const std::string &name) const
 {
   auto it = devices_.find(name);

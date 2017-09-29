@@ -11,7 +11,7 @@ class TraderApi
 public:
   TraderApi() : visitor_(this) {}
 
-  virtual void Init() = 0;
+  virtual void Init();
   virtual void Login() = 0;
   virtual void Logout() = 0;
 
@@ -27,7 +27,7 @@ public:
   void RejectOrder(const OrderPtr &order);
 
 protected:
-  void StartRequestWork();
+  // void StartRequestWork();
 
   virtual void NewOrder(const OrderPtr &order) = 0;
   virtual void NewQuote(const OrderPtr &bid, const OrderPtr &ask) = 0;
@@ -36,12 +36,14 @@ protected:
   virtual void PullOrder(const OrderPtr &order) = 0;
   virtual void PullQuote(const OrderPtr &bid, const OrderPtr &ask) = 0;
 
+  virtual void QueryCash() = 0;
+
   WashTradeProtector protector_;
 
 private:
   void OnOrderRequest(const OrderRequestPtr &r);
   void OnQuoteRequest(const QuoteRequestPtr &r);
-  void RequestWork();
+  // void RequestWork();
 
   class EventVisitor : public boost::static_visitor<void>
   {
@@ -66,6 +68,8 @@ private:
   std::unique_ptr<std::thread> request_thread_;
   typedef boost::variant<OrderRequestPtr, QuoteRequestPtr> RequestType;
   moodycamel::ConcurrentQueue<RequestType> request_queue_;
+  
+  std::unique_ptr<std::thread> cash_thread_;
 };
 
 #endif

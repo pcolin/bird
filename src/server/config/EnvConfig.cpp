@@ -33,6 +33,9 @@ EnvConfig::EnvConfig()
 
     /// exchange
     { static_cast<int8_t>(EnvVar::EXCHANGE), "EXCHANGE" },
+    { static_cast<int8_t>(EnvVar::QRY_CASH_INTERVAL), "QRY_CASH_INT" },
+    { static_cast<int8_t>(EnvVar::OPT_CASH_LIMIT), "OPT_CASH_LIMIT" },
+    { static_cast<int8_t>(EnvVar::SPOT_CASH_LIMIT), "SPOT_CASH_LIMIT" },
     { static_cast<int8_t>(EnvVar::WASH_TRADE_PROT), "WASH_TRADE_PROT" },
     { static_cast<int8_t>(EnvVar::ORDER_GC_THRESHOLD), "GC_THRESHOLD" },
 

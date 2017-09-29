@@ -20,6 +20,8 @@ public:
   void OnEvent(const Event &e, int64_t seq, bool last)
   {
     boost::apply_visitor(visitor_, e);
+    // if (last)
+    //   OnLastEvent();
   }
 
 protected:
@@ -27,6 +29,7 @@ protected:
   virtual void OnOrder(const OrderPtr &order) {}
   virtual void OnTrade(const TradePtr &trade) {}
   void OnProtoMessage(const ProtoMessagePtr &message) { dispatcher_.OnProtoMessage(message); }
+  virtual void OnLastEvent() {}
 
   const std::string name_;
   DeviceManager *dm_;

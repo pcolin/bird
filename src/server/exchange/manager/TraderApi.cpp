@@ -1,8 +1,37 @@
 #include "TraderApi.h"
 #include "base/logger/Logging.h"
+#include "config/EnvConfig.h"
 #include "model/OrderManager.h"
 #include "strategy/DeviceManager.h"
 #include "strategy/ClusterManager.h"
+
+void TraderApi::Init()
+{
+  running_ = true;
+  request_thread_ = std::make_unique<std::thread>([&]()
+    {
+      LOG_INF << "Start requesting thread...";
+      while (running_)
+      {
+        RequestType r;
+        if (request_queue_.try_dequeue(r))
+        {
+          boost::apply_visitor(visitor_, r);
+        }
+      }
+    });
+
+  cash_thread_ = std::make_unique<std::thread>([&]()
+    {
+      LOG_INF << "Start querying cash thread...";
+      const int interval = EnvConfig::GetInstance()->GetInt32(EnvVar::QRY_CASH_INTERVAL, 15);
+      while (running_)
+      {
+        QueryCash();
+        std::this_thread::sleep_for(std::chrono::seconds(interval));
+      }
+    });
+}
 
 void TraderApi::New(const OrderPtr &order)
 {
@@ -51,7 +80,7 @@ void TraderApi::OnOrderResponse(const OrderPtr &order)
   if (dm)
   {
     dm->Publish(order);
-    OrderManager::GetInstance()->OnOrder(order);
+    // OrderManager::GetInstance()->OnOrder(order);
   }
   else
   {
@@ -66,11 +95,11 @@ void TraderApi::RejectOrder(const OrderPtr &order)
   OnOrderResponse(ord);
 }
 
-void TraderApi::StartRequestWork()
-{
-  running_ = true;
-  request_thread_ = std::make_unique<std::thread>(std::bind(&TraderApi::RequestWork, this));
-}
+// void TraderApi::StartRequestWork()
+// {
+//   running_ = true;
+//   request_thread_ = std::make_unique<std::thread>(std::bind(&TraderApi::RequestWork, this));
+// }
 
 void TraderApi::OnOrderRequest(const OrderRequestPtr &r)
 {
@@ -105,17 +134,5 @@ void TraderApi::OnQuoteRequest(const QuoteRequestPtr &r)
       AmendQuote(r->bid, r->ask);
     default:
       assert(false);
-  }
-}
-
-void TraderApi::RequestWork()
-{
-  while (running_)
-  {
-    RequestType r;
-    if (request_queue_.try_dequeue(r))
-    {
-      boost::apply_visitor(visitor_, r);
-    }
   }
 }

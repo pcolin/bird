@@ -18,7 +18,7 @@ public:
 private:
   TradeManager() {}
 
-  typedef std::unordered_map<std::string, TradePtr> TradeMap;
+  typedef std::unordered_multimap<std::string, TradePtr> TradeMap;
   TradeMap trades_;
   std::mutex mtx_;
 };
