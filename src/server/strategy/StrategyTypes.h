@@ -4,8 +4,8 @@
 #include "model/Price.h"
 #include "model/Trade.h"
 #include "base/disruptor/RingBuffer.h"
+#include "google/protobuf/message.h"
 #include <boost/variant.hpp>
-#include <google/protobuf/message.h>
 
 const int BUFFER_SIZE = 4 * 1024;
 

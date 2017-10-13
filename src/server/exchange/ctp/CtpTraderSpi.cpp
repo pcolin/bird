@@ -235,7 +235,7 @@ void CtpTraderSpi::OnRspQryInvestorPosition(CThostFtdcInvestorPositionField *pIn
       PositionPtr pos = positions[inst];
       if (!pos)
       {
-        pos = std::make_shared<PROTO::Position>();
+        pos = std::make_shared<proto::Position>();
         pos->set_instrument(inst->Id());
         positions[inst] = pos;
       }
@@ -278,8 +278,8 @@ void CtpTraderSpi::OnRspQryTradingAccount(CThostFtdcTradingAccountField *pTradin
         "CurrMargin(%3%), FrozenCash(%4%), Available(%5%)") %
       pTradingAccount->AccountID % pTradingAccount->FrozenMargin % pTradingAccount->CurrMargin %
       pTradingAccount->FrozenCash % pTradingAccount->Available;
-    auto cash = std::make_shared<PROTO::Cash>();
-    cash->set_currency(PROTO::CNY);
+    auto cash = std::make_shared<proto::Cash>();
+    cash->set_currency(proto::CNY);
     cash->set_account(pTradingAccount->AccountID);
     cash->set_total(pTradingAccount->Available + pTradingAccount->FrozenCash);
     cash->set_available(pTradingAccount->Available);

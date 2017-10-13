@@ -42,6 +42,10 @@ enum class OrderStatus : int8_t
   Rejected,
 };
 
+namespace proto
+{
+  class Order;
+}
 struct Order
 {
   Order();
@@ -62,6 +66,8 @@ struct Order
   }
 
   std::string Dump() const;
+  std::shared_ptr<proto::Order> Serialize() const;
+  // static OrderPtr Deserilize(const )
 
   MsgHeader header;
   const Instrument *instrument;

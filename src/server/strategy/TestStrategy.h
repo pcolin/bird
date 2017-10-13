@@ -18,6 +18,7 @@ protected:
   virtual void OnTrade(const TradePtr &trade) override;
 
 private:
+  bool OnStrategyStatusReq(const std::shared_ptr<proto::StrategyStatusReq> &msg);
   OrderPtr NewOrder(const Instrument *inst, Side side, base::PriceType price);
   TraderApi *api_ = nullptr;
 

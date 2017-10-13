@@ -4,10 +4,15 @@
 #include "Order.h"
 #include <memory>
 
+namespace proto
+{
+  class Trade;
+}
 struct Trade
 {
   Trade() : header(MsgType::Trade) {}
   std::string Dump() const;
+  std::shared_ptr<proto::Trade> Serialize() const;
 
   MsgHeader header;
   const Instrument *instrument;

@@ -1,15 +1,14 @@
 #ifndef STRATEGY_STRATEGY_H
 #define STRATEGY_STRATEGY_H
 
-#include "ProtoMessageDispatcher.h"
 #include "DeviceManager.h"
+#include "Heartbeat.pb.h"
+#include "model/ProtoMessageDispatcher.h"
 
 class Strategy
 {
 public:
-  Strategy(const std::string &name, DeviceManager *dm)
-    : name_(name), dm_(dm), visitor_(this)
-  {}
+  Strategy(const std::string &name, DeviceManager *dm);
   virtual ~Strategy() {}
 
   virtual void OnStart() = 0;
@@ -33,9 +32,11 @@ protected:
 
   const std::string name_;
   DeviceManager *dm_;
-  ProtoMessageDispatcher dispatcher_;
+  ProtoMessageDispatcher<bool> dispatcher_;
 
 private:
+  bool OnHeartbeat(const std::shared_ptr<proto::Heartbeat> &heartbeat);
+
   class EventVisitor : public boost::static_visitor<void>
   {
   public:

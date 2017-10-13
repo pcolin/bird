@@ -1,0 +1,37 @@
+syntax = "proto3";
+package proto;
+
+enum RequestType
+{
+  Get = 0;
+  Set = 1;
+  Del = 2;
+}
+
+message StrategyStatusReq
+{
+  RequestType type = 1;
+  repeated StrategyStatus statuses = 2;
+  string user = 3;
+}
+
+message StrategyStatusRep
+{
+  string error = 1;
+}
+
+message StrategyStatus
+{
+  string name = 1;
+  string underlying = 2;
+  enum Status
+  {
+    Play = 0;
+    Stop = 1;
+    Running = 2;
+    Pause = 3;
+    Error = 4;
+    Lost = 5; /// heartbeat lost
+  }
+  Status status = 3;
+}

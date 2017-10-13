@@ -16,6 +16,7 @@ public:
     TRACE,
     DEBUG,
     INFO,
+    PUBLISH,
     WARN,
     ERROR,
     FATAL,
@@ -28,8 +29,7 @@ public:
   public:
     template<int N>
     inline SourceFile(const char (&arr)[N])
-      : data_(arr),
-        size_(N-1)
+      : data_(arr), size_(N-1)
     {
       const char* slash = strrchr(data_, '/'); // builtin function
       if (slash)
@@ -62,6 +62,7 @@ public:
   static LogLevel logLevel();
   static void SetLogLevel(LogLevel level);
   static void SetOutput(std::function<void(const char*, int)>);
+  static void SetNetOutput(std::function<void(LogLevel lvl, const char*, int)>);
   static void SetFlush(std::function<void()>);
   static void InitFileLogger(const char *dir, const char* prefix, bool sync);
 
@@ -115,6 +116,7 @@ inline Logger::LogLevel Logger::logLevel()
   base::Logger(__FILE__, __LINE__, base::Logger::DEBUG, __func__).Stream()
 #define LOG_INF if (base::Logger::logLevel() <= base::Logger::INFO) \
   base::Logger(__FILE__, __LINE__).Stream()
+#define LOG_PUB base::Logger(__FILE__, __LINE__, base::Logger::PUBLISH).Stream()
 #define LOG_WAN base::Logger(__FILE__, __LINE__, base::Logger::WARN).Stream()
 #define LOG_ERR base::Logger(__FILE__, __LINE__, base::Logger::ERROR).Stream()
 #define LOG_FAT base::Logger(__FILE__, __LINE__, base::Logger::FATAL).Stream()

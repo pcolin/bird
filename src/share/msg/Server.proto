@@ -1,0 +1,18 @@
+syntax = "proto3";
+package proto;
+
+//import "google/protobuf/timestamp.proto"
+
+
+message ServerInfo
+{
+  string info = 1;
+  enum Type
+  {
+    PUB = 0;
+    WAN = 1;
+    ERR = 2;
+  }
+  Type type = 2;
+  uint64 time = 3;
+}

@@ -10,7 +10,12 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR})
 INCLUDE_DIRECTORIES(${PROJECT_BINARY_DIR}/msg)
 LINK_DIRECTORIES(3rd_library/ctp/lib)
-LINK_DIRECTORIES(3rd_library/protobuf-2.5.0/src/.libs)
+
+INCLUDE_DIRECTORIES(3rd_library/protobuf/src)
+LINK_DIRECTORIES(3rd_library/protobuf/src/.libs)
+
+INCLUDE_DIRECTORIES(3rd_library/nanomsg/src)
+LINK_DIRECTORIES(3rd_library/nanomsg/build)
 
 ADD_SUBDIRECTORY(msg)
 ADD_SUBDIRECTORY(base)

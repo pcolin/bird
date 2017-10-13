@@ -19,7 +19,7 @@ protected:
   virtual void OnLastEvent() override;
 
 private:
-  void OnMessage(const std::shared_ptr<PROTO::Position> &position);
+  bool OnPosition(const std::shared_ptr<proto::Position> &position);
   int und_price_time_;
   int opt_price_time_;
 

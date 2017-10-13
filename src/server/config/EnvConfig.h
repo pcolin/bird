@@ -9,6 +9,12 @@ enum class EnvVar : int8_t
   NIC,
   CONFIG_FILE,
 
+  /// nanomsg
+  SUB_ADDR,
+  REQ_ADDR,
+  BIND_SUB_ADDR,
+  BIND_REQ_ADDR,
+
   /// database
   CONFIG_DB_FILE,
   ORDER_DB_FILE,

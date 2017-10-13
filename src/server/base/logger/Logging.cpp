@@ -58,6 +58,7 @@ const char* LogLevelName[Logger::NUM_LOG_LEVELS] =
   "TRA ",
   "DBG ",
   "INF ",
+  "PUB ",
   "WAN ",
   "ERR ",
   "FAT ",
@@ -102,6 +103,7 @@ void defaultFlush()
 }
 
 std::function<void(const char*, int)> g_output = defaultOutput;
+std::function<void(Logger::LogLevel lvl, const char*, int)> g_net_output;
 std::function<void()> g_flush = defaultFlush;
 
 Logger::Impl::Impl(LogLevel level, int savedErrno, const SourceFile& file, int line)
@@ -170,8 +172,13 @@ Logger::Logger(SourceFile file, int line, bool toAbort)
 
 Logger::~Logger()
 {
-  impl_.finish();
   const LogStream::Buffer& buf(Stream().buffer());
+  if (unlikely(impl_.level_ > INFO && g_net_output))
+  {
+    const int head_len = 26;
+    g_net_output(impl_.level_, buf.data() + head_len, buf.length() - head_len);
+  }
+  impl_.finish();
   g_output(buf.data(), buf.length());
   if (unlikely(impl_.level_ == FATAL))
   {
@@ -188,6 +195,11 @@ void Logger::SetLogLevel(Logger::LogLevel level)
 void Logger::SetOutput(std::function<void(const char*, int)> out)
 {
   g_output = out;
+}
+
+void Logger::SetNetOutput(std::function<void(LogLevel lvl, const char*, int)> out)
+{
+  g_net_output = out;
 }
 
 void Logger::SetFlush(std::function<void()> flush)

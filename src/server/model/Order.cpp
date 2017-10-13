@@ -1,5 +1,6 @@
 #include "Order.h"
 // #include "base/logger/Logging.h"
+#include "Order.pb.h"
 
 #include <map>
 #include <sstream>
@@ -24,8 +25,9 @@ std::string Order::Dump() const
     {Side::BuyCoverToday, "BuyCoverToday"}, {Side::BuyCoverYesterday, "BuyCoverYesterDay"},
     {Side::SellCover, "SellCover"}, {Side::SellCoverToday, "SellCoverToday"},
     {Side::SellCoverYesterday, "SellCoverYesterday"} };
-  static std::map<TimeCondition, const char*> time_conditions = {
-    {TimeCondition::GTD, "GTD"}, {TimeCondition::IOC, "IOC"} };
+  // static std::map<TimeCondition, const char*> time_conditions = {
+  //   {TimeCondition::GTD, "GTD"}, {TimeCondition::IOC, "IOC"} };
+  static const char* time_conditions[] = { "GTD", "IOC" };
   static std::map<OrderStatus, const char*> statuses = {
     {OrderStatus::Undefined, "Undefined"}, {OrderStatus::Local, "Local"},
     {OrderStatus::Submitted, "Submitted"}, {OrderStatus::New, "New"},
@@ -34,7 +36,7 @@ std::string Order::Dump() const
     {OrderStatus::Canceled, "Canceled"}, {OrderStatus::Rejected, "Rejected"} };
   std::stringstream ss;
   ss << boost::format("%1% %2% %3% %4%@%5% %6% %7%") % id % instrument->Id() % sides[side] % volume %
-    price % time_conditions[time_condition] % statuses[status];
+    price % time_conditions[static_cast<int>(time_condition)] % statuses[status];
 
   if (!counter_id.empty())
     ss << boost::format(" CounterID(%1%)") % counter_id;
@@ -50,4 +52,30 @@ std::string Order::Dump() const
   if (!note.empty())
     ss << boost::format(" Note(%1%)") % note;
   return ss.str();
+}
+
+std::shared_ptr<proto::Order> Order::Serialize() const
+{
+  std::shared_ptr<proto::Order> ord = Message::NewProto<proto::Order>();
+  ord->set_id(id);
+  ord->set_instrument(instrument->Id());
+  ord->set_counter_id(counter_id);
+  ord->set_exchange_id(exchange_id);
+  ord->set_note(note);
+  ord->set_price(price);
+  ord->set_avg_executed_price(avg_executed_price);
+  ord->set_volume(volume);
+  ord->set_executed_volume(executed_volume);
+  // static proto::Side sides[] = { proto::Buy, proto::Sell, proto::BuyCover };
+  // ord->set_side(sides[static_cast<int>(side)]);
+  ord->set_side(static_cast<proto::Side>(side));
+  ord->set_time_condition(static_cast<proto::TimeCondition>(time_condition));
+  ord->set_type(static_cast<proto::OrderType>(type));
+  ord->set_status(static_cast<proto::OrderStatus>(status));
+  google::protobuf::Timestamp *t = new google::protobuf::Timestamp;
+  t->set_seconds(header.time / 1000000);
+  t->set_nanos(header.time % 1000000 * 1000);
+  ord->set_allocated_time(t);
+  ord->set_latency(header.interval[2]);
+  return ord;
 }

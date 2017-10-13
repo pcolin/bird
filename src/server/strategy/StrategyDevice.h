@@ -16,6 +16,7 @@ public:
 
   void Start();
   void Stop();
+  bool IsRunning() const;
   const std::string& Name() const;
 
 private:

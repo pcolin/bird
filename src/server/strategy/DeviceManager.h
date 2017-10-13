@@ -2,6 +2,7 @@
 #define STRATEGY_DEVICE_MANAGER_H
 
 #include "StrategyTypes.h"
+#include "Strategy.pb.h"
 #include "base/disruptor/BusySpinWaitStrategy.h"
 #include "base/disruptor/MultiProducerSequencer.h"
 
@@ -29,10 +30,14 @@ public:
     rb_.Publish(seq);
   }
 
+  void Start(const std::string& name);
+  void StartAll();
   void Stop(const std::string& name);
   void StopAll();
   // void Publish(std::shared_ptr<Price> &price);
   std::shared_ptr<StrategyDevice> FindStrategyDevice(const std::string &name) const;
+
+  void OnStrategyStatusReq(const std::shared_ptr<proto::StrategyStatusReq> &msg);
 
 private:
   const Instrument *underlying_;

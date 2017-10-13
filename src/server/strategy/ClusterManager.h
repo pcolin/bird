@@ -1,6 +1,7 @@
 #ifndef STRATEGY_CLUSTER_MANAGER_H
 #define STRATEGY_CLUSTER_MANAGER_H
 
+#include "Heartbeat.pb.h"
 #include "Cash.pb.h"
 #include "model/Instrument.h"
 
@@ -19,7 +20,8 @@ public:
   DeviceManager* AddDevice(const Instrument *underlying);
   DeviceManager* FindDevice(const Instrument *underlying) const;
 
-  void OnCash(const std::shared_ptr<PROTO::Cash> &cash);
+  void OnHeartbeat(const std::shared_ptr<proto::Heartbeat> &heartbeat);
+  void OnCash(const std::shared_ptr<proto::Cash> &cash);
 
 private:
   ClusterManager();

@@ -1,0 +1,60 @@
+syntax = "proto3";
+package proto;
+
+import "google/protobuf/timestamp.proto";
+
+enum Side
+{
+  Buy = 0;
+  Sell = 1;
+  BuyCover = 2;
+  BuyCoverToday = 3;
+  BuyCoverYesterday = 4;
+  SellCover = 5;
+  SellCoverToday = 6;
+  SellCoverYesterday = 7;
+}
+
+enum TimeCondition
+{
+  GTD = 0;
+  IOC = 1;
+}
+
+enum OrderType
+{
+  Limit = 0;
+  Market = 1;
+}
+
+enum OrderStatus
+{
+  Undefined = 0;
+  Local = 1;
+  Submitted = 2;
+  New = 3;
+  PartialFilled = 4;
+  Filled = 5;
+  PartialFilledCanceled = 6;
+  Canceled = 7;
+  Rejected = 8;
+}
+
+message Order
+{
+  uint64 id = 1;
+  string instrument = 2;
+  string counter_id = 3;
+  string exchange_id = 4;
+  string note = 5;
+  double price = 6;
+  double avg_executed_price = 7;
+  int32 volume = 8;
+  int32 executed_volume = 9;
+  Side side = 10;
+  TimeCondition time_condition = 11;
+  OrderType type = 12;
+  OrderStatus status = 13;
+  google.protobuf.Timestamp time = 14;
+  int32 latency = 15;
+}

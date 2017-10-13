@@ -1,0 +1,18 @@
+syntax = "proto3";
+package proto;
+
+message Price
+{
+  string instrument = 1;
+  double last = 2;
+  double bid = 3;
+  double ask = 4;
+  double open = 5;
+  double high = 6;
+  double low = 7;
+  double close = 8;
+  double amount = 9;
+  int32 bid_volume = 10;
+  int32 ask_volume = 11;
+  int32 volume = 12;
+}

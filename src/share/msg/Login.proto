@@ -1,0 +1,28 @@
+syntax = "proto3";
+package proto;
+
+message Login
+{
+  string user = 1;
+  string password = 2;
+  string version = 3;
+  string ip = 4;
+  string mac = 5;
+}
+
+message LoginRep
+{
+  bool result = 1;
+  string error = 2;
+}
+
+message Logout
+{
+  string user = 1;
+}
+
+message LogoutRep
+{
+  bool result = 1;
+  string error = 2;
+}

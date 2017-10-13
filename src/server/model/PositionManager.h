@@ -19,7 +19,7 @@
 // };
 
 // typedef std::shared_ptr<Position> PositionPtr;
-typedef std::shared_ptr<PROTO::Position> PositionPtr;
+typedef std::shared_ptr<proto::Position> PositionPtr;
 
 class PositionManager
 {

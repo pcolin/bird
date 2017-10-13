@@ -1,7 +1,11 @@
 #include "MarketMonitor.h"
+#include "Price.pb.h"
+#include "Order.pb.h"
+#include "Trade.pb.h"
 #include "base/logger/Logging.h"
 #include "model/OrderManager.h"
 #include "model/PositionManager.h"
+#include "model/Middleware.h"
 
 #include <boost/format.hpp>
 #include <sys/time.h>
@@ -14,8 +18,8 @@ MarketMonitor::MarketMonitor(const std::string &name, DeviceManager *dm)
   und_price_time_ = tv.tv_sec;
   opt_price_time_ = tv.tv_sec;
 
-  dispatcher_.RegisterCallback<PROTO::Position>(
-      std::bind(&MarketMonitor::OnMessage, this, std::placeholders::_1));
+  dispatcher_.RegisterCallback<proto::Position>(
+      std::bind(&MarketMonitor::OnPosition, this, std::placeholders::_1));
 }
 
 void MarketMonitor::OnStart()
@@ -57,19 +61,20 @@ void MarketMonitor::OnPrice(const PricePtr &price)
   {
     und_price_time_ = now;
   }
+  Middleware::GetInstance()->Publish(price->Serialize());
 }
 
 void MarketMonitor::OnOrder(const OrderPtr &order)
 {
   // LOG_INF << "OnOrder : " << order->DebugString();
-  // orders_.push_back(order);
   OrderManager::GetInstance()->OnOrder(order);
-  /// to be done... publish
+  Middleware::GetInstance()->Publish(order->Serialize());
 }
 
 void MarketMonitor::OnTrade(const TradePtr &trade)
 {
   // LOG_INF << "OnTrade : " << trade->DebugString();
+  Middleware::GetInstance()->Publish(trade->Serialize());
 }
 
 void MarketMonitor::OnLastEvent()
@@ -82,8 +87,9 @@ void MarketMonitor::OnLastEvent()
   }
 }
 
-void MarketMonitor::OnMessage(const std::shared_ptr<PROTO::Position> &position)
+bool MarketMonitor::OnPosition(const std::shared_ptr<proto::Position> &position)
 {
   LOG_INF << "Position: " << position->ShortDebugString();
   PositionManager::GetInstance()->UpdatePosition(position);
+  return true;
 }

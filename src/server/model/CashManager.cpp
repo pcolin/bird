@@ -6,7 +6,7 @@ CashManager* CashManager::GetInstance()
   return &manager;
 }
 
-void CashManager::OnCash(const std::shared_ptr<PROTO::Cash> &cash)
+void CashManager::OnCash(const std::shared_ptr<proto::Cash> &cash)
 {
 
 }

@@ -5,6 +5,10 @@
 #include "Instrument.h"
 #include <memory>
 
+namespace proto
+{
+  class Price;
+}
 struct Price
 {
   Price() : header(MsgType::Price) {}
@@ -24,7 +28,8 @@ struct Price
   base::VolumeType ask_volume = base::VOLUME_UNDEFINED;
   base::VolumeType volume = base::VOLUME_UNDEFINED;
 
-  std::string Dump();
+  std::string Dump() const;
+  std::shared_ptr<proto::Price> Serialize() const;
 };
 
 typedef std::shared_ptr<Price> PricePtr;

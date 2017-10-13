@@ -2,6 +2,11 @@
 #include "MarketMonitor.h"
 #include "TestStrategy.h"
 #include "StrategyDevice.h"
+#include "base/logger/Logging.h"
+
+#include <boost/format.hpp>
+
+// using namespace base;
 
 DeviceManager::DeviceManager(const Instrument *underlying)
   : underlying_(underlying),
@@ -25,7 +30,8 @@ void DeviceManager::Init()
   devices_.emplace("test", std::move(d));
 
   /// initialize market monitor
-  std::unique_ptr<Strategy> monitor(new MarketMonitor("MarketMonitor", this));
+  const std::string name = (boost::format("%1%_monitor") % underlying_->Id()).str();
+  std::unique_ptr<Strategy> monitor(new MarketMonitor(name, this));
   monitor_ = std::make_unique<StrategyDevice>(monitor, rb_, barrier_);
   monitor_->Start();
 }
@@ -36,6 +42,23 @@ void DeviceManager::Init()
 //   rb_.Get(seq) = std::move(price);
 //   rb_.Publish(seq);
 // }
+
+void DeviceManager::Start(const std::string& name)
+{
+  auto it = devices_.find(name);
+  if (it != devices_.end())
+  {
+    it->second->Start();
+  }
+}
+
+void DeviceManager::StartAll()
+{
+  for (auto &it : devices_)
+  {
+    it.second->Start();
+  }
+}
 
 void DeviceManager::Stop(const std::string& name)
 {
@@ -58,4 +81,35 @@ std::shared_ptr<StrategyDevice> DeviceManager::FindStrategyDevice(const std::str
 {
   auto it = devices_.find(name);
   return it != devices_.end() ? it->second : nullptr;
+}
+
+void DeviceManager::OnStrategyStatusReq(const std::shared_ptr<proto::StrategyStatusReq> &msg)
+{
+  bool publish = false;
+  for (auto &s : msg->statuses())
+  {
+    auto sd = FindStrategyDevice(s.name());
+    if (sd)
+    {
+      if (sd->IsRunning())
+      {
+        if (s.status() == proto::StrategyStatus::Stop)
+        {
+          sd->Stop();
+        }
+        else if (s.status() == proto::StrategyStatus::Play)
+        {
+          publish = true;
+        }
+      }
+      else if (s.status() == proto::StrategyStatus::Play)
+      {
+        sd->Start();
+        publish = true;
+      }
+    }
+    LOG_PUB << boost::format("%1% set %2% : %3%") % msg->user() % s.name() %
+      proto::StrategyStatus::Status_Name(s.status());
+  }
+  if (publish) Publish(msg);
 }

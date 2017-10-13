@@ -20,6 +20,11 @@ EnvConfig::EnvConfig()
     { static_cast<int8_t>(EnvVar::APP_NAME), "APP_NAME" },
     { static_cast<int8_t>(EnvVar::NIC), "NIC" },
     { static_cast<int8_t>(EnvVar::CONFIG_FILE), "CONFIG_FILE" },
+    /// nanomsg
+    { static_cast<int8_t>(EnvVar::SUB_ADDR), "SUB_ADDR" },
+    { static_cast<int8_t>(EnvVar::REQ_ADDR), "REQ_ADDR" },
+    { static_cast<int8_t>(EnvVar::BIND_SUB_ADDR), "BIND_SUB_ADDR" },
+    { static_cast<int8_t>(EnvVar::BIND_REQ_ADDR), "BIND_REQ_ADDR" },
     /// database
     { static_cast<int8_t>(EnvVar::CONFIG_DB_FILE), "CONFIG_DB_FILE" },
     { static_cast<int8_t>(EnvVar::ORDER_DB_FILE), "ORDER_DB_FILE" },

@@ -37,6 +37,11 @@ void StrategyDevice::Stop()
   LOG_INF << boost::format("Device %1% was stopped") % strategy_->Name();
 }
 
+bool StrategyDevice::IsRunning() const
+{
+  return running_;
+}
+
 const std::string& StrategyDevice::Name() const
 {
   return strategy_->Name();

@@ -17,7 +17,7 @@ void PositionManager::Init()
   std::lock_guard<std::mutex> lck(mtx_);
   for (auto &inst : insts)
   {
-    auto pos = std::make_shared<PROTO::Position>();
+    auto pos = std::make_shared<proto::Position>();
     pos->set_instrument(inst->Id());
     positions_.emplace(inst, pos);
   }

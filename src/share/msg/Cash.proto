@@ -1,4 +1,5 @@
-package PROTO;
+syntax = "proto3";
+package proto;
 
 enum Currency
 {
@@ -12,10 +13,10 @@ enum Currency
 
 message Cash
 {
-  required Currency currency = 1;
-  required string account = 2;
-  required double total = 3;
-  required double available = 4;
-  required bool is_enough = 5;
-  optional double margin = 6;
+  Currency currency = 1;
+  string account = 2;
+  double total = 3;
+  double available = 4;
+  bool is_enough = 5;
+  double margin = 6;
 }

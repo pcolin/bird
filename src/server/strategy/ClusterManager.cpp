@@ -2,6 +2,7 @@
 #include "DeviceManager.h"
 #include "base/common/Likely.h"
 #include "base/logger/Logging.h"
+#include "model/Middleware.h"
 #include "model/CashManager.h"
 
 ClusterManager* ClusterManager::GetInstance()
@@ -63,16 +64,24 @@ DeviceManager* ClusterManager::FindDevice(const Instrument *underlying) const
   return nullptr;
 }
 
-void ClusterManager::OnCash(const std::shared_ptr<PROTO::Cash> &cash)
+void ClusterManager::OnHeartbeat(const std::shared_ptr<proto::Heartbeat> &heartbeat)
+{
+  for (auto &it : devices_)
+  {
+    it.second->Publish(heartbeat);
+  }
+}
+
+void ClusterManager::OnCash(const std::shared_ptr<proto::Cash> &cash)
 {
   if (!cash->is_enough())
   {
+    LOG_ERR << "Cash isn't enough, stop all strategies...";
     for (auto &it : devices_)
     {
       it.second->StopAll();
     }
   }
   CashManager::GetInstance()->OnCash(cash);
-  /// to be done
-  // Middleware::GetInstance()->Publish(cash);
+  Middleware::GetInstance()->Publish(cash);
 }
