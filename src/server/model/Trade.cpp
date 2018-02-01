@@ -22,10 +22,11 @@ std::shared_ptr<proto::Trade> Trade::Serialize() const
   t->set_side(static_cast<proto::Side>(side));
   t->set_price(price);
   t->set_volume(volume);
-  google::protobuf::Timestamp *tm = new google::protobuf::Timestamp;
-  tm->set_seconds(header.time / 1000000);
-  tm->set_nanos(header.time % 1000000 * 1000);
-  t->set_allocated_time(tm);
+  // google::protobuf::Timestamp *tm = new google::protobuf::Timestamp;
+  // tm->set_seconds(header.time / 1000000);
+  // tm->set_nanos(header.time % 1000000 * 1000);
+  // t->set_allocated_time(tm);
+  t->set_time(header.time);
   t->set_order_id(order_id);
   return t;
 }

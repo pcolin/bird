@@ -1,7 +1,7 @@
 syntax = "proto3";
 package proto;
 
-import "google/protobuf/timestamp.proto";
+// import "google/protobuf/timestamp.proto";
 
 enum Side
 {
@@ -55,6 +55,7 @@ message Order
   TimeCondition time_condition = 11;
   OrderType type = 12;
   OrderStatus status = 13;
-  google.protobuf.Timestamp time = 14;
+  //google.protobuf.Timestamp time = 14;
+  uint64 time = 14;
   int32 latency = 15;
 }

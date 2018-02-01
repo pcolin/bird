@@ -59,7 +59,7 @@ ProtoMessagePtr Middleware::OnStrategyStatusReq(const std::shared_ptr<proto::Str
         auto *dm = ClusterManager::GetInstance()->FindDevice(underlying);
         if (dm)
         {
-          dm->OnStrategyStatusReq(msg); 
+          dm->OnStrategyStatusReq(msg);
         }
       }
       else

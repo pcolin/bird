@@ -1,6 +1,7 @@
 #include "StrategyDevice.h"
 #include "Strategy.h"
 #include "base/logger/Logging.h"
+#include "model/Middleware.h"
 
 #include <boost/format.hpp>
 
@@ -49,9 +50,15 @@ const std::string& StrategyDevice::Name() const
 
 void StrategyDevice::Run()
 {
-  LOG_INF << boost::format("Device %1% start running") % strategy_->Name();
+  const std::string &name = strategy_->Name();
+  LOG_INF << boost::format("Device %1% start running") % name;
   barrier_->ClearAlert();
   strategy_->OnStart();
+  auto start = Message::NewProto<proto::StrategyStatus>();
+  start->set_name(name);
+  start->set_underlying(strategy_->UnderlyingId());
+  start->set_status(proto::StrategyStatus::Running);
+  Middleware::GetInstance()->Publish(start);
   rb_.AddGatingSequence(&sequence_);
 
   int64_t begin = std::max(rb_.GetCursor(), 0l);
@@ -69,6 +76,11 @@ void StrategyDevice::Run()
   }
 
   strategy_->OnStop();
+  auto stop = Message::NewProto<proto::StrategyStatus>();
+  stop->set_name(name);
+  stop->set_underlying(strategy_->UnderlyingId());
+  stop->set_status(proto::StrategyStatus::Stop);
+  Middleware::GetInstance()->Publish(stop);
   rb_.RemoveGatingSequence(&sequence_);
-  LOG_INF << boost::format("Device %1% was stopped(seq:%2%->%3%)") % strategy_->Name() % begin % next;
+  LOG_INF << boost::format("Device %1% was stopped(seq:%2%->%3%)") % name % begin % next;
 }

@@ -20,8 +20,8 @@ foreach(proto_file ${PROTO_FILES})
   list(APPEND CC_FILES ${file_cc})
   add_custom_command(
     OUTPUT ${file_h} ${file_cc}
-    COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/../3rd_library/protobuf/src/protoc
-    ARGS -I${CMAKE_CURRENT_SOURCE_DIR}/../3rd_library/protobuf/src --cpp_out . ${CMAKE_CURRENT_SOURCE_DIR}/${proto_file} --proto_path='${CMAKE_CURRENT_SOURCE_DIR}/../../share/msg'
+    COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/../../share/tools/protobuf/src/protoc
+    ARGS -I${CMAKE_CURRENT_SOURCE_DIR}/../../share/tools/protobuf/src --cpp_out . ${CMAKE_CURRENT_SOURCE_DIR}/${proto_file} --proto_path='${CMAKE_CURRENT_SOURCE_DIR}/../../share/msg'
     DEPENDS ${proto_file})
 endforeach()
 

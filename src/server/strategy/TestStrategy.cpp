@@ -16,6 +16,7 @@ void TestStrategy::OnStart()
   LOG_INF << "OnStart";
   api_ = ExchangeManager::GetInstance()->GetTraderApi();
   assert(api_);
+  orders_.clear();
 }
 
 void TestStrategy::OnStop()

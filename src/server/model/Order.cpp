@@ -72,10 +72,11 @@ std::shared_ptr<proto::Order> Order::Serialize() const
   ord->set_time_condition(static_cast<proto::TimeCondition>(time_condition));
   ord->set_type(static_cast<proto::OrderType>(type));
   ord->set_status(static_cast<proto::OrderStatus>(status));
-  google::protobuf::Timestamp *t = new google::protobuf::Timestamp;
-  t->set_seconds(header.time / 1000000);
-  t->set_nanos(header.time % 1000000 * 1000);
-  ord->set_allocated_time(t);
+  // google::protobuf::Timestamp *t = new google::protobuf::Timestamp;
+  // t->set_seconds(header.time / 1000000);
+  // t->set_nanos(header.time % 1000000 * 1000);
+  // ord->set_allocated_time(t);
+  ord->set_time(header.time);
   ord->set_latency(header.interval[2]);
   return ord;
 }
