@@ -3,9 +3,19 @@ package proto;
 
 // import "google/protobuf/timestamp.proto";
 
+enum ProcessorType
+{
+  Middleware = 0;
+  Monitor = 1;
+  Pricing = 2;
+  Strategy = 3;
+  GUI = 4;
+}
+
 message Heartbeat
 {
-  string name = 1;
-  uint64 time = 2;
+  ProcessorType type = 1;
+  string name = 2;
+  uint64 time = 3;
   // google.protobuf.Timestamp time = 2;
 }

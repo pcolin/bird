@@ -70,7 +70,7 @@ void Play()
   m->set_type(proto::Set);
   auto *s = m->add_statuses();
   s->set_name("test");
-  s->set_underlying("m1801");
+  s->set_underlying("m1809");
   s->set_status(proto::StrategyStatus::Play);
   m->set_user("pengchong");
   Send(m);
@@ -82,7 +82,7 @@ void Stop()
   m->set_type(proto::Set);
   auto *s = m->add_statuses();
   s->set_name("test");
-  s->set_underlying("m1801");
+  s->set_underlying("m1809");
   s->set_status(proto::StrategyStatus::Stop);
   m->set_user("pengchong");
   Send(m);

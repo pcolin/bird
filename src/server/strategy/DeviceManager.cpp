@@ -113,3 +113,18 @@ void DeviceManager::OnStrategyStatusReq(const std::shared_ptr<proto::StrategySta
   }
   if (publish) Publish(msg);
 }
+
+bool DeviceManager::IsStrategiesRunning() const
+{
+  int cnt = 0;
+  for (auto &it : devices_)
+  {
+    if (it.second->IsRunning())
+    {
+      ++cnt;
+      LOG_INF << it.second->Name() << " is running...";
+    }
+  }
+  LOG_INF << boost::format("%1% has %2% strategies running") % underlying_->Id() % cnt;
+  return cnt > 0;
+}

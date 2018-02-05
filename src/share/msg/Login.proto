@@ -1,13 +1,20 @@
 syntax = "proto3";
 package proto;
 
+enum Role
+{
+  Trader = 0;
+  Risk = 1;
+}
+
 message Login
 {
   string user = 1;
   string password = 2;
-  string version = 3;
-  string ip = 4;
-  string mac = 5;
+  Role role = 3;
+  string version = 4;
+  string ip = 5;
+  string mac = 6;
 }
 
 message LoginRep

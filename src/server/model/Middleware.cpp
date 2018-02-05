@@ -1,6 +1,7 @@
 #include "Middleware.h"
 #include "Message.h"
 #include "ProtoMessageDispatcher.h"
+#include "ClientManager.h"
 #include "ProductManager.h"
 #include "Strategy.pb.h"
 #include "base/logger/Logging.h"
@@ -33,18 +34,24 @@ void Middleware::Init()
 }
 
 ProtoMessagePtr Middleware::OnHeartbeat(const std::shared_ptr<proto::Heartbeat> &msg)
-{}
+{
+  if (msg->type() == proto::ProcessorType::GUI)
+  {
+    ClientManager::GetInstance()->OnHeartbeat(msg);
+    return nullptr;
+  }
+}
 
 ProtoMessagePtr Middleware::OnLogin(const std::shared_ptr<proto::Login> &msg)
 {
-  LOG_PUB << boost::format("%1% login") % msg->user();
-  return Message::NewProto<proto::LoginRep>();
+  LOG_INF << "User login : " << msg->ShortDebugString();
+  return ClientManager::GetInstance()->Login(msg);
 }
 
 ProtoMessagePtr Middleware::OnLogout(const std::shared_ptr<proto::Logout> &msg)
 {
-  LOG_PUB << boost::format("%1% logout") % msg->user();
-  return Message::NewProto<proto::LogoutRep>();
+  LOG_INF << "User logout : " << msg->ShortDebugString();
+  return ClientManager::GetInstance()->Logout(msg);
 }
 
 ProtoMessagePtr Middleware::OnStrategyStatusReq(const std::shared_ptr<proto::StrategyStatusReq> &msg)
@@ -75,9 +82,11 @@ void Middleware::RunTimer()
 {
   LOG_INF << "Start middleware timer...";
   auto heartbeat = Message::NewProto<proto::Heartbeat>();
+  heartbeat->set_type(proto::ProcessorType::Middleware);
   while (true)
   {
     ClusterManager::GetInstance()->OnHeartbeat(heartbeat);
+    ClientManager::GetInstance()->OnHeartbeat(heartbeat);
     std::this_thread::sleep_for(std::chrono::seconds(1));
   }
 }

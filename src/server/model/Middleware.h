@@ -21,6 +21,11 @@ public:
     proto_messages_.enqueue(msg);
   }
 
+  template<class RequestType, class ReplyType>
+  std::shared_ptr<ReplyType> Request(const std::shared_ptr<RequestType> &request)
+  {
+    /// to be done. request to db...
+  }
   // template<class Type> void Publish(const std::shared_ptr<Type> &msg)
   // {
   //   ProtoMessagePtr pmp(Type::Serialize(msg));

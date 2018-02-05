@@ -23,6 +23,9 @@ public:
   void OnHeartbeat(const std::shared_ptr<proto::Heartbeat> &heartbeat);
   void OnCash(const std::shared_ptr<proto::Cash> &cash);
 
+  bool IsStrategiesRunning() const;
+  void StopAll();
+
 private:
   ClusterManager();
 

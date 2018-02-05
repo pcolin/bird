@@ -77,11 +77,29 @@ void ClusterManager::OnCash(const std::shared_ptr<proto::Cash> &cash)
   if (!cash->is_enough())
   {
     LOG_ERR << "Cash isn't enough, stop all strategies...";
-    for (auto &it : devices_)
-    {
-      it.second->StopAll();
-    }
+    StopAll();
   }
   CashManager::GetInstance()->OnCash(cash);
   Middleware::GetInstance()->Publish(cash);
+}
+
+bool ClusterManager::IsStrategiesRunning() const
+{
+  bool ret = false;
+  for (auto &it : devices_)
+  {
+    if (it.second->IsStrategiesRunning())
+    {
+      ret = true;
+    }
+  }
+  return ret;
+}
+
+void ClusterManager::StopAll()
+{
+  for (auto &it : devices_)
+  {
+    it.second->StopAll();
+  }
 }

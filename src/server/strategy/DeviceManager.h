@@ -39,6 +39,8 @@ public:
 
   void OnStrategyStatusReq(const std::shared_ptr<proto::StrategyStatusReq> &msg);
 
+  bool IsStrategiesRunning() const;
+
 private:
   const Instrument *underlying_;
 
