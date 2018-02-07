@@ -3,6 +3,6 @@ package proto;
 
 message Reply
 {
-  bool result;
-  string error;
+  bool result = 1;
+  string error = 2;
 }

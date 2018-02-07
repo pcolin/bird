@@ -1,0 +1,38 @@
+﻿<Window x:Class="client.Views.LoginWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Icon="/Images/bird_32x32.ico"
+        Title="Login" Height="200" Width="300">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="*"></RowDefinition>
+            <RowDefinition Height="*"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition></ColumnDefinition>
+            <ColumnDefinition></ColumnDefinition>
+            <ColumnDefinition></ColumnDefinition>
+            <ColumnDefinition></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+        <CheckBox Grid.Column="0" Margin="5" IsChecked="{Binding IsExchange1Selected, Mode=TwoWay}">
+            <TextBlock Text="{Binding Exchange1}" />
+        </CheckBox>
+        <CheckBox Grid.Column="1" Margin="5" IsChecked="{Binding IsExchange2Selected, Mode=TwoWay}">
+            <TextBlock Text="{Binding Exchange2}" />
+        </CheckBox>
+        <CheckBox Grid.Column="2" Margin="5" IsChecked="{Binding IsExchange3Selected, Mode=TwoWay}">
+            <TextBlock Text="{Binding Exchange3}" />
+        </CheckBox>
+        <CheckBox Grid.Column="3" Margin="5" IsChecked="{Binding IsExchange4Selected, Mode=TwoWay}">
+            <TextBlock Text="{Binding Exchange4}" />
+        </CheckBox>
+        <TextBlock Grid.Row="1" Grid.Column="1" Margin="5" VerticalAlignment="Bottom">User:</TextBlock>
+        <TextBox Grid.Row="1" Grid.Column="2" Margin="5" VerticalAlignment="Bottom" Text="{Binding User, Mode=TwoWay}"></TextBox>
+        <TextBlock Grid.Row="2" Grid.Column="1" Margin="5">Password:</TextBlock>
+        <TextBox Grid.Row="2" Grid.Column="2" Margin="5" VerticalAlignment="Top" Text="{Binding Password,Mode=TwoWay}"></TextBox>
+        <Button Grid.Row="3" Grid.Column="2" Margin="5" IsDefault="True" Command="{Binding LoginCommand}">Login</Button>
+        <Button Grid.Row="3" Grid.Column="3" Margin="5" IsCancel="True">Exit</Button>
+    </Grid>
+</Window>
