@@ -20,8 +20,8 @@ public:
   DeviceManager* AddDevice(const Instrument *underlying);
   DeviceManager* FindDevice(const Instrument *underlying) const;
 
-  void OnHeartbeat(const std::shared_ptr<proto::Heartbeat> &heartbeat);
-  void OnCash(const std::shared_ptr<proto::Cash> &cash);
+  void OnHeartbeat(const std::shared_ptr<Proto::Heartbeat> &heartbeat);
+  void OnCash(const std::shared_ptr<Proto::Cash> &cash);
 
   bool IsStrategiesRunning() const;
   void StopAll();

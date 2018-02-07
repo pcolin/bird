@@ -83,7 +83,7 @@ std::shared_ptr<StrategyDevice> DeviceManager::FindStrategyDevice(const std::str
   return it != devices_.end() ? it->second : nullptr;
 }
 
-void DeviceManager::OnStrategyStatusReq(const std::shared_ptr<proto::StrategyStatusReq> &msg)
+void DeviceManager::OnStrategyStatusReq(const std::shared_ptr<Proto::StrategyStatusReq> &msg)
 {
   bool publish = false;
   for (auto &s : msg->statuses())
@@ -93,23 +93,23 @@ void DeviceManager::OnStrategyStatusReq(const std::shared_ptr<proto::StrategySta
     {
       if (sd->IsRunning())
       {
-        if (s.status() == proto::StrategyStatus::Stop)
+        if (s.status() == Proto::StrategyStatus::Stop)
         {
           sd->Stop();
         }
-        else if (s.status() == proto::StrategyStatus::Play)
+        else if (s.status() == Proto::StrategyStatus::Play)
         {
           publish = true;
         }
       }
-      else if (s.status() == proto::StrategyStatus::Play)
+      else if (s.status() == Proto::StrategyStatus::Play)
       {
         sd->Start();
         publish = true;
       }
     }
     LOG_PUB << boost::format("%1% set %2% : %3%") % msg->user() % s.name() %
-      proto::StrategyStatus::Status_Name(s.status());
+      Proto::StrategyStatus::Status_Name(s.status());
   }
   if (publish) Publish(msg);
 }

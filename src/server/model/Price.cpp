@@ -10,9 +10,9 @@ std::string Price::Dump() const
     % ask_volume % volume).str();
 }
 
-std::shared_ptr<proto::Price> Price::Serialize() const
+std::shared_ptr<Proto::Price> Price::Serialize() const
 {
-  auto p = Message::NewProto<proto::Price>();
+  auto p = Message::NewProto<Proto::Price>();
   p->set_instrument(instrument->Id());
   p->set_last(last);
   p->set_bid(bid);

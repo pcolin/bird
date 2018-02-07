@@ -36,7 +36,7 @@ protected:
   ProtoMessageDispatcher<bool> dispatcher_;
 
 private:
-  bool OnHeartbeat(const std::shared_ptr<proto::Heartbeat> &heartbeat);
+  bool OnHeartbeat(const std::shared_ptr<Proto::Heartbeat> &heartbeat);
 
   class EventVisitor : public boost::static_visitor<void>
   {

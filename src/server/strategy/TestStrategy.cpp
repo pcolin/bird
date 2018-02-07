@@ -7,7 +7,7 @@
 TestStrategy::TestStrategy(const std::string &name, DeviceManager *dm)
   : Strategy(name, dm)
 {
-  dispatcher_.RegisterCallback<proto::StrategyStatusReq>(
+  dispatcher_.RegisterCallback<Proto::StrategyStatusReq>(
       std::bind(&TestStrategy::OnStrategyStatusReq, this, std::placeholders::_1));
 }
 
@@ -81,11 +81,11 @@ void TestStrategy::OnTrade(const TradePtr &trade)
   LOG_INF << "OnTrade: " << trade->Dump();
 }
 
-bool TestStrategy::OnStrategyStatusReq(const std::shared_ptr<proto::StrategyStatusReq> &msg)
+bool TestStrategy::OnStrategyStatusReq(const std::shared_ptr<Proto::StrategyStatusReq> &msg)
 {
   for (auto &s : msg->statuses())
   {
-    if (s.name() == Name() && s.status() == proto::StrategyStatus::Play)
+    if (s.name() == Name() && s.status() == Proto::StrategyStatus::Play)
     {
       // LOG_PUB << boost::format("%1% played %2%") % msg->user() % s.name();
     }

@@ -54,9 +54,9 @@ std::string Order::Dump() const
   return ss.str();
 }
 
-std::shared_ptr<proto::Order> Order::Serialize() const
+std::shared_ptr<Proto::Order> Order::Serialize() const
 {
-  std::shared_ptr<proto::Order> ord = Message::NewProto<proto::Order>();
+  std::shared_ptr<Proto::Order> ord = Message::NewProto<Proto::Order>();
   ord->set_id(id);
   ord->set_instrument(instrument->Id());
   ord->set_counter_id(counter_id);
@@ -66,12 +66,12 @@ std::shared_ptr<proto::Order> Order::Serialize() const
   ord->set_avg_executed_price(avg_executed_price);
   ord->set_volume(volume);
   ord->set_executed_volume(executed_volume);
-  // static proto::Side sides[] = { proto::Buy, proto::Sell, proto::BuyCover };
+  // static Proto::Side sides[] = { Proto::Buy, Proto::Sell, Proto::BuyCover };
   // ord->set_side(sides[static_cast<int>(side)]);
-  ord->set_side(static_cast<proto::Side>(side));
-  ord->set_time_condition(static_cast<proto::TimeCondition>(time_condition));
-  ord->set_type(static_cast<proto::OrderType>(type));
-  ord->set_status(static_cast<proto::OrderStatus>(status));
+  ord->set_side(static_cast<Proto::Side>(side));
+  ord->set_time_condition(static_cast<Proto::TimeCondition>(time_condition));
+  ord->set_type(static_cast<Proto::OrderType>(type));
+  ord->set_status(static_cast<Proto::OrderStatus>(status));
   // google::protobuf::Timestamp *t = new google::protobuf::Timestamp;
   // t->set_seconds(header.time / 1000000);
   // t->set_nanos(header.time % 1000000 * 1000);

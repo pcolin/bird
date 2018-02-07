@@ -15,6 +15,7 @@
 #include "reqrep.h"
 
 #include <boost/format.hpp>
+#include <sstream>
 
 Middleware* Middleware::GetInstance()
 {
@@ -33,30 +34,30 @@ void Middleware::Init()
   responder_ = std::make_unique<std::thread>(std::bind(&Middleware::RunResponder, this));
 }
 
-ProtoMessagePtr Middleware::OnHeartbeat(const std::shared_ptr<proto::Heartbeat> &msg)
+ProtoMessagePtr Middleware::OnHeartbeat(const std::shared_ptr<Proto::Heartbeat> &msg)
 {
-  if (msg->type() == proto::ProcessorType::GUI)
+  if (msg->type() == Proto::ProcessorType::GUI)
   {
     ClientManager::GetInstance()->OnHeartbeat(msg);
     return nullptr;
   }
 }
 
-ProtoMessagePtr Middleware::OnLogin(const std::shared_ptr<proto::Login> &msg)
+ProtoMessagePtr Middleware::OnLogin(const std::shared_ptr<Proto::Login> &msg)
 {
   LOG_INF << "User login : " << msg->ShortDebugString();
   return ClientManager::GetInstance()->Login(msg);
 }
 
-ProtoMessagePtr Middleware::OnLogout(const std::shared_ptr<proto::Logout> &msg)
+ProtoMessagePtr Middleware::OnLogout(const std::shared_ptr<Proto::Logout> &msg)
 {
   LOG_INF << "User logout : " << msg->ShortDebugString();
   return ClientManager::GetInstance()->Logout(msg);
 }
 
-ProtoMessagePtr Middleware::OnStrategyStatusReq(const std::shared_ptr<proto::StrategyStatusReq> &msg)
+ProtoMessagePtr Middleware::OnStrategyStatusReq(const std::shared_ptr<Proto::StrategyStatusReq> &msg)
 {
-  if (msg->type() == proto::RequestType::Set)
+  if (msg->type() == Proto::RequestType::Set)
   {
     for (auto &status : msg->statuses())
     {
@@ -75,14 +76,14 @@ ProtoMessagePtr Middleware::OnStrategyStatusReq(const std::shared_ptr<proto::Str
       }
     }
   }
-  return Message::NewProto<proto::StrategyStatusRep>();
+  return Message::NewProto<Proto::StrategyStatusRep>();
 }
 
 void Middleware::RunTimer()
 {
   LOG_INF << "Start middleware timer...";
-  auto heartbeat = Message::NewProto<proto::Heartbeat>();
-  heartbeat->set_type(proto::ProcessorType::Middleware);
+  auto heartbeat = Message::NewProto<Proto::Heartbeat>();
+  heartbeat->set_type(Proto::ProcessorType::Middleware);
   while (true)
   {
     ClusterManager::GetInstance()->OnHeartbeat(heartbeat);
@@ -150,13 +151,13 @@ void Middleware::RunResponder()
     return;
   }
   ProtoMessageDispatcher<ProtoMessagePtr> dispatcher;
-  dispatcher.RegisterCallback<proto::Heartbeat>(
+  dispatcher.RegisterCallback<Proto::Heartbeat>(
     std::bind(&Middleware::OnHeartbeat, this, std::placeholders::_1));
-  dispatcher.RegisterCallback<proto::Login>(
+  dispatcher.RegisterCallback<Proto::Login>(
     std::bind(&Middleware::OnLogin, this, std::placeholders::_1));
-  dispatcher.RegisterCallback<proto::Logout>(
+  dispatcher.RegisterCallback<Proto::Logout>(
     std::bind(&Middleware::OnLogout, this, std::placeholders::_1));
-  dispatcher.RegisterCallback<proto::StrategyStatusReq>(
+  dispatcher.RegisterCallback<Proto::StrategyStatusReq>(
     std::bind(&Middleware::OnStrategyStatusReq, this, std::placeholders::_1));
   size_t n = 64;
   char *send_buf = new char[n];
@@ -168,6 +169,15 @@ void Middleware::RunResponder()
     {
       LOG_ERR << "Failed to receive message: " << nn_strerror(nn_errno());
       continue;
+    }
+    else
+    {
+      std::ostringstream oss;
+      for (int i = 0; i < recv_bytes; ++i)
+      {
+        oss << (int)recv_buf[i] << "|" << recv_buf[i] << " ";
+      }
+      LOG_INF << boost::format("Success to receive %1% bytes : (%2%)") % recv_bytes % oss.str();
     }
     std::shared_ptr<google::protobuf::Message> msg(base::DecodeProtoMessage(recv_buf, recv_bytes));
     if (msg)

@@ -14,12 +14,12 @@ std::string Trade::Dump() const
       volume % price).str();
 }
 
-std::shared_ptr<proto::Trade> Trade::Serialize() const
+std::shared_ptr<Proto::Trade> Trade::Serialize() const
 {
-  auto t = Message::NewProto<proto::Trade>();
+  auto t = Message::NewProto<Proto::Trade>();
   t->set_id(id);
   t->set_instrument(instrument->Id());
-  t->set_side(static_cast<proto::Side>(side));
+  t->set_side(static_cast<Proto::Side>(side));
   t->set_price(price);
   t->set_volume(volume);
   // google::protobuf::Timestamp *tm = new google::protobuf::Timestamp;

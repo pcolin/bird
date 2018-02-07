@@ -48,42 +48,43 @@ void Send(const std::shared_ptr<google::protobuf::Message> &msg)
 
 void Login()
 {
-  auto m = Message::NewProto<proto::Login>();
+  auto m = Message::NewProto<Proto::Login>();
   m->set_user("pengchong");
   m->set_password("pengchong");
-  m->set_version("0.0.2");
+  m->set_role(Proto::Role::Trader);
   m->set_ip("172.28.1.53");
-  m->set_mac("50:65:f3:40:1d:f8");
+  m->set_mac("5065f3401df8");
+  m->set_version("0.0.1");
   Send(m);
 }
 
 void Logout()
 {
-  auto m = Message::NewProto<proto::Logout>();
+  auto m = Message::NewProto<Proto::Logout>();
   m->set_user("pengchong");
   Send(m);
 }
 
 void Play()
 {
-  auto m = Message::NewProto<proto::StrategyStatusReq>();
-  m->set_type(proto::Set);
+  auto m = Message::NewProto<Proto::StrategyStatusReq>();
+  m->set_type(Proto::Set);
   auto *s = m->add_statuses();
   s->set_name("test");
   s->set_underlying("m1809");
-  s->set_status(proto::StrategyStatus::Play);
+  s->set_status(Proto::StrategyStatus::Play);
   m->set_user("pengchong");
   Send(m);
 }
 
 void Stop()
 {
-  auto m = Message::NewProto<proto::StrategyStatusReq>();
-  m->set_type(proto::Set);
+  auto m = Message::NewProto<Proto::StrategyStatusReq>();
+  m->set_type(Proto::Set);
   auto *s = m->add_statuses();
   s->set_name("test");
   s->set_underlying("m1809");
-  s->set_status(proto::StrategyStatus::Stop);
+  s->set_status(Proto::StrategyStatus::Stop);
   m->set_user("pengchong");
   Send(m);
 }
@@ -97,7 +98,8 @@ int main(int argc, char *argv[])
     cout << "Failed to create socket" << endl;
     return -1;
   }
-  if (nn_connect(sock, "ipc:///tmp/reqrep.ipc") < 0)
+  // if (nn_connect(sock, "ipc:///tmp/reqrep.ipc") < 0)
+  if (nn_connect(sock, "tcp://172.28.1.53:8005") < 0)
   {
     cout << "Failed to connect socket" << endl;
     return -1;

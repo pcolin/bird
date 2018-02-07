@@ -5,7 +5,7 @@
 #include "Instrument.h"
 #include <memory>
 
-namespace proto
+namespace Proto
 {
   class Price;
 }
@@ -29,7 +29,7 @@ struct Price
   base::VolumeType volume = base::VOLUME_UNDEFINED;
 
   std::string Dump() const;
-  std::shared_ptr<proto::Price> Serialize() const;
+  std::shared_ptr<Proto::Price> Serialize() const;
 };
 
 typedef std::shared_ptr<Price> PricePtr;
