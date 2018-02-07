@@ -60,12 +60,12 @@ int main(int argc, char *argv[])
     return -1;
   }
 
-  auto *heartbeat = new proto::Heartbeat();
-  auto *info = new proto::ServerInfo();
-  auto *price = new proto::Price();
-  auto *order = new proto::Order();
-  auto *trade = new proto::Trade();
-  auto *cash = new proto::Cash();
+  auto *heartbeat = new Proto::Heartbeat();
+  auto *info = new Proto::ServerInfo();
+  auto *price = new Proto::Price();
+  auto *order = new Proto::Order();
+  auto *trade = new Proto::Trade();
+  auto *cash = new Proto::Cash();
 
   while (true)
   {

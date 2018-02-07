@@ -64,7 +64,7 @@ DeviceManager* ClusterManager::FindDevice(const Instrument *underlying) const
   return nullptr;
 }
 
-void ClusterManager::OnHeartbeat(const std::shared_ptr<proto::Heartbeat> &heartbeat)
+void ClusterManager::OnHeartbeat(const std::shared_ptr<Proto::Heartbeat> &heartbeat)
 {
   for (auto &it : devices_)
   {
@@ -72,7 +72,7 @@ void ClusterManager::OnHeartbeat(const std::shared_ptr<proto::Heartbeat> &heartb
   }
 }
 
-void ClusterManager::OnCash(const std::shared_ptr<proto::Cash> &cash)
+void ClusterManager::OnCash(const std::shared_ptr<Proto::Cash> &cash)
 {
   if (!cash->is_enough())
   {

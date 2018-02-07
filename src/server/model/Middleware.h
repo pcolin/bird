@@ -35,10 +35,10 @@ public:
 
 private:
   Middleware();
-  ProtoMessagePtr OnHeartbeat(const std::shared_ptr<proto::Heartbeat> &msg);
-  ProtoMessagePtr OnLogin(const std::shared_ptr<proto::Login> &msg);
-  ProtoMessagePtr OnLogout(const std::shared_ptr<proto::Logout> &msg);
-  ProtoMessagePtr OnStrategyStatusReq(const std::shared_ptr<proto::StrategyStatusReq> &msg);
+  ProtoMessagePtr OnHeartbeat(const std::shared_ptr<Proto::Heartbeat> &msg);
+  ProtoMessagePtr OnLogin(const std::shared_ptr<Proto::Login> &msg);
+  ProtoMessagePtr OnLogout(const std::shared_ptr<Proto::Logout> &msg);
+  ProtoMessagePtr OnStrategyStatusReq(const std::shared_ptr<Proto::StrategyStatusReq> &msg);
 
   void RunTimer();
   void RunPublisher();

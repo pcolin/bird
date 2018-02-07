@@ -10,7 +10,7 @@ public:
   static CashManager* GetInstance();
   ~CashManager() {}
 
-  void OnCash(const std::shared_ptr<proto::Cash> &cash);
+  void OnCash(const std::shared_ptr<Proto::Cash> &cash);
 
 private:
   CashManager() {}

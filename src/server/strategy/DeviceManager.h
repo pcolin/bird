@@ -37,7 +37,7 @@ public:
   // void Publish(std::shared_ptr<Price> &price);
   std::shared_ptr<StrategyDevice> FindStrategyDevice(const std::string &name) const;
 
-  void OnStrategyStatusReq(const std::shared_ptr<proto::StrategyStatusReq> &msg);
+  void OnStrategyStatusReq(const std::shared_ptr<Proto::StrategyStatusReq> &msg);
 
   bool IsStrategiesRunning() const;
 

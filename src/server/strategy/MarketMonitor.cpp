@@ -18,7 +18,7 @@ MarketMonitor::MarketMonitor(const std::string &name, DeviceManager *dm)
   und_price_time_ = tv.tv_sec;
   opt_price_time_ = tv.tv_sec;
 
-  dispatcher_.RegisterCallback<proto::Position>(
+  dispatcher_.RegisterCallback<Proto::Position>(
       std::bind(&MarketMonitor::OnPosition, this, std::placeholders::_1));
 }
 
@@ -87,7 +87,7 @@ void MarketMonitor::OnLastEvent()
   }
 }
 
-bool MarketMonitor::OnPosition(const std::shared_ptr<proto::Position> &position)
+bool MarketMonitor::OnPosition(const std::shared_ptr<Proto::Position> &position)
 {
   LOG_INF << "Position: " << position->ShortDebugString();
   PositionManager::GetInstance()->UpdatePosition(position);

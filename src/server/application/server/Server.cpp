@@ -31,9 +31,9 @@ int main(int argc, char *args[])
         EnvConfig::GetInstance()->GetInt32(EnvVar::LOGGING_LEVEL)));
   Logger::SetNetOutput([](Logger::LogLevel lvl, const char *data, int n)
       {
-        auto info = Message::NewProto<proto::ServerInfo>();
+        auto info = Message::NewProto<Proto::ServerInfo>();
         info->set_info(data, n);
-        info->set_type(static_cast<proto::ServerInfo::Type>(lvl - Logger::PUBLISH));
+        info->set_type(static_cast<Proto::ServerInfo::Type>(lvl - Logger::PUBLISH));
         info->set_time(time(NULL));
         Middleware::GetInstance()->Publish(info);
       });
