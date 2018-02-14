@@ -1,5 +1,6 @@
 set(PROTO_FILES
   ../../share/msg/Heartbeat.proto
+  ../../share/msg/Reply.proto
   ../../share/msg/Login.proto
   ../../share/msg/Server.proto
   ../../share/msg/Cash.proto

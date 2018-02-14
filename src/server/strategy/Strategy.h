@@ -3,7 +3,7 @@
 
 #include "DeviceManager.h"
 #include "Heartbeat.pb.h"
-#include "model/ProtoMessageDispatcher.h"
+#include "base/common/ProtoMessageDispatcher.h"
 
 class Strategy
 {
@@ -33,7 +33,7 @@ protected:
 
   const std::string name_;
   DeviceManager *dm_;
-  ProtoMessageDispatcher<bool> dispatcher_;
+  base::ProtoMessageDispatcher<bool> dispatcher_;
 
 private:
   bool OnHeartbeat(const std::shared_ptr<Proto::Heartbeat> &heartbeat);

@@ -13,25 +13,36 @@ ClientManager* ClientManager::GetInstance()
   return &manager;
 }
 
-std::shared_ptr<Proto::LoginRep> ClientManager::Login(const std::shared_ptr<Proto::Login> &login)
+std::shared_ptr<Proto::Reply> ClientManager::Login(const std::shared_ptr<Proto::Login> &login)
 {
   std::string server_version = (boost::format("%1%.%2%") % base::VER_MAJOR % base::VER_MINOR).str();
   const std::string &client_version = login->version();
   assert(client_version.size() > server_version.size());
-  auto reply = Message::NewProto<Proto::LoginRep>();
+  auto reply = Message::NewProto<Proto::Reply>();
   reply->set_result(true);
   for (int i = server_version.size() - 1; i >= 0 ; --i)
   {
     if (server_version[i] != client_version[i])
     {
+      const std::string err = (boost::format("Version mismatch: Server(%1%.%2%), Client(%3%)") %
+          server_version % base::VER_PATCH % client_version).str();
+      LOG_ERR << boost::format("%1% login failed: %2%") % login->user() % err;
       reply->set_result(false);
-      reply->set_error((boost::format("Version mismatch: Server(%1%.%2%), Client(%3%)") %
-          server_version % base::VER_PATCH % client_version).str());
+      reply->set_error(err);
       return reply;
     }
   }
-  // auto reply = Middleware::GetInstance()->Request<Proto::Login, Proto::LoginRep>(login);
-  // reply->set_error("Not implement");
+  auto r = std::dynamic_pointer_cast<Proto::Reply>(Middleware::GetInstance()->Request(login));
+  if (r)
+  {
+    reply->set_result(r->result());
+    reply->set_error(r->error());
+  }
+  else
+  {
+    reply->set_result(false);
+    reply->set_error("Can't access db");
+  }
   if (reply->result())
   {
     bool success = false;
@@ -57,10 +68,10 @@ std::shared_ptr<Proto::LoginRep> ClientManager::Login(const std::shared_ptr<Prot
   return reply;
 }
 
-std::shared_ptr<Proto::LogoutRep> ClientManager::Logout(const std::shared_ptr<Proto::Logout> &logout)
+std::shared_ptr<Proto::Reply> ClientManager::Logout(const std::shared_ptr<Proto::Logout> &logout)
 {
   bool success = false;
-  auto reply = Message::NewProto<Proto::LogoutRep>();
+  auto reply = Message::NewProto<Proto::Reply>();
   const std::string &user = logout->user();
   {
     std::lock_guard<std::mutex> lck(mtx_);
