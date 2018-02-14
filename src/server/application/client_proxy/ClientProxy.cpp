@@ -87,12 +87,12 @@ int main(int argc, char *argv[])
         LOG_ERR << boost::format("Failed to publish message(%1% != %2%): %3%") % recv_bytes %
           send_bytes % nn_strerror(nn_errno());
       }
-      nn_freemsg(buf);
     }
     else
     {
       LOG_ERR << "Failed to decode proto message";
     }
+    nn_freemsg(buf);
   }
   delete heartbeat;
   delete info;

@@ -2,6 +2,7 @@
 #define MODEL_CLIENT_MANAGER_H
 
 #include "Login.pb.h"
+#include "Reply.pb.h"
 #include "Heartbeat.pb.h"
 #include <unordered_map>
 #include <mutex>
@@ -14,8 +15,8 @@ public:
   static ClientManager* GetInstance();
   ~ClientManager() {}
 
-  std::shared_ptr<Proto::LoginRep> Login(const std::shared_ptr<Proto::Login> &login);
-  std::shared_ptr<Proto::LogoutRep> Logout(const std::shared_ptr<Proto::Logout> &logout);
+  std::shared_ptr<Proto::Reply> Login(const std::shared_ptr<Proto::Login> &login);
+  std::shared_ptr<Proto::Reply> Logout(const std::shared_ptr<Proto::Logout> &logout);
 
   void OnHeartbeat(const std::shared_ptr<Proto::Heartbeat> &heartbeat);
 

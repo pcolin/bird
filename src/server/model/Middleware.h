@@ -2,14 +2,24 @@
 #define MODEL_MIDDLEWARE_H
 
 #include "base/concurrency/blockingconcurrentqueue.h"
+#include "base/logger/Logging.h"
+#include "base/common/ProtoMessageCoder.h"
+#include "base/common/ProtoMessageDispatcher.h"
+#include "config/EnvConfig.h"
 #include "Heartbeat.pb.h"
 #include "Login.pb.h"
+#include "Reply.pb.h"
 #include "Strategy.pb.h"
+
+#include "nn.h"
+#include "reqrep.h"
+
 #include <thread>
 
 class Middleware
 {
-  typedef std::shared_ptr<google::protobuf::Message> ProtoMessagePtr;
+  // typedef std::shared_ptr<google::protobuf::Message> ProtoMessagePtr;
+  typedef std::shared_ptr<Proto::Reply> ProtoReplyPtr;
 public:
   static Middleware* GetInstance();
   ~Middleware() {}
@@ -21,11 +31,60 @@ public:
     proto_messages_.enqueue(msg);
   }
 
-  template<class RequestType, class ReplyType>
-  std::shared_ptr<ReplyType> Request(const std::shared_ptr<RequestType> &request)
-  {
-    /// to be done. request to db...
-  }
+  base::ProtoMessagePtr Request(const base::ProtoMessagePtr &req);
+
+  // template<class RequestType, class ReplyType>
+  // std::shared_ptr<ReplyType> Request(const std::shared_ptr<RequestType> &request)
+  // {
+  //   int req = nn_socket(AF_SP, NN_REQ);
+  //   if (req < 0)
+  //   {
+  //     LOG_ERR << "Failed to create req socket: " << nn_strerror(nn_errno());
+  //     return nullptr;
+  //   }
+  //   const std::string addr = EnvConfig::GetInstance()->GetString(EnvVar::REQ_ADDR);
+  //   if (nn_connect(req, addr.c_str()) < 0)
+  //   {
+  //     LOG_ERR << "Failed to connect req socket: " << nn_strerror(nn_errno());
+  //     nn_close(req);
+  //     return nullptr;
+  //   }
+
+  //   size_t n;
+  //   char *buffer = base::EncodeProtoMessage(*request, n);
+  //   if (buffer)
+  //   {
+  //     if (nn_send(req, buffer, n, 0) < 0)
+  //     {
+  //       LOG_ERR << "Failed to send message: " << nn_strerror(nn_errno());
+  //       delete[] buffer;
+  //       return nullptr;
+  //     }
+  //     delete[] buffer;
+
+  //     void *msg = NULL;
+  //     int rc = nn_recv(req, &msg, NN_MSG, 0);
+  //     if (rc > 0)
+  //     {
+  //       auto *reply = base::DecodeProtoMessage(msg, rc);
+  //       if (reply)
+  //       {
+  //         return std::shared_ptr<ReplyType>(dynamic_cast<ReplyType>(reply));
+  //       }
+  //       nn_freemsg(msg);
+  //     }
+  //     else
+  //     {
+  //     }
+  //   }
+  //   else
+  //   {
+  //     LOG_ERR << "Failed to encode message";
+  //     nn_close(req);
+  //     return nullptr;
+  //   }
+  // }
+
   // template<class Type> void Publish(const std::shared_ptr<Type> &msg)
   // {
   //   ProtoMessagePtr pmp(Type::Serialize(msg));
@@ -35,10 +94,10 @@ public:
 
 private:
   Middleware();
-  ProtoMessagePtr OnHeartbeat(const std::shared_ptr<Proto::Heartbeat> &msg);
-  ProtoMessagePtr OnLogin(const std::shared_ptr<Proto::Login> &msg);
-  ProtoMessagePtr OnLogout(const std::shared_ptr<Proto::Logout> &msg);
-  ProtoMessagePtr OnStrategyStatusReq(const std::shared_ptr<Proto::StrategyStatusReq> &msg);
+  ProtoReplyPtr OnHeartbeat(const std::shared_ptr<Proto::Heartbeat> &msg);
+  ProtoReplyPtr OnLogin(const std::shared_ptr<Proto::Login> &msg);
+  ProtoReplyPtr OnLogout(const std::shared_ptr<Proto::Logout> &msg);
+  ProtoReplyPtr OnStrategyStatusReq(const std::shared_ptr<Proto::StrategyStatusReq> &msg);
 
   void RunTimer();
   void RunPublisher();
@@ -48,7 +107,7 @@ private:
   std::unique_ptr<std::thread> publisher_;
   std::unique_ptr<std::thread> responder_;
 
-  moodycamel::BlockingConcurrentQueue<ProtoMessagePtr> proto_messages_;
+  moodycamel::BlockingConcurrentQueue<base::ProtoMessagePtr> proto_messages_;
   static const size_t capacity_ = 1024;
 
 };
