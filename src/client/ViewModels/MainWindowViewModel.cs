@@ -1,5 +1,7 @@
 ﻿using client.Models;
+using Microsoft.Practices.Unity;
 using Prism.Commands;
+using Prism.Interactivity.InteractionRequest;
 using Prism.Mvvm;
 using System;
 using System.Collections.Generic;
@@ -27,10 +29,13 @@ namespace client.ViewModels
 
     class MainWindowViewModel : BindableBase
     {
+        public ICommand InitializeCommand { get; set; }
         public ICommand LoginCommand { get; set; }
         public ICommand LogoutCommand { get; set; }
 
-        private string version = "0.0.01";
+        public InteractionRequest<INotification> NotificationRequest { get; set; }
+
+        private string version = "0.2.01";
         public string Version
         {
             get { return version; }
@@ -181,28 +186,69 @@ namespace client.ViewModels
             set { SetProperty(ref user, value); }
         }
 
-        private string password;
+        private string password = "";
         public string Password
         {
             get { return password; }
             set { SetProperty(ref password, value); }
         }        
         
-        //public MainWindowViewModel(ServerConnector connector)
-        public MainWindowViewModel(IConnector connector)
+        public MainWindowViewModel(IUnityContainer container)
         {
             //LoginCommand = new DelegateCommand<object>(new Action<object>(this.LoginExecute), new Func<object, bool>(this.CanLogin));
+            InitializeCommand = new DelegateCommand(this.InitializeExecute);
             LoginCommand = new DelegateCommand(this.LoginExecute, this.CanLogin);
             LogoutCommand = new DelegateCommand(this.LogoutExecute, this.CanLogout);
-            this.connector = connector;
-            //this.connector.Initialize();
-        } 
+
+            NotificationRequest = new InteractionRequest<INotification>();
+            //this.serverService = service;
+            this.container = container;
+        }
+
+        private void InitializeExecute()
+        {
+            /// Load config from xml
+            //addresses = new Dictionary<Exchange, Tuple<string, string, string>>();
+            servers = new Dictionary<Exchange, ServerService>();
+            string server = "tcp://172.28.1.53:8001";
+            string database = "tcp://172.28.1.53:8002";
+            string proxy = "tcp://172.28.1.53:8003";
+            var service = new ServerService();
+            this.container.RegisterInstance<ServerService>(Exchange.DCE.ToString(), service);
+            service.Initialize(server);
+            servers.Add(Exchange1, service);
+
+
+            //proxyService = new ProxyService();
+            //this.container.RegisterInstance<ProxyService>(Exchange.DCE.ToString(), proxyService);
+            //proxyService.Initialize(proxy);
+        }
        
         private void LoginExecute()
         {
             if (IsExchange1Selected)
             {
-                Exchange1Status = ConnectStatus.Connected;
+                ServerService s = null;
+                if (this.servers.TryGetValue(Exchange1, out s))
+                {
+                    var r = s.Login(this.User, this.Password, this.Version);
+                    if (r != null)
+                    {
+                        if (r.Result)
+                        {
+                            Exchange1Status = ConnectStatus.Connected;
+                            s.Start();
+                        }
+                        else
+                        {
+                            NotificationRequest.Raise(new Notification { Content = r.Error, Title = "Login Failed" });
+                        }
+                    }
+                    else
+                    {
+                        NotificationRequest.Raise(new Notification { Content = "Login timeout", Title = "Login Failed" });
+                    }
+                }
             }
 
             if (IsExchange2Selected)
@@ -219,9 +265,6 @@ namespace client.ViewModels
             {
                 Exchange4Status = ConnectStatus.Connected;
             }
-
-            connector.Initialize();
-            connector.Login("pengchong", "pengchong");
         }
 
         private bool CanLogin()
@@ -231,7 +274,10 @@ namespace client.ViewModels
 
         private void LogoutExecute()
         {
-
+            foreach (var kvp in servers)
+            {
+                kvp.Value.Logout(this.User);
+            }
         }
 
         private bool CanLogout()
@@ -240,6 +286,8 @@ namespace client.ViewModels
                    Exchange3Status == ConnectStatus.Connected || exchange4Status == ConnectStatus.Connected;
         }
 
-        private IConnector connector;
+        IUnityContainer container;
+        private Dictionary<Exchange, ServerService> servers;
+        private Dictionary<Exchange, ProxyService> proxies;
     }
 }

@@ -23,7 +23,10 @@ namespace client
             base.ConfigureContainer();
 
             //this.Container.RegisterInstance<ServerConnector>(new ServerConnector());
-            this.Container.RegisterType<IConnector, ServerConnector>(new ContainerControlledLifetimeManager());
+            //this.Container.RegisterType<IConnector, ServerConnector>(new ContainerControlledLifetimeManager());
+            //this.Container.RegisterType<ISocket, ServerService>(new ContainerControlledLifetimeManager());
+            //this.Container.RegisterType<ISocket, ProxyService>(new ContainerControlledLifetimeManager());
+            //this.Container.RegisterInstance<ServerService>(new ServerService());
         }
     }
 }

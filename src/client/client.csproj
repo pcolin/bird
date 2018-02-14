@@ -115,7 +115,11 @@
     <Compile Include="Messages\Server.cs" />
     <Compile Include="Messages\Strategy.cs" />
     <Compile Include="Messages\Trade.cs" />
+    <Compile Include="Models\ISocket.cs" />
+    <Compile Include="Models\ProtoMessageCoder.cs" />
+    <Compile Include="Models\ProxyService.cs" />
     <Compile Include="Models\ServerConnector.cs" />
+    <Compile Include="Models\ServerService.cs" />
     <Compile Include="ViewModels\MainWindowViewModel.cs" />
     <Compile Include="ViewModels\OptionViewsWindowViewModel.cs" />
     <Compile Include="Views\LoginWindow.xaml.cs">
