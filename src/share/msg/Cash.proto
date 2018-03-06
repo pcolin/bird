@@ -1,15 +1,7 @@
 syntax = "proto3";
 package Proto;
 
-enum Currency
-{
-  CNY = 0;
-  HKD = 1;
-  USD = 2;
-  EUR = 3;
-  JPY = 4;
-  SGD = 5;
-}
+import "Currency.proto";
 
 message Cash
 {

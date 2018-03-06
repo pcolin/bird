@@ -2,7 +2,7 @@
 #include "Message.h"
 #include "ClientManager.h"
 #include "ProductManager.h"
-#include "Strategy.pb.h"
+#include "Instrument.pb.h"
 #include "strategy/DeviceManager.h"
 #include "strategy/ClusterManager.h"
 
@@ -180,8 +180,14 @@ void Middleware::RunPublisher()
         }
         else
         {
-          LOG_INF << "Success to publish message " << messages[i]->ShortDebugString();
+          LOG_INF << boost::format("Success to publish %1%: %2%") % messages[i]->GetTypeName() %
+            messages[i]->ShortDebugString();
         }
+      }
+      else
+      {
+        LOG_ERR << boost::format("Failed to encode %1%: %2%") % messages[i]->GetTypeName() %
+          messages[i]->ShortDebugString();
       }
     }
   }

@@ -1,5 +1,5 @@
-#ifndef DATABASED_DB_BASE_H_
-#define DATABASED_DB_BASE_H_
+#ifndef DATABASED_DB_BASE_H
+#define DATABASED_DB_BASE_H
 
 #include "base/common/ProtoMessageDispatcher.h"
 #include "sqlite3.h"
@@ -13,6 +13,14 @@ public:
   ~ConcurrentSqliteDB();
 
   bool ExecSql(const char *sql, void *data, sqlite3_callback cb);
+  void BeginTransaction()
+  {
+    sqlite3_exec(db_, "begin;", 0, 0, 0);
+  }
+  void CommitTransaction()
+  {
+    sqlite3_exec(db_, "commit;", 0, 0, 0);
+  }
 
 private:
   bool Open(const std::string &file);
@@ -35,6 +43,21 @@ protected:
   {
     return db_.ExecSql(sql, data, cb);
   }
+
+  class TransactionGuard
+  {
+  public:
+    TransactionGuard(DbBase *db) : db_(db)
+    {
+      db_->db_.BeginTransaction();
+    }
+    ~TransactionGuard()
+    {
+      db_->db_.CommitTransaction();
+    }
+  private:
+    DbBase *db_;
+  };
 
 private:
   virtual void RefreshCache() = 0;

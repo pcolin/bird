@@ -14,7 +14,7 @@ namespace base
 namespace detail
 {
 const char digits[] = "9876543210123456789";
-const char* zero = digits + 9;
+static const char* zero = digits + 9;
 static_assert(sizeof(digits) == 20, "");
 
 const char digitsHex[] = "0123456789ABCDEF";
@@ -44,7 +44,7 @@ size_t convert(char buf[], T value)
   return p - buf;
 }
 
-size_t convertHex(char buf[], uintptr_t value)
+static size_t convertHex(char buf[], uintptr_t value)
 {
   uintptr_t i = value;
   char* p = buf;

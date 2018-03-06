@@ -103,9 +103,9 @@ class CtpTraderSpi : public CThostFtdcTraderSpi
   public:
     static std::string GetInstrumentId(char *id, char *exchange);
   private:
-    Exchanges GetExchange(const char *exchange) const;
+    Proto::Exchange GetExchange(const char *exchange) const;
     // std::string GetInstrumentId(char* id, Exchanges exchange) const;
-    InstrumentStatus GetInstrumentStatus(TThostFtdcInstrumentStatusType status) const;
+    Proto::InstrumentStatus GetInstrumentStatus(TThostFtdcInstrumentStatusType status) const;
     void UpdateOrder(const char *exchange_id, base::VolumeType volume, OrderStatus status);
 
     CtpTraderApi *api_ = nullptr;

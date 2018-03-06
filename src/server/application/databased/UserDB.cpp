@@ -3,8 +3,6 @@
 #include "model/Message.h"
 #include "Reply.pb.h"
 
-// #include <string>
-
 UserDB::UserDB(ConcurrentSqliteDB &db, const std::string &table_name)
   : DbBase(db), table_name_(table_name)
 {}
@@ -23,7 +21,7 @@ void UserDB::RegisterCallback(base::ProtoMessageDispatcher<base::ProtoMessagePtr
   // dispatcher.RegisterCallback<Proto::Logout>(
   //   std::bind(&UserDB::OnLogout, this, std::placeholders::_1));
 }
- 
+
 base::ProtoMessagePtr UserDB::OnLogin(const std::shared_ptr<Proto::Login> &msg)
 {
   LOG_INF << "Login request: " << msg->ShortDebugString();

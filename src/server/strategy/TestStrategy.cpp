@@ -35,7 +35,7 @@ void TestStrategy::OnStop()
 void TestStrategy::OnPrice(const PricePtr &price)
 {
   LOG_INF << "OnPrice : " << price->Dump();
-  if (price->instrument->Type() == InstrumentType::Option)
+  if (price->instrument->Type() == Proto::InstrumentType::Option)
   {
     auto it = orders_.find(price->instrument);
     if (it != orders_.end())

@@ -1,6 +1,9 @@
 syntax = "proto3";
 package Proto;
 
+import "Request.proto";
+import "Reply.proto";
+
 message Position
 {
   string instrument = 1;
@@ -12,4 +15,20 @@ message Position
   int32 total_short = 5;
   int32 liquid_short = 6;
   int32 yesterday_short = 7;
+
+  uint64 time = 8;
+}
+
+message PositionReq
+{
+  RequestType type = 1;
+  string instrument = 2;
+  string user = 3;
+  repeated Position positions = 4;
+}
+
+message PositionRep
+{
+  Reply result = 1;
+  repeated Position positions = 2;
 }

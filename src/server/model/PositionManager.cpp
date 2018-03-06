@@ -1,5 +1,6 @@
 #include "PositionManager.h"
 #include "ProductManager.h"
+#include "Middleware.h"
 #include "base/logger/Logging.h"
 
 #include <boost/format.hpp>
@@ -35,6 +36,7 @@ bool PositionManager::TryFreeze(const OrderPtr &order)
       pos->set_liquid_short(pos->liquid_short() - order->volume);
       LOG_INF << boost::format("%1% short pos update: %2%(%3%)/%4%") % order->instrument->Id() %
         pos->liquid_short() % (pos->total_short() - pos->liquid_short()) % pos->total_short();
+      PublishPosition(pos);
       return true;
     }
   }
@@ -45,6 +47,7 @@ bool PositionManager::TryFreeze(const OrderPtr &order)
       pos->set_liquid_long(pos->liquid_long() - order->volume);
       LOG_INF << boost::format("%1% long pos update: %2%(%3%)/%4%") % order->instrument->Id() %
         pos->liquid_long() % (pos->total_long() - pos->liquid_long()) % pos->total_long();
+      PublishPosition(pos);
       return true;
     }
   }
@@ -71,6 +74,7 @@ void PositionManager::Release(const OrderPtr &order)
       LOG_INF << boost::format("%1% long pos update: %2%(%3%)/%4%") % order->instrument->Id() %
         pos->liquid_long() % (pos->total_long() - pos->liquid_long()) % pos->total_long();
     }
+    PublishPosition(pos);
   }
 }
 
@@ -87,6 +91,7 @@ void PositionManager::UpdatePosition(const PositionPtr &position)
     position->liquid_short() % pos->total_long() % pos->total_short() % position->total_long() %
     position->total_short() % position->yesterday_long() % position->yesterday_short();
   positions_[inst] = position;
+  PublishPosition(positions_[inst]);
 }
 
 void PositionManager::OnTrade(const TradePtr &trade)
@@ -120,4 +125,14 @@ void PositionManager::OnTrade(const TradePtr &trade)
     LOG_INF << boost::format("%1% long pos update: %2%(%3%)/%4%") % trade->instrument->Id() %
       pos->liquid_long() % (pos->total_long() - pos->liquid_long()) % pos->total_long();
   }
+  PublishPosition(pos);
+}
+
+void PositionManager::PublishPosition(PositionPtr &position)
+{
+  position->set_time(base::Now());
+  auto req = Message::NewProto<Proto::PositionReq>();
+  req->set_type(Proto::RequestType::Set);
+  req->add_positions()->CopyFrom(*position);
+  Middleware::GetInstance()->Publish(req);
 }

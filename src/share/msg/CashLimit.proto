@@ -1,0 +1,25 @@
+syntax = "proto3";
+package Proto;
+
+import "Exchange.proto";
+import "Request.proto";
+import "Reply.proto";
+
+message CashLimit 
+{
+  Exchange exchange = 1;
+  double limit = 2;
+}
+
+message CashLimitReq
+{
+  RequestType type = 1;
+  string user = 2;
+  repeated CashLimit limits = 3;
+}
+
+message CashLimitRep
+{
+  Reply result = 1;
+  repeated CashLimit limits = 2;
+}

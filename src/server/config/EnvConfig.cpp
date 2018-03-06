@@ -29,6 +29,7 @@ EnvConfig::EnvConfig()
     { static_cast<int8_t>(EnvVar::CONFIG_DB_FILE), "CONFIG_DB_FILE" },
     { static_cast<int8_t>(EnvVar::ORDER_DB_FILE), "ORDER_DB_FILE" },
     { static_cast<int8_t>(EnvVar::TRADE_DB_FILE), "TRADE_DB_FILE" },
+    { static_cast<int8_t>(EnvVar::DEL_EXPIRE_INST), "DEL_EXPIRE_INST" },
 
     /// Logging
     { static_cast<int8_t>(EnvVar::LOGGING_LEVEL), "LOGGING_LEVEL" },

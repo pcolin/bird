@@ -1,5 +1,5 @@
-#ifndef DATABASED_USER_DB_H_
-#define DATABASED_USER_DB_H_
+#ifndef DATABASED_USER_DB_H
+#define DATABASED_USER_DB_H
 
 #include "DbBase.h"
 #include "Login.pb.h"

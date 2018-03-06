@@ -19,6 +19,7 @@ enum class EnvVar : int8_t
   CONFIG_DB_FILE,
   ORDER_DB_FILE,
   TRADE_DB_FILE,
+  DEL_EXPIRE_INST,
 
   /// Logging
   LOGGING_LEVEL,

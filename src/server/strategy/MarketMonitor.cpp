@@ -53,7 +53,7 @@ void MarketMonitor::OnPrice(const PricePtr &price)
       dm_->GetUnderlying()->Id() % interval;
     und_price_time_ = now;
   }
-  if (price->instrument->Type() == InstrumentType::Option)
+  if (price->instrument->Type() == Proto::InstrumentType::Option)
   {
     opt_price_time_ = now;
   }

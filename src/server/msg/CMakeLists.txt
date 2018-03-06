@@ -1,9 +1,14 @@
 set(PROTO_FILES
   ../../share/msg/Heartbeat.proto
+  ../../share/msg/Request.proto
   ../../share/msg/Reply.proto
+  ../../share/msg/Exchange.proto
   ../../share/msg/Login.proto
   ../../share/msg/Server.proto
+  ../../share/msg/Currency.proto
+  ../../share/msg/Instrument.proto
   ../../share/msg/Cash.proto
+  ../../share/msg/CashLimit.proto
   ../../share/msg/Position.proto
   ../../share/msg/Price.proto
   ../../share/msg/Order.proto

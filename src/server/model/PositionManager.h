@@ -38,6 +38,8 @@ public:
 private:
   PositionManager() {}
 
+  void PublishPosition(PositionPtr &position);
+
   typedef std::unordered_map<const Instrument*, PositionPtr> PositionMap;
   PositionMap positions_;
   std::mutex mtx_;

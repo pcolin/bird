@@ -1,0 +1,80 @@
+syntax = "proto3";
+package Proto;
+
+import "Exchange.proto";
+import "Request.proto";
+import "Reply.proto";
+import "Currency.proto";
+
+enum InstrumentType
+{
+  Stock = 0;
+  Future = 1;
+  Option = 2;
+}
+
+enum InstrumentStatus
+{
+  Unkown = 0;
+  Closed = 1;
+  PreOpen = 2;
+  OpeningAuction = 3;
+  Trading = 4;
+  Fuse = 5;
+  Auction = 6;
+  ClosingAuction = 7;
+  Halt = 8;
+}
+
+enum OptionType
+{
+  Call = 0;
+  Put = 1;
+}
+
+enum ExerciseType
+{
+  European = 0;
+  American = 1;
+}
+
+enum SettlementType
+{
+  CashSettlement = 0;
+  PhysicalSettlement = 1;
+}
+
+message Instrument
+{
+  string id = 1;
+  string symbol = 2;
+  Exchange exchange = 3;
+  InstrumentType type = 4;
+  //InstrumentStatus status = 5;
+  Currency currency = 5;
+  string underlying = 6;
+  string hedge_underlying = 7;
+  double tick = 8;
+  double multiplier = 9;
+  double highest = 10;
+  double lowest = 11;
+  OptionType call_put = 12;
+  string maturity = 13;
+  ExerciseType exercise = 14;
+  SettlementType settlement = 15;
+  double strike = 16;
+}
+
+message InstrumentReq
+{
+  RequestType type = 1;
+  repeated Instrument instruments = 2;
+  Exchange exchange = 3;
+  string user = 4;
+}
+
+message InstrumentRep
+{
+  repeated Instrument instruments = 1;
+  Reply result = 2;
+}

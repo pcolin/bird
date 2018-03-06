@@ -2,6 +2,7 @@
 #define MODEL_MESSAGE_H
 
 #include "base/common/Types.h"
+#include "base/common/Time.h"
 #include "base/memory/MemoryPool.h"
 #include <mutex>
 #include <memory>
@@ -20,8 +21,8 @@ struct MsgHeader
   int64_t time;
 
   MsgHeader(MsgType t) : type(t) {}
-  void SetTime();
-  void SetInterval(int idx);
+  void SetTime() { time = base::Now(); }
+  void SetInterval(int idx) { interval[idx] = static_cast<int32_t>(base::Now() - time); }
 };
 
 template<class T>
@@ -82,6 +83,8 @@ public:
     static MessageFactory<T> factory;
     return factory.Allocate();
   }
+
+  // static int64_t GetTime();
 };
 
 #endif

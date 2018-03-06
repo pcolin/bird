@@ -5,6 +5,8 @@
 #include "base/logger/Logging.h"
 #include "config/EnvConfig.h"
 #include "UserDB.h"
+#include "InstrumentDB.h"
+#include "PositionDB.h"
 #include "Heartbeat.pb.h"
 #include "Server.pb.h"
 #include "Price.pb.h"
@@ -152,6 +154,12 @@ int main(int argc, char *argv[])
   UserDB user(config_db, "UserInfo");
   bool ok = user.Initialize(dispatcher);
 
+  InstrumentDB instrument(config_db, "Instrument");
+  ok = instrument.Initialize(dispatcher);
+
+  PositionDB position(config_db, "Position");
+  ok = position.Initialize(dispatcher);
+
   const int32_t capacity = 128;
   BlockingConcurrentQueue<std::tuple<google::protobuf::Message*, void*>> requests(capacity);
   std::thread rep_thread(ReplyRun, rep, std::ref(dispatcher), std::ref(requests));
@@ -159,6 +167,10 @@ int main(int argc, char *argv[])
   BlockingConcurrentQueue<ProtoMessagePtr> subscribes(capacity);
   std::thread sub_thread(SubscribeRun, sub, std::ref(dispatcher), std::ref(subscribes));
 
+  auto *heartbeat = new Proto::Heartbeat();
+  auto *info = new Proto::ServerInfo();
+  auto *price = new Proto::Price();
+  auto *cash = new Proto::Cash();
   while (true)
   {
     // nn_pollfd pfd[] = { {rep, NN_POLLIN, 0} };
@@ -217,4 +229,10 @@ int main(int argc, char *argv[])
 
   nn_close(rep);
   nn_close(sub);
+
+  delete heartbeat;
+  delete info;
+  delete price;
+  delete cash;
+  return 0;
 }

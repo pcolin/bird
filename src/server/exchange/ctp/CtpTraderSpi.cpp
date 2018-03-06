@@ -11,17 +11,15 @@
 #include "model/PositionManager.h"
 #include "model/OrderManager.h"
 #include "model/TradeManager.h"
+#include "model/Middleware.h"
 #include "strategy/DeviceManager.h"
 #include "strategy/ClusterManager.h"
 
 #include <boost/format.hpp>
 
-// using namespace base;
-
 CtpTraderSpi::CtpTraderSpi(CtpTraderApi* api) : api_(api)
 {
   base::CsvReader reader(EnvConfig::GetInstance()->GetString(EnvVar::CONFIG_FILE));
-  // auto &lines = reader.GetLines();
   for (auto& line : reader.GetLines())
   {
     config_[line[0]] = { line[1], line[2] };
@@ -110,7 +108,7 @@ void CtpTraderSpi::OnRspQryInstrument(CThostFtdcInstrumentField *pInstrument,
 
   static std::unordered_map<Option*, const std::string> options;
   static std::unordered_map<Future*, const std::string> futures;
-  Exchanges exchange = GetExchange(pInstrument->ExchangeID);
+  Proto::Exchange exchange = GetExchange(pInstrument->ExchangeID);
   // std::string id = GetInstrumentId(pInstrument->InstrumentID, pInstrument->ExchangeID);
   const std::string id = pInstrument->InstrumentID;
   Instrument* inst = nullptr;
@@ -122,6 +120,7 @@ void CtpTraderSpi::OnRspQryInstrument(CThostFtdcInstrumentField *pInstrument,
       Future *future = new Future();
       future->Id(id);
       future->Underlying(future);
+      future->Maturity(boost::gregorian::from_undelimited_string(pInstrument->ExpireDate)); /// DCE
       if (id == it->second.hedge_underlying)
       {
         future->HedgeUnderlying(future);
@@ -140,9 +139,11 @@ void CtpTraderSpi::OnRspQryInstrument(CThostFtdcInstrumentField *pInstrument,
     {
       Option* op = new Option();
       op->Id(id);
-      op->CallPut(pInstrument->OptionsType == THOST_FTDC_CP_CallOptions ? base::Call : base::Put);
+      op->CallPut(pInstrument->OptionsType == THOST_FTDC_CP_CallOptions ? Proto::Call : Proto::Put);
       op->Strike(pInstrument->StrikePrice);
-      op->SettlementType(base::PhysicalSettlement);
+      op->SettlementType(Proto::PhysicalSettlement);
+      op->ExerciseType(Proto::American);
+      op->Maturity(boost::gregorian::from_undelimited_string(pInstrument->ExpireDate)); /// DCE
       options.emplace(op, undl);
       inst = op;
     }
@@ -152,20 +153,15 @@ void CtpTraderSpi::OnRspQryInstrument(CThostFtdcInstrumentField *pInstrument,
   {
     inst->Symbol(pInstrument->InstrumentID);
     inst->Exchange(exchange);
-    if (pInstrument->IsTrading == 0) inst->Status(InstrumentStatus::Halt);
-    inst->Currency(Currencies::CNY);
+    if (pInstrument->IsTrading == 0) inst->Status(Proto::InstrumentStatus::Halt);
+    inst->Currency(Proto::Currency::CNY);
     inst->Tick(pInstrument->PriceTick);
     inst->Multiplier(pInstrument->VolumeMultiple);
-
-    // if (inst->Type() == InstrumentType::Future)
-    // {
-    //   ProductManager::GetInstance()->Add(inst);
-    //   LOG_INF << "Add Future " << id;
-    // }
   }
 
   if (bIsLast)
   {
+    auto req = Message::NewProto<Proto::InstrumentReq>();
     for (auto &it : futures)
     {
       if (it.first->HedgeUnderlying() != nullptr)
@@ -181,6 +177,7 @@ void CtpTraderSpi::OnRspQryInstrument(CThostFtdcInstrumentField *pInstrument,
         ProductManager::GetInstance()->Add(it.first);
         LOG_INF << "Add Future " << it.first->Id();
       }
+      it.first->Serialize(req->add_instruments());
     }
     for (auto &it : options)
     {
@@ -194,7 +191,11 @@ void CtpTraderSpi::OnRspQryInstrument(CThostFtdcInstrumentField *pInstrument,
       ProductManager::GetInstance()->Add(it.first);
       LOG_INF << boost::format("Add Option %1%, Hedge Underlying %2%") %
         it.first->Id() % hedge_undl->Id();
+      it.first->Serialize(req->add_instruments());
     }
+    req->set_exchange(exchange);
+    req->set_type(Proto::RequestType::Set);
+    Middleware::GetInstance()->Publish(req);
     api_->NotifyInstrumentReady();
     api_->QueryPositions();
   }
@@ -229,15 +230,20 @@ void CtpTraderSpi::OnRspQryInvestorPosition(CThostFtdcInvestorPositionField *pIn
       pInvestorPosition->InstrumentID % pInvestorPosition->PosiDirection %
       pInvestorPosition->YdPosition % pInvestorPosition->Position % pInvestorPosition->LongFrozen %
       pInvestorPosition->ShortFrozen % pInvestorPosition->PositionDate;
-    auto *inst = ProductManager::GetInstance()->FindSymbol(pInvestorPosition->InstrumentID);
+    auto *inst = ProductManager::GetInstance()->FindId(pInvestorPosition->InstrumentID);
     if (inst)
     {
-      PositionPtr pos = positions[inst];
-      if (!pos)
+      PositionPtr pos = nullptr;
+      auto it = positions.find(inst);
+      if (it == positions.end())
       {
-        pos = std::make_shared<Proto::Position>();
+        pos = Message::NewProto<Proto::Position>();
         pos->set_instrument(inst->Id());
         positions[inst] = pos;
+      }
+      else
+      {
+        pos = it->second;
       }
       if (pInvestorPosition->PosiDirection == THOST_FTDC_PD_Long)
       {
@@ -251,6 +257,7 @@ void CtpTraderSpi::OnRspQryInvestorPosition(CThostFtdcInvestorPositionField *pIn
         pos->set_liquid_short(pInvestorPosition->Position - pInvestorPosition->ShortFrozen);
         pos->set_yesterday_short(pInvestorPosition->YdPosition);
       }
+      // pos->set_time(base::Now());
     }
   }
 
@@ -592,29 +599,29 @@ std::string CtpTraderSpi::GetInstrumentId(char* id, char *exchange)
   }
 }
 
-Exchanges CtpTraderSpi::GetExchange(const char* exchange) const
+Proto::Exchange CtpTraderSpi::GetExchange(const char* exchange) const
 {
   assert (strlen(exchange) > 2);
   switch (exchange[1])
   {
     case 'C':
     case 'c':
-      return Exchanges::DE;
+      return Proto::Exchange::DE;
     case 'Z':
     case 'z':
-      return Exchanges::ZE;
+      return Proto::Exchange::ZE;
     case 'F':
     case 'f':
-      return Exchanges::CF;
+      return Proto::Exchange::CF;
     case 'H':
     case 'h':
-      return Exchanges::SF;
+      return Proto::Exchange::SF;
     default:
       assert(false);
   }
 }
 
-InstrumentStatus CtpTraderSpi::GetInstrumentStatus(TThostFtdcInstrumentStatusType status) const
+Proto::InstrumentStatus CtpTraderSpi::GetInstrumentStatus(TThostFtdcInstrumentStatusType status) const
 {
 
 }
