@@ -32,7 +32,7 @@
         <TextBox Grid.Row="1" Grid.Column="2" Margin="5" VerticalAlignment="Bottom" Text="{Binding User, Mode=TwoWay}"></TextBox>
         <TextBlock Grid.Row="2" Grid.Column="1" Margin="5">Password:</TextBlock>
         <TextBox Grid.Row="2" Grid.Column="2" Margin="5" VerticalAlignment="Top" Text="{Binding Password,Mode=TwoWay}"></TextBox>
-        <Button Grid.Row="3" Grid.Column="2" Margin="5" IsDefault="True" Command="{Binding LoginCommand}">Login</Button>
-        <Button Grid.Row="3" Grid.Column="3" Margin="5" IsCancel="True">Exit</Button>
+        <Button Grid.Row="3" Grid.Column="2" Margin="5" IsDefault="True" Click="Button_Click" Command="{Binding LoginCommand}">Login</Button>
+        <Button Grid.Row="3" Grid.Column="3" Margin="5" IsCancel="True" Click="Button_Click">Exit</Button>
     </Grid>
 </Window>

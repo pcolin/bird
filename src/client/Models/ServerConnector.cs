@@ -36,11 +36,10 @@ namespace client.Models
                 byte[] bType = System.Text.Encoding.UTF8.GetBytes(type);
                 ms.Write(bType, 0, type.Count());
                 Google.Protobuf.CodedOutputStream stream = new Google.Protobuf.CodedOutputStream(ms);
-
                 login.WriteTo(stream);
                 stream.Flush();
                 byte[] send = ms.ToArray();
-                send[4] = 112;
+                //send[4] = 112;
                 serverSocket.Send(send);
                 byte[] ret = serverSocket.Receive();
                 Array.Reverse(ret, 0, 4);
