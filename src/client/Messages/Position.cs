@@ -24,15 +24,22 @@ namespace Proto {
     static PositionReflection() {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
-            "Cg5Qb3NpdGlvbi5wcm90bxIFcHJvdG8iowEKCFBvc2l0aW9uEhIKCmluc3Ry",
-            "dW1lbnQYASABKAkSEgoKdG90YWxfbG9uZxgCIAEoBRITCgtsaXF1aWRfbG9u",
-            "ZxgDIAEoBRIWCg55ZXN0ZXJkYXlfbG9uZxgEIAEoBRITCgt0b3RhbF9zaG9y",
-            "dBgFIAEoBRIUCgxsaXF1aWRfc2hvcnQYBiABKAUSFwoPeWVzdGVyZGF5X3No",
-            "b3J0GAcgASgFYgZwcm90bzM="));
+            "Cg5Qb3NpdGlvbi5wcm90bxIFUHJvdG8aDVJlcXVlc3QucHJvdG8aC1JlcGx5",
+            "LnByb3RvIrEBCghQb3NpdGlvbhISCgppbnN0cnVtZW50GAEgASgJEhIKCnRv",
+            "dGFsX2xvbmcYAiABKAUSEwoLbGlxdWlkX2xvbmcYAyABKAUSFgoOeWVzdGVy",
+            "ZGF5X2xvbmcYBCABKAUSEwoLdG90YWxfc2hvcnQYBSABKAUSFAoMbGlxdWlk",
+            "X3Nob3J0GAYgASgFEhcKD3llc3RlcmRheV9zaG9ydBgHIAEoBRIMCgR0aW1l",
+            "GAggASgEInUKC1Bvc2l0aW9uUmVxEiAKBHR5cGUYASABKA4yEi5Qcm90by5S",
+            "ZXF1ZXN0VHlwZRISCgppbnN0cnVtZW50GAIgASgJEgwKBHVzZXIYAyABKAkS",
+            "IgoJcG9zaXRpb25zGAQgAygLMg8uUHJvdG8uUG9zaXRpb24iTwoLUG9zaXRp",
+            "b25SZXASHAoGcmVzdWx0GAEgASgLMgwuUHJvdG8uUmVwbHkSIgoJcG9zaXRp",
+            "b25zGAIgAygLMg8uUHJvdG8uUG9zaXRpb25iBnByb3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
-          new pbr::FileDescriptor[] { },
+          new pbr::FileDescriptor[] { global::Proto.RequestReflection.Descriptor, global::Proto.ReplyReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::Proto.Position), global::Proto.Position.Parser, new[]{ "Instrument", "TotalLong", "LiquidLong", "YesterdayLong", "TotalShort", "LiquidShort", "YesterdayShort" }, null, null, null)
+            new pbr::GeneratedClrTypeInfo(typeof(global::Proto.Position), global::Proto.Position.Parser, new[]{ "Instrument", "TotalLong", "LiquidLong", "YesterdayLong", "TotalShort", "LiquidShort", "YesterdayShort", "Time" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Proto.PositionReq), global::Proto.PositionReq.Parser, new[]{ "Type", "Instrument", "User", "Positions" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Proto.PositionRep), global::Proto.PositionRep.Parser, new[]{ "Result", "Positions" }, null, null, null)
           }));
     }
     #endregion
@@ -71,6 +78,7 @@ namespace Proto {
       totalShort_ = other.totalShort_;
       liquidShort_ = other.liquidShort_;
       yesterdayShort_ = other.yesterdayShort_;
+      time_ = other.time_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -156,6 +164,17 @@ namespace Proto {
       }
     }
 
+    /// <summary>Field number for the "time" field.</summary>
+    public const int TimeFieldNumber = 8;
+    private ulong time_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public ulong Time {
+      get { return time_; }
+      set {
+        time_ = value;
+      }
+    }
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as Position);
@@ -176,6 +195,7 @@ namespace Proto {
       if (TotalShort != other.TotalShort) return false;
       if (LiquidShort != other.LiquidShort) return false;
       if (YesterdayShort != other.YesterdayShort) return false;
+      if (Time != other.Time) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -189,6 +209,7 @@ namespace Proto {
       if (TotalShort != 0) hash ^= TotalShort.GetHashCode();
       if (LiquidShort != 0) hash ^= LiquidShort.GetHashCode();
       if (YesterdayShort != 0) hash ^= YesterdayShort.GetHashCode();
+      if (Time != 0UL) hash ^= Time.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -230,6 +251,10 @@ namespace Proto {
         output.WriteRawTag(56);
         output.WriteInt32(YesterdayShort);
       }
+      if (Time != 0UL) {
+        output.WriteRawTag(64);
+        output.WriteUInt64(Time);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -258,6 +283,9 @@ namespace Proto {
       }
       if (YesterdayShort != 0) {
         size += 1 + pb::CodedOutputStream.ComputeInt32Size(YesterdayShort);
+      }
+      if (Time != 0UL) {
+        size += 1 + pb::CodedOutputStream.ComputeUInt64Size(Time);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -290,6 +318,9 @@ namespace Proto {
       }
       if (other.YesterdayShort != 0) {
         YesterdayShort = other.YesterdayShort;
+      }
+      if (other.Time != 0UL) {
+        Time = other.Time;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -328,6 +359,370 @@ namespace Proto {
           }
           case 56: {
             YesterdayShort = input.ReadInt32();
+            break;
+          }
+          case 64: {
+            Time = input.ReadUInt64();
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class PositionReq : pb::IMessage<PositionReq> {
+    private static readonly pb::MessageParser<PositionReq> _parser = new pb::MessageParser<PositionReq>(() => new PositionReq());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<PositionReq> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::Proto.PositionReflection.Descriptor.MessageTypes[1]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public PositionReq() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public PositionReq(PositionReq other) : this() {
+      type_ = other.type_;
+      instrument_ = other.instrument_;
+      user_ = other.user_;
+      positions_ = other.positions_.Clone();
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public PositionReq Clone() {
+      return new PositionReq(this);
+    }
+
+    /// <summary>Field number for the "type" field.</summary>
+    public const int TypeFieldNumber = 1;
+    private global::Proto.RequestType type_ = 0;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::Proto.RequestType Type {
+      get { return type_; }
+      set {
+        type_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "instrument" field.</summary>
+    public const int InstrumentFieldNumber = 2;
+    private string instrument_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string Instrument {
+      get { return instrument_; }
+      set {
+        instrument_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "user" field.</summary>
+    public const int UserFieldNumber = 3;
+    private string user_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string User {
+      get { return user_; }
+      set {
+        user_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "positions" field.</summary>
+    public const int PositionsFieldNumber = 4;
+    private static readonly pb::FieldCodec<global::Proto.Position> _repeated_positions_codec
+        = pb::FieldCodec.ForMessage(34, global::Proto.Position.Parser);
+    private readonly pbc::RepeatedField<global::Proto.Position> positions_ = new pbc::RepeatedField<global::Proto.Position>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<global::Proto.Position> Positions {
+      get { return positions_; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as PositionReq);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(PositionReq other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (Type != other.Type) return false;
+      if (Instrument != other.Instrument) return false;
+      if (User != other.User) return false;
+      if(!positions_.Equals(other.positions_)) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (Type != 0) hash ^= Type.GetHashCode();
+      if (Instrument.Length != 0) hash ^= Instrument.GetHashCode();
+      if (User.Length != 0) hash ^= User.GetHashCode();
+      hash ^= positions_.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (Type != 0) {
+        output.WriteRawTag(8);
+        output.WriteEnum((int) Type);
+      }
+      if (Instrument.Length != 0) {
+        output.WriteRawTag(18);
+        output.WriteString(Instrument);
+      }
+      if (User.Length != 0) {
+        output.WriteRawTag(26);
+        output.WriteString(User);
+      }
+      positions_.WriteTo(output, _repeated_positions_codec);
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (Type != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Type);
+      }
+      if (Instrument.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(Instrument);
+      }
+      if (User.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(User);
+      }
+      size += positions_.CalculateSize(_repeated_positions_codec);
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(PositionReq other) {
+      if (other == null) {
+        return;
+      }
+      if (other.Type != 0) {
+        Type = other.Type;
+      }
+      if (other.Instrument.Length != 0) {
+        Instrument = other.Instrument;
+      }
+      if (other.User.Length != 0) {
+        User = other.User;
+      }
+      positions_.Add(other.positions_);
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 8: {
+            type_ = (global::Proto.RequestType) input.ReadEnum();
+            break;
+          }
+          case 18: {
+            Instrument = input.ReadString();
+            break;
+          }
+          case 26: {
+            User = input.ReadString();
+            break;
+          }
+          case 34: {
+            positions_.AddEntriesFrom(input, _repeated_positions_codec);
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class PositionRep : pb::IMessage<PositionRep> {
+    private static readonly pb::MessageParser<PositionRep> _parser = new pb::MessageParser<PositionRep>(() => new PositionRep());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<PositionRep> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::Proto.PositionReflection.Descriptor.MessageTypes[2]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public PositionRep() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public PositionRep(PositionRep other) : this() {
+      Result = other.result_ != null ? other.Result.Clone() : null;
+      positions_ = other.positions_.Clone();
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public PositionRep Clone() {
+      return new PositionRep(this);
+    }
+
+    /// <summary>Field number for the "result" field.</summary>
+    public const int ResultFieldNumber = 1;
+    private global::Proto.Reply result_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::Proto.Reply Result {
+      get { return result_; }
+      set {
+        result_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "positions" field.</summary>
+    public const int PositionsFieldNumber = 2;
+    private static readonly pb::FieldCodec<global::Proto.Position> _repeated_positions_codec
+        = pb::FieldCodec.ForMessage(18, global::Proto.Position.Parser);
+    private readonly pbc::RepeatedField<global::Proto.Position> positions_ = new pbc::RepeatedField<global::Proto.Position>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<global::Proto.Position> Positions {
+      get { return positions_; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as PositionRep);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(PositionRep other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (!object.Equals(Result, other.Result)) return false;
+      if(!positions_.Equals(other.positions_)) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (result_ != null) hash ^= Result.GetHashCode();
+      hash ^= positions_.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (result_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(Result);
+      }
+      positions_.WriteTo(output, _repeated_positions_codec);
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (result_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(Result);
+      }
+      size += positions_.CalculateSize(_repeated_positions_codec);
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(PositionRep other) {
+      if (other == null) {
+        return;
+      }
+      if (other.result_ != null) {
+        if (result_ == null) {
+          result_ = new global::Proto.Reply();
+        }
+        Result.MergeFrom(other.Result);
+      }
+      positions_.Add(other.positions_);
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10: {
+            if (result_ == null) {
+              result_ = new global::Proto.Reply();
+            }
+            input.ReadMessage(result_);
+            break;
+          }
+          case 18: {
+            positions_.AddEntriesFrom(input, _repeated_positions_codec);
             break;
           }
         }

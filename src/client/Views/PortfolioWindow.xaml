@@ -1,0 +1,9 @@
+﻿<Window x:Class="client.Views.PortfolioWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Icon="/Images/bird_32x32.ico"
+        Title="Portfolios" Height="600" Width="800">
+    <Grid>
+        
+    </Grid>
+</Window>

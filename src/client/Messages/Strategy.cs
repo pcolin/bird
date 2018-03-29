@@ -24,18 +24,18 @@ namespace Proto {
     static StrategyReflection() {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
-            "Cg5TdHJhdGVneS5wcm90bxIFcHJvdG8ibAoRU3RyYXRlZ3lTdGF0dXNSZXES",
-            "IAoEdHlwZRgBIAEoDjISLnByb3RvLlJlcXVlc3RUeXBlEicKCHN0YXR1c2Vz",
-            "GAIgAygLMhUucHJvdG8uU3RyYXRlZ3lTdGF0dXMSDAoEdXNlchgDIAEoCSIi",
-            "ChFTdHJhdGVneVN0YXR1c1JlcBINCgVlcnJvchgBIAEoCSKrAQoOU3RyYXRl",
-            "Z3lTdGF0dXMSDAoEbmFtZRgBIAEoCRISCgp1bmRlcmx5aW5nGAIgASgJEiwK",
-            "BnN0YXR1cxgDIAEoDjIcLnByb3RvLlN0cmF0ZWd5U3RhdHVzLlN0YXR1cyJJ",
-            "CgZTdGF0dXMSCAoEUGxheRAAEggKBFN0b3AQARILCgdSdW5uaW5nEAISCQoF",
-            "UGF1c2UQAxIJCgVFcnJvchAEEggKBExvc3QQBSooCgtSZXF1ZXN0VHlwZRIH",
-            "CgNHZXQQABIHCgNTZXQQARIHCgNEZWwQAmIGcHJvdG8z"));
+            "Cg5TdHJhdGVneS5wcm90bxIFUHJvdG8aDVJlcXVlc3QucHJvdG8ibAoRU3Ry",
+            "YXRlZ3lTdGF0dXNSZXESIAoEdHlwZRgBIAEoDjISLlByb3RvLlJlcXVlc3RU",
+            "eXBlEicKCHN0YXR1c2VzGAIgAygLMhUuUHJvdG8uU3RyYXRlZ3lTdGF0dXMS",
+            "DAoEdXNlchgDIAEoCSIiChFTdHJhdGVneVN0YXR1c1JlcBINCgVlcnJvchgB",
+            "IAEoCSKrAQoOU3RyYXRlZ3lTdGF0dXMSDAoEbmFtZRgBIAEoCRISCgp1bmRl",
+            "cmx5aW5nGAIgASgJEiwKBnN0YXR1cxgDIAEoDjIcLlByb3RvLlN0cmF0ZWd5",
+            "U3RhdHVzLlN0YXR1cyJJCgZTdGF0dXMSCAoEUGxheRAAEggKBFN0b3AQARIL",
+            "CgdSdW5uaW5nEAISCQoFUGF1c2UQAxIJCgVFcnJvchAEEggKBExvc3QQBWIG",
+            "cHJvdG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
-          new pbr::FileDescriptor[] { },
-          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Proto.RequestType), }, new pbr::GeneratedClrTypeInfo[] {
+          new pbr::FileDescriptor[] { global::Proto.RequestReflection.Descriptor, },
+          new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
             new pbr::GeneratedClrTypeInfo(typeof(global::Proto.StrategyStatusReq), global::Proto.StrategyStatusReq.Parser, new[]{ "Type", "Statuses", "User" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Proto.StrategyStatusRep), global::Proto.StrategyStatusRep.Parser, new[]{ "Error" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Proto.StrategyStatus), global::Proto.StrategyStatus.Parser, new[]{ "Name", "Underlying", "Status" }, null, new[]{ typeof(global::Proto.StrategyStatus.Types.Status) }, null)
@@ -44,15 +44,6 @@ namespace Proto {
     #endregion
 
   }
-  #region Enums
-  public enum RequestType {
-    [pbr::OriginalName("Get")] Get = 0,
-    [pbr::OriginalName("Set")] Set = 1,
-    [pbr::OriginalName("Del")] Del = 2,
-  }
-
-  #endregion
-
   #region Messages
   public sealed partial class StrategyStatusReq : pb::IMessage<StrategyStatusReq> {
     private static readonly pb::MessageParser<StrategyStatusReq> _parser = new pb::MessageParser<StrategyStatusReq>(() => new StrategyStatusReq());

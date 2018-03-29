@@ -24,8 +24,8 @@ namespace Proto {
     static HeartbeatReflection() {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
-            "Cg9IZWFydGJlYXQucHJvdG8SBXByb3RvIksKCUhlYXJ0YmVhdBIiCgR0eXBl",
-            "GAEgASgOMhQucHJvdG8uUHJvY2Vzc29yVHlwZRIMCgRuYW1lGAIgASgJEgwK",
+            "Cg9IZWFydGJlYXQucHJvdG8SBVByb3RvIksKCUhlYXJ0YmVhdBIiCgR0eXBl",
+            "GAEgASgOMhQuUHJvdG8uUHJvY2Vzc29yVHlwZRIMCgRuYW1lGAIgASgJEgwK",
             "BHRpbWUYAyABKAQqUAoNUHJvY2Vzc29yVHlwZRIOCgpNaWRkbGV3YXJlEAAS",
             "CwoHTW9uaXRvchABEgsKB1ByaWNpbmcQAhIMCghTdHJhdGVneRADEgcKA0dV",
             "SRAEYgZwcm90bzM="));

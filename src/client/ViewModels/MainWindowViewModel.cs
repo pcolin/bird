@@ -1,24 +1,27 @@
 ﻿using client.Models;
 using Microsoft.Practices.Unity;
 using Prism.Commands;
+using Prism.Events;
 using Prism.Interactivity.InteractionRequest;
 using Prism.Mvvm;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using System.Xml;
 
 namespace client.ViewModels
 {
-    public enum Exchange
-    {
-        DCE = 0,
-        CZCE,
-        CFFEX,
-        SHFE,
-    };
+    //public enum Exchange
+    //{
+    //    DCE = 0,
+    //    CZCE,
+    //    CFFEX,
+    //    SHFE,
+    //};
 
     public enum ConnectStatus
     {
@@ -47,14 +50,21 @@ namespace client.ViewModels
             get { return "Bird " + Version; }
         }
 
-        private Exchange exchange1 = Exchange.DCE;
-        public Exchange Exchange1
+        private Proto.Exchange exchange1;
+        public Proto.Exchange Exchange1
         {
             get { return exchange1; }
             set { SetProperty(ref this.exchange1, value); }
         }
 
-        private bool isExchange1Selected;
+        private bool exchange1Visible = false;
+        public bool Exchange1Visible
+        {
+            get { return exchange1Visible; }
+            set { SetProperty(ref exchange1Visible, value); }
+        }        
+
+        private bool isExchange1Selected = true;
         public bool IsExchange1Selected
         {
             get { return isExchange1Selected; }
@@ -80,11 +90,18 @@ namespace client.ViewModels
             }
         }        
 
-        private Exchange exchange2 = Exchange.CZCE;
-        public Exchange Exchange2
+        private Proto.Exchange exchange2;
+        public Proto.Exchange Exchange2
         {
             get { return exchange2; }
             set { SetProperty(ref exchange2, value); }
+        }
+
+        private bool exchange2Visible = false;
+        public bool Exchange2Visible
+        {
+            get { return exchange2Visible; }
+            set { SetProperty(ref exchange2Visible, value); }
         }
 
         private bool isExchange2Selected;
@@ -113,11 +130,18 @@ namespace client.ViewModels
             }
         }
 
-        private Exchange exchange3 = Exchange.CFFEX;
-        public Exchange Exchange3
+        private Proto.Exchange exchange3;
+        public Proto.Exchange Exchange3
         {
             get { return exchange3; }
             set { SetProperty(ref exchange3, value); }
+        }
+
+        private bool exchange3Visible = false;
+        public bool Exchange3Visible
+        {
+            get { return exchange3Visible; }
+            set { SetProperty(ref exchange3Visible, value); }
         }
 
         private bool isExchange3Selected;
@@ -146,11 +170,19 @@ namespace client.ViewModels
             }
         }
 
-        private Exchange exchange4 = Exchange.SHFE;
-        public Exchange Exchange4
+        private Proto.Exchange exchange4;
+        public Proto.Exchange Exchange4
         {
             get { return exchange4; }
             set { SetProperty(ref this.exchange4, value); }
+        }
+
+
+        private bool exchange4Visible = false;
+        public bool Exchange4Visible
+        {
+            get { return exchange4Visible; }
+            set { SetProperty(ref exchange4Visible, value); }
         }
 
         private bool isExchange4Selected;
@@ -186,17 +218,23 @@ namespace client.ViewModels
             set { SetProperty(ref user, value); }
         }
 
-        private string password = "";
+        private string password = "colin";
         public string Password
         {
             get { return password; }
             set { SetProperty(ref password, value); }
+        }
+
+        private string layout;
+        public string Layout
+        {
+            get { return layout; }
         }        
         
         public MainWindowViewModel(IUnityContainer container)
         {
             //LoginCommand = new DelegateCommand<object>(new Action<object>(this.LoginExecute), new Func<object, bool>(this.CanLogin));
-            InitializeCommand = new DelegateCommand(this.InitializeExecute);
+            //InitializeCommand = new DelegateCommand(this.InitializeExecute);
             LoginCommand = new DelegateCommand(this.LoginExecute, this.CanLogin);
             LogoutCommand = new DelegateCommand(this.LogoutExecute, this.CanLogout);
 
@@ -205,65 +243,227 @@ namespace client.ViewModels
             this.container = container;
         }
 
-        private void InitializeExecute()
+        //private void InitializeExecute()
+        public void Initialize()
         {
             /// Load config from xml
-            //addresses = new Dictionary<Exchange, Tuple<string, string, string>>();
-            servers = new Dictionary<Exchange, ServerService>();
-            string server = "tcp://172.28.1.53:8001";
-            string database = "tcp://172.28.1.53:8002";
-            string proxy = "tcp://172.28.1.53:8003";
-            var service = new ServerService();
-            this.container.RegisterInstance<ServerService>(Exchange.DCE.ToString(), service);
-            service.Initialize(server);
-            servers.Add(Exchange1, service);
+            try
+            {
+                XmlDocument doc = new XmlDocument();
+                doc.Load(System.AppDomain.CurrentDomain.BaseDirectory + "\\config\\config.xml");
+                XmlElement root = doc.DocumentElement;
+                this.user = root.GetAttribute("user");
+                this.layout = root.GetAttribute("layout");
+
+                XmlNode node = root.FirstChild;
+                XmlElement element = (XmlElement)node;
+                string name = element.GetAttribute("name");
+                Proto.Exchange exchange;
+                if (Enum.TryParse<Proto.Exchange>(name, true, out exchange) == false)
+                {
+                    NotificationRequest.Raise(new Notification { Content = "Unkown exchange " + name, Title = "Error" });
+                    return;
+                }
+                this.Exchange1 = exchange;
+                this.Exchange1Visible = true;
+                InitializeService(this.exchange1, element.GetElementsByTagName("Server")[0].InnerText,
+                    element.GetElementsByTagName("Database")[0].InnerText, element.GetElementsByTagName("Proxy")[0].InnerText);
+
+                node = node.NextSibling;
+                if (node == null)
+                {
+                    return;
+                }
+                element = (XmlElement)node;
+                name = element.GetAttribute("name");
+                if (Enum.TryParse<Proto.Exchange>(name, true, out exchange) == false)
+                {
+                    NotificationRequest.Raise(new Notification { Content = "Unkown exchange " + name, Title = "Error" });
+                    return;
+                }
+                this.Exchange2 = exchange;
+                this.Exchange2Visible = true;
+                InitializeService(this.exchange2, element.GetElementsByTagName("Server")[0].InnerText,
+                    element.GetElementsByTagName("Database")[0].InnerText, element.GetElementsByTagName("Proxy")[0].InnerText);
+
+                node = node.NextSibling;
+                if (node == null)
+                {
+                    return;
+                }
+                element = (XmlElement)node;
+                name = element.GetAttribute("name");
+                if (Enum.TryParse<Proto.Exchange>(name, true, out exchange) == false)
+                {
+                    NotificationRequest.Raise(new Notification { Content = "Unkown exchange " + name, Title = "Error" });
+                    return;
+                }
+                this.Exchange3 = exchange;
+                this.Exchange3Visible = true;
+                InitializeService(this.exchange3, element.GetElementsByTagName("Server")[0].InnerText,
+                    element.GetElementsByTagName("Database")[0].InnerText, element.GetElementsByTagName("Proxy")[0].InnerText);
 
 
-            //proxyService = new ProxyService();
-            //this.container.RegisterInstance<ProxyService>(Exchange.DCE.ToString(), proxyService);
-            //proxyService.Initialize(proxy);
+                node = node.NextSibling;
+                if (node == null)
+                {
+                    return;
+                }
+                element = (XmlElement)node;
+                name = element.GetAttribute("name");
+                if (Enum.TryParse<Proto.Exchange>(name, true, out exchange) == false)
+                {
+                    NotificationRequest.Raise(new Notification { Content = "Unkown exchange " + name, Title = "Error" });
+                    return;
+                }
+                this.Exchange4 = exchange;
+                this.Exchange4Visible = true;
+                InitializeService(this.exchange4, element.GetElementsByTagName("Server")[0].InnerText,
+                    element.GetElementsByTagName("Database")[0].InnerText, element.GetElementsByTagName("Proxy")[0].InnerText);
+            }
+            catch (Exception e)
+            {
+                NotificationRequest.Raise(new Notification { Content = "Load config exception: " + e.Message, Title = "Error" });
+            }
+
+            this.container.RegisterInstance<EventAggregator>(new EventAggregator());
+
+            //InitializeWindows();
+        }
+
+
+        private void InitializeService(Proto.Exchange exchange, string serverAddress, string databaseAddress, string proxyAddress)
+        {
+            var server = new ServerService();
+            server.Initialize(serverAddress);
+            this.container.RegisterInstance<ServerService>(exchange.ToString(), server);
+
+            var database = new DatabaseService(this.container, exchange, this.User);
+            database.Initialize(databaseAddress);
+            this.container.RegisterInstance<DatabaseService>(exchange.ToString(), database);
+
+            var proxy = new ProxyService();
+            proxy.Initialize(proxyAddress);
+            this.container.RegisterInstance<ProxyService>(exchange.ToString(), proxy);
+        }
+
+        
+        public void Stop()
+        {
+            if (Exchange1Visible)
+            {
+                StopService(Exchange1);
+            }
+            if (Exchange2Visible)
+            {
+                StopService(Exchange2);
+            }
+            if (Exchange3Visible)
+            {
+                StopService(Exchange3);
+            }
+            if (Exchange4Visible)
+            {
+                StopService(Exchange4);
+            }
+        }
+
+        private void StopService(Proto.Exchange exchange)
+        {
+            string exch = exchange.ToString();
+            var server = this.container.Resolve<ServerService>(exch);
+            if (server != null)
+            {
+                server.Stop();
+            }
+            var database = this.container.Resolve<DatabaseService>(exch);
+            if (database != null)
+            {
+                database.Stop();
+            }
+            var proxy = this.container.Resolve<ProxyService>(exch);
+            if (proxy != null)
+            {
+                proxy.Stop();
+            }
+        }
+
+        private void InitializeWindows()
+        {
+
         }
        
         private void LoginExecute()
         {
             if (IsExchange1Selected)
             {
-                ServerService s = null;
-                if (this.servers.TryGetValue(Exchange1, out s))
-                {
-                    var r = s.Login(this.User, this.Password, this.Version);
-                    if (r != null)
-                    {
-                        if (r.Result)
-                        {
-                            Exchange1Status = ConnectStatus.Connected;
-                            s.Start();
-                        }
-                        else
-                        {
-                            NotificationRequest.Raise(new Notification { Content = r.Error, Title = "Login Failed" });
-                        }
-                    }
-                    else
-                    {
-                        NotificationRequest.Raise(new Notification { Content = "Login timeout", Title = "Login Failed" });
-                    }
-                }
+                Login(this.exchange1);
             }
 
             if (IsExchange2Selected)
             {
-                Exchange2Status = ConnectStatus.Connected;
+                Login(this.exchange2);
             }
 
             if (IsExchange3Selected)
             {
-                Exchange3Status = ConnectStatus.Connected;
+                Login(this.exchange3);
             }
 
             if (IsExchange4Selected)
             {
-                Exchange4Status = ConnectStatus.Connected;
+                Login(this.exchange4);
+            }
+        }
+
+        private void Login(Proto.Exchange exchange)
+        {
+            string ex = exchange.ToString();
+            var server = this.container.Resolve<ServerService>(ex);
+            var r = server.Login(this.User, this.Password, this.Version);
+            if (r != null)
+            {
+                if (r.Result)
+                {
+                    Exchange1Status = ConnectStatus.Connected;
+                    server.Start();
+                    var database = this.container.Resolve<DatabaseService>(ex);
+                    database.Start();
+                    var proxy = this.container.Resolve<ProxyService>(ex);
+                    proxy.Start();
+
+                    this.container.Resolve<EventAggregator>().GetEvent<StartWindowEvent>().Publish();
+                }
+                else
+                {
+                    NotificationRequest.Raise(new Notification { Content = r.Error, Title = "Login Failed" });
+                }
+            }
+            else
+            {
+                NotificationRequest.Raise(new Notification { Content = "Login " + exchange + " timeout", Title = "Login Failed" });
+            }
+        }
+
+        private void Logout(Proto.Exchange exchange)
+        {
+            var server = this.container.Resolve<ServerService>(exchange.ToString());
+            var r = server.Logout(this.User);
+            if (r != null)
+            {
+                if (r.Result)
+                {
+                    Exchange1Status = ConnectStatus.Disconnected;
+                    server.Stop();
+                }
+                else
+                {
+                    NotificationRequest.Raise(new Notification { Content = r.Error, Title = "Login Failed" });
+                }
+            }
+            else
+            {
+                NotificationRequest.Raise(new Notification { Content = "Logout " + exchange + " timeout", Title = "Login Failed" });
             }
         }
 
@@ -274,9 +474,24 @@ namespace client.ViewModels
 
         private void LogoutExecute()
         {
-            foreach (var kvp in servers)
+            if (IsExchange1Selected)
             {
-                kvp.Value.Logout(this.User);
+                Logout(this.exchange1);
+            }
+
+            if (IsExchange2Selected)
+            {
+                Logout(this.exchange2);
+            }
+
+            if (IsExchange3Selected)
+            {
+                Logout(this.exchange3);
+            }
+
+            if (IsExchange4Selected)
+            {
+                Logout(this.exchange4);
             }
         }
 
@@ -286,8 +501,27 @@ namespace client.ViewModels
                    Exchange3Status == ConnectStatus.Connected || exchange4Status == ConnectStatus.Connected;
         }
 
+        //private bool TryParse(string name, out Proto.Exchange exchange)
+        //{
+        //    //if (name == "DCE")
+        //    //{
+        //    //    exchange = Proto.Exchange.De;
+        //    //}
+        //    //else if (name == "CZCE")
+        //    //{
+        //    //    exchange = Proto.Exchange.Ze;
+        //    //}
+        //    //else if (name == "SH)
+        //    return false;
+        //}
+
+        public IUnityContainer Container
+        {
+            get { return this.container; }
+        }
         IUnityContainer container;
-        private Dictionary<Exchange, ServerService> servers;
-        private Dictionary<Exchange, ProxyService> proxies;
+        //private Dictionary<Exchange, ServerService> servers;
+        //private Dictionary<Exchange, ProxyService> proxies;
+        //private Dictionary<Exchange, DatabaseService> databases;
     }
 }

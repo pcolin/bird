@@ -19,20 +19,32 @@ namespace client.Models
             socket.Connect(address);
         }
 
-        public void Start()
+        public bool Start()
         {
             running = true;
             actionThread = new Thread(this.ActionRun);
+            //actionThread.IsBackground = true;
             actionThread.Start();
             receiveThread = new Thread(this.ReceiveRun);
-            receiveThread.Start();            
+            //receiveThread.IsBackground = true;
+            receiveThread.Start();
+
+            return true;
         }
 
         public void Stop()
         {
             running = false;
-            receiveThread.Join();
-            actionThread.Join();
+            if (receiveThread != null)
+            {
+                receiveThread.Abort();
+                receiveThread.Join();
+            }
+            if (actionThread != null)
+            {
+                actionThread.Abort();
+                actionThread.Join();
+            }
         }
 
         public void RegisterAction(string type, Action<IMessage> action)
@@ -57,44 +69,64 @@ namespace client.Models
 
         private void ReceiveRun()
         {
-            while (running)
+            try
             {
-                byte[] bytes = socket.Receive();
-                if (bytes != null)
+                while (running)
                 {
-                    Array.Reverse(bytes, 0, 4);
-                    int len = BitConverter.ToInt32(bytes, 0) + 4;
-                    string type = Encoding.UTF8.GetString(bytes, 10, len - 6);
-                    if (type == "Heartbeat")
+                    byte[] bytes = socket.ReceiveImmediate();
+                    if (bytes != null)
                     {
-                        var heartbeat = Proto.Heartbeat.Parser.ParseFrom(bytes, 4 + len, bytes.Count() - 4 - len);
-                        messages.Enqueue(heartbeat);
+                        Array.Reverse(bytes, 0, 4);
+                        int len = BitConverter.ToInt32(bytes, 0) + 4;
+                        string type = Encoding.UTF8.GetString(bytes, 10, len - 6);
+                        if (type == "Heartbeat")
+                        {
+                            var heartbeat = Proto.Heartbeat.Parser.ParseFrom(bytes, 4 + len, bytes.Count() - 4 - len);
+                            messages.Enqueue(heartbeat);
+                        }
+                        else if (type == "Price")
+                        {
+                            var price = Proto.Price.Parser.ParseFrom(bytes, 4 + len, bytes.Count() - 4 - len);
+                            messages.Enqueue(price);
+                        }
+                        /// to be done...
                     }
-                    else if (type == "Price")
+                    else
                     {
-                        var price = Proto.Price.Parser.ParseFrom(bytes, 4 + len, bytes.Count() - 4 - len);
-                        messages.Enqueue(price);
+                        Thread.Sleep(50);
                     }
                 }
+            }
+            catch (ThreadAbortException)
+            {
+                //socket.Shutdown();
+                return;
             }
         }
 
         private void ActionRun()
         {
-            while (running)
+            try
             {
-                IMessage msg = null;
-                if (messages.TryDequeue(out msg))
+                while (running)
                 {
-                    List<Action<IMessage>> list = null;
-                    if (actions.TryGetValue(msg.GetType().ToString(), out list))
+                    IMessage msg = null;
+                    if (messages.TryDequeue(out msg))
                     {
-                        foreach (var action in list)
+                        List<Action<IMessage>> list = null;
+                        if (actions.TryGetValue(msg.GetType().ToString(), out list))
                         {
-                            action(msg);
+                            foreach (var action in list)
+                            {
+                                action(msg);
+                            }
                         }
                     }
                 }
+            }
+            catch (ThreadAbortException)
+            {
+                return;
             }
         }
 
@@ -102,7 +134,7 @@ namespace client.Models
         private Thread receiveThread;
         private Thread actionThread;
         private SubscribeSocket socket;
-        private ConcurrentQueue<IMessage> messages;
-        private Dictionary<string, List<Action<IMessage>>> actions;
+        private ConcurrentQueue<IMessage> messages = new ConcurrentQueue<IMessage>();
+        private Dictionary<string, List<Action<IMessage>>> actions = new Dictionary<string,List<Action<IMessage>>>();
     }
 }

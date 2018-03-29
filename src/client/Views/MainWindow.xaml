@@ -6,14 +6,18 @@
         xmlns:local="clr-namespace:client.Views"
         prism:ViewModelLocator.AutoWireViewModel="True"
         Icon="/Images/bird_32x32.ico"        
-        Title="{Binding Title}" Height="300" Width="300">
+        Title="{Binding Title}" Height="300" Width="300"
+        Initialized="Window_Initialized"
+        Closing="Window_Closing">
     <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="VisibilityConverter" />
+        <local:BooleanToCollapsedVisibilityConverter x:Key="CollapsedVisibilityConverter" />
         <local:StatusColorConverter x:Key="StatusColorConverter" />
     </Window.Resources>
     <i:Interaction.Triggers>
-        <i:EventTrigger EventName="Loaded">
+        <!--i:EventTrigger EventName="Loaded">
             <i:InvokeCommandAction Command="{Binding InitializeCommand}" />
-        </i:EventTrigger>
+        </i:EventTrigger-->
         <prism:InteractionRequestTrigger SourceObject="{Binding NotificationRequest}">
             <prism:PopupWindowAction IsModal="True" CenterOverAssociatedObject="True" />
         </prism:InteractionRequestTrigger>
@@ -42,7 +46,24 @@
                 <MenuItem Header="Emergency"></MenuItem>
             </MenuItem>
             <MenuItem Header="VIEW">
-                <MenuItem Header="Options"></MenuItem>
+                <MenuItem Header="Options">
+                    <MenuItem Header="{Binding Exchange1}"
+                              Visibility="{Binding Exchange1Visible, Converter={StaticResource CollapsedVisibilityConverter}}"
+                              Click="OptionsMenuItem1_Click">
+                    </MenuItem>
+                    <MenuItem Header="{Binding Exchange2}"
+                              Visibility="{Binding Exchange2Visible, Converter={StaticResource CollapsedVisibilityConverter}}"
+                              Click="OptionsMenuItem2_Click">
+                    </MenuItem>
+                    <MenuItem Header="{Binding Exchange3}"
+                              Visibility="{Binding Exchange3Visible, Converter={StaticResource CollapsedVisibilityConverter}}"
+                              Click="OptionsMenuItem3_Click">
+                    </MenuItem>
+                    <MenuItem Header="{Binding Exchange4}"
+                              Visibility="{Binding Exchange4Visible, Converter={StaticResource CollapsedVisibilityConverter}}"
+                              Click="OptionsMenuItem4_Click">
+                    </MenuItem>
+                </MenuItem>
                 <MenuItem Header="Portfolios"></MenuItem>
                 <MenuItem Header="Orders"></MenuItem>
                 <MenuItem Header="Trades"></MenuItem>
@@ -55,6 +76,9 @@
                 <MenuItem Header="Default"></MenuItem>
                 <Separator></Separator>
                 <MenuItem Header="About"></MenuItem>
+            </MenuItem>
+            <MenuItem Header="TEST">
+                <MenuItem Header="DataGridComboBoxColumn" Click="MenuItemDataGrid_Click" />
             </MenuItem>
         </Menu>
         <ToolBarTray Grid.Row="1">
@@ -76,15 +100,23 @@
                     </Grid>
                 </ItemsPanelTemplate>
             </StatusBar.ItemsPanel>
-            <TextBlock Text="{Binding Exchange1}" FontWeight="ExtraBold" Foreground="{Binding Exchange1Status, Converter={StaticResource StatusColorConverter}}"></TextBlock>
+            <TextBlock Text="{Binding Exchange1}" FontWeight="ExtraBold"
+                       Foreground="{Binding Exchange1Status, Converter={StaticResource StatusColorConverter}}"
+                       Visibility="{Binding Exchange1Visible, Converter={StaticResource VisibilityConverter}}"></TextBlock>
             <StatusBarItem Grid.Column="1">
-                <TextBlock Text="{Binding Exchange2}" FontWeight="ExtraBold" Foreground="{Binding Exchange2Status, Converter={StaticResource StatusColorConverter}}"></TextBlock>
+                <TextBlock Text="{Binding Exchange2}" FontWeight="ExtraBold"
+                           Foreground="{Binding Exchange2Status, Converter={StaticResource StatusColorConverter}}"
+                           Visibility="{Binding Exchange2Visible, Converter={StaticResource VisibilityConverter}}"></TextBlock>
             </StatusBarItem>
             <StatusBarItem Grid.Column="2">
-                <TextBlock Text="{Binding Exchange3}" FontWeight="ExtraBold" Foreground="{Binding Exchange3Status, Converter={StaticResource StatusColorConverter}}"></TextBlock>
+                <TextBlock Text="{Binding Exchange3}" FontWeight="ExtraBold"
+                           Foreground="{Binding Exchange3Status, Converter={StaticResource StatusColorConverter}}"
+                           Visibility="{Binding Exchange3Visible, Converter={StaticResource VisibilityConverter}}"></TextBlock>
             </StatusBarItem>
             <StatusBarItem Grid.Column="3">
-                <TextBlock Text="{Binding Exchange4}" FontWeight="ExtraBold" Foreground="{Binding Exchange4Status, Converter={StaticResource StatusColorConverter}}"></TextBlock>
+                <TextBlock Text="{Binding Exchange4}" FontWeight="ExtraBold"
+                           Foreground="{Binding Exchange4Status, Converter={StaticResource StatusColorConverter}}"
+                           Visibility="{Binding Exchange4Visible, Converter={StaticResource VisibilityConverter}}"></TextBlock>
             </StatusBarItem>
         </StatusBar>
     </Grid>

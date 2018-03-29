@@ -24,7 +24,7 @@ namespace Proto {
     static ReplyReflection() {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
-            "CgtSZXBseS5wcm90bxIFcHJvdG8iJgoFUmVwbHkSDgoGcmVzdWx0GAEgASgI",
+            "CgtSZXBseS5wcm90bxIFUHJvdG8iJgoFUmVwbHkSDgoGcmVzdWx0GAEgASgI",
             "Eg0KBWVycm9yGAIgASgJYgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },

@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace client.Models
@@ -21,17 +22,24 @@ namespace client.Models
             socket.Connect(address);
         }
 
-        public void Start()
+        public bool Start()
         {
             running = true;
-            thread = new System.Threading.Thread(this.Run);
+            thread = new Thread(this.Run);
+            //thread.IsBackground = true;
             thread.Start();
+
+            return true;
         }
 
         public void Stop()
         {
             running = false;
-            thread.Join();
+            if (thread != null)
+            {
+                thread.Abort();
+                thread.Join();
+            }
         }
 
         public Proto.Reply Login(string user, string password, string version)
@@ -83,21 +91,28 @@ namespace client.Models
             Proto.Heartbeat heartbeat = new Proto.Heartbeat();
             heartbeat.Type = Proto.ProcessorType.Gui;
             heartbeat.Name = user;
-            while (running)
+            try
             {
-                IMessage msg = null;
-                if (messages.TryDequeue(out msg))
+                while (running)
                 {
-                    RequestReply(msg);
+                    IMessage msg = null;
+                    if (messages.TryDequeue(out msg))
+                    {
+                        RequestReply(msg);
+                    }
+                    else if ((DateTime.Now - lastSentTime).TotalSeconds >= TimeoutInterval)
+                    {
+                        RequestReply(heartbeat);
+                    }
+                    else
+                    {
+                        System.Threading.Thread.Sleep(10);
+                    }
                 }
-                else if ((DateTime.Now - lastSentTime).TotalSeconds >= TimeoutInterval)
-                {
-                    RequestReply(heartbeat);
-                }
-                else
-                {
-                    System.Threading.Thread.Sleep(10);
-                }
+            }
+            catch (ThreadAbortException)
+            {
+                return;
             }
         }
 
@@ -143,7 +158,7 @@ namespace client.Models
         private volatile bool running = false;
         private RequestSocket socket;
         private ConcurrentQueue<IMessage> messages = new ConcurrentQueue<IMessage>();
-        private System.Threading.Thread thread;
+        private Thread thread;
 
         private string user;
         private DateTime lastSentTime;

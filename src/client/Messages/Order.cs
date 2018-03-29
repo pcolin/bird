@@ -24,14 +24,14 @@ namespace Proto {
     static OrderReflection() {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
-            "CgtPcmRlci5wcm90bxIFcHJvdG8i3gIKBU9yZGVyEgoKAmlkGAEgASgEEhIK",
+            "CgtPcmRlci5wcm90bxIFUHJvdG8i3gIKBU9yZGVyEgoKAmlkGAEgASgEEhIK",
             "Cmluc3RydW1lbnQYAiABKAkSEgoKY291bnRlcl9pZBgDIAEoCRITCgtleGNo",
             "YW5nZV9pZBgEIAEoCRIMCgRub3RlGAUgASgJEg0KBXByaWNlGAYgASgBEhoK",
             "EmF2Z19leGVjdXRlZF9wcmljZRgHIAEoARIOCgZ2b2x1bWUYCCABKAUSFwoP",
-            "ZXhlY3V0ZWRfdm9sdW1lGAkgASgFEhkKBHNpZGUYCiABKA4yCy5wcm90by5T",
-            "aWRlEiwKDnRpbWVfY29uZGl0aW9uGAsgASgOMhQucHJvdG8uVGltZUNvbmRp",
-            "dGlvbhIeCgR0eXBlGAwgASgOMhAucHJvdG8uT3JkZXJUeXBlEiIKBnN0YXR1",
-            "cxgNIAEoDjISLnByb3RvLk9yZGVyU3RhdHVzEgwKBHRpbWUYDiABKAQSDwoH",
+            "ZXhlY3V0ZWRfdm9sdW1lGAkgASgFEhkKBHNpZGUYCiABKA4yCy5Qcm90by5T",
+            "aWRlEiwKDnRpbWVfY29uZGl0aW9uGAsgASgOMhQuUHJvdG8uVGltZUNvbmRp",
+            "dGlvbhIeCgR0eXBlGAwgASgOMhAuUHJvdG8uT3JkZXJUeXBlEiIKBnN0YXR1",
+            "cxgNIAEoDjISLlByb3RvLk9yZGVyU3RhdHVzEgwKBHRpbWUYDiABKAQSDwoH",
             "bGF0ZW5jeRgPIAEoBSqMAQoEU2lkZRIHCgNCdXkQABIICgRTZWxsEAESDAoI",
             "QnV5Q292ZXIQAhIRCg1CdXlDb3ZlclRvZGF5EAMSFQoRQnV5Q292ZXJZZXN0",
             "ZXJkYXkQBBINCglTZWxsQ292ZXIQBRISCg5TZWxsQ292ZXJUb2RheRAGEhYK",

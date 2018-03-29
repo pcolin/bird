@@ -1,0 +1,48 @@
+﻿<Window x:Class="client.Views.OptionWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+        xmlns:prism="http://prismlibrary.com/"
+        xmlns:system="clr-namespace:System;assembly=mscorlib"
+        xmlns:vm="clr-namespace:client.ViewModels"
+        xmlns:local="clr-namespace:client.Views"
+        Icon="/Images/bird_32x32.ico"
+        Height="600" Width="800"
+        Closing="Window_Closing">
+    <Window.Title>
+        <MultiBinding StringFormat="Options - {0} ~ {1}[Available({2:N2}|{3:N2}|{4:N2}) + Margin({5:N2}|{6:N2}|{7:N2})]">
+            <Binding Path="Exchange" />
+            <Binding Path="Account" />
+            <Binding Path="Available" />
+            <Binding Path="MinAvailable" />
+            <Binding Path="MaxAvailable" />
+            <Binding Path="Margin" />
+            <Binding Path="MinMargin" />
+            <Binding Path="MaxMargin" />
+        </MultiBinding>
+    </Window.Title>
+    <i:Interaction.Triggers>
+        <prism:InteractionRequestTrigger SourceObject="{Binding NotificationRequest}">
+            <prism:PopupWindowAction IsModal="True" CenterOverAssociatedObject="True" />
+        </prism:InteractionRequestTrigger>
+    </i:Interaction.Triggers>
+    <!--Grid-->
+        <TabControl Name="OptionTabControl" ItemsSource="{Binding TabItems}" SelectedItem="{Binding SelectedTab}">
+            <!--TabControl.Resources>
+                <DataTemplate>
+                    <local:OptionUserControl />
+                </DataTemplate>
+            </TabControl.Resources-->
+            <TabControl.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding Underlying}" />
+                </DataTemplate>
+            </TabControl.ItemTemplate>
+            <TabControl.ContentTemplate>
+            <DataTemplate DataType="x:Type vm:OptionUserControlViewModel">
+                    <local:OptionUserControl />
+                </DataTemplate>
+            </TabControl.ContentTemplate>
+        </TabControl>
+    <!--/Grid-->
+</Window>

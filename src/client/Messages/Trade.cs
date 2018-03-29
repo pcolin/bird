@@ -24,9 +24,9 @@ namespace Proto {
     static TradeReflection() {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
-            "CgtUcmFkZS5wcm90bxIFcHJvdG8aC09yZGVyLnByb3RvIoEBCgVUcmFkZRIK",
+            "CgtUcmFkZS5wcm90bxIFUHJvdG8aC09yZGVyLnByb3RvIoEBCgVUcmFkZRIK",
             "CgJpZBgBIAEoCRISCgppbnN0cnVtZW50GAIgASgJEhkKBHNpZGUYAyABKA4y",
-            "Cy5wcm90by5TaWRlEg0KBXByaWNlGAQgASgBEg4KBnZvbHVtZRgFIAEoBRIM",
+            "Cy5Qcm90by5TaWRlEg0KBXByaWNlGAQgASgBEg4KBnZvbHVtZRgFIAEoBRIM",
             "CgR0aW1lGAYgASgEEhAKCG9yZGVyX2lkGAcgASgEYgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Proto.OrderReflection.Descriptor, },

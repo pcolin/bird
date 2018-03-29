@@ -9,7 +9,7 @@ namespace client.Models
     public interface ISocket
     {
         void Initialize(string address);
-        void Start();
+        bool Start();
         void Stop();
     }
 }
