@@ -11,32 +11,32 @@ namespace base
 {
 inline size_t GetEncodedSize(const google::protobuf::Message &msg)
 {
-  return sizeof(int32_t) + msg.GetTypeName().size() + msg.ByteSize();
+  return 5 + msg.GetTypeName().size() + msg.ByteSize();
 }
 
 inline bool EncodeProtoMessage(const google::protobuf::Message &msg, char *buf)
 {
   const std::string &type = msg.GetTypeName();
-  int32_t name_len = htonl(static_cast<int32_t>(type.size()));
-  memcpy(buf, reinterpret_cast<char*>(&name_len), sizeof(name_len));
-  memcpy(buf + sizeof(name_len), type.c_str(), type.size());
-  return msg.SerializeToArray(buf + sizeof(name_len) + type.size(), msg.ByteSize());
+  assert(type.size() < 256);
+  buf[4] = static_cast<char>(type.size());
+  memcpy(buf + 5, type.c_str(), type.size());
+  return msg.SerializeToArray(buf + 5 + type.size(), msg.ByteSize());
 }
 
 inline size_t EncodeProtoMessage(const google::protobuf::Message &msg, char **buf, size_t &n)
 {
   const std::string &type = msg.GetTypeName();
-  int32_t name_len = htonl(static_cast<int32_t>(type.size()));
-  size_t len = sizeof(name_len) + type.size() + msg.ByteSize();
+  assert(type.size() < 256);
+  size_t len = 5 + type.size() + msg.ByteSize();
   if (unlikely(len > n))
   {
     delete *buf;
     *buf = new char[len];
     n = len;
   }
-  memcpy(*buf, reinterpret_cast<char*>(&name_len), sizeof(name_len));
-  memcpy(*buf + sizeof(name_len), type.c_str(), type.size());
-  if (unlikely(!msg.SerializeToArray(*buf + sizeof(name_len) + type.size(), msg.ByteSize())))
+  (*buf)[4] = static_cast<char>(type.size());
+  memcpy(*buf + 5, type.c_str(), type.size());
+  if (unlikely(!msg.SerializeToArray(*buf + 5 + type.size(), msg.ByteSize())))
   {
     return 0;
   }
@@ -46,12 +46,12 @@ inline size_t EncodeProtoMessage(const google::protobuf::Message &msg, char **bu
 inline char* EncodeProtoMessage(const google::protobuf::Message &msg, size_t &n)
 {
   const std::string &type = msg.GetTypeName();
-  int32_t name_len = htonl(static_cast<int32_t>(type.size()));
-  n = sizeof(name_len) + type.size() + msg.ByteSize();
+  assert(type.size() < 256);
+  n = 5 + type.size() + msg.ByteSize();
   char *buf = new char[n];
-  memcpy(buf, reinterpret_cast<char*>(&name_len), sizeof(name_len));
-  memcpy(buf + sizeof(name_len), type.c_str(), type.size());
-  if (unlikely(!msg.SerializeToArray(buf + sizeof(name_len) + type.size(), msg.ByteSize())))
+  buf[4] = static_cast<char>(type.size());
+  memcpy(buf + 5, type.c_str(), type.size());
+  if (unlikely(!msg.SerializeToArray(buf + 5 + type.size(), msg.ByteSize())))
   {
     delete[] buf;
     n = 0;
@@ -64,13 +64,11 @@ inline google::protobuf::Message* DecodeProtoMessage(void *data, size_t n)
 {
   google::protobuf::Message *msg = nullptr;
   const char* buf = static_cast<const char*>(data);
-  int32_t name_len = 0;
-  memcpy(&name_len, buf, sizeof(name_len));
-  name_len = static_cast<int32_t>(ntohl(name_len));
-  if (name_len + sizeof(int32_t) < n)
+  int32_t name_len = buf[4];
+  if (name_len + 5 < n)
   {
     // std::cout << "len = " << name_len << std::endl;
-    std::string type(buf + sizeof(int32_t), name_len);
+    std::string type(buf + 5, name_len);
     // std::cout << "type = " << type << std::endl;
     const google::protobuf::Descriptor *descriptor =
       google::protobuf::DescriptorPool::generated_pool()->FindMessageTypeByName(type);
@@ -81,7 +79,7 @@ inline google::protobuf::Message* DecodeProtoMessage(void *data, size_t n)
       if (prototype)
       {
         msg = prototype->New();
-        const size_t head_len = + sizeof(name_len) + name_len;
+        const size_t head_len = 5 + name_len;
         if (!msg->ParseFromArray(buf + head_len, n - head_len))
         {
           delete msg;

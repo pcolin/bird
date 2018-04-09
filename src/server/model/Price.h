@@ -9,23 +9,32 @@ namespace Proto
 {
   class Price;
 }
+
+struct PriceLevel
+{
+  operator bool() const { return volume != base::VOLUME_UNDEFINED; }
+
+  base::PriceType price = base::PRICE_UNDEFINED;
+  base::VolumeType volume = base::VOLUME_UNDEFINED;
+};
+
 struct Price
 {
+  static const int LEVELS = 10;
   Price() : header(MsgType::Price) {}
 
   MsgHeader header;
   const Instrument *instrument;
-  base::PriceType last = base::PRICE_UNDEFINED;
-  base::PriceType bid = base::PRICE_UNDEFINED;
-  base::PriceType ask = base::PRICE_UNDEFINED;
+  PriceLevel last;
+  PriceLevel bids[LEVELS];
+  PriceLevel asks[LEVELS];
   base::PriceType open = base::PRICE_UNDEFINED;
   base::PriceType high = base::PRICE_UNDEFINED;
   base::PriceType low = base::PRICE_UNDEFINED;
   base::PriceType close = base::PRICE_UNDEFINED;
-  double amount = base::PRICE_UNDEFINED;
-  // base::VolumeType last_volume;
-  base::VolumeType bid_volume = base::VOLUME_UNDEFINED;
-  base::VolumeType ask_volume = base::VOLUME_UNDEFINED;
+  base::PriceType pre_close = base::PRICE_UNDEFINED;
+  base::PriceType pre_settlement = base::PRICE_UNDEFINED;
+  base::PriceType amount = base::PRICE_UNDEFINED;
   base::VolumeType volume = base::VOLUME_UNDEFINED;
 
   std::string Dump() const;

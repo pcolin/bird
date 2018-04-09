@@ -4,10 +4,12 @@
 #include "config/EnvConfig.h"
 #include "Heartbeat.pb.h"
 #include "Server.pb.h"
+#include "Instrument.pb.h"
 #include "Price.pb.h"
 #include "Order.pb.h"
 #include "Trade.pb.h"
 #include "Cash.pb.h"
+#include "Position.pb.h"
 
 #include "nn.h"
 #include "pubsub.h"
@@ -62,11 +64,14 @@ int main(int argc, char *argv[])
 
   auto *heartbeat = new Proto::Heartbeat();
   auto *info = new Proto::ServerInfo();
+  auto *instrument = new Proto::InstrumentReq();
   auto *price = new Proto::Price();
   auto *order = new Proto::Order();
   auto *trade = new Proto::Trade();
   auto *cash = new Proto::Cash();
+  auto *position = new Proto::PositionReq();
 
+  int32_t serial_num = 0;
   while (true)
   {
     void *buf = NULL;
@@ -79,8 +84,11 @@ int main(int argc, char *argv[])
     auto *msg = DecodeProtoMessage(buf, recv_bytes);
     if (msg)
     {
-      LOG_INF << boost::format("type: %1% %2%") % msg->GetTypeName() % msg->ShortDebugString();
+      LOG_INF << boost::format("%1% %2% %3%") % serial_num % msg->GetTypeName() %
+        msg->ShortDebugString();
       delete msg;
+      int32_t tmp = htonl(serial_num++);
+      memcpy(buf, reinterpret_cast<char*>(&tmp), sizeof(tmp));
       int send_bytes  = nn_send(pub, buf, recv_bytes, 0);
       if (unlikely(send_bytes != recv_bytes))
       {
@@ -96,9 +104,11 @@ int main(int argc, char *argv[])
   }
   delete heartbeat;
   delete info;
+  delete instrument;
   delete price;
   delete order;
   delete trade;
   delete cash;
+  delete position;
   return 0;
 }

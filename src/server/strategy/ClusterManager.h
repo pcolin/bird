@@ -3,12 +3,13 @@
 
 #include "Heartbeat.pb.h"
 #include "Cash.pb.h"
+#include "DeviceManager.h"
 #include "model/Instrument.h"
 
 #include <unordered_map>
 #include <memory>
 
-class DeviceManager;
+// class DeviceManager;
 class ClusterManager
 {
 public:
@@ -22,6 +23,15 @@ public:
 
   void OnHeartbeat(const std::shared_ptr<Proto::Heartbeat> &heartbeat);
   void OnCash(const std::shared_ptr<Proto::Cash> &cash);
+  void OnPriceReq(const std::shared_ptr<Proto::PriceReq> &req);
+
+  template<class Type> void Publish(const Type &msg)
+  {
+    for (auto &it : devices_)
+    {
+      it.second->Publish(msg);
+    }
+  }
 
   bool IsStrategiesRunning() const;
   void StopAll();

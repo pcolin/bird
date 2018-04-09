@@ -3,6 +3,7 @@
 #include "base/common/Likely.h"
 #include "base/logger/Logging.h"
 #include "model/Middleware.h"
+#include "model/ProductManager.h"
 #include "model/CashManager.h"
 
 ClusterManager* ClusterManager::GetInstance()
@@ -66,10 +67,11 @@ DeviceManager* ClusterManager::FindDevice(const Instrument *underlying) const
 
 void ClusterManager::OnHeartbeat(const std::shared_ptr<Proto::Heartbeat> &heartbeat)
 {
-  for (auto &it : devices_)
-  {
-    it.second->Publish(heartbeat);
-  }
+  Publish(heartbeat);
+  // for (auto &it : devices_)
+  // {
+  //   it.second->Publish(heartbeat);
+  // }
 }
 
 void ClusterManager::OnCash(const std::shared_ptr<Proto::Cash> &cash)
@@ -81,6 +83,30 @@ void ClusterManager::OnCash(const std::shared_ptr<Proto::Cash> &cash)
   }
   CashManager::GetInstance()->OnCash(cash);
   Middleware::GetInstance()->Publish(cash);
+}
+
+void ClusterManager::OnPriceReq(const std::shared_ptr<Proto::PriceReq> &req)
+{
+  if (req->instrument().empty())
+  {
+    Publish(req);
+  }
+  else
+  {
+    auto *inst = ProductManager::GetInstance()->FindId(req->instrument());
+    if (inst && inst->HedgeUnderlying())
+    {
+      auto it = devices_.find(inst->HedgeUnderlying());
+      if (it != devices_.end())
+      {
+        it->second->Publish(req);
+      }
+    }
+    else
+    {
+      LOG_ERR << "Can't find instrument " << req->instrument();
+    }
+  }
 }
 
 bool ClusterManager::IsStrategiesRunning() const

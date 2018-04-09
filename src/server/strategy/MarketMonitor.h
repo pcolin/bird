@@ -6,6 +6,7 @@
 
 class MarketMonitor : public Strategy
 {
+  typedef std::unordered_map<const Instrument*, std::shared_ptr<Proto::Price>> PriceMap; 
 public:
   MarketMonitor(const std::string &name, DeviceManager *dm);
 
@@ -20,11 +21,13 @@ protected:
 
 private:
   bool OnPosition(const std::shared_ptr<Proto::Position> &position);
+  bool OnPriceReq(const std::shared_ptr<Proto::PriceReq> &req);
   int und_price_time_;
   int opt_price_time_;
 
   std::vector<OrderPtr> orders_;
 
+  PriceMap prices_;
   // std::unique_ptr<std::thread> cash_thread_;
 
 };

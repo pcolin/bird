@@ -20,6 +20,7 @@ enum class EnvVar : int8_t
   ORDER_DB_FILE,
   TRADE_DB_FILE,
   DEL_EXPIRE_INST,
+  DEL_POS_AT_INIT,
 
   /// Logging
   LOGGING_LEVEL,
@@ -29,11 +30,13 @@ enum class EnvVar : int8_t
 
   /// exchange
   EXCHANGE,
+  PUB_PRICE_LEVELS,
+  PUB_PRICE_INTERVAL,
   QRY_CASH_INTERVAL,
   OPT_CASH_LIMIT,
   SPOT_CASH_LIMIT,
   WASH_TRADE_PROT,
-  ORDER_GC_THRESHOLD, 
+  ORDER_GC_THRESHOLD,
 
   /// ctp
   CTP_TRADE_ADDR,

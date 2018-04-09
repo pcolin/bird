@@ -4,6 +4,7 @@
 #include "base/common/Likely.h"
 #include "base/common/CodeConverter.h"
 #include "base/logger/Logging.h"
+#include "config/EnvConfig.h"
 #include "model/Price.h"
 #include "model/ProductManager.h"
 #include "strategy/ClusterManager.h"
@@ -101,28 +102,93 @@ void CtpMdSpi::OnRtnDepthMarketData(CThostFtdcDepthMarketDataField *pDepthMarket
     PricePtr price = Message::NewPrice();
     price->header.SetTime();
     price->instrument = inst;
-    price->last = (pDepthMarketData->LastPrice < DBL_MAX) ?
-      pDepthMarketData->LastPrice : PRICE_UNDEFINED;
-    price->bid = (pDepthMarketData->BidPrice1 < DBL_MAX) ?
-      pDepthMarketData->BidPrice1 : PRICE_UNDEFINED;
-    price->bid_volume = (pDepthMarketData->BidVolume1 < DBL_MAX) ?
-      pDepthMarketData->BidVolume1 : VOLUME_UNDEFINED;
-    price->ask = (pDepthMarketData->AskPrice1 < DBL_MAX) ?
-      pDepthMarketData->AskPrice1 : PRICE_UNDEFINED;
-    price->ask_volume = (pDepthMarketData->AskVolume1 < DBL_MAX) ?
-      pDepthMarketData->AskVolume1 : VOLUME_UNDEFINED;
-    price->open = (pDepthMarketData->OpenPrice < DBL_MAX) ?
-      pDepthMarketData->OpenPrice : PRICE_UNDEFINED;
-    price->high = (pDepthMarketData->HighestPrice < DBL_MAX) ?
-      pDepthMarketData->HighestPrice : PRICE_UNDEFINED;
-    price->low = (pDepthMarketData->LowestPrice < DBL_MAX) ?
-      pDepthMarketData->LowestPrice : PRICE_UNDEFINED;
-    price->close = (pDepthMarketData->ClosePrice < DBL_MAX) ?
-      pDepthMarketData->ClosePrice : PRICE_UNDEFINED;
-    price->volume = (pDepthMarketData->Volume < DBL_MAX) ?
-      pDepthMarketData->Volume : VOLUME_UNDEFINED;
-    price->amount = (pDepthMarketData->Turnover < DBL_MAX) ?
-      pDepthMarketData->Turnover : PRICE_UNDEFINED;
+    if (pDepthMarketData->LastPrice < DBL_MAX)
+    {
+      price->last.price = pDepthMarketData->LastPrice;
+    }
+    static bool pub_levels = EnvConfig::GetInstance()->GetBool(EnvVar::PUB_PRICE_LEVELS, true);
+    if (pDepthMarketData->BidPrice1 < DBL_MAX)
+    {
+      price->bids[0].price = pDepthMarketData->BidPrice1;
+      price->bids[0].volume = pDepthMarketData->BidVolume1;
+      if (pub_levels && pDepthMarketData->BidPrice2 < DBL_MAX)
+      {
+        price->bids[1].price = pDepthMarketData->BidPrice2;
+        price->bids[1].volume = pDepthMarketData->BidVolume2;
+        if (pDepthMarketData->BidPrice3 < DBL_MAX)
+        {
+          price->bids[2].price = pDepthMarketData->BidPrice3;
+          price->bids[2].volume = pDepthMarketData->BidVolume3;
+          if (pDepthMarketData->BidPrice4 < DBL_MAX)
+          {
+            price->bids[3].price = pDepthMarketData->BidPrice4;
+            price->bids[3].volume = pDepthMarketData->BidVolume4;
+            if (pDepthMarketData->BidPrice5 < DBL_MAX)
+            {
+              price->bids[4].price = pDepthMarketData->BidPrice5;
+              price->bids[4].volume = pDepthMarketData->BidVolume5;
+            }
+          }
+        }
+      }
+    }
+    if (pDepthMarketData->AskPrice1 < DBL_MAX)
+    {
+      price->asks[0].price = pDepthMarketData->AskPrice1;
+      price->asks[0].volume = pDepthMarketData->AskVolume1;
+      if (pub_levels && pDepthMarketData->AskPrice2 < DBL_MAX)
+      {
+        price->asks[1].price = pDepthMarketData->AskPrice2;
+        price->asks[1].volume = pDepthMarketData->AskVolume2;
+        if (pDepthMarketData->AskPrice3 < DBL_MAX)
+        {
+          price->asks[2].price = pDepthMarketData->AskPrice3;
+          price->asks[2].volume = pDepthMarketData->AskVolume3;
+          if (pDepthMarketData->AskPrice4 < DBL_MAX)
+          {
+            price->asks[3].price = pDepthMarketData->AskPrice4;
+            price->asks[3].volume = pDepthMarketData->AskVolume4;
+            if (pDepthMarketData->AskPrice5 < DBL_MAX)
+            {
+              price->asks[4].price = pDepthMarketData->AskPrice5;
+              price->asks[4].volume = pDepthMarketData->AskVolume5;
+            }
+          }
+        }
+      }
+    }
+    if (pDepthMarketData->OpenPrice < DBL_MAX)
+    {
+      price->open = pDepthMarketData->OpenPrice;
+    }
+    if (pDepthMarketData->HighestPrice < DBL_MAX)
+    {
+      price->high = pDepthMarketData->HighestPrice;
+    }
+    if (pDepthMarketData->LowestPrice < DBL_MAX)
+    {
+      price->low = pDepthMarketData->LowestPrice;
+    }
+    if (pDepthMarketData->ClosePrice < DBL_MAX)
+    {
+      price->close = pDepthMarketData->ClosePrice;
+    }
+    if (pDepthMarketData->PreClosePrice < DBL_MAX)
+    {
+      price->pre_close = pDepthMarketData->PreClosePrice;
+    }
+    if (pDepthMarketData->PreSettlementPrice < DBL_MAX)
+    {
+      price->pre_settlement = pDepthMarketData->PreSettlementPrice;
+    }
+    if (pDepthMarketData->Turnover < DBL_MAX)
+    {
+      price->amount = pDepthMarketData->Turnover;
+    }
+    if (pDepthMarketData->Volume < DBL_MAX)
+    {
+      price->volume = pDepthMarketData->Volume;
+    }
 
     if (unlikely(inst->Highest() == PRICE_UNDEFINED || inst->Lowest() == PRICE_UNDEFINED))
     {
@@ -133,6 +199,7 @@ void CtpMdSpi::OnRtnDepthMarketData(CThostFtdcDepthMarketDataField *pDepthMarket
         p->Lowest(pDepthMarketData->LowerLimitPrice);
       LOG_INF << boost::format("Lowest/Highest price update: %1% - %2%/%3%") %
         p->Id() % p->Lowest() % p->Highest();
+      /// to be done... publish InstrumentReq
     }
     dm->Publish(price);
   }

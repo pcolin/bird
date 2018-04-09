@@ -99,6 +99,10 @@ void ReplyRun(int rep, ProtoMessageDispatcher<ProtoMessagePtr> &dispatcher,
           hdr.msg_iov = &iov;
           hdr.msg_iovlen = 1;
         }
+        else
+        {
+          LOG_ERR << "Get null reply: " << msg->ShortDebugString();
+        }
       }
       void *control = std::get<1>(messages[i]);
       hdr.msg_control = &control;
@@ -216,7 +220,7 @@ int main(int argc, char *argv[])
       auto *msg = DecodeProtoMessage(buf, bytes);
       if (msg)
       {
-        // LOG_INF << boost::format("type: %1% %2%") % msg->GetTypeName() % msg->ShortDebugString();
+        LOG_INF << boost::format("type: %1% %2%") % msg->GetTypeName() % msg->ShortDebugString();
         subscribes.enqueue(ProtoMessagePtr(msg));
       }
       else

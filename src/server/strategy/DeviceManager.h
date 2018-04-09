@@ -3,6 +3,7 @@
 
 #include "StrategyTypes.h"
 #include "Strategy.pb.h"
+#include "Price.pb.h"
 #include "base/disruptor/BusySpinWaitStrategy.h"
 #include "base/disruptor/MultiProducerSequencer.h"
 

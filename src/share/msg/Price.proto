@@ -1,18 +1,33 @@
 syntax = "proto3";
 package Proto;
 
+import "Request.proto";
+
+message PriceLevel
+{
+  double price = 1;
+  int32 volume = 2;
+}
+
 message Price
 {
   string instrument = 1;
-  double last = 2;
-  double bid = 3;
-  double ask = 4;
+  PriceLevel last = 2;
+  repeated PriceLevel bids = 3;
+  repeated PriceLevel asks = 4;
   double open = 5;
   double high = 6;
   double low = 7;
   double close = 8;
-  double amount = 9;
-  int32 bid_volume = 10;
-  int32 ask_volume = 11;
+  double pre_close = 9;
+  double pre_settlement = 10;
+  double amount = 11;
   int32 volume = 12;
+}
+
+message PriceReq
+{
+  RequestType type = 1;
+  string instrument = 2;
+  string user = 3;
 }

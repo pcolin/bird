@@ -108,6 +108,11 @@ Middleware::ProtoReplyPtr Middleware::OnLogout(const std::shared_ptr<Proto::Logo
   return ClientManager::GetInstance()->Logout(msg);
 }
 
+Middleware::ProtoReplyPtr Middleware::OnPriceReq(const std::shared_ptr<Proto::PriceReq> &msg)
+{
+  ClusterManager::GetInstance()->OnPriceReq(msg);
+}
+
 Middleware::ProtoReplyPtr Middleware::OnStrategyStatusReq(const std::shared_ptr<Proto::StrategyStatusReq> &msg)
 {
   if (msg->type() == Proto::RequestType::Set)
@@ -217,6 +222,8 @@ void Middleware::RunResponder()
     std::bind(&Middleware::OnLogin, this, std::placeholders::_1));
   dispatcher.RegisterCallback<Proto::Logout>(
     std::bind(&Middleware::OnLogout, this, std::placeholders::_1));
+  dispatcher.RegisterCallback<Proto::PriceReq>(
+    std::bind(&Middleware::OnPriceReq, this, std::placeholders::_1));
   dispatcher.RegisterCallback<Proto::StrategyStatusReq>(
     std::bind(&Middleware::OnStrategyStatusReq, this, std::placeholders::_1));
   size_t n = 64;

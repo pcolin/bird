@@ -8,6 +8,7 @@
 #include "config/EnvConfig.h"
 #include "Heartbeat.pb.h"
 #include "Login.pb.h"
+#include "Price.pb.h"
 #include "Reply.pb.h"
 #include "Strategy.pb.h"
 
@@ -97,6 +98,7 @@ private:
   ProtoReplyPtr OnHeartbeat(const std::shared_ptr<Proto::Heartbeat> &msg);
   ProtoReplyPtr OnLogin(const std::shared_ptr<Proto::Login> &msg);
   ProtoReplyPtr OnLogout(const std::shared_ptr<Proto::Logout> &msg);
+  ProtoReplyPtr OnPriceReq(const std::shared_ptr<Proto::PriceReq> &msg);
   ProtoReplyPtr OnStrategyStatusReq(const std::shared_ptr<Proto::StrategyStatusReq> &msg);
 
   void RunTimer();

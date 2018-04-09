@@ -1,44 +1,34 @@
-#include "InstrumentDB.h"
+#include "ExchangeParameterDB.h"
 #include "base/logger/Logging.h"
 #include "config/EnvConfig.h"
 #include "model/Message.h"
 
-#include <chrono>
-#include <ctime>
-#include <iomanip>
-#include <sstream>
 #include <boost/format.hpp>
 
-InstrumentDB::InstrumentDB(ConcurrentSqliteDB &db, const std::string &table_name)
+ExchangeParameterDB::ExchangeParameterDB(ConcurrentSqliteDB &db, const std::string &table_name)
   : DbBase(db), table_name_(table_name)
-{
-  std::ostringstream oss;
-  auto t = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-  oss << std::put_time(std::localtime(&t), "%Y%m%d");
-  trading_date_ = oss.str();
-  LOG_INF << "Trading date is " << trading_date_;
-}
+{}
 
-void InstrumentDB::RefreshCache()
+void ExchangeParameterDB::RefreshCache()
 {
   char query[1024];
   if (EnvConfig::GetInstance()->GetBool(EnvVar::DEL_EXPIRE_INST, true))
   {
-    sprintf(query, "DELETE FROM %s WHERE maturity<'%s'", table_name_.c_str(), trading_date_.c_str());
+    sprintf(query, "DELETE FROM %s WHERE maturity<'%s'", table_name_.c_str(), trading_date_);
     ExecSql(query);
   }
   sprintf(query, "SELECT * FROM %s", table_name_.c_str());
-  ExecSql(query, &underlyings_, &InstrumentDB::UnderlyingCallback);
-  ExecSql(query, this, &InstrumentDB::OptionCallback);
+  ExecSql(query, &underlyings_, &ExchangeParameterDB::UnderlyingCallback);
+  ExecSql(query, this, &ExchangeParameterDB::OptionCallback);
 }
 
-void InstrumentDB::RegisterCallback(base::ProtoMessageDispatcher<base::ProtoMessagePtr> &dispatcher)
+void ExchangeParameterDB::RegisterCallback(base::ProtoMessageDispatcher<base::ProtoMessagePtr> &dispatcher)
 {
   dispatcher.RegisterCallback<Proto::InstrumentReq>(
-    std::bind(&InstrumentDB::OnRequest, this, std::placeholders::_1));
+    std::bind(&ExchangeParameterDB::OnRequest, this, std::placeholders::_1));
 }
 
-base::ProtoMessagePtr InstrumentDB::OnRequest(const std::shared_ptr<Proto::InstrumentReq> &msg)
+base::ProtoMessagePtr ExchangeParameterDB::OnRequest(const std::shared_ptr<Proto::InstrumentReq> &msg)
 {
   LOG_INF << "Instrument request: " << msg->ShortDebugString();
   auto reply = Message::NewProto<Proto::InstrumentRep>();
@@ -85,7 +75,7 @@ base::ProtoMessagePtr InstrumentDB::OnRequest(const std::shared_ptr<Proto::Instr
   return reply;
 }
 
-void InstrumentDB::UpdateInstrument(const Proto::Instrument &inst, InstrumentMap &cache)
+void ExchangeParameterDB::UpdateInstrument(const Proto::Instrument &inst, InstrumentMap &cache)
 {
   auto it = cache.find(inst.id());
   if (it != cache.end())
@@ -100,7 +90,7 @@ void InstrumentDB::UpdateInstrument(const Proto::Instrument &inst, InstrumentMap
   }
 }
 
-int InstrumentDB::UnderlyingCallback(void *data, int argc, char **argv, char **col_name)
+int ExchangeParameterDB::UnderlyingCallback(void *data, int argc, char **argv, char **col_name)
 {
   auto type = static_cast<Proto::InstrumentType>(atoi(argv[3]));
   if (type != Proto::InstrumentType::Option)
@@ -124,12 +114,12 @@ int InstrumentDB::UnderlyingCallback(void *data, int argc, char **argv, char **c
   return 0;
 }
 
-int InstrumentDB::OptionCallback(void *data, int argc, char **argv, char **col_name)
+int ExchangeParameterDB::OptionCallback(void *data, int argc, char **argv, char **col_name)
 {
   auto type = static_cast<Proto::InstrumentType>(atoi(argv[3]));
   if (type == Proto::InstrumentType::Option)
   {
-    auto *db = static_cast<InstrumentDB*>(data);
+    auto *db = static_cast<ExchangeParameterDB*>(data);
     auto &cache = db->options_;
     std::string id = argv[0];
     auto inst = Message::NewProto<Proto::Instrument>();

@@ -30,6 +30,7 @@ EnvConfig::EnvConfig()
     { static_cast<int8_t>(EnvVar::ORDER_DB_FILE), "ORDER_DB_FILE" },
     { static_cast<int8_t>(EnvVar::TRADE_DB_FILE), "TRADE_DB_FILE" },
     { static_cast<int8_t>(EnvVar::DEL_EXPIRE_INST), "DEL_EXPIRE_INST" },
+    { static_cast<int8_t>(EnvVar::DEL_POS_AT_INIT), "DEL_POS_AT_INIT" },
 
     /// Logging
     { static_cast<int8_t>(EnvVar::LOGGING_LEVEL), "LOGGING_LEVEL" },
@@ -39,6 +40,8 @@ EnvConfig::EnvConfig()
 
     /// exchange
     { static_cast<int8_t>(EnvVar::EXCHANGE), "EXCHANGE" },
+    { static_cast<int8_t>(EnvVar::PUB_PRICE_LEVELS), "PUB_PRICE_LEVELS" },
+    { static_cast<int8_t>(EnvVar::PUB_PRICE_INTERVAL), "PUB_PRICE_INTERVAL"},
     { static_cast<int8_t>(EnvVar::QRY_CASH_INTERVAL), "QRY_CASH_INT" },
     { static_cast<int8_t>(EnvVar::OPT_CASH_LIMIT), "OPT_CASH_LIMIT" },
     { static_cast<int8_t>(EnvVar::SPOT_CASH_LIMIT), "SPOT_CASH_LIMIT" },

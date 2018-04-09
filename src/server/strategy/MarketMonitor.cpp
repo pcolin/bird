@@ -61,7 +61,9 @@ void MarketMonitor::OnPrice(const PricePtr &price)
   {
     und_price_time_ = now;
   }
-  Middleware::GetInstance()->Publish(price->Serialize());
+  auto p = price->Serialize();
+  prices_[price->instrument] = p;
+  Middleware::GetInstance()->Publish(p);
 }
 
 void MarketMonitor::OnOrder(const OrderPtr &order)
@@ -91,5 +93,15 @@ bool MarketMonitor::OnPosition(const std::shared_ptr<Proto::Position> &position)
 {
   LOG_INF << "Position: " << position->ShortDebugString();
   PositionManager::GetInstance()->UpdatePosition(position);
+  return true;
+}
+
+bool MarketMonitor::OnPriceReq(const std::shared_ptr<Proto::PriceReq> &req)
+{
+  LOG_INF << "PriceReq: " << req->ShortDebugString();
+  for (auto it : prices_)
+  {
+    Middleware::GetInstance()->Publish(it.second);
+  }
   return true;
 }
