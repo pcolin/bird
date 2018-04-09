@@ -24,32 +24,19 @@ namespace Proto {
     static CashReflection() {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
-            "CgpDYXNoLnByb3RvEgVwcm90byJ/CgRDYXNoEiEKCGN1cnJlbmN5GAEgASgO",
-            "Mg8ucHJvdG8uQ3VycmVuY3kSDwoHYWNjb3VudBgCIAEoCRINCgV0b3RhbBgD",
-            "IAEoARIRCglhdmFpbGFibGUYBCABKAESEQoJaXNfZW5vdWdoGAUgASgIEg4K",
-            "Bm1hcmdpbhgGIAEoASpACghDdXJyZW5jeRIHCgNDTlkQABIHCgNIS0QQARIH",
-            "CgNVU0QQAhIHCgNFVVIQAxIHCgNKUFkQBBIHCgNTR0QQBWIGcHJvdG8z"));
+            "CgpDYXNoLnByb3RvEgVQcm90bxoOQ3VycmVuY3kucHJvdG8ifwoEQ2FzaBIh",
+            "CghjdXJyZW5jeRgBIAEoDjIPLlByb3RvLkN1cnJlbmN5Eg8KB2FjY291bnQY",
+            "AiABKAkSDQoFdG90YWwYAyABKAESEQoJYXZhaWxhYmxlGAQgASgBEhEKCWlz",
+            "X2Vub3VnaBgFIAEoCBIOCgZtYXJnaW4YBiABKAFiBnByb3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
-          new pbr::FileDescriptor[] { },
-          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Proto.Currency), }, new pbr::GeneratedClrTypeInfo[] {
+          new pbr::FileDescriptor[] { global::Proto.CurrencyReflection.Descriptor, },
+          new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
             new pbr::GeneratedClrTypeInfo(typeof(global::Proto.Cash), global::Proto.Cash.Parser, new[]{ "Currency", "Account", "Total", "Available", "IsEnough", "Margin" }, null, null, null)
           }));
     }
     #endregion
 
   }
-  #region Enums
-  public enum Currency {
-    [pbr::OriginalName("CNY")] Cny = 0,
-    [pbr::OriginalName("HKD")] Hkd = 1,
-    [pbr::OriginalName("USD")] Usd = 2,
-    [pbr::OriginalName("EUR")] Eur = 3,
-    [pbr::OriginalName("JPY")] Jpy = 4,
-    [pbr::OriginalName("SGD")] Sgd = 5,
-  }
-
-  #endregion
-
   #region Messages
   public sealed partial class Cash : pb::IMessage<Cash> {
     private static readonly pb::MessageParser<Cash> _parser = new pb::MessageParser<Cash>(() => new Cash());

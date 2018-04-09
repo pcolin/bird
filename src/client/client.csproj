@@ -38,6 +38,10 @@
     </ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Dragablz, Version=0.0.3.203, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\Dragablz.0.0.3.203\lib\net45\Dragablz.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Google.Protobuf, Version=3.5.1.0, Culture=neutral, PublicKeyToken=a7d26565bac4d604, processorArchitecture=MSIL">
       <HintPath>packages\Google.Protobuf.3.5.1\lib\net45\Google.Protobuf.dll</HintPath>
       <Private>True</Private>
@@ -77,8 +81,10 @@
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.ServiceModel" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Windows.Interactivity, Version=4.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>packages\Prism.Wpf.6.3.0\lib\net45\System.Windows.Interactivity.dll</HintPath>
       <Private>True</Private>
@@ -106,27 +112,50 @@
     </Compile>
     <Compile Include="Bootstrapper.cs" />
     <Compile Include="Messages\Cash.cs" />
+    <Compile Include="Messages\CashLimit.cs" />
+    <Compile Include="Messages\Currency.cs" />
+    <Compile Include="Messages\Exchange.cs" />
     <Compile Include="Messages\Heartbeat.cs" />
+    <Compile Include="Messages\Instrument.cs" />
     <Compile Include="Messages\Login.cs" />
     <Compile Include="Messages\Order.cs" />
     <Compile Include="Messages\Position.cs" />
     <Compile Include="Messages\Price.cs" />
     <Compile Include="Messages\Reply.cs" />
+    <Compile Include="Messages\Request.cs" />
     <Compile Include="Messages\Server.cs" />
     <Compile Include="Messages\Strategy.cs" />
     <Compile Include="Messages\Trade.cs" />
+    <Compile Include="Models\DatabaseService.cs" />
     <Compile Include="Models\ISocket.cs" />
+    <Compile Include="Models\LoggingEventSource.cs" />
+    <Compile Include="Models\ProductManager.cs" />
     <Compile Include="Models\ProtoMessageCoder.cs" />
     <Compile Include="Models\ProxyService.cs" />
     <Compile Include="Models\ServerConnector.cs" />
     <Compile Include="Models\ServerService.cs" />
+    <Compile Include="ViewModels\CloseWindowEvent.cs" />
     <Compile Include="ViewModels\MainWindowViewModel.cs" />
-    <Compile Include="ViewModels\OptionViewsWindowViewModel.cs" />
+    <Compile Include="ViewModels\OptionUserControlViewModel.cs" />
+    <Compile Include="ViewModels\OptionWindowViewModel.cs" />
+    <Compile Include="ViewModels\StartWindowEvent.cs" />
+    <Compile Include="Views\ColumnSettingWindow.xaml.cs">
+      <DependentUpon>ColumnSettingWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\LoginWindow.xaml.cs">
       <DependentUpon>LoginWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\OptionUserControl.xaml.cs">
+      <DependentUpon>OptionUserControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\OptionWindow.xaml.cs">
+      <DependentUpon>OptionWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\PortfolioWindow.xaml.cs">
+      <DependentUpon>PortfolioWindow.xaml</DependentUpon>
     </Compile>
   </ItemGroup>
   <ItemGroup>
@@ -169,11 +198,27 @@
     <Folder Include="Voices\" />
   </ItemGroup>
   <ItemGroup>
+    <Page Include="Views\ColumnSettingWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\LoginWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\MainWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\OptionUserControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\OptionWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\PortfolioWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

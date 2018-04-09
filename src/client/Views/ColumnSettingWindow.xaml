@@ -1,0 +1,65 @@
+﻿<Window x:Class="client.Views.ColumnSettingWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:client.Views"
+        Title="Setting" Height="300" Width="300"
+        Icon="/Images/bird_32x32.ico"
+        Loaded="Window_Loaded">
+    <Window.Resources>
+        <local:SelectedIndexToBooleanConverter x:Key="EnableConverter" /> 
+    </Window.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" MinWidth="60"></ColumnDefinition>
+            <ColumnDefinition Width="Auto" MinWidth="60"></ColumnDefinition>
+            <ColumnDefinition Width="*"></ColumnDefinition>
+            <ColumnDefinition Width="Auto" MinWidth="60"></ColumnDefinition>
+            <ColumnDefinition Width="Auto" MinWidth="60"></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+        <DataGrid Name="SettingDataGrid"
+                  Grid.ColumnSpan="5"
+                  Margin="5"
+                  SelectionMode="Single"
+                  AllowDrop="False"
+                  RowHeaderWidth="20"
+                  AutoGenerateColumns="False"
+                  CanUserAddRows="False"
+                  CanUserReorderColumns="False"
+                  CanUserSortColumns="False"
+                  SelectionUnit="FullRow"
+                  LoadingRow="SettingDataGrid_LoadingRow"
+                  SelectedCellsChanged="SettingDataGrid_SelectedCellsChanged" >
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Index" IsReadOnly="True" Binding="{Binding Index}" />
+                <DataGridTextColumn Header="Header" IsReadOnly="True" Binding="{Binding Header}" />                
+                <!--DataGridTextColumn Header="DisplayIndex" IsReadOnly="True" Binding="{Binding DisplayIndex}" /-->
+                <DataGridCheckBoxColumn Header="Visible" Binding="{Binding Visible, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" >
+                    <DataGridCheckBoxColumn.ElementStyle>
+                        <Style TargetType="CheckBox">
+                            <Setter Property="VerticalAlignment" Value="Center" />
+                            <Setter Property="HorizontalAlignment" Value="Center" />
+                        </Style>
+                    </DataGridCheckBoxColumn.ElementStyle>
+                </DataGridCheckBoxColumn>
+                <DataGridComboBoxColumn Header="Decimal" TextBinding="{Binding DecimalPlace, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" >
+                    <DataGridComboBoxColumn.ItemsSource>
+                        <Int32Collection>0,1,2,3,4,5</Int32Collection>
+                    </DataGridComboBoxColumn.ItemsSource>
+                    <DataGridComboBoxColumn.CellStyle>
+                        <Style TargetType="DataGridCell">
+                            <Setter Property="IsEnabled" Value="{Binding IsDecimal}" />
+                        </Style>
+                    </DataGridComboBoxColumn.CellStyle>
+                </DataGridComboBoxColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+        <Button Name="ButtonUP" Grid.Row="1" Margin="5" IsEnabled="False" Click="ButtonUP_Click" >UP</Button>
+        <Button Name="ButtonDown" Grid.Row="1" Grid.Column="1" Margin="5" IsEnabled="False" Click="ButtonDown_Click">Down</Button>
+        <Button Grid.Row="1" Grid.Column="3" Margin="5" Click="ButtonOK_Click">OK</Button>
+        <Button Grid.Row="1" Grid.Column="4" Margin="5" Click="ButtonCancel_Click">Cancel</Button>
+    </Grid>
+</Window>

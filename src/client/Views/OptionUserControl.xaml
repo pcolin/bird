@@ -1,0 +1,507 @@
+﻿<UserControl x:Class="client.Views.OptionUserControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:client.Views"
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="2000"
+             Loaded="UserControl_Loaded">
+    <Grid>
+        <Grid.Resources>
+            <local:DoubleFormatConverter x:Key="DoubleFormatConverter" />
+            <!--Style TargetType="DataGridColumnHeader">
+                <Setter Property="HorizontalContentAlignment" Value="Center" />
+            </Style-->
+            <Style x:Key="MarketBidPriceVolumeStyle" TargetType="TextBlock">
+                <Setter Property="Margin" Value="-1" />
+                <Setter Property="Background" Value="Red" />
+                <Setter Property="Foreground" Value="White" />
+            </Style>
+            <Style x:Key="MarketAskPriceVolumeStyle" TargetType="TextBlock">
+                <Setter Property="Margin" Value="-1" />
+                <Setter Property="Background" Value="Green" />
+                <Setter Property="Foreground" Value="White" />
+            </Style>
+        </Grid.Resources>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="10*"></RowDefinition>
+        </Grid.RowDefinitions>
+        <DataGrid Name="UnderlyingDataGrid"
+                  AutoGenerateColumns="False"
+                  CanUserAddRows="False"
+                  CanUserDeleteRows="False"
+                  IsReadOnly="True"
+                  RowHeaderWidth="20"
+                  CanUserSortColumns="False"
+                  CanUserReorderColumns="False"
+                  SelectionUnit="CellOrRowHeader"
+                  ItemsSource="{Binding Underlyings}">
+            <DataGrid.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="Setting..." Click="UnderlyingMenuItem_Click" />
+                </ContextMenu>
+            </DataGrid.ContextMenu>
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Symbol" Binding="{Binding Underlying.Symbol}" />
+                <DataGridTextColumn Header="Status" Binding="{Binding Status}" />
+                <DataGridTextColumn Header="B#" Binding="{Binding MarketBidVolume}" ElementStyle="{StaticResource MarketBidPriceVolumeStyle}" />
+                <DataGridTextColumn Header="B$" Binding="{Binding MarketBidPrice, StringFormat={}{0:F3}}" ElementStyle="{StaticResource MarketBidPriceVolumeStyle}" />
+                <DataGridTextColumn Header="Theo" Binding="{Binding Theo, StringFormat={}{0:F3}}" />
+                <DataGridTextColumn Header="A$" Binding="{Binding MarketAskPrice, StringFormat={}{0:F3}}" ElementStyle="{StaticResource MarketAskPriceVolumeStyle}" />
+                <DataGridTextColumn Header="A#" Binding="{Binding MarketAskVolume}" ElementStyle="{StaticResource MarketAskPriceVolumeStyle}" />
+                <DataGridTextColumn Header="Last" Binding="{Binding LastPrice, StringFormat={}{0:F3}}" />
+                <DataGridTextColumn Header="Volume" Binding="{Binding LastVolume}" />
+                <DataGridTextColumn Header="PreClose" Binding="{Binding PreClose, StringFormat={}{0:F3}}" />
+                <DataGridTextColumn Header="PreSettle" Binding="{Binding PreSettlement, StringFormat={}{0:F3}}" />
+                <DataGridTextColumn Header="Pos" Binding="{Binding Position}" />
+            </DataGrid.Columns>
+        </DataGrid>
+        <GridSplitter Grid.Row="1" Height="3" HorizontalAlignment="Stretch"></GridSplitter>
+        <DataGrid Name="OptionDataGrid"
+                  Grid.Row="2"
+                  AutoGenerateColumns="False"
+                  CanUserAddRows="False"
+                  CanUserDeleteRows="False"                  
+                  IsReadOnly="True"
+                  RowHeaderWidth="20"
+                  HorizontalGridLinesBrush="LightGray"                      
+                  VerticalGridLinesBrush="LightGray"
+                  CanUserSortColumns="False"
+                  CanUserReorderColumns="False"
+                  SelectionUnit="CellOrRowHeader"
+                  KeyUp="OptionDataGrid_KeyUp"
+                  ItemsSource="{Binding Options}">
+            <DataGrid.Resources>
+                <local:BackgroundConverter x:Key="BackgroundColorConverter" />
+                <local:ThicknessConverter x:Key="BorderThicknessConverter" />
+                <local:OnConverter x:Key="SwitchConverter" />
+                <local:PositionColorConverter x:Key="PositionColorConverter" />
+                <Style TargetType="{x:Type DataGridRow}">
+                    <Setter Property="BorderThickness" Value="{Binding IsFirst, Converter={StaticResource BorderThicknessConverter}}" />
+                </Style>
+                <Style x:Key="BidPriceVolumeStyle" TargetType="TextBlock">
+                    <Setter Property="Margin" Value="-1" />
+                    <Setter Property="Background" Value="#FFFFC0C0" />
+                    <Setter Property="Foreground" Value="White" />
+                </Style>
+                <Style x:Key="AskPriceVolumeStyle" TargetType="TextBlock">
+                    <Setter Property="Margin" Value="-1" />
+                    <Setter Property="Background" Value="#FFC0FFC0" />
+                    <Setter Property="Foreground" Value="White" />
+                </Style>
+                <Style x:Key="VolatilityBackgroundStyle" TargetType="TextBlock">
+                    <Setter Property="Margin" Value="-1" />
+                    <Setter Property="Background" Value="#FFFFE0C0" />
+                </Style>
+                <Style x:Key="GreeksBackgroundStyle" TargetType="TextBlock">
+                    <Setter Property="Margin" Value="-1" />
+                    <Setter Property="Background" Value="Silver" />
+                </Style>
+                <Style x:Key="AtmOptionBackgroundStyle" TargetType="TextBlock">
+                    <Setter Property="Margin" Value="-1" />
+                    <Setter Property="Background" Value="GreenYellow" />
+                </Style>
+            </DataGrid.Resources>
+            <DataGrid.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="Setting..." Click="OptionMenuItem_Click" />
+                </ContextMenu>
+            </DataGrid.ContextMenu>
+            <DataGrid.Columns>
+                <DataGridTemplateColumn x:Name="SymbolC" Header="Symbol">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Margin="-1" Text="{Binding Call.Option.Symbol}"
+                                       Background="{Binding GroupNo, Converter={StaticResource BackgroundColorConverter} }" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTextColumn x:Name="StatusC" Header="Status" Binding="{Binding Call.Status}" />
+                <DataGridTextColumn x:Name="CreditQC" Header="CreditQ">
+                    <DataGridTextColumn.Binding>
+                        <MultiBinding Converter="{StaticResource DoubleFormatConverter}">
+                            <Binding Path="Call.Option.InstrumentType" />
+                            <Binding Path="Call.QuoterCredit" />
+                            <Binding Path="Column.DisplayIndex" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGridCell}}" />
+                            <Binding RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
+                        </MultiBinding>
+                    </DataGridTextColumn.Binding>
+                </DataGridTextColumn>
+                <DataGridTextColumn x:Name="CriditHC" Header="CreditH">
+                    <DataGridTextColumn.Binding>
+                        <MultiBinding Converter="{StaticResource DoubleFormatConverter}">
+                            <Binding Path="Call.Option.InstrumentType" />
+                            <Binding Path="Call.HitterCredit" />
+                            <Binding Path="Column.DisplayIndex" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGridCell}}" />
+                            <Binding RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
+                        </MultiBinding>
+                    </DataGridTextColumn.Binding>
+                </DataGridTextColumn>
+                <DataGridTextColumn x:Name="CriditDC" Header="CreditD">
+                    <DataGridTextColumn.Binding>
+                        <MultiBinding Converter="{StaticResource DoubleFormatConverter}">
+                            <Binding Path="Call.Option.InstrumentType" />
+                            <Binding Path="Call.DimerCredit" />
+                            <Binding Path="Column.DisplayIndex" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGridCell}}" />
+                            <Binding RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
+                        </MultiBinding>
+                    </DataGridTextColumn.Binding>
+                </DataGridTextColumn>
+                <DataGridTemplateColumn x:Name="CoverC" Header="Cover" >
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Margin="-1" TextAlignment="Center" Text="{Binding Call.CoverOn, Converter={StaticResource SwitchConverter}}" >
+                                <TextBlock.InputBindings>
+                                    <MouseBinding Gesture="LeftDoubleClick"
+                                                  Command="{Binding DataContext.CoverCallSwitchCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGrid}}}"
+                                                  CommandParameter="{Binding CurrentCell, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGrid}}}" />
+                                </TextBlock.InputBindings>
+                            </TextBlock>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn x:Name="QBC" Header="QB" >
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Margin="-1" TextAlignment="Center" Text="{Binding Call.QuoterBidOn, Converter={StaticResource SwitchConverter}}" >
+                                <TextBlock.InputBindings>
+                                    <MouseBinding Gesture="LeftDoubleClick"
+                                                  Command="{Binding DataContext.QuoterCallBidSwitchCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGrid}}}"
+                                                  CommandParameter="{Binding CurrentCell, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGrid}}}" />
+                                </TextBlock.InputBindings>
+                            </TextBlock>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn x:Name="QSC" Header="QS" >
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Margin="-1" TextAlignment="Center" Text="{Binding Call.QuoterAskOn, Converter={StaticResource SwitchConverter}}" >
+                                <TextBlock.InputBindings>
+                                    <MouseBinding Gesture="LeftDoubleClick"
+                                                  Command="{Binding DataContext.QuoterCallAskSwitchCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGrid}}}"
+                                                  CommandParameter="{Binding CurrentCell, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGrid}}}" />
+                                </TextBlock.InputBindings>
+                            </TextBlock>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn x:Name="MBC" Header="MB" >
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Margin="-1" TextAlignment="Center" Text="{Binding Call.DummyQuoterBidOn, Converter={StaticResource SwitchConverter}}" >
+                                <TextBlock.InputBindings>
+                                    <MouseBinding Gesture="LeftDoubleClick"
+                                                  Command="{Binding DataContext.DummyQuoterCallBidSwitchCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGrid}}}"
+                                                  CommandParameter="{Binding CurrentCell, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGrid}}}" />
+                                </TextBlock.InputBindings>
+                            </TextBlock>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn x:Name="MSC" Header="MS" >
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Margin="-1" TextAlignment="Center" Text="{Binding Call.DummyQuoterAskOn, Converter={StaticResource SwitchConverter}}" >
+                                <TextBlock.InputBindings>
+                                    <MouseBinding Gesture="LeftDoubleClick"
+                                                  Command="{Binding DataContext.DummyQuoterCallAskSwitchCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGrid}}}"
+                                                  CommandParameter="{Binding CurrentCell, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGrid}}}" />
+                                </TextBlock.InputBindings>
+                            </TextBlock>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn x:Name="HBC" Header="HB" >
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Margin="-1" TextAlignment="Center" Text="{Binding Call.HitterBidOn, Converter={StaticResource SwitchConverter}}" >
+                                <TextBlock.InputBindings>
+                                    <MouseBinding Gesture="LeftDoubleClick"
+                                                  Command="{Binding DataContext.HitterCallBidSwitchCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGrid}}}"
+                                                  CommandParameter="{Binding CurrentCell, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGrid}}}" />
+                                </TextBlock.InputBindings>
+                            </TextBlock>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn x:Name="HSC" Header="HS" >
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Margin="-1" TextAlignment="Center" Text="{Binding Call.HitterAskOn, Converter={StaticResource SwitchConverter}}" >
+                                <TextBlock.InputBindings>
+                                    <MouseBinding Gesture="LeftDoubleClick"
+                                                  Command="{Binding DataContext.HitterCallAskSwitchCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGrid}}}"
+                                                  CommandParameter="{Binding CurrentCell, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGrid}}}" />
+                                </TextBlock.InputBindings>
+                            </TextBlock>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn x:Name="DBC" Header="DB" >
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Margin="-1" TextAlignment="Center" Text="{Binding Call.DimerBidOn, Converter={StaticResource SwitchConverter}}" >
+                                <TextBlock.InputBindings>
+                                    <MouseBinding Gesture="LeftDoubleClick"
+                                                  Command="{Binding DataContext.DimerCallBidSwitchCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGrid}}}"
+                                                  CommandParameter="{Binding CurrentCell, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGrid}}}" />
+                                </TextBlock.InputBindings>
+                            </TextBlock>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn x:Name="DSC" Header="DS" >
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Margin="-1" TextAlignment="Center" Text="{Binding Call.DimerAskOn, Converter={StaticResource SwitchConverter}}" >
+                                <TextBlock.InputBindings>
+                                    <MouseBinding Gesture="LeftDoubleClick"
+                                                  Command="{Binding DataContext.DimerCallAskSwitchCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGrid}}}"
+                                                  CommandParameter="{Binding CurrentCell, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGrid}}}" />
+                                </TextBlock.InputBindings>
+                            </TextBlock>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn x:Name="QRC" Header="QR" >
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Margin="-1" TextAlignment="Center" Text="{Binding Call.EnquiryResponseOn, Converter={StaticResource SwitchConverter}}" >
+                                <TextBlock.InputBindings>
+                                    <MouseBinding Gesture="LeftDoubleClick"
+                                                  Command="{Binding DataContext.EnquiryResponseCallSwitchCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGrid}}}"
+                                                  CommandParameter="{Binding CurrentCell, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGrid}}}" />
+                                </TextBlock.InputBindings>
+                            </TextBlock>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTextColumn x:Name="BidIDC" Header="BidID" Binding="{Binding Call.BidOrderID}" />
+                <DataGridTextColumn x:Name="BidVolumeC" Header="Bid#" Binding="{Binding Call.BidVolume}" ElementStyle="{StaticResource BidPriceVolumeStyle}" />
+                <DataGridTextColumn x:Name="BidPriceC" Header="Bid$" Binding="{Binding Call.BidPrice, StringFormat={}{0:F3}}" ElementStyle="{StaticResource BidPriceVolumeStyle}" />
+                <DataGridTextColumn x:Name="MarketBidVolumeC" Header="B#" Binding="{Binding Call.MarketBidVolume}" ElementStyle="{StaticResource MarketBidPriceVolumeStyle}" />
+                <DataGridTextColumn x:Name="MarketBidPriceC" Header="B$" Binding="{Binding Call.MarketBidPrice, StringFormat={}{0:F3}}" ElementStyle="{StaticResource MarketBidPriceVolumeStyle}" />
+                <DataGridTextColumn x:Name="TheoC" Header="Theo" Binding="{Binding Call.Theo, StringFormat={}{0:F3}}" />
+                <DataGridTextColumn x:Name="MarketAskPriceC" Header="A$" Binding="{Binding Call.MarketAskPrice, StringFormat={}{0:F3}}" ElementStyle="{StaticResource MarketAskPriceVolumeStyle}" />
+                <DataGridTextColumn x:Name="MarketAskVolumeC" Header="A#" Binding="{Binding Call.MarketAskVolume}" ElementStyle="{StaticResource MarketAskPriceVolumeStyle}" />
+                <DataGridTextColumn x:Name="AskPriceC" Header="Ask$" Binding="{Binding Call.AskPrice, StringFormat={}{0:F3}}" ElementStyle="{StaticResource AskPriceVolumeStyle}" />
+                <DataGridTextColumn x:Name="AskVolumeC" Header="Ask#" Binding="{Binding Call.AskVolume}" ElementStyle="{StaticResource AskPriceVolumeStyle}" />
+                <DataGridTextColumn x:Name="AskIDC" Header="AskID" Binding="{Binding Call.AskOrderID}" />
+                <DataGridTextColumn x:Name="LastC" Header="Last" Binding="{Binding Call.LastPrice}" />
+                <DataGridTextColumn x:Name="VolumeC" Header="Volume" Binding="{Binding Call.LastVolume}" />
+                <!--DataGridTextColumn x:Name="PosC" Header="Pos" Binding="{Binding Call.Position}" Foreground="Red" /-->
+                <DataGridTextColumn x:Name="PosC" Header="Pos" Binding="{Binding Call.Position}" Foreground="{Binding Call.Position, Converter={StaticResource PositionColorConverter}}" />
+                <DataGridTextColumn x:Name="LPosC" Header="LPos">
+                    <DataGridTextColumn.Binding>
+                        <MultiBinding StringFormat="{}{0}/{1}">
+                            <Binding Path="Call.AvailableLongPosition" />
+                            <Binding Path="Call.LongPosition" />
+                        </MultiBinding>
+                    </DataGridTextColumn.Binding>
+                </DataGridTextColumn>
+                <DataGridTextColumn x:Name="SPosC" Header="SPos" Binding="{Binding Call.ShortPosition}" />
+                <DataGridTextColumn x:Name="ChgPosC" Header="ChgPos" Binding="{Binding Call.ChangedPosition}" />
+                <DataGridTextColumn x:Name="DestrikerC" Header="Destriker" Binding="{Binding Call.Destriker}" />
+                <DataGridTextColumn x:Name="DeltaC" Header="Delta" Binding="{Binding Call.Delta}" ElementStyle="{StaticResource GreeksBackgroundStyle}" />
+                <DataGridTextColumn x:Name="GammaC" Header="Gamma" Binding="{Binding Call.Gamma}" ElementStyle="{StaticResource GreeksBackgroundStyle}" />
+                <DataGridTextColumn x:Name="VegaC" Header="Vega" Binding="{Binding Call.Vega}" ElementStyle="{StaticResource GreeksBackgroundStyle}" />
+                <DataGridTextColumn x:Name="ImVolC" Header="ImVol" Binding="{Binding Call.ImpliedVol}" />
+                <DataGridTextColumn x:Name="BidVolC" Header="BidVol" Binding="{Binding Call.BidVol}" />
+                <DataGridTextColumn x:Name="AskVolC" Header="AskVol" Binding="{Binding Call.AskVol}" />
+                <DataGridTextColumn x:Name="VolC" Header="Vol" Binding="{Binding Call.Volatility}" ElementStyle="{StaticResource VolatilityBackgroundStyle}"/>
+                <DataGridTemplateColumn Header="Strike" >
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Margin="-1"
+                                       Text="{Binding Call.Option.Strike}"
+                                       Background="{Binding GroupNo, Converter={StaticResource BackgroundColorConverter} }" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="Maturity" >
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Margin="-1"
+                                       Text="{Binding Call.Option.Maturity, StringFormat={}{0:yyyyMMdd}, NotifyOnTargetUpdated=True}"
+                                       Background="{Binding GroupNo, Converter={StaticResource BackgroundColorConverter} }" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTextColumn x:Name="VolP" Header="Vol" Binding="{Binding Put.Volatility}" ElementStyle="{StaticResource VolatilityBackgroundStyle}" />
+                <DataGridTextColumn x:Name="ImVolP" Header="ImVol" Binding="{Binding Put.ImpliedVol}" />
+                <DataGridTextColumn x:Name="BidVolP" Header="BidVol" Binding="{Binding Put.BidVol}" />
+                <DataGridTextColumn x:Name="AskVolP" Header="AskVol" Binding="{Binding Put.AskVol}" />
+                <DataGridTextColumn x:Name="DeltaP" Header="Delta" Binding="{Binding Put.Delta}" ElementStyle="{StaticResource GreeksBackgroundStyle}" />
+                <DataGridTextColumn x:Name="GammaP" Header="Gamma" Binding="{Binding Put.Gamma}" ElementStyle="{StaticResource GreeksBackgroundStyle}" />
+                <DataGridTextColumn x:Name="VegaP" Header="Vega" Binding="{Binding Put.Vega}" ElementStyle="{StaticResource GreeksBackgroundStyle}" />
+                <DataGridTextColumn x:Name="DestrikerP" Header="Destriker" Binding="{Binding Put.Destriker}" />
+                <DataGridTextColumn x:Name="PosP" Header="Pos" Binding="{Binding Put.Position}" />
+                <DataGridTextColumn x:Name="LPosP" Header="LPos" Binding="{Binding Put.LongPosition}" />
+                <DataGridTextColumn x:Name="SPosP" Header="SPos" Binding="{Binding Put.ShortPosition}" />
+                <DataGridTextColumn x:Name="ChgPosP" Header="ChgPos" Binding="{Binding Put.ChangedPosition}" />
+                <DataGridTextColumn x:Name="LastP" Header="Last" Binding="{Binding Put.LastPrice}" />
+                <DataGridTextColumn x:Name="VolumeP" Header="Volume" Binding="{Binding Put.LastVolume}" />
+                <DataGridTextColumn x:Name="BidIDP" Header="BidID" Binding="{Binding Put.BidOrderID}" />
+                <DataGridTextColumn x:Name="BidVolumeP" Header="Bid#" Binding="{Binding Put.BidVolume}" ElementStyle="{StaticResource BidPriceVolumeStyle}" />
+                <DataGridTextColumn x:Name="BidPriceP" Header="Bid$" Binding="{Binding Put.BidPrice, StringFormat={}{0:F3}}" ElementStyle="{StaticResource BidPriceVolumeStyle}" />
+                <DataGridTextColumn x:Name="MarketBidVolumeP" Header="B#" Binding="{Binding Put.MarketBidVolume}" ElementStyle="{StaticResource MarketBidPriceVolumeStyle}" />
+                <DataGridTextColumn x:Name="MarketBidPriceP" Header="B$" Binding="{Binding Put.MarketBidPrice, StringFormat={}{0:F3}}" ElementStyle="{StaticResource MarketBidPriceVolumeStyle}" />
+                <DataGridTextColumn x:Name="TheoP" Header="Theo" Binding="{Binding Put.Theo, StringFormat={}{0:F3}}" />
+                <DataGridTextColumn x:Name="MarketAskPriceP" Header="A$" Binding="{Binding Put.MarketAskPrice, StringFormat={}{0:F3}}" ElementStyle="{StaticResource MarketAskPriceVolumeStyle}" />
+                <DataGridTextColumn x:Name="MarketAskVolumeP" Header="A#" Binding="{Binding Put.MarketAskVolume}" ElementStyle="{StaticResource MarketAskPriceVolumeStyle}" />
+                <DataGridTextColumn x:Name="AskPriceP" Header="Ask$" Binding="{Binding Put.AskPrice, StringFormat={}{0:F3}}" ElementStyle="{StaticResource AskPriceVolumeStyle}" />
+                <DataGridTextColumn x:Name="AskVolumeP" Header="Ask#" Binding="{Binding Put.AskVolume}" ElementStyle="{StaticResource AskPriceVolumeStyle}" />
+                <DataGridTextColumn x:Name="AskIDP" Header="AskID" Binding="{Binding Put.AskOrderID}" />
+                <DataGridTemplateColumn x:Name="QBP" Header="QB" >
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Margin="-1" Text="{Binding Put.QuoterBidOn, Converter={StaticResource SwitchConverter}}" >
+                                <TextBlock.InputBindings>
+                                    <MouseBinding Gesture="LeftDoubleClick"
+                                                  Command="{Binding DataContext.QuoterPutBidSwitchCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGrid}}}"
+                                                  CommandParameter="{Binding CurrentCell, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGrid}}}" />
+                                </TextBlock.InputBindings>
+                            </TextBlock>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn x:Name="QSP" Header="QS" >
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Margin="-1" Text="{Binding Put.QuoterAskOn, Converter={StaticResource SwitchConverter}}" >
+                                <TextBlock.InputBindings>
+                                    <MouseBinding Gesture="LeftDoubleClick"
+                                                  Command="{Binding DataContext.QuoterPutAskSwitchCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGrid}}}"
+                                                  CommandParameter="{Binding CurrentCell, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGrid}}}" />
+                                </TextBlock.InputBindings>
+                            </TextBlock>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn x:Name="MBP" Header="MB" >
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Margin="-1" Text="{Binding Put.DummyQuoterBidOn, Converter={StaticResource SwitchConverter}}" >
+                                <TextBlock.InputBindings>
+                                    <MouseBinding Gesture="LeftDoubleClick"
+                                                  Command="{Binding DataContext.DummyQuoterPutBidSwitchCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGrid}}}"
+                                                  CommandParameter="{Binding CurrentCell, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGrid}}}" />
+                                </TextBlock.InputBindings>
+                            </TextBlock>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn x:Name="MSP" Header="MS" >
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Margin="-1" Text="{Binding Put.DummyQuoterAskOn, Converter={StaticResource SwitchConverter}}" >
+                                <TextBlock.InputBindings>
+                                    <MouseBinding Gesture="LeftDoubleClick"
+                                                  Command="{Binding DataContext.DummyQuoterPutAskSwitchCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGrid}}}"
+                                                  CommandParameter="{Binding CurrentCell, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGrid}}}" />
+                                </TextBlock.InputBindings>
+                            </TextBlock>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn x:Name="HBP" Header="HB" >
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Margin="-1" Text="{Binding Put.HitterBidOn, Converter={StaticResource SwitchConverter}}" >
+                                <TextBlock.InputBindings>
+                                    <MouseBinding Gesture="LeftDoubleClick"
+                                                  Command="{Binding DataContext.HitterPutBidSwitchCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGrid}}}"
+                                                  CommandParameter="{Binding CurrentCell, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGrid}}}" />
+                                </TextBlock.InputBindings>
+                            </TextBlock>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn x:Name="HSP" Header="HS" >
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Margin="-1" Text="{Binding Put.HitterAskOn, Converter={StaticResource SwitchConverter}}" >
+                                <TextBlock.InputBindings>
+                                    <MouseBinding Gesture="LeftDoubleClick"
+                                                  Command="{Binding DataContext.HitterPutAskSwitchCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGrid}}}"
+                                                  CommandParameter="{Binding CurrentCell, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGrid}}}" />
+                                </TextBlock.InputBindings>
+                            </TextBlock>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn x:Name="DBP" Header="DB" >
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Margin="-1" Text="{Binding Put.DimerBidOn, Converter={StaticResource SwitchConverter}}" >
+                                <TextBlock.InputBindings>
+                                    <MouseBinding Gesture="LeftDoubleClick"
+                                                  Command="{Binding DataContext.DimerPutBidSwitchCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGrid}}}"
+                                                  CommandParameter="{Binding CurrentCell, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGrid}}}" />
+                                </TextBlock.InputBindings>
+                            </TextBlock>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn x:Name="DSP" Header="DS" >
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Margin="-1" Text="{Binding Put.DimerAskOn, Converter={StaticResource SwitchConverter}}" >
+                                <TextBlock.InputBindings>
+                                    <MouseBinding Gesture="LeftDoubleClick"
+                                                  Command="{Binding DataContext.DimerPutAskSwitchCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGrid}}}"
+                                                  CommandParameter="{Binding CurrentCell, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGrid}}}" />
+                                </TextBlock.InputBindings>
+                            </TextBlock>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn x:Name="QRP" Header="QR" >
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Margin="-1" TextAlignment="Center" Text="{Binding Put.EnquiryResponseOn, Converter={StaticResource SwitchConverter}}" >
+                                <TextBlock.InputBindings>
+                                    <MouseBinding Gesture="LeftDoubleClick"
+                                                  Command="{Binding DataContext.EnquiryResponsePutSwitchCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGrid}}}"
+                                                  CommandParameter="{Binding CurrentCell, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGrid}}}" />
+                                </TextBlock.InputBindings>
+                            </TextBlock>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn x:Name="CoverP" Header="Cover" >
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Margin="-1" Text="{Binding Put.CoverOn, Converter={StaticResource SwitchConverter}}" >
+                                <TextBlock.InputBindings>
+                                    <MouseBinding Gesture="LeftDoubleClick"
+                                                  Command="{Binding DataContext.CoverPutSwitchCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGrid}}}"
+                                                  CommandParameter="{Binding CurrentCell, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGrid}}}" />
+                                </TextBlock.InputBindings>
+                            </TextBlock>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTextColumn x:Name="CreditQP" Header="CreditQ" Binding="{Binding Put.QuoterCredit}" />
+                <DataGridTextColumn x:Name="CriditHP" Header="CreditH" Binding="{Binding Put.HitterCredit}" />
+                <DataGridTextColumn x:Name="CriditDP" Header="CreditD" Binding="{Binding Put.DimerCredit}" />
+                <DataGridTextColumn x:Name="StatusP" Header="Status" Binding="{Binding Put.Status}" />
+                <DataGridTemplateColumn x:Name="SymbolP" Header="Symbol">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Margin="-1" Text="{Binding Put.Option.Symbol}"
+                                       Background="{Binding GroupNo, Converter={StaticResource BackgroundColorConverter} }" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTextColumn x:Name="SkewSense" Header="SkewS" Binding="{Binding SkewSense}" />
+                <DataGridTextColumn x:Name="ConvexC" Header="ConvexC" Binding="{Binding Call.Convex}" />
+                <DataGridTextColumn x:Name="ConvexP" Header="ConvexP" Binding="{Binding Put.Convex}" />
+            </DataGrid.Columns>
+        </DataGrid>
+    </Grid>
+</UserControl>

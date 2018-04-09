@@ -24,7 +24,7 @@ namespace Proto {
     static PriceReflection() {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
-            "CgtQcmljZS5wcm90bxIFcHJvdG8iwwEKBVByaWNlEhIKCmluc3RydW1lbnQY",
+            "CgtQcmljZS5wcm90bxIFUHJvdG8iwwEKBVByaWNlEhIKCmluc3RydW1lbnQY",
             "ASABKAkSDAoEbGFzdBgCIAEoARILCgNiaWQYAyABKAESCwoDYXNrGAQgASgB",
             "EgwKBG9wZW4YBSABKAESDAoEaGlnaBgGIAEoARILCgNsb3cYByABKAESDQoF",
             "Y2xvc2UYCCABKAESDgoGYW1vdW50GAkgASgBEhIKCmJpZF92b2x1bWUYCiAB",

@@ -24,8 +24,8 @@ namespace Proto {
     static LoginReflection() {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
-            "CgtMb2dpbi5wcm90bxIFcHJvdG8ibAoFTG9naW4SDAoEdXNlchgBIAEoCRIQ",
-            "CghwYXNzd29yZBgCIAEoCRIZCgRyb2xlGAMgASgOMgsucHJvdG8uUm9sZRIP",
+            "CgtMb2dpbi5wcm90bxIFUHJvdG8ibAoFTG9naW4SDAoEdXNlchgBIAEoCRIQ",
+            "CghwYXNzd29yZBgCIAEoCRIZCgRyb2xlGAMgASgOMgsuUHJvdG8uUm9sZRIP",
             "Cgd2ZXJzaW9uGAQgASgJEgoKAmlwGAUgASgJEgsKA21hYxgGIAEoCSIpCghM",
             "b2dpblJlcBIOCgZyZXN1bHQYASABKAgSDQoFZXJyb3IYAiABKAkiFgoGTG9n",
             "b3V0EgwKBHVzZXIYASABKAkiKgoJTG9nb3V0UmVwEg4KBnJlc3VsdBgBIAEo",
