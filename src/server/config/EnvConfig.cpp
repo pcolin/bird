@@ -40,13 +40,15 @@ EnvConfig::EnvConfig()
 
     /// exchange
     { static_cast<int8_t>(EnvVar::EXCHANGE), "EXCHANGE" },
-    { static_cast<int8_t>(EnvVar::PUB_PRICE_LEVELS), "PUB_PRICE_LEVELS" },
-    { static_cast<int8_t>(EnvVar::PUB_PRICE_INTERVAL), "PUB_PRICE_INTERVAL"},
+    { static_cast<int8_t>(EnvVar::RECONNECT_INTERVAL), "RECONNECT_INT" },
+    { static_cast<int8_t>(EnvVar::PUB_PRICE_LEVELS), "PUB_PRICE_LVLS" },
+    { static_cast<int8_t>(EnvVar::PUB_PRICE_INTERVAL), "PUB_PRICE_INT"},
     { static_cast<int8_t>(EnvVar::QRY_CASH_INTERVAL), "QRY_CASH_INT" },
     { static_cast<int8_t>(EnvVar::OPT_CASH_LIMIT), "OPT_CASH_LIMIT" },
     { static_cast<int8_t>(EnvVar::SPOT_CASH_LIMIT), "SPOT_CASH_LIMIT" },
     { static_cast<int8_t>(EnvVar::WASH_TRADE_PROT), "WASH_TRADE_PROT" },
     { static_cast<int8_t>(EnvVar::ORDER_GC_THRESHOLD), "GC_THRESHOLD" },
+    { static_cast<int8_t>(EnvVar::NIGHT_SESSION_TIME), "NIGHT_SESSION_TIME" },
 
     /// ctp
     { static_cast<int8_t>(EnvVar::CTP_TRADE_ADDR), "CTP_TRADE_ADDR" },
@@ -55,6 +57,8 @@ EnvConfig::EnvConfig()
     { static_cast<int8_t>(EnvVar::CTP_INVESTOR_ID), "CTP_INVESTOR_ID" },
     { static_cast<int8_t>(EnvVar::CTP_USER_ID), "CTP_USER_ID" },
     { static_cast<int8_t>(EnvVar::CTP_PASSWORD), "CTP_PASSWORD" },
+    
+    { static_cast<int8_t>(EnvVar::UL_PRICE_CHECK_NUM), "UL_PRICE_CHECK_NUM" },
 
   };
 }

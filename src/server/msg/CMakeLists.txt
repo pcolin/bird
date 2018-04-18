@@ -7,12 +7,19 @@ set(PROTO_FILES
   ../../share/msg/Server.proto
   ../../share/msg/Currency.proto
   ../../share/msg/Instrument.proto
+  ../../share/msg/ExchangeParameter.proto
   ../../share/msg/Cash.proto
   ../../share/msg/CashLimit.proto
   ../../share/msg/Position.proto
   ../../share/msg/Price.proto
   ../../share/msg/Order.proto
   ../../share/msg/Trade.proto
+  ../../share/msg/InterestRate.proto
+  ../../share/msg/SSRate.proto
+  ../../share/msg/Volatility.proto
+  ../../share/msg/Elastic.proto
+  ../../share/msg/Destriker.proto
+  ../../share/msg/PricingSpec.proto
   ../../share/msg/Strategy.proto)
 
 message ("Current Dir: ${CMAKE_CURRENT_SOURCE_DIR}")

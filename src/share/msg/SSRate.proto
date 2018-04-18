@@ -1,0 +1,26 @@
+syntax = "proto3";
+package Proto;
+
+import "Request.proto";
+import "Reply.proto";
+
+message SSRate
+{
+  string date = 1;
+  double rate = 2;
+}
+
+message SSRateReq
+{
+  RequestType type = 1;
+  repeated SSRate rates = 2;
+  string instrument = 3;
+  string user = 4;
+}
+
+message SSRateRep
+{
+  repeated SSRate rates = 1;
+  string instrument = 2;
+  Reply result = 3;
+}

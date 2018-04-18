@@ -4,142 +4,165 @@
 #include "model/Message.h"
 
 #include <boost/format.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 
-ExchangeParameterDB::ExchangeParameterDB(ConcurrentSqliteDB &db, const std::string &table_name)
-  : DbBase(db), table_name_(table_name)
+ExchangeParameterDB::ExchangeParameterDB(ConcurrentSqliteDB &db, const std::string &table_name,
+    const std::string &holiday_table_name)
+  : DbBase(db, table_name), holiday_table_name_(holiday_table_name),
+    trading_day_(boost::gregorian::day_clock::local_day())
 {}
 
 void ExchangeParameterDB::RefreshCache()
 {
-  char query[1024];
-  if (EnvConfig::GetInstance()->GetBool(EnvVar::DEL_EXPIRE_INST, true))
+  char sql[1024];
+  sprintf(sql, "DELETE FROM %s WHERE holiday < strftime('%Y%m%d', 'now')",
+      holiday_table_name_.c_str());
+  ExecSql(sql);
+
+  sprintf(sql, "SELECT * FROM %s", table_name_.c_str());
+  ExecSql(sql, &cache_, &ExchangeParameterDB::ParameterCallback);
+  sprintf(sql, "SELECT * FROM %s", holiday_table_name_.c_str());
+  ExecSql(sql, &cache_, &ExchangeParameterDB::HolidayCallback);
+
+  if (cache_)
   {
-    sprintf(query, "DELETE FROM %s WHERE maturity<'%s'", table_name_.c_str(), trading_date_);
-    ExecSql(query);
+    const auto night_session_time = boost::posix_time::duration_from_string(
+        EnvConfig::GetInstance()->GetString(EnvVar::NIGHT_SESSION_TIME, "23:59:59.0"));
+    if (boost::posix_time::second_clock::local_time().time_of_day() > night_session_time)
+    {
+      trading_day_ += boost::gregorian::date_duration(1);
+      auto &holidays = cache_->holidays();
+      while (trading_day_.day_of_week() == boost::gregorian::Saturday ||
+             trading_day_.day_of_week() == boost::gregorian::Sunday ||
+             std::find_if(holidays.begin(), holidays.end(), [&](const auto &h)
+               {
+                 return h.date() == boost::gregorian::to_iso_string(trading_day_);
+               }) != holidays.end())
+      {
+        trading_day_ += boost::gregorian::date_duration(1);
+      }
+    }
   }
-  sprintf(query, "SELECT * FROM %s", table_name_.c_str());
-  ExecSql(query, &underlyings_, &ExchangeParameterDB::UnderlyingCallback);
-  ExecSql(query, this, &ExchangeParameterDB::OptionCallback);
+  LOG_INF << "Trading day is " << boost::gregorian::to_iso_string(trading_day_);
 }
 
 void ExchangeParameterDB::RegisterCallback(base::ProtoMessageDispatcher<base::ProtoMessagePtr> &dispatcher)
 {
-  dispatcher.RegisterCallback<Proto::InstrumentReq>(
+  dispatcher.RegisterCallback<Proto::ExchangeParameterReq>(
     std::bind(&ExchangeParameterDB::OnRequest, this, std::placeholders::_1));
 }
 
-base::ProtoMessagePtr ExchangeParameterDB::OnRequest(const std::shared_ptr<Proto::InstrumentReq> &msg)
+base::ProtoMessagePtr ExchangeParameterDB::OnRequest(
+    const std::shared_ptr<Proto::ExchangeParameterReq> &msg)
 {
-  LOG_INF << "Instrument request: " << msg->ShortDebugString();
-  auto reply = Message::NewProto<Proto::InstrumentRep>();
+  LOG_INF << "Exchange parameter request: " << msg->ShortDebugString();
+  auto reply = Message::NewProto<Proto::ExchangeParameterRep>();
   if (msg->type() == Proto::RequestType::Get)
   {
-    for (auto &underlying : underlyings_)
+    if (cache_)
     {
-      if (msg->exchange() == underlying.second->exchange())
-      {
-        reply->add_instruments()->CopyFrom(*underlying.second);
-      }
+      reply->add_parameters()->CopyFrom(*cache_);
     }
-    for (auto &option : options_)
+    else
     {
-      if (msg->exchange() == option.second->exchange())
-      {
-        reply->add_instruments()->CopyFrom(*option.second);
-      }
+      reply->mutable_result()->set_result(false);
+      reply->mutable_result()->set_error("no exchange parameter");
+      return reply;
     }
-    LOG_INF << boost::format("Get %1% instruments totally.") % reply->instruments_size();
   }
   else if (msg->type() == Proto::RequestType::Set)
   {
     char sql[1024];
     TransactionGuard tg(this);
-    for (auto &inst : msg->instruments())
+
+    for (auto &p : msg->parameters())
     {
-      sprintf(sql, "INSERT OR REPLACE INTO %s VALUES('%s', '%s', %d, %d, %d, '%s', '%s', %f, "
-                   "%f, %f, %f, %d, '%s', %d, %d, %f)",
-              table_name_.c_str(), inst.id().c_str(), inst.symbol().c_str(),
-              static_cast<int32_t>(inst.exchange()), static_cast<int32_t>(inst.type()),
-              static_cast<int32_t>(inst.currency()), inst.underlying().c_str(),
-              inst.hedge_underlying().c_str(), inst.tick(), inst.multiplier(), inst.highest(),
-              inst.lowest(), static_cast<int32_t>(inst.call_put()), inst.maturity().c_str(),
-              static_cast<int32_t>(inst.exercise()), static_cast<int32_t>(inst.settlement()),
-              inst.strike());
+      auto ep = Message::NewProto<Proto::ExchangeParameter>();
+      ep->CopyFrom(p);
+      cache_.swap(ep);
+
+      std::ostringstream oss;
+      for (auto &s : p.sessions())
+      {
+        oss << s.begin() << '-' << s.end() << ',';
+      }
+      std::ostringstream oss1;
+      for (auto &s : p.maturity_sessions())
+      {
+        oss1 << s.begin() << '-' << s.end() << ',';
+      }
+      sprintf(sql, "INSERT OR REPLACE INTO %s VALUES(%d, '%s', '%s', '%s', %d, %d, %d)",
+          table_name_.c_str(), static_cast<int32_t>(p.exchange()),
+          oss.str().c_str(), oss1.str().c_str(), p.charm_start_time().c_str(),
+          p.rfq_delay(), p.rfq_timeout(), p.rfq_volume());
       ExecSql(sql);
-      UpdateInstrument(inst, inst.type() == Proto::InstrumentType::Option ? options_ : underlyings_);
+
+      sprintf(sql, "DELETE FROM %s", holiday_table_name_.c_str());
+      ExecSql(sql);
+      for (auto &h : p.holidays())
+      {
+        sprintf(sql, "INSERT INTO %s VALUES('%s', %f)", holiday_table_name_.c_str(),
+            h.date().c_str(), h.weight());
+        ExecSql(sql);
+      }
     }
   }
   else if (msg->type() == Proto::RequestType::Del)
-  {}
+  {
+    cache_.reset();
+    char sql[1024];
+    TransactionGuard tg(this);
+    sprintf(sql, "DELETE FROM %s", table_name_.c_str());
+    ExecSql(sql);
+    sprintf(sql, "DELETE FROM %s", holiday_table_name_.c_str());
+    ExecSql(sql);
+  }
   reply->mutable_result()->set_result(true);
   return reply;
 }
 
-void ExchangeParameterDB::UpdateInstrument(const Proto::Instrument &inst, InstrumentMap &cache)
+int ExchangeParameterDB::ParameterCallback(void *data, int argc, char **argv, char **col_name)
 {
-  auto it = cache.find(inst.id());
-  if (it != cache.end())
-  {
-    it->second->CopyFrom(inst);
-  }
-  else
-  {
-    auto instrument = Message::NewProto<Proto::Instrument>();
-    instrument->CopyFrom(inst);
-    cache.emplace(inst.id(), instrument);
-  }
-}
+  auto p = Message::NewProto<Proto::ExchangeParameter>();
+  p->set_exchange(static_cast<Proto::Exchange>(atoi(argv[0])));
+  ParseTradingSession(argv[1], std::bind(&Proto::ExchangeParameter::add_sessions, p.get()));
+  ParseTradingSession(argv[2], std::bind(&Proto::ExchangeParameter::add_maturity_sessions, p.get()));
+  p->set_charm_start_time(argv[3]);
+  p->set_rfq_delay(atoi(argv[4]));
+  p->set_rfq_timeout(atoi(argv[5]));
+  p->set_rfq_volume(atoi(argv[6]));
 
-int ExchangeParameterDB::UnderlyingCallback(void *data, int argc, char **argv, char **col_name)
-{
-  auto type = static_cast<Proto::InstrumentType>(atoi(argv[3]));
-  if (type != Proto::InstrumentType::Option)
-  {
-    auto &cache = *static_cast<InstrumentMap*>(data);
-    std::string id = argv[0];
-    auto inst = Message::NewProto<Proto::Instrument>();
-    inst->set_id(id);
-    inst->set_symbol(argv[1]);
-    inst->set_exchange(static_cast<Proto::Exchange>(atoi(argv[2])));
-    inst->set_type(type);
-    inst->set_currency(static_cast<Proto::Currency>(atoi(argv[4])));
-    inst->set_underlying(argv[5]);
-    inst->set_hedge_underlying(argv[6]);
-    inst->set_tick(atof(argv[7]));
-    inst->set_multiplier(atof(argv[8]));
-    inst->set_highest(atof(argv[9]));
-    inst->set_lowest(atof(argv[10]));
-    cache[id] = inst;
-  }
+  auto &cache = *static_cast<std::shared_ptr<Proto::ExchangeParameter>*>(data);
+  cache = std::move(p);
   return 0;
 }
 
-int ExchangeParameterDB::OptionCallback(void *data, int argc, char **argv, char **col_name)
+void ExchangeParameterDB::ParseTradingSession(char *data,
+    std::function<Proto::TradingSession*()> func)
 {
-  auto type = static_cast<Proto::InstrumentType>(atoi(argv[3]));
-  if (type == Proto::InstrumentType::Option)
+  char *beg = data, *mid = data, *pos = data + 1;
+  while (*pos != 0)
   {
-    auto *db = static_cast<ExchangeParameterDB*>(data);
-    auto &cache = db->options_;
-    std::string id = argv[0];
-    auto inst = Message::NewProto<Proto::Instrument>();
-    inst->set_id(id);
-    inst->set_symbol(argv[1]);
-    inst->set_exchange(static_cast<Proto::Exchange>(atoi(argv[2])));
-    inst->set_type(type);
-    inst->set_currency(static_cast<Proto::Currency>(atoi(argv[4])));
-    inst->set_underlying(argv[5]);
-    inst->set_hedge_underlying(argv[6]);
-    inst->set_tick(atof(argv[7]));
-    inst->set_multiplier(atof(argv[8]));
-    inst->set_highest(atof(argv[9]));
-    inst->set_lowest(atof(argv[10]));
-    inst->set_call_put(static_cast<Proto::OptionType>(atoi(argv[11])));
-    inst->set_maturity(argv[12]);
-    inst->set_exercise(static_cast<Proto::ExerciseType>(atoi(argv[13])));
-    inst->set_settlement(static_cast<Proto::SettlementType>(atoi(argv[14])));
-    inst->set_strike(atof(argv[15]));
-    cache[id] = inst;
+    if (*pos == '-')
+    {
+      mid = pos;
+    }
+    else if (*pos == ',')
+    {
+      auto *s = func();
+      s->set_begin(beg, mid - beg);
+      s->set_end(mid + 1, pos - mid - 1);
+      beg = mid = pos + 1;
+    }
+    ++pos;
   }
+}
+
+int ExchangeParameterDB::HolidayCallback(void *data, int argc, char **argv, char **col_name)
+{
+  auto &cache = *static_cast<std::shared_ptr<Proto::ExchangeParameter>*>(data);
+  auto *holiday = cache->add_holidays();
+  holiday->set_date(argv[0]);
+  holiday->set_weight(atof(argv[1]));
   return 0;
 }

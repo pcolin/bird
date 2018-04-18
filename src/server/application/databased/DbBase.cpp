@@ -61,8 +61,8 @@ bool ConcurrentSqliteDB::Close()
   return true;
 }
 
-DbBase::DbBase(ConcurrentSqliteDB &db)
-  : db_(db)
+DbBase::DbBase(ConcurrentSqliteDB &db, const std::string &table_name)
+  : db_(db), table_name_(table_name)
 {}
 
 bool DbBase::Initialize(base::ProtoMessageDispatcher<base::ProtoMessagePtr> &dispatcher)

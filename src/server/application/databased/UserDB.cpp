@@ -4,7 +4,7 @@
 #include "Reply.pb.h"
 
 UserDB::UserDB(ConcurrentSqliteDB &db, const std::string &table_name)
-  : DbBase(db), table_name_(table_name)
+  : DbBase(db, table_name)
 {}
 
 void UserDB::RefreshCache()

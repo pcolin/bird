@@ -1,0 +1,24 @@
+syntax = "proto3";
+package Proto;
+
+import "Request.proto";
+import "Reply.proto";
+
+message InterestRate
+{
+  int32 days = 1;
+  double rate = 2;
+}
+
+message InterestRateReq
+{
+  RequestType type = 1;
+  repeated InterestRate rates = 2;
+  string user = 3;
+}
+
+message InterestRateRep
+{
+  repeated InterestRate rates = 1;
+  Reply result = 2;
+}

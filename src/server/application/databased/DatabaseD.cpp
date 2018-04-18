@@ -5,8 +5,12 @@
 #include "base/logger/Logging.h"
 #include "config/EnvConfig.h"
 #include "UserDB.h"
+#include "ExchangeParameterDB.h"
 #include "InstrumentDB.h"
+#include "InterestRateDB.h"
+#include "CashLimitDB.h"
 #include "PositionDB.h"
+#include "PricingSpecDB.h"
 #include "Heartbeat.pb.h"
 #include "Server.pb.h"
 #include "Price.pb.h"
@@ -158,11 +162,26 @@ int main(int argc, char *argv[])
   UserDB user(config_db, "UserInfo");
   bool ok = user.Initialize(dispatcher);
 
-  InstrumentDB instrument(config_db, "Instrument");
-  ok = instrument.Initialize(dispatcher);
+  ExchangeParameterDB exchange_parameter(config_db, "ExchangeParameter", "Holiday");
+  ok = ok && exchange_parameter.Initialize(dispatcher);
+
+  InstrumentDB instrument(config_db, "Instrument", exchange_parameter);
+  ok = ok && instrument.Initialize(dispatcher);
+
+  InterestRateDB interest_rate(config_db, "InterestRate");
+  ok = ok && interest_rate.Initialize(dispatcher);
 
   PositionDB position(config_db, "Position");
-  ok = position.Initialize(dispatcher);
+  ok = ok && position.Initialize(dispatcher);
+
+  PricingSpecDB pricing(config_db, "PricingSpec", "PricingSpecRecord", instrument);
+  ok = ok && pricing.Initialize(dispatcher);
+
+  if (!ok)
+  {
+    LOG_ERR << "Failed to initialize DB!";
+    return -1;
+  }
 
   const int32_t capacity = 128;
   BlockingConcurrentQueue<std::tuple<google::protobuf::Message*, void*>> requests(capacity);
@@ -175,6 +194,7 @@ int main(int argc, char *argv[])
   auto *info = new Proto::ServerInfo();
   auto *price = new Proto::Price();
   auto *cash = new Proto::Cash();
+  // auto *pricing = new Proto::PricingSpec();
   while (true)
   {
     // nn_pollfd pfd[] = { {rep, NN_POLLIN, 0} };
@@ -238,5 +258,6 @@ int main(int argc, char *argv[])
   delete info;
   delete price;
   delete cash;
+  // delete pricing;
   return 0;
 }

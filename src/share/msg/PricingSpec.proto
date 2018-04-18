@@ -1,0 +1,46 @@
+syntax = "proto3";
+package Proto;
+
+import "Request.proto";
+import "Reply.proto";
+
+enum PricingModel
+{
+  BS = 0;
+  CRR = 1;
+}
+
+enum UnderlyingTheoType
+{
+  Midpoint = 0;
+  BaryCentre = 1;
+  DepthBary = 2;
+}
+
+message PricingSpec
+{
+  string name = 1;
+  string underlying = 2;
+  PricingModel model = 3;
+  repeated string instruments = 4;
+  int32 depth = 5;
+  int32 interval = 6;
+  UnderlyingTheoType theo_type = 7;
+  int32 warn_tick_change = 8;
+  double elastic = 9;
+  double elastic_limit = 10;
+}
+
+message PricingSpecReq
+{
+  RequestType type = 1;
+  repeated PricingSpec pricings = 2;
+  string name = 3;
+  string user = 4;
+}
+
+message PricingSpecRep
+{
+  repeated PricingSpec pricings = 1;
+  Reply result = 2;
+}

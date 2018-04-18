@@ -6,7 +6,7 @@
 #include <boost/format.hpp>
 
 PositionDB::PositionDB(ConcurrentSqliteDB &db, const std::string &table_name)
-  : DbBase(db), table_name_(table_name), requests_(capacity_)
+  : DbBase(db, table_name), requests_(capacity_)
 {
   thread_ = std::thread(std::bind(&PositionDB::Run, this));
 }

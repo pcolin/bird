@@ -1,0 +1,25 @@
+syntax = "proto3";
+package Proto;
+
+import "Request.proto";
+import "Reply.proto";
+
+message Elastic
+{
+  string instrument = 1;
+  double elastic = 2;
+}
+
+message ElasticReq
+{
+  RequestType type = 1;
+  repeated Elastic elastics = 2;
+  string instrument = 3;
+  string user = 4;
+}
+
+message ElasticRep
+{
+  repeated Elastic elastics = 1;
+  Reply result = 2;
+}

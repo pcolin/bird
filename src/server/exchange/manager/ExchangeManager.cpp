@@ -28,9 +28,9 @@ ExchangeManager::~ExchangeManager()
 void ExchangeManager::Init()
 {
   LOG_INF << "Start Exchange API";
-  trader_ = new CtpTraderApi();
-  trader_->Init();
+  // trader_ = new CtpTraderApi();
+  // trader_->Init();
 
-  md_ = new CtpMdApi();
-  md_->Init();
+  // md_ = new CtpMdApi();
+  // md_->Init();
 }

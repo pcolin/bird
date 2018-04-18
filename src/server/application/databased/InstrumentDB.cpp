@@ -3,20 +3,33 @@
 #include "config/EnvConfig.h"
 #include "model/Message.h"
 
-#include <chrono>
-#include <ctime>
-#include <iomanip>
+// #include <chrono>
+// #include <ctime>
+// #include <iomanip>
 #include <sstream>
 #include <boost/format.hpp>
 
-InstrumentDB::InstrumentDB(ConcurrentSqliteDB &db, const std::string &table_name)
-  : DbBase(db), table_name_(table_name)
+InstrumentDB::InstrumentDB(ConcurrentSqliteDB &db, const std::string &table_name,
+    ExchangeParameterDB &exchange_db)
+  : DbBase(db, table_name), trading_date_(boost::gregorian::to_iso_string(exchange_db.TradingDay()))
 {
-  std::ostringstream oss;
-  auto t = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-  oss << std::put_time(std::localtime(&t), "%Y%m%d");
-  trading_date_ = oss.str();
-  LOG_INF << "Trading date is " << trading_date_;
+  // std::ostringstream oss;
+  // auto t = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+  // oss << std::put_time(std::localtime(&t), "%Y%m%d");
+  // trading_date_ = oss.str();
+  // LOG_INF << "Trading date is " << trading_date_;
+}
+
+std::shared_ptr<Proto::Instrument> InstrumentDB::FindOption(const std::string &id)
+{
+  auto it = options_.find(id);
+  return it != options_.end() ? it->second : nullptr;
+}
+
+std::shared_ptr<Proto::Instrument> InstrumentDB::FindUnderlying(const std::string &id)
+{
+  auto it = underlyings_.find(id);
+  return it != underlyings_.end() ? it->second : nullptr;
 }
 
 void InstrumentDB::RefreshCache()

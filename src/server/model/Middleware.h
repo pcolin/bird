@@ -10,6 +10,7 @@
 #include "Login.pb.h"
 #include "Price.pb.h"
 #include "Reply.pb.h"
+#include "PricingSpec.pb.h"
 #include "Strategy.pb.h"
 
 #include "nn.h"
@@ -99,6 +100,7 @@ private:
   ProtoReplyPtr OnLogin(const std::shared_ptr<Proto::Login> &msg);
   ProtoReplyPtr OnLogout(const std::shared_ptr<Proto::Logout> &msg);
   ProtoReplyPtr OnPriceReq(const std::shared_ptr<Proto::PriceReq> &msg);
+  ProtoReplyPtr OnPricingSpecReq(const std::shared_ptr<Proto::PricingSpecReq> &msg);
   ProtoReplyPtr OnStrategyStatusReq(const std::shared_ptr<Proto::StrategyStatusReq> &msg);
 
   void RunTimer();

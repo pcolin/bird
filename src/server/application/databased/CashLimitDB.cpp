@@ -3,7 +3,7 @@
 #include "model/Message.h"
 
 CashLimitDB::CashLimitDB(ConcurrentSqliteDB &db, const std::string &table_name)
-  : DbBase(db), table_name_(table_name)
+  : DbBase(db, table_name)
 {}
 
 void CashLimitDB::RefreshCache()

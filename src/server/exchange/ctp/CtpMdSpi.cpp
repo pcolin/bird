@@ -105,6 +105,7 @@ void CtpMdSpi::OnRtnDepthMarketData(CThostFtdcDepthMarketDataField *pDepthMarket
     if (pDepthMarketData->LastPrice < DBL_MAX)
     {
       price->last.price = pDepthMarketData->LastPrice;
+      price->last.volume = 1;
     }
     static bool pub_levels = EnvConfig::GetInstance()->GetBool(EnvVar::PUB_PRICE_LEVELS, true);
     if (pDepthMarketData->BidPrice1 < DBL_MAX)

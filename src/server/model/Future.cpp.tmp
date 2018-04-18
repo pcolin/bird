@@ -1,0 +1,45 @@
+#include "Future.h"
+#include "Message.h"
+
+std::shared_ptr<Proto::Instrument> Future::Serialize() const
+{
+  auto inst = Message::NewProto<Proto::Instrument>();
+  inst->set_id(id_);
+  inst->set_symbol(symbol_);
+  inst->set_exchange(exchange_);
+  inst->set_type(type_);
+  inst->set_currency(currency_);
+  inst->set_tick(tick_);
+  inst->set_multiplier(multiplier_);
+  if (underlying_)
+  {
+    inst->set_underlying(underlying_->Id());
+  }
+  if (hedge_underlying_)
+  {
+    inst->set_hedge_underlying(hedge_underlying_->Id());
+  }
+  inst->set_maturity(boost::gregorian::to_iso_string(maturity_));
+  return inst;
+}
+
+void Future::Serialize(Proto::Instrument *inst) const
+{
+  inst->set_id(id_);
+  inst->set_symbol(symbol_);
+  inst->set_exchange(exchange_);
+  inst->set_type(type_);
+  inst->set_currency(currency_);
+  inst->set_tick(tick_);
+  inst->set_multiplier(multiplier_);
+  if (underlying_)
+  {
+    inst->set_underlying(underlying_->Id());
+  }
+  if (hedge_underlying_)
+  {
+    inst->set_hedge_underlying(hedge_underlying_->Id());
+  }
+  // inst->set_maturity(boost::gregorian::to_iso_string(maturity_));
+  // inst->set_maturity(base::ToIsoString(maturity_.year(), maturity_.month(), maturity_.day()));
+}

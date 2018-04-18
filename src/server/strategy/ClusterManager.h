@@ -3,6 +3,7 @@
 
 #include "Heartbeat.pb.h"
 #include "Cash.pb.h"
+#include "PricingSpec.pb.h"
 #include "DeviceManager.h"
 #include "model/Instrument.h"
 
@@ -21,9 +22,13 @@ public:
   DeviceManager* AddDevice(const Instrument *underlying);
   DeviceManager* FindDevice(const Instrument *underlying) const;
 
+  std::shared_ptr<Proto::PricingSpec> FindPricingSpec(const std::string &name);
+  std::shared_ptr<Proto::PricingSpec> FindPricingSpec(const Instrument *underlying);
+
   void OnHeartbeat(const std::shared_ptr<Proto::Heartbeat> &heartbeat);
   void OnCash(const std::shared_ptr<Proto::Cash> &cash);
   void OnPriceReq(const std::shared_ptr<Proto::PriceReq> &req);
+  void OnPricingSpecReq(const std::shared_ptr<Proto::PricingSpecReq> &req);
 
   template<class Type> void Publish(const Type &msg)
   {
@@ -39,7 +44,12 @@ public:
 private:
   ClusterManager();
 
+  // void SyncPricingSpec();
+  // void SyncStrategySpec();
+
   std::unordered_map<const Instrument*, DeviceManager*> devices_;
+  std::mutex pricing_mtx_;
+  std::unordered_map<std::string, std::shared_ptr<Proto::PricingSpec>> pricings_;
 };
 
 #endif

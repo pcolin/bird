@@ -109,6 +109,7 @@ class CtpTraderSpi : public CThostFtdcTraderSpi
     void UpdateOrder(const char *exchange_id, base::VolumeType volume, OrderStatus status);
 
     CtpTraderApi *api_ = nullptr;
+    bool login = false;
     InstrumentConfigMap config_;
 
 };

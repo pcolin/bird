@@ -1,0 +1,59 @@
+syntax = "proto3";
+package Proto;
+
+import "Request.proto";
+import "Reply.proto";
+
+message Volatility
+{
+  string instrument = 1;
+  double volatility = 2;
+}
+
+message VolatilityReq
+{
+  RequestType type = 1;
+  repeated Volatility volatilities = 2;
+  string instrument = 3;
+  string user = 4;
+}
+
+message VolatilityRep
+{
+  repeated Volatility volatilities = 1;
+  Reply result = 2;
+}
+
+message VolatilityCurve
+{
+  string underlying = 1;
+  string maturity = 2;
+  double spot = 3;
+  double atm_vol = 4;
+  double skew = 5;
+  double call_convex = 6;
+  double put_convex = 7;
+  double call_slope = 8;
+  double put_slope = 9;
+  double call_cutoff = 10;
+  double put_cutoff = 11;
+  double vcr = 12;
+  double scr = 13;
+  double ccr = 14;
+  double spcr = 15;
+  double sccr = 16;
+}
+
+message VolatilityCurveReq
+{
+  RequestType type = 1;
+  string underlying = 2;
+  repeated VolatilityCurve curves = 3;
+  string user = 4;
+}
+
+message VolatilityCurveRep
+{
+  repeated VolatilityCurve curves = 1;
+  Reply result = 2;
+}

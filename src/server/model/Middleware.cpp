@@ -111,6 +111,14 @@ Middleware::ProtoReplyPtr Middleware::OnLogout(const std::shared_ptr<Proto::Logo
 Middleware::ProtoReplyPtr Middleware::OnPriceReq(const std::shared_ptr<Proto::PriceReq> &msg)
 {
   ClusterManager::GetInstance()->OnPriceReq(msg);
+  return nullptr;
+}
+
+Middleware::ProtoReplyPtr Middleware::OnPricingSpecReq(
+    const std::shared_ptr<Proto::PricingSpecReq> &msg)
+{
+  ClusterManager::GetInstance()->OnPricingSpecReq(msg);
+  return nullptr;
 }
 
 Middleware::ProtoReplyPtr Middleware::OnStrategyStatusReq(const std::shared_ptr<Proto::StrategyStatusReq> &msg)
@@ -224,6 +232,8 @@ void Middleware::RunResponder()
     std::bind(&Middleware::OnLogout, this, std::placeholders::_1));
   dispatcher.RegisterCallback<Proto::PriceReq>(
     std::bind(&Middleware::OnPriceReq, this, std::placeholders::_1));
+  dispatcher.RegisterCallback<Proto::PricingSpecReq>(
+    std::bind(&Middleware::OnPricingSpecReq, this, std::placeholders::_1));
   dispatcher.RegisterCallback<Proto::StrategyStatusReq>(
     std::bind(&Middleware::OnStrategyStatusReq, this, std::placeholders::_1));
   size_t n = 64;
@@ -268,7 +278,7 @@ void Middleware::RunResponder()
       }
       nn_freemsg(recv_buf);
     }
-    else
+    else// if (nn_errno() != EINTR)
     {
       // reply->set_result(false);
       // reply->set_error("Receive message failed");

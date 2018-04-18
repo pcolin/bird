@@ -8,6 +8,7 @@
 #include "base/disruptor/MultiProducerSequencer.h"
 
 #include <unordered_map>
+#include <boost/circular_buffer.hpp>
 
 class StrategyDevice;
 class DeviceManager
@@ -35,15 +36,21 @@ public:
   void StartAll();
   void Stop(const std::string& name);
   void StopAll();
-  // void Publish(std::shared_ptr<Price> &price);
+  void Publish(std::shared_ptr<Price> &price);
   std::shared_ptr<StrategyDevice> FindStrategyDevice(const std::string &name) const;
 
   void OnStrategyStatusReq(const std::shared_ptr<Proto::StrategyStatusReq> &msg);
 
   bool IsStrategiesRunning() const;
 
+  void UpdatePricingSpec(const Proto::PricingSpec &pricing);
+
 private:
   const Instrument *underlying_;
+  UnderlyingPrice theo_;
+  boost::circular_buffer<base::PriceType> underlying_prices_;
+  int32_t warn_tick_change_ = 5;
+  bool normal_ = false;
 
   std::unordered_map<std::string, std::shared_ptr<StrategyDevice>> devices_;
   std::unique_ptr<StrategyDevice> monitor_;

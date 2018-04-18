@@ -33,10 +33,12 @@ private:
 class DbBase
 {
 public:
-  DbBase(ConcurrentSqliteDB &db);
+  DbBase(ConcurrentSqliteDB &db, const std::string &table_name);
   virtual ~DbBase() {}
 
   virtual bool Initialize(base::ProtoMessageDispatcher<base::ProtoMessagePtr> &dispatcher);
+
+  const std::string& TableName() const { return table_name_; }
 
 protected:
   bool ExecSql(const char *sql, void *data = nullptr, sqlite3_callback cb = Callback)
@@ -58,6 +60,8 @@ protected:
   private:
     DbBase *db_;
   };
+
+  std::string table_name_;
 
 private:
   virtual void RefreshCache() = 0;

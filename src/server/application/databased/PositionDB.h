@@ -26,7 +26,6 @@ private:
 
   static int Callback(void *data, int argc, char **argv, char **col_name);
 
-  std::string table_name_;
   PositionMap positions_;
   std::mutex mtx_;
 

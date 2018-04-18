@@ -2,14 +2,15 @@
 #include "MarketMonitor.h"
 #include "TestStrategy.h"
 #include "StrategyDevice.h"
+#include "ClusterManager.h"
+#include "config/EnvConfig.h"
 #include "base/logger/Logging.h"
 
 #include <boost/format.hpp>
 
-// using namespace base;
-
 DeviceManager::DeviceManager(const Instrument *underlying)
-  : underlying_(underlying),
+  : underlying_(underlying), theo_(underlying),
+    underlying_prices_(EnvConfig::GetInstance()->GetInt32(EnvVar::UL_PRICE_CHECK_NUM, 5)),
     sequencer_(&strategy_), rb_(&sequencer_), barrier_(sequencer_.NewBarrier(sequences_))
 {}
 
@@ -24,6 +25,13 @@ DeviceManager::~DeviceManager()
 
 void DeviceManager::Init()
 {
+  /// initialize pricing
+  auto pricing = ClusterManager::GetInstance()->FindPricingSpec(underlying_);
+  if (pricing)
+  {
+    theo_.SetParameter(pricing->theo_type(), pricing->elastic(), pricing->elastic_limit());
+  }
+
   /// Sync config from db to be done...
   std::unique_ptr<Strategy> strategy(new TestStrategy("test", this));
   auto d = std::make_shared<StrategyDevice>(strategy, rb_, barrier_);
@@ -36,12 +44,46 @@ void DeviceManager::Init()
   monitor_->Start();
 }
 
-// void DeviceManager::Publish(PricePtr &price)
-// {
-//   int64_t seq = rb_.Next();
-//   rb_.Get(seq) = std::move(price);
-//   rb_.Publish(seq);
-// }
+void DeviceManager::Publish(PricePtr &price)
+{
+  // int64_t seq = rb_.Next();
+  // rb_.Get(seq) = std::move(price);
+  // rb_.Publish(seq);
+
+  /// add adjusted price to be done...
+  if (price->instrument == underlying_)
+  {
+    double delta = 0; /// Get delta to be done...
+    theo_.ApplyElastic(price, delta);
+    double theo = theo_.Get();
+    if (underlying_prices_.size() > 0)
+    {
+      double min = theo, max = theo;
+      for (double p : underlying_prices_)
+      {
+        if (p < min)
+          min = p;
+        else if (p > max)
+          max = p;
+      }
+      if (underlying_->ConvertToTick(max - min) > warn_tick_change_)
+      {
+        LOG_ERR << boost::format("%1% theo price warning: min(%2%), max(%3%)") %
+          underlying_->Id() % min % max;
+        normal_ = false;
+      }
+      else if (normal_ == false)
+      {
+        normal_ = true;
+        LOG_PUB << boost::format("%1% theo price is normal now: min(%2%), max(%3%)") %
+          underlying_->Id() % min % max;
+      }
+    }
+    underlying_prices_.push_back(theo);
+  }
+
+  Publish<PricePtr>(price);
+}
 
 void DeviceManager::Start(const std::string& name)
 {
@@ -127,4 +169,9 @@ bool DeviceManager::IsStrategiesRunning() const
   }
   LOG_INF << boost::format("%1% has %2% strategies running") % underlying_->Id() % cnt;
   return cnt > 0;
+}
+
+void DeviceManager::UpdatePricingSpec(const Proto::PricingSpec &pricing)
+{
+  theo_.SetParameter(pricing.theo_type(), pricing.elastic(), pricing.elastic_limit());
 }

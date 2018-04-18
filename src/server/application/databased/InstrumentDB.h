@@ -2,6 +2,7 @@
 #define DATABASED_INSTRUMENT_DB_H
 
 #include "DbBase.h"
+#include "ExchangeParameterDB.h"
 #include "Instrument.pb.h"
 
 #include <unordered_map>
@@ -10,7 +11,9 @@ class InstrumentDB : public DbBase
 {
   typedef std::unordered_map<std::string, std::shared_ptr<Proto::Instrument>> InstrumentMap;
 public:
-  InstrumentDB(ConcurrentSqliteDB &db, const std::string &table_name);
+  InstrumentDB(ConcurrentSqliteDB &db, const std::string &table_name, ExchangeParameterDB &exch);
+  std::shared_ptr<Proto::Instrument> FindOption(const std::string &id);
+  std::shared_ptr<Proto::Instrument> FindUnderlying(const std::string &id);
 
 private:
   virtual void RefreshCache() override;
@@ -22,7 +25,6 @@ private:
   static int UnderlyingCallback(void *data, int argc, char **argv, char **col_name);
   static int OptionCallback(void *data, int argc, char **argv, char **col_name);
 
-  std::string table_name_;
   std::string trading_date_;
   InstrumentMap underlyings_;
   InstrumentMap options_;

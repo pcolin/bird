@@ -57,6 +57,8 @@ class Instrument
 
     void Serialize(Proto::Instrument *inst) const;
 
+    base::TickType ConvertToTick(base::PriceType p) const { return (p + 0.5 * tick_) / tick_; }
+
   protected:
     std::string id_;
     std::string symbol_;

@@ -22,7 +22,6 @@ private:
 
   static int Callback(void *data, int argc, char **argv, char **col_name);
 
-  std::string table_name_;
   UserMap cache_;
 };
 

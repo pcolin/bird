@@ -29,12 +29,17 @@ CtpTraderSpi::CtpTraderSpi(CtpTraderApi* api) : api_(api)
 void CtpTraderSpi::OnFrontConnected()
 {
   LOG_INF << "OnFrontConnected.";
-  api_->Login();
+  if (login == false)
+  {
+    api_->Login();
+    login = true;
+  }
 }
 
 void CtpTraderSpi::OnFrontDisconnected(int nReason)
 {
   LOG_INF << "OnFrontDisconnected : " << nReason;
+  // login = false;
 }
 
 void CtpTraderSpi::OnHeartBeatWarning(int nTimeLapse)
@@ -49,6 +54,7 @@ void CtpTraderSpi::OnRspUserLogin(CThostFtdcRspUserLoginField *pRspUserLogin,
   {
     LOG_ERR << boost::format("Failed to login ctp trader : %1%(%2%).") %
       pRspInfo->ErrorID % base::GB2312ToUtf8(pRspInfo->ErrorMsg);
+    login = false;
     return;
   }
   LOG_INF << boost::format("Success to login ctp trader %1% with MaxOrderRef(%2%), FrontID(%3%)"

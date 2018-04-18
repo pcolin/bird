@@ -6,11 +6,13 @@
 
 namespace base
 {
+  const int32_t MILLION = 1e+6;
+
   inline int64_t Now()
   {
     struct timeval tv;
     gettimeofday(&tv, NULL);
-    return (int64_t)tv.tv_sec * 1000000 + tv.tv_usec;
+    return (int64_t)tv.tv_sec * MILLION + tv.tv_usec;
   }
 
   // inline std::string ToIsoString(int year, int month, int day)

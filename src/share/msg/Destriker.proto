@@ -1,0 +1,25 @@
+syntax = "proto3";
+package Proto;
+
+import "Request.proto";
+import "Reply.proto";
+
+message Destriker
+{
+  string instrument = 1;
+  double destriker = 2;
+}
+
+message DestrikerReq
+{
+  RequestType type = 1;
+  repeated Destriker destrikers = 2;
+  string instrument = 3;
+  string user = 4;
+}
+
+message DestrikerRep
+{
+  repeated Destriker destrikers = 1;
+  Reply result = 2;
+}

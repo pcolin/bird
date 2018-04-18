@@ -18,6 +18,8 @@ MarketMonitor::MarketMonitor(const std::string &name, DeviceManager *dm)
   und_price_time_ = tv.tv_sec;
   opt_price_time_ = tv.tv_sec;
 
+  dispatcher_.RegisterCallback<Proto::PriceReq>(
+      std::bind(&MarketMonitor::OnPriceReq, this, std::placeholders::_1));
   dispatcher_.RegisterCallback<Proto::Position>(
       std::bind(&MarketMonitor::OnPosition, this, std::placeholders::_1));
 }

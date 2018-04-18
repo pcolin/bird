@@ -15,14 +15,16 @@ message Price
   PriceLevel last = 2;
   repeated PriceLevel bids = 3;
   repeated PriceLevel asks = 4;
-  double open = 5;
-  double high = 6;
-  double low = 7;
-  double close = 8;
-  double pre_close = 9;
-  double pre_settlement = 10;
-  double amount = 11;
-  int32 volume = 12;
+  double adjusted_price = 5;
+  double adjust = 6;
+  double open = 7;
+  double high = 8;
+  double low = 9;
+  double close = 10;
+  double pre_close = 11;
+  double pre_settlement = 12;
+  double amount = 13;
+  int32 volume = 14;
 }
 
 message PriceReq

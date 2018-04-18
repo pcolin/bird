@@ -30,6 +30,7 @@ enum class EnvVar : int8_t
 
   /// exchange
   EXCHANGE,
+  RECONNECT_INTERVAL,
   PUB_PRICE_LEVELS,
   PUB_PRICE_INTERVAL,
   QRY_CASH_INTERVAL,
@@ -37,6 +38,7 @@ enum class EnvVar : int8_t
   SPOT_CASH_LIMIT,
   WASH_TRADE_PROT,
   ORDER_GC_THRESHOLD,
+  NIGHT_SESSION_TIME,
 
   /// ctp
   CTP_TRADE_ADDR,
@@ -45,8 +47,9 @@ enum class EnvVar : int8_t
   CTP_INVESTOR_ID,
   CTP_USER_ID,
   CTP_PASSWORD,
-  CTP_UL_FILE
+  CTP_UL_FILE,
 
+  UL_PRICE_CHECK_NUM
 };
 
 class EnvConfig

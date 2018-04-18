@@ -6,6 +6,8 @@
 #include "model/ProductManager.h"
 #include "model/CashManager.h"
 
+// #include "Exchange.pb.h"
+
 ClusterManager* ClusterManager::GetInstance()
 {
   static ClusterManager manager;
@@ -27,7 +29,29 @@ ClusterManager::~ClusterManager()
 void ClusterManager::Init()
 {
   LOG_INF << "Initialize ClusterManager...";
-  /// to be done... sync from db.
+  /// sync pricing spec from db.
+  {
+    auto req = Message::NewProto<Proto::PricingSpecReq>();
+    req->set_type(Proto::RequestType::Get);
+    req->set_user(EnvConfig::GetInstance()->GetString(EnvVar::EXCHANGE));
+    auto rep = std::dynamic_pointer_cast<Proto::PricingSpecRep>(
+        Middleware::GetInstance()->Request(req));
+    if (rep && rep->result().result())
+    {
+      std::lock_guard<std::mutex> lck(pricing_mtx_);
+      for (auto &p : rep->pricings())
+      {
+        LOG_INF << "PrcingSpec: " << p.ShortDebugString();
+        auto pricing = Message::NewProto<Proto::PricingSpec>();
+        pricing->CopyFrom(p);
+        pricings_.emplace(p.name(), pricing);
+      }
+    }
+    else
+    {
+      LOG_ERR << "Failed to sync pricing specs";
+    }
+  }
 }
 
 DeviceManager* ClusterManager::AddDevice(const Instrument *underlying)
@@ -60,6 +84,34 @@ DeviceManager* ClusterManager::FindDevice(const Instrument *underlying) const
     if (it != devices_.end())
     {
       return it->second;
+    }
+  }
+  return nullptr;
+}
+
+std::shared_ptr<Proto::PricingSpec> ClusterManager::FindPricingSpec(const std::string &name)
+{
+  std::lock_guard<std::mutex> lck(pricing_mtx_);
+  auto it = pricings_.find(name);
+  if (it != pricings_.end())
+  {
+    auto ret = Message::NewProto<Proto::PricingSpec>();
+    ret->CopyFrom(*it->second);
+    return ret;
+  }
+  return nullptr;
+}
+
+std::shared_ptr<Proto::PricingSpec> ClusterManager::FindPricingSpec(const Instrument *underlying)
+{
+  std::lock_guard<std::mutex> lck(pricing_mtx_);
+  for (auto &it : pricings_)
+  {
+    if (underlying->Id() == it.second->underlying())
+    {
+      auto ret = Message::NewProto<Proto::PricingSpec>();
+      ret->CopyFrom(*it.second);
+      return ret;
     }
   }
   return nullptr;
@@ -106,6 +158,41 @@ void ClusterManager::OnPriceReq(const std::shared_ptr<Proto::PriceReq> &req)
     {
       LOG_ERR << "Can't find instrument " << req->instrument();
     }
+  }
+}
+
+void ClusterManager::OnPricingSpecReq(const std::shared_ptr<Proto::PricingSpecReq> &req)
+{
+  if (req->type() != Proto::RequestType::Get)
+  {
+    if (req->type() == Proto::RequestType::Set)
+    {
+      for (auto &p : req->pricings())
+      {
+        auto *underlying = ProductManager::GetInstance()->FindId(p.underlying());
+        if (underlying)
+        {
+          auto copy = Message::NewProto<Proto::PricingSpec>();
+          copy->CopyFrom(p);
+          auto *dm = FindDevice(underlying);
+          if (dm)
+          {
+            dm->Publish(copy);
+          }
+          std::lock_guard<std::mutex> lck(pricing_mtx_);
+          pricings_[p.name()] = copy;
+        }
+      }
+    }
+    else if (req->type() == Proto::RequestType::Del)
+    {
+      std::lock_guard<std::mutex> lck(pricing_mtx_);
+      for (auto &p : req->pricings())
+      {
+        pricings_.erase(p.name());
+      }
+    }
+    Middleware::GetInstance()->Publish(req);
   }
 }
 
