@@ -96,18 +96,6 @@ Middleware::ProtoReplyPtr Middleware::OnHeartbeat(const std::shared_ptr<Proto::H
   }
 }
 
-Middleware::ProtoReplyPtr Middleware::OnLogin(const std::shared_ptr<Proto::Login> &msg)
-{
-  LOG_INF << "User login : " << msg->ShortDebugString();
-  return ClientManager::GetInstance()->Login(msg);
-}
-
-Middleware::ProtoReplyPtr Middleware::OnLogout(const std::shared_ptr<Proto::Logout> &msg)
-{
-  LOG_INF << "User logout : " << msg->ShortDebugString();
-  return ClientManager::GetInstance()->Logout(msg);
-}
-
 Middleware::ProtoReplyPtr Middleware::OnPriceReq(const std::shared_ptr<Proto::PriceReq> &msg)
 {
   ClusterManager::GetInstance()->OnPriceReq(msg);
@@ -141,6 +129,7 @@ Middleware::ProtoReplyPtr Middleware::OnStrategyStatusReq(const std::shared_ptr<
         LOG_ERR << "Can't find underlying " << status.underlying();
       }
     }
+    Publish(msg);
   }
   // return Message::NewProto<Proto::StrategyStatusRep>();
   return nullptr;
@@ -227,9 +216,9 @@ void Middleware::RunResponder()
   dispatcher.RegisterCallback<Proto::Heartbeat>(
     std::bind(&Middleware::OnHeartbeat, this, std::placeholders::_1));
   dispatcher.RegisterCallback<Proto::Login>(
-    std::bind(&Middleware::OnLogin, this, std::placeholders::_1));
+    std::bind(&ClientManager::Login, ClientManager::GetInstance(), std::placeholders::_1));
   dispatcher.RegisterCallback<Proto::Logout>(
-    std::bind(&Middleware::OnLogout, this, std::placeholders::_1));
+    std::bind(&ClientManager::Logout, ClientManager::GetInstance(), std::placeholders::_1));
   dispatcher.RegisterCallback<Proto::PriceReq>(
     std::bind(&Middleware::OnPriceReq, this, std::placeholders::_1));
   dispatcher.RegisterCallback<Proto::PricingSpecReq>(

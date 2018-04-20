@@ -2,6 +2,10 @@
 #define STRATEGY_PRICER_H
 
 #include "Strategy.h"
+#include "PricingSpec.pb.h"
+#include "InterestRate.pb.h"
+#include "SSRate.pb.h"
+#include "Volatility.pb.h"
 
 class Pricer : public Strategy
 {
@@ -17,6 +21,9 @@ protected:
 
 private:
   bool OnPricingSpec(const std::shared_ptr<Proto::PricingSpec> &msg);
+  bool OnInterestRateReq(const std::shared_ptr<Proto::InterestRateReq> &req);
+  bool OnSSRateReq(const std::shared_ptr<Proto::SSRateReq> &req);
+  bool OnVolatilityCurveReq(const std::shared_ptr<Proto::VolatilityCurveReq> &req);
 };
 
 #endif

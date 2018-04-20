@@ -97,8 +97,8 @@ public:
 private:
   Middleware();
   ProtoReplyPtr OnHeartbeat(const std::shared_ptr<Proto::Heartbeat> &msg);
-  ProtoReplyPtr OnLogin(const std::shared_ptr<Proto::Login> &msg);
-  ProtoReplyPtr OnLogout(const std::shared_ptr<Proto::Logout> &msg);
+  // ProtoReplyPtr OnLogin(const std::shared_ptr<Proto::Login> &msg);
+  // ProtoReplyPtr OnLogout(const std::shared_ptr<Proto::Logout> &msg);
   ProtoReplyPtr OnPriceReq(const std::shared_ptr<Proto::PriceReq> &msg);
   ProtoReplyPtr OnPricingSpecReq(const std::shared_ptr<Proto::PricingSpecReq> &msg);
   ProtoReplyPtr OnStrategyStatusReq(const std::shared_ptr<Proto::StrategyStatusReq> &msg);
