@@ -26,6 +26,7 @@ public:
 
 protected:
   virtual void OnPrice(const PricePtr &price) {}
+  virtual void OnTheoMatrix(const TheoMatrixPtr &theo) {}
   virtual void OnOrder(const OrderPtr &order) {}
   virtual void OnTrade(const TradePtr &trade) {}
   void OnProtoMessage(const ProtoMessagePtr &message) { dispatcher_.OnProtoMessage(message); }
@@ -46,6 +47,10 @@ private:
     void operator()(const PricePtr &price) const
     {
       s_->OnPrice(price);
+    }
+    void operator()(const TheoMatrixPtr &theo) const
+    {
+      s_->OnTheoMatrix(theo);
     }
     void operator()(const OrderPtr &order) const
     {

@@ -4,7 +4,7 @@
 #include "WashTradeProtector.h"
 #include "model/Order.h"
 #include "base/concurrency/concurrentqueue.h"
-#include <boost/variant.hpp>
+#include "boost/variant.hpp"
 
 class TraderApi
 {

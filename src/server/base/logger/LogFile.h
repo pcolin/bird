@@ -3,7 +3,7 @@
 
 #include <stdio.h>
 #include <string>
-#include <boost/noncopyable.hpp>
+#include "boost/noncopyable.hpp"
 
 namespace base
 {

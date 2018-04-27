@@ -12,7 +12,7 @@ class PricingSpecDB : public DbBase
   typedef std::unordered_map<std::string, std::shared_ptr<Proto::PricingSpec>> PricingSpecMap;
 public:
   PricingSpecDB(ConcurrentSqliteDB &db, const std::string &table_name,
-      const std::string &record_table_name, const InstrumentDB &instrument_db);
+      const std::string &record_table_name, InstrumentDB &instrument_db);
 
 private:
   virtual void RefreshCache() override;
@@ -26,7 +26,7 @@ private:
   static int RecordCallback(void *data, int argc, char **argv, char **col_name);
 
   std::string record_table_name_;
-  const InstrumentDB &instrument_db_;
+  InstrumentDB &instrument_db_;
 
   PricingSpecMap pricings_;
 };

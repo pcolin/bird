@@ -2,7 +2,7 @@
 #define BASE_SYNC_LOGGING_H
 
 #include <mutex>
-#include <boost/noncopyable.hpp>
+#include "boost/noncopyable.hpp"
 #include "LogFile.h"
 
 namespace base

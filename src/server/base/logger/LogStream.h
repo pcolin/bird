@@ -5,8 +5,8 @@
 #include <assert.h>
 #include <string.h> // memcpy
 #include <string>
-#include <boost/noncopyable.hpp>
-#include <boost/format/format_class.hpp>
+#include "boost/noncopyable.hpp"
+#include "boost/format/format_class.hpp"
 
 namespace base
 {

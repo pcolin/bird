@@ -1,7 +1,7 @@
 #ifndef MODEL_PARAMETER_MANAGER_H
 #define MODEL_PARAMETER_MANAGER_H
 
-#include "Instrument.h"
+#include "Exchange.h"
 #include "InterestRate.pb.h"
 #include "SSRate.pb.h"
 #include "Volatility.pb.h"
@@ -16,15 +16,18 @@ public:
   static ParameterManager* GetInstance();
   ~ParameterManager() {}
 
+  void InitGlobal();
   void Init();
+  std::shared_ptr<Exchange> GetExchange() { return exchange_; }
   bool GetInterestRate(const boost::gregorian::date &date, double &rate);
-  bool GetSSRate(const Instrument *underlying, const boost::gregorian::date &date, double rate);
+  bool GetSSRate(const Instrument *underlying, const boost::gregorian::date &date, double &rate);
   // bool GetVolatility(const Instrument *instrument, double &volatility);
   std::shared_ptr<Proto::VolatilityCurve> GetVolatilityCurve(const Instrument *underlying,
       const boost::gregorian::date &date);
   bool GetDestriker(const Instrument *instrument, double &destriker);
   bool GetElastic(const Instrument *instrument, double &elastic);
 
+  void OnExchangeParameterReq(const std::shared_ptr<Proto::ExchangeParameterReq> &req);
   void OnInterestRateReq(const std::shared_ptr<Proto::InterestRateReq> &req);
   void OnSSRateReq(const std::shared_ptr<Proto::SSRateReq> &req);
   // void OnVolatilityReq(const std::shared_ptr<Proto::VolatilityReq> &req);
@@ -33,6 +36,8 @@ public:
   // void OnElasticReq(const std::shared_ptr<Proto::ElasticReq> &req);
 
 private:
+  std::shared_ptr<Exchange> exchange_;
+
   std::map<int32_t, double> interest_rates_;
   std::mutex interest_rates_mtx_;
 

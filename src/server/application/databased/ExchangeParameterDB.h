@@ -5,7 +5,6 @@
 #include "ExchangeParameter.pb.h"
 
 #include <unordered_map>
-#include <boost/date_time/gregorian/gregorian.hpp>
 
 class ExchangeParameterDB : public DbBase
 {
@@ -13,7 +12,7 @@ public:
   ExchangeParameterDB(ConcurrentSqliteDB &db, const std::string &table_name,
       const std::string &holiday_table_name);
 
-  const boost::gregorian::date& TradingDay() const { return trading_day_; }
+  const std::string& TradingDay() const { return trading_day_; }
 
 private:
   virtual void RefreshCache() override;
@@ -27,7 +26,8 @@ private:
 
   std::shared_ptr<Proto::ExchangeParameter> cache_;
   std::string holiday_table_name_;
-  boost::gregorian::date trading_day_;
+  std::string trading_day_;
+  // boost::gregorian::date trading_day_;
 };
 
 #endif

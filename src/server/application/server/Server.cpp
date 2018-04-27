@@ -10,6 +10,7 @@
 #include "strategy/ClusterManager.h"
 #include "model/Middleware.h"
 #include "model/ProductManager.h"
+#include "model/ParameterManager.h"
 #include "model/OrderManager.h"
 #include "model/TradeManager.h"
 #include "model/PositionManager.h"
@@ -43,7 +44,7 @@ int main(int argc, char *args[])
   LOG_INF << "Middleware is running now";
 
   ClusterManager::GetInstance()->Init();
-
+  ParameterManager::GetInstance()->InitGlobal();
   ExchangeManager::GetInstance()->Init();
   LOG_INF << "Exchange has been initialized";
 
@@ -56,34 +57,44 @@ int main(int argc, char *args[])
   PositionManager::GetInstance()->Init();
   LOG_INF << "Position manager has been initialized";
 
-  /// to be done...
-  // ParamManager::GetInstance()->Init();
+  ParameterManager::GetInstance()->Init();
 
+  LOG_INF << "==================================================";
   LOG_PUB << "Initialization is done:)";
+  LOG_INF << "==================================================";
 
   ///// test
-  //std::this_thread::sleep_for(std::chrono::seconds(30));
+  std::this_thread::sleep_for(std::chrono::seconds(30));
   //// const Instrument* inst = ProductManager::GetInstance()->FindId("SR801");
-  //const Instrument* inst = ProductManager::GetInstance()->FindId("m1801");
-  //if (inst)
-  //{
-  //  auto *dm = ClusterManager::GetInstance()->FindDevice(inst);
-  //  if (dm)
-  //  {
-  //    auto s = dm->FindStrategyDevice("test");
-  //    if (s)
-  //    {
-  //      LOG_INF << "Start test strategy";
-  //      s->Start();
-  //      std::this_thread::sleep_for(std::chrono::seconds(60));
-  //      s->Stop();
-  //    }
-  //    else
-  //    {
-  //      LOG_ERR << "Failed to find test strategy.";
-  //    }
-  //  }
-  //}
+  const std::string id = "m1901";
+  const Instrument* inst = ProductManager::GetInstance()->FindId(id);
+  if (inst)
+  {
+    auto *dm = ClusterManager::GetInstance()->FindDevice(inst);
+    if (dm)
+    {
+      auto s = dm->FindStrategyDevice("M1901_P");
+      if (s)
+      {
+        LOG_INF << "Start pricing strategy";
+        s->Start();
+        std::this_thread::sleep_for(std::chrono::seconds(600));
+        s->Stop();
+      }
+      else
+      {
+        LOG_ERR << "Failed to find pricing strategy.";
+      }
+    }
+    else
+    {
+      LOG_ERR << "Can't find device " << inst->Id();
+    }
+  }
+  else
+  {
+    LOG_ERR << "Can't find instrument " << id;
+  }
   //std::this_thread::sleep_for(std::chrono::seconds(60));
   //OrderManager::GetInstance()->Dump();
   ///// test

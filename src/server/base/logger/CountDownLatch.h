@@ -2,7 +2,7 @@
 #define BASE_COUNTDOWNLATCH_H
 
 #include <condition_variable>
-#include <boost/noncopyable.hpp>
+#include "boost/noncopyable.hpp"
 
 namespace base
 {

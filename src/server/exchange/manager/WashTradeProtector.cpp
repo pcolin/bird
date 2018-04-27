@@ -3,7 +3,7 @@
 #include "base/logger/Logging.h"
 #include "config/EnvConfig.h"
 
-#include <boost/format.hpp>
+#include "boost/format.hpp"
 
 using namespace base;
 
@@ -125,10 +125,10 @@ void WashTradeProtector::Remove(const OrderPtr &bid, const OrderPtr &ask)
   {
     auto &bids = std::get<0>(orders_[bid->instrument]);
     bids.remove_if([&](const OrderPtr &ord) { return bid->id == ord->id; });
-  }    
+  }
   if (ask)
   {
     auto &asks = std::get<1>(orders_[bid->instrument]);
     asks.remove_if([&](const OrderPtr &ord) { return ask->id == ord->id; });
-  }    
+  }
 }

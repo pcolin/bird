@@ -6,8 +6,8 @@
 #include "config/EnvConfig.h"
 #include "UserDB.h"
 #include "ExchangeParameterDB.h"
-#include "InstrumentDB.h"
 #include "InterestRateDB.h"
+#include "DestrikerDB.h"
 #include "CashLimitDB.h"
 #include "PositionDB.h"
 #include "PricingSpecDB.h"
@@ -159,22 +159,25 @@ int main(int argc, char *argv[])
   }
   ConcurrentSqliteDB config_db(config_db_file);
   ProtoMessageDispatcher<ProtoMessagePtr> dispatcher;
-  UserDB user(config_db, "UserInfo");
-  bool ok = user.Initialize(dispatcher);
+  UserDB user_db(config_db, "UserInfo");
+  bool ok = user_db.Initialize(dispatcher);
 
-  ExchangeParameterDB exchange_parameter(config_db, "ExchangeParameter", "Holiday");
-  ok = ok && exchange_parameter.Initialize(dispatcher);
+  ExchangeParameterDB exchange_db(config_db, "ExchangeParameter", "Holiday");
+  ok = ok && exchange_db.Initialize(dispatcher);
 
-  InstrumentDB instrument(config_db, "Instrument", exchange_parameter);
-  ok = ok && instrument.Initialize(dispatcher);
+  InstrumentDB instrument_db(config_db, "Instrument", exchange_db);
+  ok = ok && instrument_db.Initialize(dispatcher);
 
-  InterestRateDB interest_rate(config_db, "InterestRate");
-  ok = ok && interest_rate.Initialize(dispatcher);
+  InterestRateDB interest_rate_db(config_db, "InterestRate");
+  ok = ok && interest_rate_db.Initialize(dispatcher);
+
+  DestrikerDB destriker_db(config_db, "Destriker", instrument_db);
+  ok = ok && destriker_db.Initialize(dispatcher);
 
   PositionDB position(config_db, "Position");
   ok = ok && position.Initialize(dispatcher);
 
-  PricingSpecDB pricing(config_db, "PricingSpec", "PricingSpecRecord", instrument);
+  PricingSpecDB pricing(config_db, "PricingSpec", "PricingSpecRecord", instrument_db);
   ok = ok && pricing.Initialize(dispatcher);
 
   if (!ok)

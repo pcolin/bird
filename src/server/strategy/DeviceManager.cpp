@@ -2,6 +2,7 @@
 #include "MarketMonitor.h"
 #include "TestStrategy.h"
 #include "StrategyDevice.h"
+#include "Pricer.h"
 #include "ClusterManager.h"
 #include "config/EnvConfig.h"
 #include "base/logger/Logging.h"
@@ -30,6 +31,11 @@ void DeviceManager::Init()
   if (pricing)
   {
     theo_.SetParameter(pricing->theo_type(), pricing->elastic(), pricing->elastic_limit());
+
+    std::unique_ptr<Strategy> strategy(new Pricer(pricing->name(), this));
+    auto d = std::make_shared<StrategyDevice>(strategy, rb_, barrier_);
+    devices_.emplace(pricing->name(), std::move(d));
+    LOG_INF << "Add pricer " << pricing->name();
   }
 
   /// Sync config from db to be done...

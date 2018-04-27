@@ -15,7 +15,7 @@
 #include "strategy/DeviceManager.h"
 #include "strategy/ClusterManager.h"
 
-#include <boost/format.hpp>
+#include "boost/format.hpp"
 
 CtpTraderSpi::CtpTraderSpi(CtpTraderApi* api) : api_(api)
 {

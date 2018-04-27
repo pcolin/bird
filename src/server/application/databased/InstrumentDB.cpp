@@ -11,7 +11,7 @@
 
 InstrumentDB::InstrumentDB(ConcurrentSqliteDB &db, const std::string &table_name,
     ExchangeParameterDB &exchange_db)
-  : DbBase(db, table_name), trading_date_(boost::gregorian::to_iso_string(exchange_db.TradingDay()))
+  : DbBase(db, table_name), trading_date_(exchange_db.TradingDay())
 {
   // std::ostringstream oss;
   // auto t = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());

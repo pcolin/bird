@@ -5,12 +5,15 @@
 #include <atomic>
 #include "base/common/Types.h"
 #include "Instrument.pb.h"
-#include <boost/date_time/gregorian/gregorian.hpp>
+#include "boost/date_time/gregorian/gregorian.hpp"
+
+
 
 class Instrument
 {
   public:
     Instrument(Proto::InstrumentType type) : type_(type) {}
+    virtual ~Instrument() {}
 
     const std::string& Id() const { return id_; }
     void Id(const std::string& id) { id_ = id; }
@@ -58,6 +61,36 @@ class Instrument
     void Serialize(Proto::Instrument *inst) const;
 
     base::TickType ConvertToTick(base::PriceType p) const { return (p + 0.5 * tick_) / tick_; }
+    base::TickType ConvertToHalfTick(base::PriceType p) const { return p / (0.5 * tick_); }
+
+    base::PriceType ConvertToPrice(base::TickType tick) const { return tick * tick_; }
+    base::PriceType ConvertHalfToPrice(base::TickType tick) const { return tick * tick_ * 0.5; }
+
+    base::PriceType RoundToTick(base::PriceType price, Proto::RoundDirection direction) const
+    {
+      switch (direction)
+      {
+      case Proto::RoundDirection::Up:
+        return tick_ * std::ceil(price / tick_);
+      case Proto::RoundDirection::Down:
+        return tick_ * std::floor(price / tick_);
+      default:
+        return tick_ * std::floor((price + tick_ * 0.5) / tick_);
+      }
+    }
+
+    base::PriceType RoundToHalfTick(base::PriceType price, Proto::RoundDirection direction) const
+    {
+      switch (direction)
+      {
+      case Proto::RoundDirection::Up:
+        return 0.5 * tick_ * std::ceil(price * 2 / tick_);
+      case Proto::RoundDirection::Down:
+        return 0.5 * tick_ * std::floor(price * 2 / tick_);
+      default:
+        return 0.5 * tick_ * std::floor((price * 2 + tick_ * 0.5) / tick_);
+      }
+    }
 
   protected:
     std::string id_;

@@ -27,6 +27,8 @@ message ExchangeParameter
   int32 rfq_delay = 6;
   int32 rfq_timeout = 7;
   int32 rfq_volume = 8;
+  string trading_day = 9;
+  bool night_session = 10;
 }
 
 message ExchangeParameterReq

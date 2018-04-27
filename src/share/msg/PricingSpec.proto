@@ -6,7 +6,7 @@ import "Reply.proto";
 
 enum PricingModel
 {
-  BS = 0;
+  BSM = 0;
   CRR = 1;
 }
 
@@ -22,7 +22,7 @@ message PricingSpec
   string name = 1;
   string underlying = 2;
   PricingModel model = 3;
-  repeated string instruments = 4;
+  repeated string options = 4;
   int32 depth = 5;
   int32 interval = 6;
   UnderlyingTheoType theo_type = 7;

@@ -3,13 +3,14 @@
 #include "config/EnvConfig.h"
 #include "model/Message.h"
 
-#include <boost/format.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
+#include "boost/format.hpp"
+#include "boost/date_time/gregorian/gregorian.hpp"
+#include "boost/date_time/posix_time/posix_time.hpp"
 
 ExchangeParameterDB::ExchangeParameterDB(ConcurrentSqliteDB &db, const std::string &table_name,
     const std::string &holiday_table_name)
-  : DbBase(db, table_name), holiday_table_name_(holiday_table_name),
-    trading_day_(boost::gregorian::day_clock::local_day())
+  : DbBase(db, table_name), holiday_table_name_(holiday_table_name)
+    // trading_day_(boost::gregorian::day_clock::local_day())
 {}
 
 void ExchangeParameterDB::RefreshCache()
@@ -24,26 +25,31 @@ void ExchangeParameterDB::RefreshCache()
   sprintf(sql, "SELECT * FROM %s", holiday_table_name_.c_str());
   ExecSql(sql, &cache_, &ExchangeParameterDB::HolidayCallback);
 
+  auto trading_day = boost::gregorian::day_clock::local_day();
+
   if (cache_)
   {
     const auto night_session_time = boost::posix_time::duration_from_string(
         EnvConfig::GetInstance()->GetString(EnvVar::NIGHT_SESSION_TIME, "23:59:59.0"));
     if (boost::posix_time::second_clock::local_time().time_of_day() > night_session_time)
     {
-      trading_day_ += boost::gregorian::date_duration(1);
+      trading_day += boost::gregorian::date_duration(1);
       auto &holidays = cache_->holidays();
-      while (trading_day_.day_of_week() == boost::gregorian::Saturday ||
-             trading_day_.day_of_week() == boost::gregorian::Sunday ||
+      while (trading_day.day_of_week() == boost::gregorian::Saturday ||
+             trading_day.day_of_week() == boost::gregorian::Sunday ||
              std::find_if(holidays.begin(), holidays.end(), [&](const auto &h)
                {
-                 return h.date() == boost::gregorian::to_iso_string(trading_day_);
+                 return h.date() == boost::gregorian::to_iso_string(trading_day);
                }) != holidays.end())
       {
-        trading_day_ += boost::gregorian::date_duration(1);
+        trading_day += boost::gregorian::date_duration(1);
       }
+      cache_->set_night_session(true);
     }
   }
-  LOG_INF << "Trading day is " << boost::gregorian::to_iso_string(trading_day_);
+  trading_day_ = boost::gregorian::to_iso_string(trading_day);
+  cache_->set_trading_day(trading_day_);
+  LOG_INF << "Trading day is " << trading_day_;
 }
 
 void ExchangeParameterDB::RegisterCallback(base::ProtoMessageDispatcher<base::ProtoMessagePtr> &dispatcher)

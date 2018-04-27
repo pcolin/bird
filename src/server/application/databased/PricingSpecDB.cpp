@@ -4,7 +4,7 @@
 #include <boost/format.hpp>
 
 PricingSpecDB::PricingSpecDB(ConcurrentSqliteDB &db, const std::string &table_name,
-    const std::string &record_table_name, const InstrumentDB &instrument_db)
+    const std::string &record_table_name, InstrumentDB &instrument_db)
   : DbBase(db, table_name), record_table_name_(record_table_name), instrument_db_(instrument_db)
 {}
 
@@ -77,9 +77,9 @@ base::ProtoMessagePtr PricingSpecDB::OnRequest(const std::shared_ptr<Proto::Pric
 
       sprintf(sql, "DELETE FROM %s WHERE name='%s'", record_table_name_.c_str(), name.c_str());
       ExecSql(sql);
-      for (auto &inst : pricing.instruments())
+      for (auto &op : pricing.options())
       {
-        sprintf(sql, "INSERT INTO %s VALUES('%s', '%s')", record_table_name_.c_str(), inst.c_str());
+        sprintf(sql, "INSERT INTO %s VALUES('%s', '%s')", record_table_name_.c_str(), op.c_str());
         ExecSql(sql);
       }
     }
@@ -145,7 +145,7 @@ int PricingSpecDB::RecordCallback(void *data, int argc, char **argv, char **col_
   auto inst = instrument_db->FindOption(id);
   if (inst)
   {
-    *((*pricings)[argv[0]]->add_instruments()) = id;
+    *((*pricings)[argv[0]]->add_options()) = id;
   }
   return 0;
 }

@@ -10,10 +10,55 @@ ParameterManager* ParameterManager::GetInstance()
   return &manager;
 }
 
+void ParameterManager::InitGlobal()
+{
+  auto user = EnvConfig::GetInstance()->GetString(EnvVar::EXCHANGE);
+  /// Sync Exchange
+  {
+    auto req = Message::NewProto<Proto::ExchangeParameterReq>();
+    req->set_type(Proto::RequestType::Get);
+    req->set_user(user);
+    auto rep = std::dynamic_pointer_cast<Proto::ExchangeParameterRep>(
+        Middleware::GetInstance()->Request(req));
+    if (rep && rep->result().result())
+    {
+      exchange_ = std::make_shared<Exchange>();
+      for(auto &p : rep->parameters())
+      {
+        exchange_->OnExchangeParameter(p);
+      }
+    }
+    else
+    {
+      LOG_ERR << "Failed to sync Exchange.";
+    }
+  }
+}
+
 void ParameterManager::Init()
 {
-  /// Sync InterestRate
   auto user = EnvConfig::GetInstance()->GetString(EnvVar::EXCHANGE);
+  /// Sync Exchange
+  // {
+  //   auto req = Message::NewProto<Proto::ExchangeParameterReq>();
+  //   req->set_type(Proto::RequestType::Get);
+  //   req->set_user(user);
+  //   auto rep = std::dynamic_pointer_cast<Proto::ExchangeParameterRep>(
+  //       Middleware::GetInstance()->Request(req));
+  //   if (rep && rep->result().result())
+  //   {
+  //     exchange_ = std::make_shared<Exchange>();
+  //     for(auto &p : rep->parameters())
+  //     {
+  //       exchange_->OnExchangeParameter(p);
+  //     }
+  //   }
+  //   else
+  //   {
+  //     LOG_ERR << "Failed to sync Exchange.";
+  //   }
+  // }
+  /// Sync InterestRate
   {
     auto req = Message::NewProto<Proto::InterestRateReq>();
     req->set_type(Proto::RequestType::Get);
@@ -177,7 +222,8 @@ bool ParameterManager::GetInterestRate(const boost::gregorian::date &date, doubl
   return false;
 }
 
-bool ParameterManager::GetSSRate(const Instrument *underlying, const boost::gregorian::date &date, double rate)
+bool ParameterManager::GetSSRate(const Instrument *underlying, const boost::gregorian::date &date,
+    double &rate)
 {
   std::lock_guard<std::mutex> lck(ssrates_mtx_);
   auto it = ssrates_.find(underlying);
@@ -244,6 +290,18 @@ bool ParameterManager::GetDestriker(const Instrument *instrument, double &destri
 //   }
 //   return false;
 // }
+
+void ParameterManager::OnExchangeParameterReq(
+    const std::shared_ptr<Proto::ExchangeParameterReq> &req)
+{
+  if (req->type() == Proto::RequestType::Set)
+  {
+    for(auto &p : req->parameters())
+    {
+      exchange_->OnExchangeParameter(p);
+    }
+  }
+}
 
 void ParameterManager::OnInterestRateReq(const std::shared_ptr<Proto::InterestRateReq> &req)
 {

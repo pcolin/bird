@@ -1,7 +1,6 @@
 #include "CsvReader.h"
 
 #include <fstream>
-#include <boost/algorithm/string.hpp>
 
 namespace base
 {

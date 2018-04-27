@@ -10,14 +10,15 @@
 enum class MsgType : int8_t
 {
   Price = 0,
-  Order = 1,
-  Trade = 2,
+  TheoMatrix = 1,
+  Order = 2,
+  Trade = 3,
 };
 
 struct MsgHeader
 {
   MsgType type;
-  int32_t interval[3];
+  int32_t interval[5];
   int64_t time;
 
   MsgHeader(MsgType t) : type(t) {}
@@ -69,12 +70,14 @@ private:
 };
 
 class Price;
+class TheoMatrix;
 class Order;
 class Trade;
 class Message
 {
 public:
   static std::shared_ptr<Price> NewPrice();
+  static std::shared_ptr<TheoMatrix> NewTheoMatrix();
   static std::shared_ptr<Order> NewOrder();
   static std::shared_ptr<Order> NewOrder(const std::shared_ptr<Order> &ord);
   static std::shared_ptr<Trade> NewTrade();

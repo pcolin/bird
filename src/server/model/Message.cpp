@@ -1,4 +1,5 @@
 #include "Price.h"
+#include "TheoMatrix.h"
 #include "Order.h"
 #include "Trade.h"
 
@@ -7,6 +8,12 @@
 PricePtr Message::NewPrice()
 {
   static MessageFactory<Price> factory;
+  return factory.Allocate();
+}
+
+TheoMatrixPtr Message::NewTheoMatrix()
+{
+  static MessageFactory<TheoMatrix> factory;
   return factory.Allocate();
 }
 
