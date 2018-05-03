@@ -16,8 +16,9 @@ ExchangeParameterDB::ExchangeParameterDB(ConcurrentSqliteDB &db, const std::stri
 void ExchangeParameterDB::RefreshCache()
 {
   char sql[1024];
-  sprintf(sql, "DELETE FROM %s WHERE holiday < strftime('%Y%m%d', 'now')",
-      holiday_table_name_.c_str());
+  const char *fmt = "%Y%m%d";
+  sprintf(sql, "DELETE FROM %s WHERE holiday<strftime(\"%s\", 'now')", holiday_table_name_.c_str(),
+      fmt);
   ExecSql(sql);
 
   sprintf(sql, "SELECT * FROM %s", table_name_.c_str());

@@ -100,8 +100,8 @@ void ParameterManager::Init()
           {
             it = ssrates_.emplace(inst, std::make_shared<DateRateMap>()).first;
           }
-          auto date = boost::gregorian::from_undelimited_string(r.date());
-          (*it->second)[date] = r.rate();
+          auto maturity = boost::gregorian::from_undelimited_string(r.maturity());
+          (*it->second)[maturity] = r.rate();
         }
       }
     }
@@ -331,8 +331,8 @@ void ParameterManager::OnSSRateReq(const std::shared_ptr<Proto::SSRateReq> &req)
         {
           for (auto &r : req->rates())
           {
-            auto date = boost::gregorian::from_undelimited_string(r.date());
-            (*it->second)[date] = r.rate();
+            auto maturity = boost::gregorian::from_undelimited_string(r.maturity());
+            (*it->second)[maturity] = r.rate();
           }
         }
       }
@@ -354,8 +354,8 @@ void ParameterManager::OnSSRateReq(const std::shared_ptr<Proto::SSRateReq> &req)
       {
         for (auto &r : req->rates())
         {
-          auto date = boost::gregorian::from_undelimited_string(r.date());
-          it->second->erase(date);
+          auto maturity = boost::gregorian::from_undelimited_string(r.maturity());
+          it->second->erase(maturity);
         }
       }
     }

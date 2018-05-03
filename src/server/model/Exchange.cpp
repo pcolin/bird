@@ -54,6 +54,7 @@ void Exchange::OnExchangeParameter(const Proto::ExchangeParameter &param)
     if (d.is_special() == false)
     {
       holidays_.emplace(d, h.weight());
+      LOG_INF << boost::format("Add holiday %1% with weight %2%") % h.date() % h.weight();
     }
   }
 
@@ -90,7 +91,7 @@ double Exchange::GetTimeValue(const Option *option)
     auto lower = holidays_.lower_bound(trading_day_);
     if (lower != holidays_.end())
     {
-      auto upper = holidays_.upper_bound(trading_day_);
+      auto upper = holidays_.upper_bound(maturity);
       for (auto itr = lower; itr != upper; ++itr)
       {
         if (itr->first.day_of_week() != Saturday && itr->first.day_of_week() != Sunday)

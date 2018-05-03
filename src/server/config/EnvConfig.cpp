@@ -40,6 +40,7 @@ EnvConfig::EnvConfig()
 
     /// exchange
     { static_cast<int8_t>(EnvVar::EXCHANGE), "EXCHANGE" },
+    { static_cast<int8_t>(EnvVar::SIMULATED_EXCHANGE), "SIMULATED_EXCHANGE" },
     { static_cast<int8_t>(EnvVar::RECONNECT_INTERVAL), "RECONNECT_INT" },
     { static_cast<int8_t>(EnvVar::PUB_PRICE_LEVELS), "PUB_PRICE_LVLS" },
     { static_cast<int8_t>(EnvVar::PUB_PRICE_INTERVAL), "PUB_PRICE_INT"},
@@ -57,7 +58,7 @@ EnvConfig::EnvConfig()
     { static_cast<int8_t>(EnvVar::CTP_INVESTOR_ID), "CTP_INVESTOR_ID" },
     { static_cast<int8_t>(EnvVar::CTP_USER_ID), "CTP_USER_ID" },
     { static_cast<int8_t>(EnvVar::CTP_PASSWORD), "CTP_PASSWORD" },
-    
+
     { static_cast<int8_t>(EnvVar::UL_PRICE_CHECK_NUM), "UL_PRICE_CHECK_NUM" },
 
   };

@@ -68,7 +68,7 @@ private:
   std::unique_ptr<std::thread> request_thread_;
   typedef boost::variant<OrderRequestPtr, QuoteRequestPtr> RequestType;
   moodycamel::ConcurrentQueue<RequestType> request_queue_;
-  
+
   std::unique_ptr<std::thread> cash_thread_;
 };
 

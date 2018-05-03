@@ -69,13 +69,13 @@ const Instrument* ProductManager::FindSymbol(const std::string& symbol)
 }
 
 const std::vector<const Instrument*>
-ProductManager::FindInstruments(std::function<bool(const Instrument*)> filter)
+ProductManager::FindInstruments(const std::function<bool(const Instrument*)> &filter)
 {
   std::vector<const Instrument*> instruments;
   std::lock_guard<std::mutex> lck(mtx_);
   for (const auto& it : instruments_)
   {
-    if (filter(it.second)) instruments.push_back(it.second);
+    if (filter && filter(it.second)) instruments.push_back(it.second);
   }
   return instruments;
 }

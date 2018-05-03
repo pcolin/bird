@@ -62,6 +62,7 @@ class Instrument
 
     base::TickType ConvertToTick(base::PriceType p) const { return (p + 0.5 * tick_) / tick_; }
     base::TickType ConvertToHalfTick(base::PriceType p) const { return p / (0.5 * tick_); }
+    double ConvertToHalfTickRatio(base::PriceType p) const { return p / (0.5 * tick_); }
 
     base::PriceType ConvertToPrice(base::TickType tick) const { return tick * tick_; }
     base::PriceType ConvertHalfToPrice(base::TickType tick) const { return tick * tick_ * 0.5; }

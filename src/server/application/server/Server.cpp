@@ -78,8 +78,8 @@ int main(int argc, char *args[])
       {
         LOG_INF << "Start pricing strategy";
         s->Start();
-        std::this_thread::sleep_for(std::chrono::seconds(600));
-        s->Stop();
+        // std::this_thread::sleep_for(std::chrono::seconds(600));
+        // s->Stop();
       }
       else
       {

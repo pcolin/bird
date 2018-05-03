@@ -9,6 +9,7 @@ ADD_EXECUTABLE(databased
   CashLimitDB.cpp
   InterestRateDB.cpp
   SSRateDB.cpp
+  VolatilityCurveDB.cpp
   PricingSpecDB.cpp
   DestrikerDB.cpp)
 TARGET_LINK_LIBRARIES(databased dl nanomsg protomsg logger config boost_date_time)

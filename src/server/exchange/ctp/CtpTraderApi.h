@@ -14,9 +14,9 @@ public:
   CtpTraderApi();
   ~CtpTraderApi();
 
-  virtual void Init();
-  virtual void Login();
-  virtual void Logout();
+  void Init() override;
+  void Login() override;
+  void Logout() override;
 
   // virtual void PullAll();
 
@@ -40,7 +40,7 @@ protected:
   void AmendQuote(const OrderPtr &bid, const OrderPtr &ask) override;
   void PullOrder(const OrderPtr &order) override;
   void PullQuote(const OrderPtr &bid, const OrderPtr &ask) override;
-  
+
   virtual void QueryCash() override;
 
 private:

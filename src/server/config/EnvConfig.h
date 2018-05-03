@@ -30,6 +30,7 @@ enum class EnvVar : int8_t
 
   /// exchange
   EXCHANGE,
+  SIMULATED_EXCHANGE,
   RECONNECT_INTERVAL,
   PUB_PRICE_LEVELS,
   PUB_PRICE_INTERVAL,

@@ -132,6 +132,7 @@ int InstrumentDB::UnderlyingCallback(void *data, int argc, char **argv, char **c
     inst->set_multiplier(atof(argv[8]));
     inst->set_highest(atof(argv[9]));
     inst->set_lowest(atof(argv[10]));
+    inst->set_maturity(argv[12]);
     cache[id] = inst;
   }
   return 0;

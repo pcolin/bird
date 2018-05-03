@@ -18,7 +18,7 @@ class ProductManager
     const Instrument* FindId(const std::string& id);
     const Instrument* FindSymbol(const std::string& symbol);
     const std::vector<const Instrument*>
-      FindInstruments(std::function<bool(const Instrument*)> filter );
+      FindInstruments(const std::function<bool(const Instrument*)> &filter );
 
   private:
     ProductManager() {}

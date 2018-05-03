@@ -304,12 +304,12 @@ TheoMatrixPtr Pricer::CalculateTheo(const Option* op, const std::shared_ptr<Para
     }
 
     int idx = i - lower;
-    matrix->theo[idx].volatility = v;
-    matrix->theo[idx].ss_rate = q;
-    matrix->theo[idx].theo = theo.theo;
-    matrix->theo[idx].delta = theo.delta;
-    matrix->theo[idx].gamma = theo.gamma;
-    matrix->theo[idx].theta = theo.theta;
+    matrix->theos[idx].volatility = v;
+    matrix->theos[idx].ss_rate = q;
+    matrix->theos[idx].theo = theo.theo;
+    matrix->theos[idx].delta = theo.delta;
+    matrix->theos[idx].gamma = theo.gamma;
+    matrix->theos[idx].theta = theo.theta;
     LOG_DBG << boost::format("Calculate %1%: s(%2%), v(%3%), r(%4%), q(%5%), t(%6%), "
         "theo(%7%), delta(%8%), gamma(%9%), theta(%10%)") % op->Id() % s % v % r % q %
       t % theo.theo % theo.delta % theo.gamma % theo.theta;

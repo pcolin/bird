@@ -7,6 +7,7 @@
 struct TheoData
 {
   operator bool() const { return spot != base::PRICE_UNDEFINED; }
+  void InterpolateFrom(const TheoData &td1, const TheoData &td2);
 
   base::PriceType spot = base::PRICE_UNDEFINED;
   double volatility = 0.0;
@@ -24,12 +25,13 @@ struct TheoMatrix
   static const int DEPTH = 30;
 
   TheoMatrix() : header(MsgType::TheoMatrix) {}
+  bool FindTheo(base::PriceType spot, TheoData &theo) const;
   std::string Dump() const;
 
   MsgHeader header;
   // char pricing_name[16] = {0};
   const Option *option = nullptr;
-  TheoData theo[2 * DEPTH + 1];
+  TheoData theos[2 * DEPTH + 1];
   base::TickType lower;
   base::TickType upper;
 };

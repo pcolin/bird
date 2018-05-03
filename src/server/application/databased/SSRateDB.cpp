@@ -10,7 +10,7 @@ SSRateDB::SSRateDB(ConcurrentSqliteDB &db, const std::string &table_name,
 void SSRateDB::RefreshCache()
 {
   char sql[1024];
-  sprintf(sql, "DELETE FROM %s WHERE date<'%s'", table_name_.c_str(), trading_day_.c_str());
+  sprintf(sql, "DELETE FROM %s WHERE maturity<'%s'", table_name_.c_str(), trading_day_.c_str());
   ExecSql(sql);
 
   sprintf(sql, "SELECT * FROM %s", table_name_.c_str());
@@ -18,36 +18,55 @@ void SSRateDB::RefreshCache()
   ExecSql(sql, &data, &SSRateDB::Callback);
 }
 
-void SSRateDB::RegisterCallback(base::ProtoMessageDispatcher<base::ProtoMessagePtr> &dispatcher)
+void SSRateDB::RegisterCallback(
+    base::ProtoMessageDispatcher<base::ProtoMessagePtr> &dispatcher)
 {
   dispatcher.RegisterCallback<Proto::SSRateReq>(
     std::bind(&SSRateDB::OnRequest, this, std::placeholders::_1));
 }
 
-base::ProtoMessagePtr SSRateDB::OnRequest(const std::shared_ptr<Proto::SSRateReq> &msg)
+base::ProtoMessagePtr SSRateDB::OnRequest(
+    const std::shared_ptr<Proto::SSRateReq> &msg)
 {
   LOG_INF << "SSRate request: " << msg->ShortDebugString();
   auto reply = Message::NewProto<Proto::SSRateRep>();
   Proto::RequestType type = msg->type();
   if (type == Proto::RequestType::Get)
   {
-    auto it = cache_.find(msg->underlying());
-    if (it != cache_.end())
+    if (msg->underlying().empty())
     {
-      for (auto &r : it->second)
+      for (auto &ssr : cache_)
       {
-        auto *ssr = reply->add_rates();
-        ssr->set_underlying(msg->underlying());
-        ssr->set_date(r.first);
-        ssr->set_rate(r.second);
+        for (auto &r : ssr.second)
+        {
+          auto *tmp = reply->add_rates();
+          tmp->set_underlying(ssr.first);
+          tmp->set_maturity(r.first);
+          tmp->set_rate(r.second);
+        }
       }
     }
     else
     {
-      reply->mutable_result()->set_result(false);
-      reply->mutable_result()->set_error(msg->underlying() + " doesn't exist");
-      return reply;
+      auto it = cache_.find(msg->underlying());
+      if (it != cache_.end())
+      {
+        for (auto &r : it->second)
+        {
+          auto *tmp = reply->add_rates();
+          tmp->set_underlying(it->first);
+          tmp->set_maturity(r.first);
+          tmp->set_rate(r.second);
+        }
+      }
+      else
+      {
+        reply->mutable_result()->set_result(false);
+        reply->mutable_result()->set_error(msg->underlying() + " doesn't exist");
+        return reply;
+      }
     }
+    LOG_INF << boost::format("Get %1% ssrates totally.") % reply->rates_size();
   }
   else if (type == Proto::RequestType::Set)
   {
@@ -55,16 +74,26 @@ base::ProtoMessagePtr SSRateDB::OnRequest(const std::shared_ptr<Proto::SSRateReq
     TransactionGuard tg(this);
     for (auto &r : msg->rates())
     {
-      /// to be done...
+      sprintf(sql, "INSERT OR REPLACE INTO %s VALUES('%s', '%s', %f)", table_name_.c_str(),
+          r.underlying().c_str(), r.maturity().c_str(), r.rate());
+      ExecSql(sql);
+      cache_[r.underlying()][r.maturity()] = r.rate();
     }
   }
   else if (type == Proto::RequestType::Del)
   {
     char sql[1024];
     TransactionGuard tg(this);
-    for (auto &d : msg->rates())
+    for (auto &r : msg->rates())
     {
-      /// to be done...
+      sprintf(sql, "DELETE FROM %s WHERE underlying='%s'AND maturity='%s'", table_name_.c_str(),
+          r.underlying().c_str(), r.maturity().c_str());
+      ExecSql(sql);
+      auto it = cache_.find(r.underlying());
+      if (it != cache_.end())
+      {
+        it->second.erase(r.maturity());
+      }
     }
   }
   reply->mutable_result()->set_result(true);
@@ -78,10 +107,15 @@ int SSRateDB::Callback(void *data, int argc, char **argv, char **col_name)
   auto *cache = std::get<0>(*tmp);
   auto *instrument_db = std::get<1>(*tmp);
 
-  const std::string id = argv[0];
-  auto inst = instrument_db->FindOption(id);
+  const std::string underlying = argv[0];
+  auto inst = instrument_db->FindUnderlying(underlying);
   if (inst)
   {
-    (*cache)[id][argv[1]] = atof(argv[2]);
+    (*cache)[underlying][argv[1]] = atof(argv[2]);
   }
+  else
+  {
+    LOG_ERR << "Failed to find underlying " << underlying;
+  }
+  return 0;
 }

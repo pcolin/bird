@@ -7,7 +7,7 @@ import "Reply.proto";
 message SSRate
 {
   string underlying = 1;
-  string date = 2;
+  string maturity = 2;
   double rate = 3;
 }
 

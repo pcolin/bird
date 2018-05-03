@@ -7,17 +7,17 @@
 class CtpMdSpi;
 class CtpMdApi : public MdApi
 {
-  public:
-    ~CtpMdApi();
+public:
+  ~CtpMdApi();
 
-    void Init();
-    void Login();
-    void Subscribe();
+  void Init();
+  void Login();
+  void Subscribe();
 
-  private:
-    CThostFtdcMdApi *api_ = nullptr;
-    CtpMdSpi *spi_ = nullptr;
-    int id_ = 0;
+private:
+  CThostFtdcMdApi *api_ = nullptr;
+  CtpMdSpi *spi_ = nullptr;
+  int id_ = 0;
 };
 
 #endif
