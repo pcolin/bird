@@ -47,10 +47,11 @@ namespace Proto {
             "Q2xvc2luZ0F1Y3Rpb24QBxIICgRIYWx0EAgqHwoKT3B0aW9uVHlwZRIICgRD",
             "YWxsEAASBwoDUHV0EAEqKgoMRXhlcmNpc2VUeXBlEgwKCEV1cm9wZWFuEAAS",
             "DAoIQW1lcmljYW4QASo8Cg5TZXR0bGVtZW50VHlwZRISCg5DYXNoU2V0dGxl",
-            "bWVudBAAEhYKElBoeXNpY2FsU2V0dGxlbWVudBABYgZwcm90bzM="));
+            "bWVudBAAEhYKElBoeXNpY2FsU2V0dGxlbWVudBABKi8KDlJvdW5kRGlyZWN0",
+            "aW9uEgsKB05lYXJlc3QQABIGCgJVcBABEggKBERvd24QAmIGcHJvdG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Proto.ExchangeReflection.Descriptor, global::Proto.RequestReflection.Descriptor, global::Proto.ReplyReflection.Descriptor, global::Proto.CurrencyReflection.Descriptor, },
-          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Proto.InstrumentType), typeof(global::Proto.InstrumentStatus), typeof(global::Proto.OptionType), typeof(global::Proto.ExerciseType), typeof(global::Proto.SettlementType), }, new pbr::GeneratedClrTypeInfo[] {
+          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Proto.InstrumentType), typeof(global::Proto.InstrumentStatus), typeof(global::Proto.OptionType), typeof(global::Proto.ExerciseType), typeof(global::Proto.SettlementType), typeof(global::Proto.RoundDirection), }, new pbr::GeneratedClrTypeInfo[] {
             new pbr::GeneratedClrTypeInfo(typeof(global::Proto.Instrument), global::Proto.Instrument.Parser, new[]{ "Id", "Symbol", "Exchange", "Type", "Currency", "Underlying", "HedgeUnderlying", "Tick", "Multiplier", "Highest", "Lowest", "CallPut", "Maturity", "Exercise", "Settlement", "Strike" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Proto.InstrumentReq), global::Proto.InstrumentReq.Parser, new[]{ "Type", "Instruments", "Exchange", "User" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Proto.InstrumentRep), global::Proto.InstrumentRep.Parser, new[]{ "Instruments", "Result" }, null, null, null)
@@ -91,6 +92,12 @@ namespace Proto {
   public enum SettlementType {
     [pbr::OriginalName("CashSettlement")] CashSettlement = 0,
     [pbr::OriginalName("PhysicalSettlement")] PhysicalSettlement = 1,
+  }
+
+  public enum RoundDirection {
+    [pbr::OriginalName("Nearest")] Nearest = 0,
+    [pbr::OriginalName("Up")] Up = 1,
+    [pbr::OriginalName("Down")] Down = 2,
   }
 
   #endregion

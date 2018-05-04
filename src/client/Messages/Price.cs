@@ -24,22 +24,186 @@ namespace Proto {
     static PriceReflection() {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
-            "CgtQcmljZS5wcm90bxIFUHJvdG8iwwEKBVByaWNlEhIKCmluc3RydW1lbnQY",
-            "ASABKAkSDAoEbGFzdBgCIAEoARILCgNiaWQYAyABKAESCwoDYXNrGAQgASgB",
-            "EgwKBG9wZW4YBSABKAESDAoEaGlnaBgGIAEoARILCgNsb3cYByABKAESDQoF",
-            "Y2xvc2UYCCABKAESDgoGYW1vdW50GAkgASgBEhIKCmJpZF92b2x1bWUYCiAB",
-            "KAUSEgoKYXNrX3ZvbHVtZRgLIAEoBRIOCgZ2b2x1bWUYDCABKAViBnByb3Rv",
-            "Mw=="));
+            "CgtQcmljZS5wcm90bxIFUHJvdG8aDVJlcXVlc3QucHJvdG8iKwoKUHJpY2VM",
+            "ZXZlbBINCgVwcmljZRgBIAEoARIOCgZ2b2x1bWUYAiABKAUiqQIKBVByaWNl",
+            "EhIKCmluc3RydW1lbnQYASABKAkSHwoEbGFzdBgCIAEoCzIRLlByb3RvLlBy",
+            "aWNlTGV2ZWwSHwoEYmlkcxgDIAMoCzIRLlByb3RvLlByaWNlTGV2ZWwSHwoE",
+            "YXNrcxgEIAMoCzIRLlByb3RvLlByaWNlTGV2ZWwSFgoOYWRqdXN0ZWRfcHJp",
+            "Y2UYBSABKAESDgoGYWRqdXN0GAYgASgBEgwKBG9wZW4YByABKAESDAoEaGln",
+            "aBgIIAEoARILCgNsb3cYCSABKAESDQoFY2xvc2UYCiABKAESEQoJcHJlX2Ns",
+            "b3NlGAsgASgBEhYKDnByZV9zZXR0bGVtZW50GAwgASgBEg4KBmFtb3VudBgN",
+            "IAEoARIOCgZ2b2x1bWUYDiABKAUiTgoIUHJpY2VSZXESIAoEdHlwZRgBIAEo",
+            "DjISLlByb3RvLlJlcXVlc3RUeXBlEhIKCmluc3RydW1lbnQYAiABKAkSDAoE",
+            "dXNlchgDIAEoCWIGcHJvdG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
-          new pbr::FileDescriptor[] { },
+          new pbr::FileDescriptor[] { global::Proto.RequestReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::Proto.Price), global::Proto.Price.Parser, new[]{ "Instrument", "Last", "Bid", "Ask", "Open", "High", "Low", "Close", "Amount", "BidVolume", "AskVolume", "Volume" }, null, null, null)
+            new pbr::GeneratedClrTypeInfo(typeof(global::Proto.PriceLevel), global::Proto.PriceLevel.Parser, new[]{ "Price", "Volume" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Proto.Price), global::Proto.Price.Parser, new[]{ "Instrument", "Last", "Bids", "Asks", "AdjustedPrice", "Adjust", "Open", "High", "Low", "Close", "PreClose", "PreSettlement", "Amount", "Volume" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Proto.PriceReq), global::Proto.PriceReq.Parser, new[]{ "Type", "Instrument", "User" }, null, null, null)
           }));
     }
     #endregion
 
   }
   #region Messages
+  public sealed partial class PriceLevel : pb::IMessage<PriceLevel> {
+    private static readonly pb::MessageParser<PriceLevel> _parser = new pb::MessageParser<PriceLevel>(() => new PriceLevel());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<PriceLevel> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::Proto.PriceReflection.Descriptor.MessageTypes[0]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public PriceLevel() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public PriceLevel(PriceLevel other) : this() {
+      price_ = other.price_;
+      volume_ = other.volume_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public PriceLevel Clone() {
+      return new PriceLevel(this);
+    }
+
+    /// <summary>Field number for the "price" field.</summary>
+    public const int PriceFieldNumber = 1;
+    private double price_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public double Price {
+      get { return price_; }
+      set {
+        price_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "volume" field.</summary>
+    public const int VolumeFieldNumber = 2;
+    private int volume_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int Volume {
+      get { return volume_; }
+      set {
+        volume_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as PriceLevel);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(PriceLevel other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (!pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.Equals(Price, other.Price)) return false;
+      if (Volume != other.Volume) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (Price != 0D) hash ^= pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.GetHashCode(Price);
+      if (Volume != 0) hash ^= Volume.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (Price != 0D) {
+        output.WriteRawTag(9);
+        output.WriteDouble(Price);
+      }
+      if (Volume != 0) {
+        output.WriteRawTag(16);
+        output.WriteInt32(Volume);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (Price != 0D) {
+        size += 1 + 8;
+      }
+      if (Volume != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Volume);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(PriceLevel other) {
+      if (other == null) {
+        return;
+      }
+      if (other.Price != 0D) {
+        Price = other.Price;
+      }
+      if (other.Volume != 0) {
+        Volume = other.Volume;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 9: {
+            Price = input.ReadDouble();
+            break;
+          }
+          case 16: {
+            Volume = input.ReadInt32();
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
   public sealed partial class Price : pb::IMessage<Price> {
     private static readonly pb::MessageParser<Price> _parser = new pb::MessageParser<Price>(() => new Price());
     private pb::UnknownFieldSet _unknownFields;
@@ -48,7 +212,7 @@ namespace Proto {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Proto.PriceReflection.Descriptor.MessageTypes[0]; }
+      get { return global::Proto.PriceReflection.Descriptor.MessageTypes[1]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -66,16 +230,18 @@ namespace Proto {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public Price(Price other) : this() {
       instrument_ = other.instrument_;
-      last_ = other.last_;
-      bid_ = other.bid_;
-      ask_ = other.ask_;
+      Last = other.last_ != null ? other.Last.Clone() : null;
+      bids_ = other.bids_.Clone();
+      asks_ = other.asks_.Clone();
+      adjustedPrice_ = other.adjustedPrice_;
+      adjust_ = other.adjust_;
       open_ = other.open_;
       high_ = other.high_;
       low_ = other.low_;
       close_ = other.close_;
+      preClose_ = other.preClose_;
+      preSettlement_ = other.preSettlement_;
       amount_ = other.amount_;
-      bidVolume_ = other.bidVolume_;
-      askVolume_ = other.askVolume_;
       volume_ = other.volume_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
@@ -98,39 +264,59 @@ namespace Proto {
 
     /// <summary>Field number for the "last" field.</summary>
     public const int LastFieldNumber = 2;
-    private double last_;
+    private global::Proto.PriceLevel last_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public double Last {
+    public global::Proto.PriceLevel Last {
       get { return last_; }
       set {
         last_ = value;
       }
     }
 
-    /// <summary>Field number for the "bid" field.</summary>
-    public const int BidFieldNumber = 3;
-    private double bid_;
+    /// <summary>Field number for the "bids" field.</summary>
+    public const int BidsFieldNumber = 3;
+    private static readonly pb::FieldCodec<global::Proto.PriceLevel> _repeated_bids_codec
+        = pb::FieldCodec.ForMessage(26, global::Proto.PriceLevel.Parser);
+    private readonly pbc::RepeatedField<global::Proto.PriceLevel> bids_ = new pbc::RepeatedField<global::Proto.PriceLevel>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public double Bid {
-      get { return bid_; }
+    public pbc::RepeatedField<global::Proto.PriceLevel> Bids {
+      get { return bids_; }
+    }
+
+    /// <summary>Field number for the "asks" field.</summary>
+    public const int AsksFieldNumber = 4;
+    private static readonly pb::FieldCodec<global::Proto.PriceLevel> _repeated_asks_codec
+        = pb::FieldCodec.ForMessage(34, global::Proto.PriceLevel.Parser);
+    private readonly pbc::RepeatedField<global::Proto.PriceLevel> asks_ = new pbc::RepeatedField<global::Proto.PriceLevel>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<global::Proto.PriceLevel> Asks {
+      get { return asks_; }
+    }
+
+    /// <summary>Field number for the "adjusted_price" field.</summary>
+    public const int AdjustedPriceFieldNumber = 5;
+    private double adjustedPrice_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public double AdjustedPrice {
+      get { return adjustedPrice_; }
       set {
-        bid_ = value;
+        adjustedPrice_ = value;
       }
     }
 
-    /// <summary>Field number for the "ask" field.</summary>
-    public const int AskFieldNumber = 4;
-    private double ask_;
+    /// <summary>Field number for the "adjust" field.</summary>
+    public const int AdjustFieldNumber = 6;
+    private double adjust_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public double Ask {
-      get { return ask_; }
+    public double Adjust {
+      get { return adjust_; }
       set {
-        ask_ = value;
+        adjust_ = value;
       }
     }
 
     /// <summary>Field number for the "open" field.</summary>
-    public const int OpenFieldNumber = 5;
+    public const int OpenFieldNumber = 7;
     private double open_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public double Open {
@@ -141,7 +327,7 @@ namespace Proto {
     }
 
     /// <summary>Field number for the "high" field.</summary>
-    public const int HighFieldNumber = 6;
+    public const int HighFieldNumber = 8;
     private double high_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public double High {
@@ -152,7 +338,7 @@ namespace Proto {
     }
 
     /// <summary>Field number for the "low" field.</summary>
-    public const int LowFieldNumber = 7;
+    public const int LowFieldNumber = 9;
     private double low_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public double Low {
@@ -163,7 +349,7 @@ namespace Proto {
     }
 
     /// <summary>Field number for the "close" field.</summary>
-    public const int CloseFieldNumber = 8;
+    public const int CloseFieldNumber = 10;
     private double close_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public double Close {
@@ -173,8 +359,30 @@ namespace Proto {
       }
     }
 
+    /// <summary>Field number for the "pre_close" field.</summary>
+    public const int PreCloseFieldNumber = 11;
+    private double preClose_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public double PreClose {
+      get { return preClose_; }
+      set {
+        preClose_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "pre_settlement" field.</summary>
+    public const int PreSettlementFieldNumber = 12;
+    private double preSettlement_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public double PreSettlement {
+      get { return preSettlement_; }
+      set {
+        preSettlement_ = value;
+      }
+    }
+
     /// <summary>Field number for the "amount" field.</summary>
-    public const int AmountFieldNumber = 9;
+    public const int AmountFieldNumber = 13;
     private double amount_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public double Amount {
@@ -184,30 +392,8 @@ namespace Proto {
       }
     }
 
-    /// <summary>Field number for the "bid_volume" field.</summary>
-    public const int BidVolumeFieldNumber = 10;
-    private int bidVolume_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public int BidVolume {
-      get { return bidVolume_; }
-      set {
-        bidVolume_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "ask_volume" field.</summary>
-    public const int AskVolumeFieldNumber = 11;
-    private int askVolume_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public int AskVolume {
-      get { return askVolume_; }
-      set {
-        askVolume_ = value;
-      }
-    }
-
     /// <summary>Field number for the "volume" field.</summary>
-    public const int VolumeFieldNumber = 12;
+    public const int VolumeFieldNumber = 14;
     private int volume_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int Volume {
@@ -231,16 +417,18 @@ namespace Proto {
         return true;
       }
       if (Instrument != other.Instrument) return false;
-      if (!pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.Equals(Last, other.Last)) return false;
-      if (!pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.Equals(Bid, other.Bid)) return false;
-      if (!pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.Equals(Ask, other.Ask)) return false;
+      if (!object.Equals(Last, other.Last)) return false;
+      if(!bids_.Equals(other.bids_)) return false;
+      if(!asks_.Equals(other.asks_)) return false;
+      if (!pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.Equals(AdjustedPrice, other.AdjustedPrice)) return false;
+      if (!pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.Equals(Adjust, other.Adjust)) return false;
       if (!pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.Equals(Open, other.Open)) return false;
       if (!pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.Equals(High, other.High)) return false;
       if (!pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.Equals(Low, other.Low)) return false;
       if (!pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.Equals(Close, other.Close)) return false;
+      if (!pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.Equals(PreClose, other.PreClose)) return false;
+      if (!pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.Equals(PreSettlement, other.PreSettlement)) return false;
       if (!pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.Equals(Amount, other.Amount)) return false;
-      if (BidVolume != other.BidVolume) return false;
-      if (AskVolume != other.AskVolume) return false;
       if (Volume != other.Volume) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
@@ -249,16 +437,18 @@ namespace Proto {
     public override int GetHashCode() {
       int hash = 1;
       if (Instrument.Length != 0) hash ^= Instrument.GetHashCode();
-      if (Last != 0D) hash ^= pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.GetHashCode(Last);
-      if (Bid != 0D) hash ^= pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.GetHashCode(Bid);
-      if (Ask != 0D) hash ^= pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.GetHashCode(Ask);
+      if (last_ != null) hash ^= Last.GetHashCode();
+      hash ^= bids_.GetHashCode();
+      hash ^= asks_.GetHashCode();
+      if (AdjustedPrice != 0D) hash ^= pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.GetHashCode(AdjustedPrice);
+      if (Adjust != 0D) hash ^= pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.GetHashCode(Adjust);
       if (Open != 0D) hash ^= pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.GetHashCode(Open);
       if (High != 0D) hash ^= pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.GetHashCode(High);
       if (Low != 0D) hash ^= pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.GetHashCode(Low);
       if (Close != 0D) hash ^= pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.GetHashCode(Close);
+      if (PreClose != 0D) hash ^= pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.GetHashCode(PreClose);
+      if (PreSettlement != 0D) hash ^= pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.GetHashCode(PreSettlement);
       if (Amount != 0D) hash ^= pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.GetHashCode(Amount);
-      if (BidVolume != 0) hash ^= BidVolume.GetHashCode();
-      if (AskVolume != 0) hash ^= AskVolume.GetHashCode();
       if (Volume != 0) hash ^= Volume.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
@@ -277,48 +467,50 @@ namespace Proto {
         output.WriteRawTag(10);
         output.WriteString(Instrument);
       }
-      if (Last != 0D) {
-        output.WriteRawTag(17);
-        output.WriteDouble(Last);
+      if (last_ != null) {
+        output.WriteRawTag(18);
+        output.WriteMessage(Last);
       }
-      if (Bid != 0D) {
-        output.WriteRawTag(25);
-        output.WriteDouble(Bid);
+      bids_.WriteTo(output, _repeated_bids_codec);
+      asks_.WriteTo(output, _repeated_asks_codec);
+      if (AdjustedPrice != 0D) {
+        output.WriteRawTag(41);
+        output.WriteDouble(AdjustedPrice);
       }
-      if (Ask != 0D) {
-        output.WriteRawTag(33);
-        output.WriteDouble(Ask);
+      if (Adjust != 0D) {
+        output.WriteRawTag(49);
+        output.WriteDouble(Adjust);
       }
       if (Open != 0D) {
-        output.WriteRawTag(41);
+        output.WriteRawTag(57);
         output.WriteDouble(Open);
       }
       if (High != 0D) {
-        output.WriteRawTag(49);
+        output.WriteRawTag(65);
         output.WriteDouble(High);
       }
       if (Low != 0D) {
-        output.WriteRawTag(57);
+        output.WriteRawTag(73);
         output.WriteDouble(Low);
       }
       if (Close != 0D) {
-        output.WriteRawTag(65);
+        output.WriteRawTag(81);
         output.WriteDouble(Close);
       }
+      if (PreClose != 0D) {
+        output.WriteRawTag(89);
+        output.WriteDouble(PreClose);
+      }
+      if (PreSettlement != 0D) {
+        output.WriteRawTag(97);
+        output.WriteDouble(PreSettlement);
+      }
       if (Amount != 0D) {
-        output.WriteRawTag(73);
+        output.WriteRawTag(105);
         output.WriteDouble(Amount);
       }
-      if (BidVolume != 0) {
-        output.WriteRawTag(80);
-        output.WriteInt32(BidVolume);
-      }
-      if (AskVolume != 0) {
-        output.WriteRawTag(88);
-        output.WriteInt32(AskVolume);
-      }
       if (Volume != 0) {
-        output.WriteRawTag(96);
+        output.WriteRawTag(112);
         output.WriteInt32(Volume);
       }
       if (_unknownFields != null) {
@@ -332,13 +524,15 @@ namespace Proto {
       if (Instrument.Length != 0) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(Instrument);
       }
-      if (Last != 0D) {
+      if (last_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(Last);
+      }
+      size += bids_.CalculateSize(_repeated_bids_codec);
+      size += asks_.CalculateSize(_repeated_asks_codec);
+      if (AdjustedPrice != 0D) {
         size += 1 + 8;
       }
-      if (Bid != 0D) {
-        size += 1 + 8;
-      }
-      if (Ask != 0D) {
+      if (Adjust != 0D) {
         size += 1 + 8;
       }
       if (Open != 0D) {
@@ -353,14 +547,14 @@ namespace Proto {
       if (Close != 0D) {
         size += 1 + 8;
       }
-      if (Amount != 0D) {
+      if (PreClose != 0D) {
         size += 1 + 8;
       }
-      if (BidVolume != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeInt32Size(BidVolume);
+      if (PreSettlement != 0D) {
+        size += 1 + 8;
       }
-      if (AskVolume != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeInt32Size(AskVolume);
+      if (Amount != 0D) {
+        size += 1 + 8;
       }
       if (Volume != 0) {
         size += 1 + pb::CodedOutputStream.ComputeInt32Size(Volume);
@@ -379,14 +573,19 @@ namespace Proto {
       if (other.Instrument.Length != 0) {
         Instrument = other.Instrument;
       }
-      if (other.Last != 0D) {
-        Last = other.Last;
+      if (other.last_ != null) {
+        if (last_ == null) {
+          last_ = new global::Proto.PriceLevel();
+        }
+        Last.MergeFrom(other.Last);
       }
-      if (other.Bid != 0D) {
-        Bid = other.Bid;
+      bids_.Add(other.bids_);
+      asks_.Add(other.asks_);
+      if (other.AdjustedPrice != 0D) {
+        AdjustedPrice = other.AdjustedPrice;
       }
-      if (other.Ask != 0D) {
-        Ask = other.Ask;
+      if (other.Adjust != 0D) {
+        Adjust = other.Adjust;
       }
       if (other.Open != 0D) {
         Open = other.Open;
@@ -400,14 +599,14 @@ namespace Proto {
       if (other.Close != 0D) {
         Close = other.Close;
       }
+      if (other.PreClose != 0D) {
+        PreClose = other.PreClose;
+      }
+      if (other.PreSettlement != 0D) {
+        PreSettlement = other.PreSettlement;
+      }
       if (other.Amount != 0D) {
         Amount = other.Amount;
-      }
-      if (other.BidVolume != 0) {
-        BidVolume = other.BidVolume;
-      }
-      if (other.AskVolume != 0) {
-        AskVolume = other.AskVolume;
       }
       if (other.Volume != 0) {
         Volume = other.Volume;
@@ -427,48 +626,244 @@ namespace Proto {
             Instrument = input.ReadString();
             break;
           }
-          case 17: {
-            Last = input.ReadDouble();
+          case 18: {
+            if (last_ == null) {
+              last_ = new global::Proto.PriceLevel();
+            }
+            input.ReadMessage(last_);
             break;
           }
-          case 25: {
-            Bid = input.ReadDouble();
+          case 26: {
+            bids_.AddEntriesFrom(input, _repeated_bids_codec);
             break;
           }
-          case 33: {
-            Ask = input.ReadDouble();
+          case 34: {
+            asks_.AddEntriesFrom(input, _repeated_asks_codec);
             break;
           }
           case 41: {
-            Open = input.ReadDouble();
+            AdjustedPrice = input.ReadDouble();
             break;
           }
           case 49: {
-            High = input.ReadDouble();
+            Adjust = input.ReadDouble();
             break;
           }
           case 57: {
-            Low = input.ReadDouble();
+            Open = input.ReadDouble();
             break;
           }
           case 65: {
-            Close = input.ReadDouble();
+            High = input.ReadDouble();
             break;
           }
           case 73: {
+            Low = input.ReadDouble();
+            break;
+          }
+          case 81: {
+            Close = input.ReadDouble();
+            break;
+          }
+          case 89: {
+            PreClose = input.ReadDouble();
+            break;
+          }
+          case 97: {
+            PreSettlement = input.ReadDouble();
+            break;
+          }
+          case 105: {
             Amount = input.ReadDouble();
             break;
           }
-          case 80: {
-            BidVolume = input.ReadInt32();
-            break;
-          }
-          case 88: {
-            AskVolume = input.ReadInt32();
-            break;
-          }
-          case 96: {
+          case 112: {
             Volume = input.ReadInt32();
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class PriceReq : pb::IMessage<PriceReq> {
+    private static readonly pb::MessageParser<PriceReq> _parser = new pb::MessageParser<PriceReq>(() => new PriceReq());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<PriceReq> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::Proto.PriceReflection.Descriptor.MessageTypes[2]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public PriceReq() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public PriceReq(PriceReq other) : this() {
+      type_ = other.type_;
+      instrument_ = other.instrument_;
+      user_ = other.user_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public PriceReq Clone() {
+      return new PriceReq(this);
+    }
+
+    /// <summary>Field number for the "type" field.</summary>
+    public const int TypeFieldNumber = 1;
+    private global::Proto.RequestType type_ = 0;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::Proto.RequestType Type {
+      get { return type_; }
+      set {
+        type_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "instrument" field.</summary>
+    public const int InstrumentFieldNumber = 2;
+    private string instrument_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string Instrument {
+      get { return instrument_; }
+      set {
+        instrument_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "user" field.</summary>
+    public const int UserFieldNumber = 3;
+    private string user_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string User {
+      get { return user_; }
+      set {
+        user_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as PriceReq);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(PriceReq other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (Type != other.Type) return false;
+      if (Instrument != other.Instrument) return false;
+      if (User != other.User) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (Type != 0) hash ^= Type.GetHashCode();
+      if (Instrument.Length != 0) hash ^= Instrument.GetHashCode();
+      if (User.Length != 0) hash ^= User.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (Type != 0) {
+        output.WriteRawTag(8);
+        output.WriteEnum((int) Type);
+      }
+      if (Instrument.Length != 0) {
+        output.WriteRawTag(18);
+        output.WriteString(Instrument);
+      }
+      if (User.Length != 0) {
+        output.WriteRawTag(26);
+        output.WriteString(User);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (Type != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Type);
+      }
+      if (Instrument.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(Instrument);
+      }
+      if (User.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(User);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(PriceReq other) {
+      if (other == null) {
+        return;
+      }
+      if (other.Type != 0) {
+        Type = other.Type;
+      }
+      if (other.Instrument.Length != 0) {
+        Instrument = other.Instrument;
+      }
+      if (other.User.Length != 0) {
+        User = other.User;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 8: {
+            type_ = (global::Proto.RequestType) input.ReadEnum();
+            break;
+          }
+          case 18: {
+            Instrument = input.ReadString();
+            break;
+          }
+          case 26: {
+            User = input.ReadString();
             break;
           }
         }

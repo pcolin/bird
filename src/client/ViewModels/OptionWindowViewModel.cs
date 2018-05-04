@@ -1,5 +1,5 @@
 ﻿using client.Models;
-using Dragablz;
+using Google.Protobuf;
 using Microsoft.Practices.Unity;
 using Prism.Events;
 using Prism.Interactivity.InteractionRequest;
@@ -12,6 +12,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Forms;
 using System.Windows.Threading;
 
 namespace client.ViewModels
@@ -20,11 +21,16 @@ namespace client.ViewModels
     {
         public InteractionRequest<INotification> NotificationRequest { get; set; }
 
-        private readonly ObservableCollection<BindableBase> tabItems = new ObservableCollection<BindableBase>();
-        public ObservableCollection<BindableBase> TabItems
+        private readonly ObservableCollection<OptionUserControlViewModel> tabItems = new ObservableCollection<OptionUserControlViewModel>();
+        public ObservableCollection<OptionUserControlViewModel> TabItems
         {
             get { return tabItems; }
         }
+        //private readonly List<BindableBase> tabItems = new List<BindableBase>();
+        //public List<BindableBase> TabItems
+        //{
+        //    get { return tabItems; }
+        //}
 
         private BindableBase selectedTab;
         public BindableBase SelectedTab
@@ -43,14 +49,14 @@ namespace client.ViewModels
             get { return container; }
         }
 
-        private string account = "99665550";
+        private string account;
         public string Account
         {
             get { return account; }
             set { SetProperty(ref account, value); }
         }        
 
-        private double available = -123456;
+        private double available;
         public double Available
         {
             get { return available; }
@@ -58,11 +64,11 @@ namespace client.ViewModels
             {
                 if (SetProperty(ref available, value))
                 {
-                    if (value > maxAvailable)
+                    if (value > maxAvailable || double.IsNaN(maxAvailable))
                     {
                         MaxAvailable = value;
                     }
-                    if (value < minAvailable)
+                    if (value < minAvailable || double.IsNaN(minAvailable))
                     {
                         MinAvailable = value;
                     }
@@ -70,21 +76,21 @@ namespace client.ViewModels
             }
         }
 
-        private double maxAvailable = -123456;
+        private double maxAvailable = double.NaN;
         public double MaxAvailable
         {
             get { return maxAvailable; }
             set { SetProperty(ref maxAvailable, value); }
         }
 
-        private double minAvailable = -123456;
+        private double minAvailable = double.NaN;
         public double MinAvailable
         {
             get { return minAvailable; }
             set { SetProperty(ref minAvailable, value); }
         }
         
-        private double margin = 12345;
+        private double margin;
         public double Margin
         {
             get { return margin; }
@@ -92,11 +98,11 @@ namespace client.ViewModels
             {
                 if (SetProperty(ref margin, value))
                 {
-                    if (value > maxMargin)
+                    if (value > maxMargin || double.IsNaN(maxMargin))
                     {
                         MaxMargin = value;
                     }
-                    if (value < minMargin)
+                    if (value < minMargin || double.IsNaN(minMargin))
                     {
                         MinMargin = value;
                     }
@@ -104,14 +110,14 @@ namespace client.ViewModels
             }
         }
 
-        private double maxMargin = 12345;
+        private double maxMargin = double.NaN;
         public double MaxMargin
         {
             get { return maxMargin; }
             set { SetProperty(ref maxMargin, value); }
         }
 
-        private double minMargin = 12345;
+        private double minMargin = double.NaN;
         public double MinMargin
         {
             get { return minMargin; }
@@ -121,36 +127,79 @@ namespace client.ViewModels
         public OptionWindowViewModel(IUnityContainer container, Dispatcher dispatcher, Proto.Exchange exchange)
         {
             this.container = container;
-            this.container.Resolve<EventAggregator>().GetEvent<StartWindowEvent>().Subscribe(this.StartWindow, ThreadOption.PublisherThread);
+            //this.container.Resolve<EventAggregator>().GetEvent<StartWindowEvent>().Subscribe(this.StartWindow, ThreadOption.PublisherThread);
             this.dispatcher = dispatcher;
             this.exchange = exchange;
         }
 
-        private void StartWindow()
+        public void Start(Dictionary<string, OptionUserControlViewModel> viewModels)
         {
-            dispatcher.Invoke(() =>
+            this.viewModels = viewModels;
+
+            var service = this.container.Resolve<ProxyService>(exchange.ToString());
+            service.RegisterAction("Price", new Action<IMessage>(p => this.ReceivePrice(p)));
+            service.RegisterAction("Cash", new Action<IMessage>(c => this.ReceiveCash(c)));
+        }
+
+        //private void StartWindow()
+        //{
+        //    dispatcher.Invoke(() =>
+        //    {
+        //        ProductManager manager = this.container.Resolve<ProductManager>();
+        //        List<string> hedgeUnderlyings = manager.GetHedgeUnderlyings(exchange);
+        //        for (int i = 0; i < hedgeUnderlyings.Count; ++i)
+        //        {
+        //            var underlyings = manager.GetUnderlyings(hedgeUnderlyings[i]);
+        //            var options = manager.GetOptionsByHedgeUnderlying(hedgeUnderlyings[i]);
+        //            OptionUserControlViewModel vm = new OptionUserControlViewModel(hedgeUnderlyings[i], underlyings, options);
+        //            //if (i == 0)
+        //            //{
+        //            //    tabItems[0] = vm;
+        //            //}
+        //            //else
+        //            {
+        //                tabItems.Add(vm);
+        //            }
+        //            this.viewModels[hedgeUnderlyings[i]] = vm;
+        //        }
+        //    });
+        //    var service = this.container.Resolve<ProxyService>(exchange.ToString());
+        //    service.RegisterAction((new Proto.Price()).GetType().ToString(), new Action<IMessage>(p => this.ReceivePrice(p)));
+        //}
+
+        private void ReceivePrice(IMessage msg)
+        {
+            var p = msg as Proto.Price;
+            if (p != null)
             {
                 ProductManager manager = this.container.Resolve<ProductManager>();
-                List<string> hedgeUnderlyings = manager.GetHedgeUnderlyings(exchange);
-                for (int i = 0; i < hedgeUnderlyings.Count; ++i)
+                var inst = manager.FindId(p.Instrument);
+                OptionUserControlViewModel vm = null;
+                if (inst != null && this.viewModels.TryGetValue(inst.HedgeUnderlying, out vm))
                 {
-                    var underlyings = manager.GetUnderlyings(hedgeUnderlyings[i]);
-                    var options = manager.GetOptionsByHedgeUnderlying(hedgeUnderlyings[i]);
-                    OptionUserControlViewModel vm = new OptionUserControlViewModel(hedgeUnderlyings[i], underlyings, options);
-                    //if (i == 0)
-                    //{
-                    //    tabItems[0] = vm;
-                    //}
-                    //else
-                    {
-                        tabItems.Add(vm);
-                    }
+                    //this.dispatcher.BeginInvoke(new OptionUserControlViewModel.ReceivePriceDelegate(vm.ReceivePrice), inst, p);
+                    this.dispatcher.BeginInvoke((MethodInvoker)delegate { vm.ReceivePrice(inst, p); });
                 }
-            });
+            }
+        }
+
+        private void ReceiveCash(IMessage msg)
+        {
+            var cash = msg as Proto.Cash;
+            if (cash != null)
+            {
+                this.dispatcher.BeginInvoke((MethodInvoker)delegate
+                {
+                    Account = cash.Account;
+                    Available = cash.Available;
+                    Margin = cash.Margin;
+                });
+            }
         }
 
         private IUnityContainer container;
         private Dispatcher dispatcher;
         private Proto.Exchange exchange;
+        private Dictionary<string, OptionUserControlViewModel> viewModels;
     }
 }
