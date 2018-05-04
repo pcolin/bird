@@ -6,6 +6,7 @@
 
 #include <ctime>
 #include <cstdlib>
+#include <iostream>
 
 void SimulationMdApi::Init()
 {
@@ -59,9 +60,10 @@ void SimulationMdApi::Work()
   while (true)
   {
     double chg = 0;
+    // std::cout << "Simulated MD is running..." << std::endl;
     for (auto &it : prices_)
     {
-      if (std::rand() % 4 == 0) continue;
+      if (std::rand() % 4 != 0) continue;
 
       auto *inst = it.second->instrument;
       auto *dm = ClusterManager::GetInstance()->FindDevice(inst->HedgeUnderlying());
@@ -73,7 +75,7 @@ void SimulationMdApi::Work()
 
       if (inst->Type() != Proto::InstrumentType::Option)
       {
-        chg = (1 - std::rand() % 3) * 0.01;
+        chg = (1 - std::rand() % 3) * 0.001;
         it.second->adjust = PRICE_UNDEFINED;
       }
 
@@ -131,8 +133,10 @@ void SimulationMdApi::Work()
         p->asks[i].price = p->last.price + (i + 1) * inst->Tick();
         p->asks[i].volume = std::rand() % 100 + 1;
       }
+      // std::cout << "Publish " << it.first << " : " << p->last.price << std::endl;
       dm->Publish(p);
     }
     std::this_thread::sleep_for(std::chrono::milliseconds(250));
   }
+  LOG_INF << "Simulation MD is stopped";
 }

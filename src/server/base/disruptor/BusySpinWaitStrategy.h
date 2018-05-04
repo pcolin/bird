@@ -2,6 +2,7 @@
 #define BASE_DISRUPTOR_BUSY_SPIN_WAIT_STRATEGY_H
 
 #include "WaitStrategy.h"
+// #include <iostream>
 
 namespace base
 {
@@ -19,6 +20,7 @@ class BusySpinWaitStrategy : public WaitStrategy
         while ((available_sequence = cursor.Get()) < sequence)
         {
           if (barrier.IsAlerted()) break;
+          // std::cout << "BusySpin" << std::endl;
         }
       }
       else
@@ -26,6 +28,7 @@ class BusySpinWaitStrategy : public WaitStrategy
         while ((available_sequence = Sequence::GetMinimumSequence(dependents)) < sequence)
         {
           if (barrier.IsAlerted()) break;
+          // std::cout << "BusySpinAll" << std::endl;
         }
       }
       return available_sequence;

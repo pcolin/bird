@@ -30,6 +30,7 @@ protected:
   virtual void OnOrder(const OrderPtr &order) {}
   virtual void OnTrade(const TradePtr &trade) {}
   void OnProtoMessage(const ProtoMessagePtr &message) { dispatcher_.OnProtoMessage(message); }
+  virtual bool OnHeartbeat(const std::shared_ptr<Proto::Heartbeat> &heartbeat);
   virtual void OnLastEvent() {}
 
   const std::string name_;
@@ -37,7 +38,6 @@ protected:
   base::ProtoMessageDispatcher<bool> dispatcher_;
 
 private:
-  bool OnHeartbeat(const std::shared_ptr<Proto::Heartbeat> &heartbeat);
 
   class EventVisitor : public boost::static_visitor<void>
   {

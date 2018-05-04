@@ -64,7 +64,7 @@ int main(int argc, char *args[])
   LOG_INF << "==================================================";
 
   ///// test
-  std::this_thread::sleep_for(std::chrono::seconds(30));
+  std::this_thread::sleep_for(std::chrono::seconds(3));
   //// const Instrument* inst = ProductManager::GetInstance()->FindId("SR801");
   const std::string id = "m1901";
   const Instrument* inst = ProductManager::GetInstance()->FindId(id);

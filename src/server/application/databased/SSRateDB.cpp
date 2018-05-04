@@ -1,6 +1,7 @@
 #include "SSRateDB.h"
 #include "base/logger/Logging.h"
 #include "model/Message.h"
+#include "boost/format.hpp"
 
 SSRateDB::SSRateDB(ConcurrentSqliteDB &db, const std::string &table_name,
     InstrumentDB &instrument_db, ExchangeParameterDB &exchange_db)

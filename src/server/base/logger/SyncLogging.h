@@ -17,7 +17,7 @@ class SyncLogging : boost::noncopyable
 
   void append(const char* logline, int len)
   {
-    std::unique_lock<std::mutex> lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
     logFile_.append(logline, len);
     logFile_.flush();
   }

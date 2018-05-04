@@ -57,7 +57,7 @@ base::ProtoMessagePtr Middleware::Request(const base::ProtoMessagePtr &request)
       int rc = nn_recv(req, &msg, NN_MSG, 0);
       if (rc > 0)
       {
-        LOG_INF << boost::format("Receive %1% bytes: %2%") % rc % base::GetString(msg, rc);
+        LOG_DBG << boost::format("Receive %1% bytes: %2%") % rc % base::GetString(msg, rc);
         reply = base::ProtoMessagePtr(base::DecodeProtoMessage(msg, rc));
         if (reply)
         {

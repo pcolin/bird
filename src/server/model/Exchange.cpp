@@ -1,6 +1,7 @@
 #include "Exchange.h"
 #include "config/EnvConfig.h"
 #include "base/logger/Logging.h"
+#include "boost/format.hpp"
 
 using namespace boost::gregorian;
 

@@ -1,6 +1,7 @@
 #include "VolatilityCurveDB.h"
 #include "base/logger/Logging.h"
 #include "model/Message.h"
+#include "boost/format.hpp"
 
 VolatilityCurveDB::VolatilityCurveDB(ConcurrentSqliteDB &db, const std::string &table_name,
     InstrumentDB &instrument_db, ExchangeParameterDB &exchange_db)
