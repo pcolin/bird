@@ -612,16 +612,16 @@ Proto::Exchange CtpTraderSpi::GetExchange(const char* exchange) const
   {
     case 'C':
     case 'c':
-      return Proto::Exchange::DE;
+      return Proto::Exchange::DCE;
     case 'Z':
     case 'z':
-      return Proto::Exchange::ZE;
+      return Proto::Exchange::CZCE;
     case 'F':
     case 'f':
-      return Proto::Exchange::CF;
+      return Proto::Exchange::CFFEX;
     case 'H':
     case 'h':
-      return Proto::Exchange::SF;
+      return Proto::Exchange::SHFE;
     default:
       assert(false);
   }

@@ -3,10 +3,10 @@ package Proto;
 
 enum Exchange
 {
-  SH = 0; /// SSE
-  SZ = 1; /// SZSE
-  CF = 2; /// CFFEX
-  SF = 3; /// SHFE
-  DE = 4; /// DCE
-  ZE = 5; /// CZCE
+  SSE   = 0; /// SH
+  SZSE  = 1; /// SZ
+  CFFEX = 2; /// CF
+  SHFE  = 3; /// SF
+  DCE   = 4; /// DE
+  CZCE  = 5; /// CE
 }

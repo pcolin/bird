@@ -147,19 +147,27 @@ int ExchangeParameterDB::ParameterCallback(void *data, int argc, char **argv, ch
 void ExchangeParameterDB::ParseTradingSession(char *data,
     std::function<Proto::TradingSession*()> func)
 {
-  char *beg = data, *mid = data, *pos = data + 1;
+  char *beg = data, *first = data, *second = data, *pos = data + 1;
   while (*pos != 0)
   {
     if (*pos == '-')
     {
-      mid = pos;
+      if (first == beg)
+      {
+        first = pos;
+      }
+      else
+      {
+        second = pos;
+      }
     }
     else if (*pos == ',')
     {
       auto *s = func();
-      s->set_begin(beg, mid - beg);
-      s->set_end(mid + 1, pos - mid - 1);
-      beg = mid = pos + 1;
+      s->set_begin(beg, first - beg);
+      s->set_end(first + 1, second - first - 1);
+      s->set_stop(second + 1, pos - second - 1);
+      beg = first = second = pos + 1;
     }
     ++pos;
   }

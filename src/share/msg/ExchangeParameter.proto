@@ -15,6 +15,7 @@ message TradingSession
 {
   string begin = 1;
   string end = 2;
+  string stop = 3;
 }
 
 message ExchangeParameter

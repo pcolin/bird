@@ -38,7 +38,8 @@ int main(int argc, char *args[])
         info->set_time(time(NULL));
         Middleware::GetInstance()->Publish(info);
       });
-  LOG_INF << boost::format("Welcome BIRD-Server %1%.%2%.%3%") % VER_MAJOR % VER_MINOR % VER_PATCH;
+  LOG_INF << boost::format("Welcome BIRD-Server %1%.%2%.%3%, build date: %4%") %
+    VER_MAJOR % VER_MINOR % VER_PATCH % __DATE__;
 
   Middleware::GetInstance()->Init();
   LOG_INF << "Middleware is running now";
