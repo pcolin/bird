@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace client.Models
 {
-    class ProductManager
+    public class ProductManager
     {
         public void Add(Proto.Instrument inst)
         {

@@ -38,10 +38,6 @@
     </ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Dragablz, Version=0.0.3.203, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>packages\Dragablz.0.0.3.203\lib\net45\Dragablz.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="Google.Protobuf, Version=3.5.1.0, Culture=neutral, PublicKeyToken=a7d26565bac4d604, processorArchitecture=MSIL">
       <HintPath>packages\Google.Protobuf.3.5.1\lib\net45\Google.Protobuf.dll</HintPath>
       <Private>True</Private>
@@ -62,6 +58,7 @@
       <HintPath>packages\Unity.4.0.1\lib\net45\Microsoft.Practices.Unity.RegistrationByConvention.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Microsoft.VisualBasic" />
     <Reference Include="NNanomsg, Version=0.5.2.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>packages\NNanomsg.0.5.2\lib\net40\NNanomsg.dll</HintPath>
       <Private>True</Private>
@@ -127,14 +124,18 @@
     <Compile Include="Messages\Strategy.cs" />
     <Compile Include="Messages\Trade.cs" />
     <Compile Include="Models\DatabaseService.cs" />
+    <Compile Include="Models\ExchangeParameterManager.cs" />
     <Compile Include="Models\ISocket.cs" />
     <Compile Include="Models\LoggingEventSource.cs" />
+    <Compile Include="Models\PositionManager.cs" />
     <Compile Include="Models\ProductManager.cs" />
     <Compile Include="Models\ProtoMessageCoder.cs" />
     <Compile Include="Models\ProxyService.cs" />
     <Compile Include="Models\ServerConnector.cs" />
     <Compile Include="Models\ServerService.cs" />
     <Compile Include="ViewModels\CloseWindowEvent.cs" />
+    <Compile Include="ViewModels\ExchangeUserControlViewModel.cs" />
+    <Compile Include="ViewModels\ExchangeWindowViewModel.cs" />
     <Compile Include="ViewModels\MainWindowViewModel.cs" />
     <Compile Include="ViewModels\OptionUserControlViewModel.cs" />
     <Compile Include="ViewModels\OptionWindowViewModel.cs" />
@@ -142,12 +143,25 @@
     <Compile Include="Views\ColumnSettingWindow.xaml.cs">
       <DependentUpon>ColumnSettingWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\ExchangeUserControl.xaml.cs">
+      <DependentUpon>ExchangeUserControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\ExchangeWindow.xaml.cs">
+      <DependentUpon>ExchangeWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\InputBoxUserControl.xaml.cs">
+      <DependentUpon>InputBoxUserControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\InputBoxWindow.xaml.cs">
+      <DependentUpon>InputBoxWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\LoginWindow.xaml.cs">
       <DependentUpon>LoginWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\NonReloadingTabControl.cs" />
     <Compile Include="Views\OptionUserControl.xaml.cs">
       <DependentUpon>OptionUserControl.xaml</DependentUpon>
     </Compile>
@@ -199,6 +213,22 @@
   </ItemGroup>
   <ItemGroup>
     <Page Include="Views\ColumnSettingWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\ExchangeUserControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\ExchangeWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\InputBoxUserControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\InputBoxWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

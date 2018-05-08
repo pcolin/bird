@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="clr-namespace:client.Views"
         Icon="/Images/bird_32x32.ico"
+        WindowStartupLocation="CenterScreen"
         Title="Login" Height="200" Width="300">
     <Window.Resources>
         <local:BooleanToCollapsedVisibilityConverter x:Key="VisibilityConverter" />

@@ -1,7 +1,10 @@
-﻿using Prism.Commands;
+﻿using client.Models;
+using Microsoft.Practices.Unity;
+using Prism.Commands;
 using Prism.Mvvm;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
@@ -12,7 +15,7 @@ using System.Windows.Input;
 
 namespace client.ViewModels
 {
-    class OptionUserControlViewModel : BindableBase
+    public class OptionUserControlViewModel : BindableBase
     {
         public ICommand QuoterCallBidSwitchCommand { get; set; }
         public ICommand QuoterCallAskSwitchCommand { get; set; }
@@ -42,7 +45,14 @@ namespace client.ViewModels
 
         public Proto.Exchange Exchange
         {
-            get { return hedgeUnderlying.Exchange; }
+            get
+            {
+                if (hedgeUnderlying != null)
+                {
+                    return hedgeUnderlying.Exchange;
+                }
+                return Proto.Exchange.De;
+            }
         }        
 
         public string Underlying
@@ -70,17 +80,19 @@ namespace client.ViewModels
                     RaisePropertyChanged("Underlying");
                 }
             }
-        }        
+        }
 
+        private Dictionary<string, UnderlyingItem> underlyingItems;
         private ICollectionView underlyings;
         public ICollectionView Underlyings
         {
             get { return underlyings; }
             set { SetProperty(ref underlyings, value); }
-        }        
+        }
 
-        private ICollectionView options;
-        public ICollectionView Options
+        private Dictionary<string, OptionItem> optionItems;
+        private ObservableCollection<OptionPairItem> options;
+        public ObservableCollection<OptionPairItem> Options
         {
             get { return options; }
             set { SetProperty(ref options, value); }
@@ -95,61 +107,96 @@ namespace client.ViewModels
 
         //}
 
-        public OptionUserControlViewModel(string hedgeUnderlying, List<Proto.Instrument> underlyings, List<Proto.Instrument> options)
+        public OptionUserControlViewModel(string hedgeUnderlying, ProductManager products, IUnityContainer container)
         {
+            var positions = container.Resolve<PositionManager>();
+
             List<UnderlyingItem> items = new List<UnderlyingItem>();
+            underlyingItems = new Dictionary<string, UnderlyingItem>();
+            var underlyings = products.GetUnderlyings(hedgeUnderlying);
             underlyings.Sort((x, y) => x.Symbol.CompareTo(y.Symbol));
             foreach (var inst in underlyings)
-            {
+            {                
+                var item = new UnderlyingItem() { Underlying = inst, Position = positions.GetPosition(inst.Id)};
                 if (inst.Underlying == hedgeUnderlying)
                 {
                     this.HedgeUnderlying = inst;
-                    items.Insert(0, new UnderlyingItem() { Underlying = inst });
+                    items.Insert(0, item);
                 }
                 else
                 {
-                    items.Add(new UnderlyingItem() { Underlying = inst });
+                    items.Add(item);
                 }
+
+                underlyingItems[inst.Id] = item;
             }
             this.underlyings = new ListCollectionView(items);
 
             List<OptionPairItem> optionPairItems = new List<OptionPairItem>();
+            List<OptionPairItem> dominantOptionPairItems = new List<OptionPairItem>();
+            this.optionItems = new Dictionary<string, OptionItem>();
             //List<OptionItem> optionItems = new List<OptionItem>();
-            var ret = options.OrderBy(x => x.Underlying).ThenBy(x => x.Strike).ThenBy(x => x.CallPut);
-            Proto.Instrument call = null;
-            string maturity = null;
-            int groupNo = -1;
-            foreach (var inst in ret)
+            var options = products.GetOptionsByHedgeUnderlying(hedgeUnderlying);
+            if (options != null)
             {
-                if (inst.CallPut == Proto.OptionType.Put)
+                var ret = options.OrderBy(x => x.Underlying).ThenBy(x => x.Strike).ThenBy(x => x.CallPut);
+                Proto.Instrument call = null;
+                string maturity = null;
+                int groupNo = 0;
+                foreach (var inst in ret)
                 {
-                    if (call != null && call.Underlying == inst.Underlying && call.Strike == inst.Strike)
+                    if (inst.CallPut == Proto.OptionType.Put)
                     {
-                        bool isFirst = false;
-                        if (inst.Maturity != maturity)
+                        if (call != null && call.Underlying == inst.Underlying && call.Strike == inst.Strike)
                         {
-                            ++groupNo;
-                            isFirst = true;
+                            bool isFirst = false;
+                            if (inst.Maturity != maturity && inst.Underlying != hedgeUnderlying)
+                            {
+                                ++groupNo;
+                                isFirst = true;
+                            }
+                            var callItem = new OptionItem() { Option = call };
+                            Proto.Position p = null;
+                            if (positions.GetPosition(call.Id, out p))
+                            {
+                                callItem.Position = p.TotalLong - p.TotalShort;
+                                callItem.LongPosition = p.TotalLong;
+                                callItem.ShortPosition = p.TotalShort;
+                                callItem.AvailableLongPosition = p.LiquidLong;
+                                callItem.AvailableShortPosition = p.LiquidShort;
+                            }
+                            var putItem = new OptionItem() { Option = inst };
+                            if (positions.GetPosition(inst.Id, out p))
+                            {
+                                putItem.Position = p.TotalLong - p.TotalShort;
+                                putItem.LongPosition = p.TotalLong;
+                                putItem.ShortPosition = p.TotalShort;
+                                putItem.AvailableLongPosition = p.LiquidLong;
+                                putItem.AvailableShortPosition = p.LiquidShort;
+                                putItem.ChangedPosition = putItem.Position - (p.YesterdayLong - p.YesterdayShort);
+                            }
+                            if (inst.Underlying == hedgeUnderlying)
+                            {
+                                dominantOptionPairItems.Add(new OptionPairItem() { Call = callItem, Put = putItem, IsFirst = isFirst, GroupNo = 0 });
+                            }
+                            else
+                            {
+                                optionPairItems.Add(new OptionPairItem() { Call = callItem, Put = putItem, IsFirst = isFirst, GroupNo = groupNo });
+                            }
+                            optionItems[call.Id] = callItem;
+                            optionItems[inst.Id] = putItem;
+                            maturity = inst.Maturity;
                         }
-                        optionPairItems.Add(new OptionPairItem()
-                        {
-                            Call = new OptionItem() { Option = call },
-                            Put = new OptionItem() { Option = inst },
-                            IsFirst = isFirst,
-                            GroupNo = groupNo
-                        });
-                        //optionItems.Add(new OptionItem() { CallOption = call, PutOption = inst, IsFirst = isFirst, GroupNo = groupNo });
-                        maturity = inst.Maturity;
+                        call = null;
                     }
-                    call = null;
-                }
-                else
-                {
-                    call = inst;
+                    else
+                    {
+                        call = inst;
+                    }
                 }
             }
-            this.options = new ListCollectionView(optionPairItems);
-
+            dominantOptionPairItems.AddRange(optionPairItems);
+            this.options = new ObservableCollection<OptionPairItem>(dominantOptionPairItems);
 
             this.QuoterCallBidSwitchCommand = new DelegateCommand<object>(new Action<object>(this.QuoterCallBidSwitchExecute));
             this.QuoterCallAskSwitchCommand = new DelegateCommand<object>(new Action<object>(this.QuoterCallAskSwitchExecute));
@@ -176,6 +223,75 @@ namespace client.ViewModels
 
             this.EnquiryResponseCallSwitchCommand = new DelegateCommand<object>(new Action<object>(this.EnquiryResponseCallSwitchExecute));
             this.EnquiryResponsePutSwitchCommand = new DelegateCommand<object>(new Action<object>(this.EnquiryResponsePutSwitchExecute));
+        }
+
+        //public delegate void ReceivePriceDelegate(Proto.Instrument inst, Proto.Price price);
+        public void ReceivePrice(Proto.Instrument inst, Proto.Price price)
+        {
+            if (inst.Type == Proto.InstrumentType.Option)
+            {
+                OptionItem item = null;
+                if (this.optionItems.TryGetValue(inst.Id, out item))
+                {
+                    if (price.Bids.Count > 0)
+                    {
+                        item.MarketBidPrice = price.Bids[0].Price;
+                        item.MarketBidVolume = price.Bids[0].Volume;
+                    }
+                    if (price.Asks.Count > 0)
+                    {
+                        item.MarketAskPrice = price.Asks[0].Price;
+                        item.MarketAskVolume = price.Asks[0].Volume;
+                    }
+                    item.LastPrice = price.Last.Price;
+                    item.LastVolume = price.Last.Volume;
+                }
+            }
+            else
+            {
+                UnderlyingItem item = null;
+                if (this.underlyingItems.TryGetValue(inst.Id, out item))
+                {
+                    if (price.Bids.Count > 0)
+                    {
+                        item.MarketBidPrice = price.Bids[0].Price;
+                        item.MarketBidVolume = price.Bids[0].Volume;
+                    }
+                    if (price.Asks.Count > 0)
+                    {
+                        item.MarketAskPrice = price.Asks[0].Price;
+                        item.MarketAskVolume = price.Asks[0].Volume;
+                    }
+                    item.LastPrice = price.Last.Price;
+                    item.LastVolume = price.Last.Volume;
+                    item.PreClose = price.PreClose;
+                    item.PreSettlement = price.PreSettlement;
+                    //if (price.Bids.Count > 0 && price.Asks.Count > 0)
+                    {
+                        item.Theo = price.AdjustedPrice;
+                        int oldAtmIdx = -1, newAtmIdx = -1;
+                        double minSpread = double.MaxValue;
+                        for (int i = 0; i < this.options.Count; ++i)
+                        {
+                            if (this.options[i].Call.Option.Underlying == inst.Id)
+                            {
+                                double spread = Math.Abs(this.options[i].Call.Option.Strike - item.Theo);
+                                if (spread < minSpread)
+                                {
+                                    minSpread = spread;
+                                    newAtmIdx = i;
+                                }
+                                if (this.options[i].IsAtmOption) oldAtmIdx = i;
+                            }
+                        }
+                        if (oldAtmIdx != newAtmIdx)
+                        {
+                            if (oldAtmIdx != -1) this.options[oldAtmIdx].IsAtmOption = false;
+                            if (newAtmIdx != -1) this.options[newAtmIdx].IsAtmOption = true;
+                        }
+                    }
+                }
+            }
         }
 
         private void QuoterCallBidSwitchExecute(object obj)
@@ -261,7 +377,6 @@ namespace client.ViewModels
             OptionPairItem item = cell.Item as OptionPairItem;
             item.Put.HitterAskOn = !item.Put.HitterAskOn;
         }
-
 
         private void DimerCallBidSwitchExecute(object obj)
         {
@@ -401,7 +516,7 @@ namespace client.ViewModels
         }
     }
 
-    class OptionPairItem : BindableBase
+    public class OptionPairItem : BindableBase
     {
         public OptionItem Call { get; set; }
         public OptionItem Put { get; set; }
@@ -411,13 +526,20 @@ namespace client.ViewModels
         {
             get { return skewSense; }
             set { SetProperty(ref skewSense, value); }
+        }
+
+        private bool isAtmOption;
+        public bool IsAtmOption
+        {
+            get { return isAtmOption; }
+            set { SetProperty(ref isAtmOption, value); }
         }        
 
         public bool IsFirst { get; set; }
         public int GroupNo { get; set; }
     }
 
-    class OptionItem : BindableBase
+    public class OptionItem : BindableBase
     {
         public Proto.Instrument Option { get; set; }
 
@@ -434,22 +556,13 @@ namespace client.ViewModels
             get { return quoterCredit; }
             set { SetProperty(ref quoterCredit, value); }
         }
-        //public string QuoterCredit
-        //{
-        //    get { return quoterCredit.ToString(QuoterCreditFormat); }
-        //    set
-        //    {
-        //        SetProperty(ref quoterCredit, value);
-        //    }
-        //}
 
-        private string quoterCreditFormat = "F3";
+        private string quoterCreditFormat;
         public string QuoterCreditFormat
         {
             get { return quoterCreditFormat; }
             set { SetProperty(ref quoterCreditFormat, value); }
-        }
-        
+        }        
 
         private double hitterCredit;
         public double HitterCredit
@@ -576,6 +689,13 @@ namespace client.ViewModels
             get { return askVolume; }
             set { SetProperty(ref askVolume, value); }
         }
+
+        private bool isMeetObligation = true;
+        public bool IsMeetObligation
+        {
+            get { return isMeetObligation = true; }
+            set { SetProperty(ref isMeetObligation, value); }
+        }        
 
         private double marketAskPrice;
         public double MarketAskPrice
@@ -729,8 +849,7 @@ namespace client.ViewModels
         {
             get { return convex; }
             set { SetProperty(ref convex, value); }
-        }
-        
+        }        
         
         //public OptionItem()
         //{

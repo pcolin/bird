@@ -1,4 +1,5 @@
-﻿using client.ViewModels;
+﻿using client.Models;
+using client.ViewModels;
 using Microsoft.Practices.Unity;
 using Prism.Events;
 using System;
@@ -10,6 +11,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
+using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -29,7 +31,31 @@ namespace client.Views
 
             this.DataContext = new OptionWindowViewModel(container, this.Dispatcher, exchange);
             
+            container.Resolve<EventAggregator>().GetEvent<StartWindowEvent>().Subscribe(this.StartWindow, ThreadOption.PublisherThread);
+            
             //container.Resolve<EventAggregator>().GetEvent<CloseWindowEvent>().Subscribe(this.CloseWindow, ThreadOption.PublisherThread);
+        }
+
+        private void StartWindow()
+        {
+            this.Dispatcher.BeginInvoke((MethodInvoker) delegate
+            {
+                var vm = this.DataContext as OptionWindowViewModel;
+                ProductManager manager = vm.Container.Resolve<ProductManager>();
+                List<string> hedgeUnderlyings = manager.GetHedgeUnderlyings(vm.Exchange);
+                hedgeUnderlyings.Sort();
+                var viewModels = new Dictionary<string, OptionUserControlViewModel>();
+                for (int i = 0; i < hedgeUnderlyings.Count; ++i)
+                {
+                    var viewModel = new OptionUserControlViewModel(hedgeUnderlyings[i], manager, vm.Container);
+                    OptionUserControl control = new OptionUserControl(viewModel);
+                    //control.DataContext = viewModel;
+                    viewModels[hedgeUnderlyings[i]] = viewModel;
+                    TabItem item = new TabItem() { Header = hedgeUnderlyings[i], Content = control };
+                    this.OptionTabControl.Items.Add(item);
+                }
+                vm.Start(viewModels);
+            });
         }
 
         public void SaveAndClose(XmlWriter writer)
@@ -56,11 +82,19 @@ namespace client.Views
         {
             MainWindow.WriteWindowPlacement(writer, this, "OptionWindow_" + (this.DataContext as OptionWindowViewModel).Exchange);
 
-            var control = GetUserControl(this.OptionTabControl);
-            if (control != null)
+            foreach (TabItem item in this.OptionTabControl.Items)
             {
-                control.SaveLayout();
+                OptionUserControl control = item.Content as OptionUserControl;
+                if (control != null)
+                {
+                    control.SaveLayout();
+                }
             }
+            //var control = GetUserControl(this.OptionTabControl);
+            //if (control != null)
+            //{
+            //    control.SaveLayout();
+            //}
         }
 
         OptionUserControl GetUserControl(DependencyObject obj)
@@ -85,5 +119,6 @@ namespace client.Views
         }
 
         private bool close = false;
+        //private IUnityContainer container;
     }
 }

@@ -18,7 +18,7 @@ namespace client.Models
         {
             socket = new RequestSocket();
             socket.Options.TcpNoDelay = true;
-            socket.Options.ReceiveTimeout = new TimeSpan(0, 0, 5);
+            socket.Options.ReceiveTimeout = new TimeSpan(0, 0, 10);
             socket.Connect(address);
         }
 
@@ -28,6 +28,12 @@ namespace client.Models
             thread = new Thread(this.Run);
             //thread.IsBackground = true;
             thread.Start();
+
+            /// Send PriceReq
+            Proto.PriceReq req = new Proto.PriceReq();
+            req.Type = Proto.RequestType.Get;
+            req.User = user;
+            Request(req);
 
             return true;
         }
@@ -126,7 +132,7 @@ namespace client.Models
                 var reply_bytes = socket.Receive();
                 if (reply_bytes != null)
                 {
-                    var reply = Proto.Reply.Parser.ParseFrom(reply_bytes, 15, reply_bytes.Count() - 15);
+                    var reply = Proto.Reply.Parser.ParseFrom(reply_bytes, 16, reply_bytes.Count() - 16);
                     if (reply != null && reply.Result)
                     {
                         return;

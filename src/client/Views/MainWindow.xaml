@@ -72,7 +72,9 @@
                 <MenuItem Header="Layout"></MenuItem>
             </MenuItem>
             <MenuItem Header="CONFIG">
-                <MenuItem Header="Exchanges"></MenuItem>
+                <MenuItem Header="Exchanges"
+                          Click="ExchangesMenuItem_Click">                    
+                </MenuItem>
                 <MenuItem Header="Default"></MenuItem>
                 <Separator></Separator>
                 <MenuItem Header="About"></MenuItem>

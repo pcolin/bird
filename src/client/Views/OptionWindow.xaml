@@ -26,23 +26,17 @@
             <prism:PopupWindowAction IsModal="True" CenterOverAssociatedObject="True" />
         </prism:InteractionRequestTrigger>
     </i:Interaction.Triggers>
-    <!--Grid-->
-        <TabControl Name="OptionTabControl" ItemsSource="{Binding TabItems}" SelectedItem="{Binding SelectedTab}">
-            <!--TabControl.Resources>
-                <DataTemplate>
-                    <local:OptionUserControl />
-                </DataTemplate>
-            </TabControl.Resources-->
-            <TabControl.ItemTemplate>
-                <DataTemplate>
-                    <TextBlock Text="{Binding Underlying}" />
-                </DataTemplate>
-            </TabControl.ItemTemplate>
-            <TabControl.ContentTemplate>
-            <DataTemplate DataType="x:Type vm:OptionUserControlViewModel">
-                    <local:OptionUserControl />
-                </DataTemplate>
-            </TabControl.ContentTemplate>
-        </TabControl>
-    <!--/Grid-->
+    <!--<local:NonReloadingTabControl x:Name="OptionTabControl" ItemsSource="{Binding TabItems}" SelectedItem="{Binding SelectedTab}">
+        <TabControl.ItemTemplate>
+            <DataTemplate>
+                <TextBlock Text="{Binding Underlying}" />
+            </DataTemplate>
+        </TabControl.ItemTemplate>
+        <TabControl.ContentTemplate>
+        <DataTemplate DataType="x:Type vm:OptionUserControlViewModel">
+                <local:OptionUserControl />
+            </DataTemplate>
+        </TabControl.ContentTemplate>
+    </local:NonReloadingTabControl>-->
+    <TabControl Name="OptionTabControl" />
 </Window>

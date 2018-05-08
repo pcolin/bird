@@ -22,8 +22,9 @@ namespace client.Views
     /// </summary>
     public partial class OptionUserControl : UserControl
     {
-        public OptionUserControl()
+        public OptionUserControl(OptionUserControlViewModel vm)
         {
+            this.DataContext = vm;
             InitializeComponent();
 
             UnderlyingFormats = new Dictionary<int, string>();
@@ -33,10 +34,10 @@ namespace client.Views
         public void SaveLayout()
         {
             var vm = this.DataContext as OptionUserControlViewModel;
-            string name = "Options_" + vm.Exchange + "_Underlyings.xml";
+            string name = "Options_" + vm.Underlying + "_Underlyings.xml";
             MainWindow.SaveDataGridLayout(name, this.UnderlyingDataGrid, this.UnderlyingFormats);
 
-            name = "Options_" + vm.Exchange + "_Options.xml";
+            name = "Options_" + vm.Underlying + "_Options.xml";
             MainWindow.SaveDataGridLayout(name, this.OptionDataGrid, this.OptionFormats);
         }
 
@@ -257,6 +258,62 @@ namespace client.Views
                     }
                 }
             }
+            else if (e.Key == Key.D)
+            {
+                double? value = null;
+                foreach (var cell in this.OptionDataGrid.SelectedCells)
+                {
+                    if (cell.Column == this.DestrikerC)
+                    {
+                        if (value == null)
+                        {
+                            value = ShowInputBox("destriker");
+                            if (value == null) break;
+                        }
+                        OptionPairItem item = cell.Item as OptionPairItem;
+                        item.Call.Destriker = value.Value;
+                    }
+                    else if (cell.Column == this.DestrikerP)
+                    {
+                        if (value == null)
+                        {
+                            value = ShowInputBox("destriker");
+                            if (value == null) break;
+                        }
+
+                        OptionPairItem item = cell.Item as OptionPairItem;
+                        item.Put.Destriker = value.Value;
+                    }
+                }
+            }
+            else if (e.Key == Key.V)
+            {
+                double? value = null;
+                foreach (var cell in this.OptionDataGrid.SelectedCells)
+                {
+                    if (cell.Column == this.VolC)
+                    {
+                        if (value == null)
+                        {
+                            value = ShowInputBox("volatility");
+                            if (value == null) break;
+                        }
+                        OptionPairItem item = cell.Item as OptionPairItem;
+                        item.Call.Volatility = value.Value;
+                    }
+                    else if (cell.Column == this.VolP)
+                    {
+                        if (value == null)
+                        {
+                            value = ShowInputBox("volatility");
+                            if (value == null) break;
+                        }
+
+                        OptionPairItem item = cell.Item as OptionPairItem;
+                        item.Put.Volatility = value.Value;
+                    }
+                }
+            }
         }
 
         private void UnderlyingMenuItem_Click(object sender, RoutedEventArgs e)
@@ -271,15 +328,31 @@ namespace client.Views
             setting.Show();
         }
 
-        private void UserControl_Loaded(object sender, RoutedEventArgs e)
+        private double? ShowInputBox(string name)
+        {
+            InputBoxWindow w = new InputBoxWindow("destriker");
+            w.Owner = Window.GetWindow(this);
+            w.ShowInTaskbar = false;
+            var ret = w.ShowDialog();
+            if (ret != null && ret.Value)
+            {
+                return w.Value;
+            }
+            return null;
+        }
+
+        private void UserControl_Initialized(object sender, EventArgs e)
         {
             /// load layout
             var vm = this.DataContext as OptionUserControlViewModel;
-            string name = "Options_" + vm.Exchange + "_Underlyings.xml";
-            MainWindow.LoadDataGridLayout(name, this.UnderlyingDataGrid, this.OptionFormats);
+            if (vm != null)
+            {
+                string name = "Options_" + vm.Underlying + "_Underlyings.xml";
+                MainWindow.LoadDataGridLayout(name, this.UnderlyingDataGrid, this.UnderlyingFormats);
 
-            name = "Options_" + vm.Exchange + "_Options.xml";
-            MainWindow.LoadDataGridLayout(name, this.OptionDataGrid, this.OptionFormats);
+                name = "Options_" + vm.Underlying + "_Options.xml";
+                MainWindow.LoadDataGridLayout(name, this.OptionDataGrid, this.OptionFormats);
+            }
         }
     }
 
@@ -300,18 +373,60 @@ namespace client.Views
                     {
                         if (control.OptionFormats.TryGetValue(index, out format))
                         {
-                            return String.Format(format, values[1]);
+                            return value.ToString(format);
                         }
                     }
                     else
                     {
                         if (control.UnderlyingFormats.TryGetValue(index, out format))
                         {
-                            return String.Format(format, values[1]);
+                            return value.ToString(format);
                         }
                     }
                 }
-                return value.ToString("F2");
+                return value.ToString("N2");
+            }
+            else
+            {
+                return String.Empty;
+            }
+        }
+
+        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, System.Globalization.CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    public class PercentDoubleFormatConverter : IMultiValueConverter
+    {
+        public object Convert(object[] values, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            double value = (double)values[1];
+            if (value != 0.0)
+            {
+                OptionUserControl control = values[3] as OptionUserControl;
+                if (control != null)
+                {
+                    Proto.InstrumentType type = (Proto.InstrumentType)values[0];
+                    int index = (int)values[2];
+                    string format = null;
+                    if (type == Proto.InstrumentType.Option)
+                    {
+                        if (control.OptionFormats.TryGetValue(index, out format))
+                        {
+                            return (value * 100).ToString(format);
+                        }
+                    }
+                    else
+                    {
+                        if (control.UnderlyingFormats.TryGetValue(index, out format))
+                        {
+                            return (value * 100).ToString(format);
+                        }
+                    }
+                }
+                return (value * 100).ToString("N2");
             }
             else
             {
@@ -341,13 +456,34 @@ namespace client.Views
         }
     }
 
+    public class BoolToColorConverter : IValueConverter
+    {
+        public Brush TrueValueBrush { get; set; }
+        public Brush FalseValueBrush { get; set; }
+
+        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            bool isMeetObligation = (bool)value;
+            return isMeetObligation ? TrueValueBrush : FalseValueBrush;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
 
     public class PositionColorConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
             int pos = (int)value;
-            return pos > 0 ? "Red" : "Green";
+            if (pos > 0)
+                return "Red";
+            else if (pos < 0)
+                return "Green";
+            return string.Empty;
+            //return pos > 0 ? "Red" : "";
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)

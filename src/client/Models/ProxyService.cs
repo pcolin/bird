@@ -49,21 +49,27 @@ namespace client.Models
 
         public void RegisterAction(string type, Action<IMessage> action)
         {
-            List<Action<IMessage>> list = null;
-            if (actions.TryGetValue(type, out list) == false)
+            lock (this.actions)
             {
-                list = new List<Action<IMessage>>();
-                actions.Add(type, list);
+                List<Action<IMessage>> list = null;
+                if (actions.TryGetValue(type, out list) == false)
+                {
+                    list = new List<Action<IMessage>>();
+                    actions.Add(type, list);
+                }
+                list.Add(action);
             }
-            list.Add(action);
         }
 
         public void UnRegisterAction(string type, Action<IMessage> action)
         {
-            List<Action<IMessage>> list = null;
-            if (actions.TryGetValue(type, out list))
+            lock (this.actions)
             {
-                list.Remove(action);
+                List<Action<IMessage>> list = null;
+                if (actions.TryGetValue(type, out list))
+                {
+                    list.Remove(action);
+                }
             }
         }
 
@@ -71,25 +77,22 @@ namespace client.Models
         {
             try
             {
+                socket.Subscribe("");
+                int serialNum = 0;
                 while (running)
                 {
                     byte[] bytes = socket.ReceiveImmediate();
                     if (bytes != null)
                     {
                         Array.Reverse(bytes, 0, 4);
-                        int len = BitConverter.ToInt32(bytes, 0) + 4;
-                        string type = Encoding.UTF8.GetString(bytes, 10, len - 6);
-                        if (type == "Heartbeat")
+                        int sn = BitConverter.ToInt32(bytes, 0);
+                        ++serialNum;
+                        if (serialNum != 1 && serialNum != sn)
                         {
-                            var heartbeat = Proto.Heartbeat.Parser.ParseFrom(bytes, 4 + len, bytes.Count() - 4 - len);
-                            messages.Enqueue(heartbeat);
+                            /// !!!lost message!!!
                         }
-                        else if (type == "Price")
-                        {
-                            var price = Proto.Price.Parser.ParseFrom(bytes, 4 + len, bytes.Count() - 4 - len);
-                            messages.Enqueue(price);
-                        }
-                        /// to be done...
+                        serialNum = sn;
+                        messages.Enqueue(bytes);
                     }
                     else
                     {
@@ -110,15 +113,37 @@ namespace client.Models
             {
                 while (running)
                 {
-                    IMessage msg = null;
-                    if (messages.TryDequeue(out msg))
+                    byte[] bytes = null;
+                    if (messages.TryDequeue(out bytes))
                     {
-                        List<Action<IMessage>> list = null;
-                        if (actions.TryGetValue(msg.GetType().ToString(), out list))
+                        int len = bytes[4];
+                        IMessage msg = null;
+                        string type = Encoding.UTF8.GetString(bytes, 11, len - 6);
+                        if (type == "Heartbeat")
                         {
-                            foreach (var action in list)
+                            var heartbeat = Proto.Heartbeat.Parser.ParseFrom(bytes, len + 5, bytes.Count() - len - 5);
+                            /// to be done...
+                        }
+                        else if (type == "Price")
+                        {
+                            msg = Proto.Price.Parser.ParseFrom(bytes, len + 5, bytes.Count() - len - 5);
+                        }
+                        else if (type == "Cash")
+                        {
+                            msg = Proto.Cash.Parser.ParseFrom(bytes, len + 5, bytes.Count() - len - 5);
+                        }
+                        /// to be done...
+                        
+                        if (msg != null)
+                        lock (this.actions)
+                        {
+                            List<Action<IMessage>> list = null;
+                            if (actions.TryGetValue(type, out list))
                             {
-                                action(msg);
+                                foreach (var action in list)
+                                {
+                                    action(msg);
+                                }
                             }
                         }
                     }
@@ -134,7 +159,7 @@ namespace client.Models
         private Thread receiveThread;
         private Thread actionThread;
         private SubscribeSocket socket;
-        private ConcurrentQueue<IMessage> messages = new ConcurrentQueue<IMessage>();
+        private ConcurrentQueue<byte[]> messages = new ConcurrentQueue<byte[]>();
         private Dictionary<string, List<Action<IMessage>>> actions = new Dictionary<string,List<Action<IMessage>>>();
     }
 }

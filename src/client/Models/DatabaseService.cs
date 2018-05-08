@@ -64,6 +64,25 @@ namespace client.Models
 
         private bool QueryPositions()
         {
+            Proto.PositionReq req = new Proto.PositionReq();
+            req.Type = Proto.RequestType.Get;
+            req.User = user;
+
+            byte[] bytes = ProtoMessageCoder.Encode(req);
+            socket.Send(bytes);
+
+            bytes = socket.Receive();
+            if (bytes != null)
+            {
+                var rep = ProtoMessageCoder.Decode<Proto.PositionRep>(bytes);
+                if (rep.Result.Result)
+                {
+                    PositionManager positions = new PositionManager();
+                    positions.Add(rep.Positions);
+                    this.container.RegisterInstance<PositionManager>(positions);
+                    return true;
+                }
+            }
             return false;
         }
 

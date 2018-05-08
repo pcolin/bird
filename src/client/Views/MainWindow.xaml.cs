@@ -1,5 +1,4 @@
 ﻿using client.ViewModels;
-using Dragablz;
 using Microsoft.Practices.Unity;
 using Prism.Events;
 using System;
@@ -25,7 +24,7 @@ namespace client.Views
     /// </summary>
     public partial class MainWindow : Window
     {
-        private Dictionary<string, Tuple<double, double, double, double>> placements = new Dictionary<string, Tuple<double, double, double, double>>();
+        private Dictionary<string, Tuple<bool, double, double, double, double>> placements = new Dictionary<string, Tuple<bool, double, double, double, double>>();
 
         public MainWindow()
         {
@@ -81,7 +80,6 @@ namespace client.Views
             });
         }
 
-
         private void Window_Initialized(object sender, EventArgs e)
         {
             MainWindowViewModel vm = this.DataContext as MainWindowViewModel;
@@ -89,17 +87,32 @@ namespace client.Views
 
             /// load layout
             Layout = vm.Layout;
-            XmlReader reader = XmlReader.Create(System.AppDomain.CurrentDomain.BaseDirectory + "\\layout\\" + Layout + "\\WindowPlacement.xml");
-            while (reader.Read())
+            XmlReader reader = null;
+            try
             {
-                if (reader.NodeType == XmlNodeType.Element && reader.Name == "Window")
+                reader = XmlReader.Create(System.AppDomain.CurrentDomain.BaseDirectory + "\\layout\\" + Layout + "\\WindowPlacement.xml");
+                while (reader.Read())
                 {
-                    placements.Add(reader.GetAttribute("Name"), new Tuple<double, double, double, double>(Convert.ToDouble(reader.GetAttribute("Left")),
-                        Convert.ToDouble(reader.GetAttribute("Top")), Convert.ToDouble(reader.GetAttribute("Width")), Convert.ToDouble(reader.GetAttribute("Height"))));
+                    if (reader.NodeType == XmlNodeType.Element && reader.Name == "Window")
+                    {
+                        placements.Add(reader.GetAttribute("Name"), new Tuple<bool, double, double, double, double>(Convert.ToBoolean(reader.GetAttribute("Visible")),
+                            Convert.ToDouble(reader.GetAttribute("Left")), Convert.ToDouble(reader.GetAttribute("Top")), Convert.ToDouble(reader.GetAttribute("Width")),
+                            Convert.ToDouble(reader.GetAttribute("Height"))));
+                    }
                 }
             }
+            catch (Exception) { }
+            finally
+            {
+                if (reader != null) reader.Close();
+            }
             //MessageBox.Show("mainwindow in " + Thread.CurrentThread.ManagedThreadId);
-            PlaceWindow(this, placements["MainWindow"]);
+            //Tuple<bool, double, double, double, double> placement = null;
+            //if (placements.TryGetValue("ExchangeWindow", out placement))
+            //{
+            //    PlaceWindow(this, placements["MainWindow"]);
+            //}
+            PlaceWindow(this, "MainWindow");
 
             if (vm.Exchange1Visible)
             {
@@ -117,20 +130,19 @@ namespace client.Views
             {
                 NewOptionViewWindow(vm.Container, vm.Exchange4);
             }
+
+            NewExchangeWindow(vm.Container); 
         }
-
-        //private void Window_Loaded(object sender, RoutedEventArgs e)
-        //{
-
-        //}
 
         private void NewOptionViewWindow(IUnityContainer container, Proto.Exchange exchange)
         {
             Thread t = new Thread(() =>
             {
                 OptionWindow w = new OptionWindow(container, exchange);
-                PlaceWindow(w, placements["OptionWindow_" + exchange]);
-                w.Show();
+                if (PlaceWindow(w, "OptionWindow_" + exchange))
+                {
+                    w.Show();
+                }
 
                 container.RegisterInstance<OptionWindow>(exchange.ToString(), w);
                 w.Closed += (sender2, e2) => w.Dispatcher.InvokeShutdown();
@@ -142,51 +154,75 @@ namespace client.Views
             t.Start();
         }
 
+        private void NewExchangeWindow(IUnityContainer container)
+        {
+            ExchangeWindow w = new ExchangeWindow();
+            w.DataContext = new ExchangeWindowViewModel(container);
+            if (PlaceWindow(w, "ExchangeWindow"))
+            {
+                w.Show();
+            }
+            container.RegisterInstance<ExchangeWindow>(w);
+        }
+
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             MainWindowViewModel vm = this.DataContext as MainWindowViewModel;
             vm.Stop();
 
             ///vm.Container.Resolve<EventAggregator>().GetEvent<CloseWindowEvent>().Publish();
-            XmlWriterSettings settings = new XmlWriterSettings();
-            settings.Indent = true;
-            XmlWriter writer = XmlWriter.Create(System.AppDomain.CurrentDomain.BaseDirectory + "\\layout\\" + Layout + "\\WindowPlacement.xml", settings);
-            writer.WriteStartDocument();
-            writer.WriteStartElement("Windows");
+            XmlWriter writer = null;
+            try
+            {
+                XmlWriterSettings settings = new XmlWriterSettings();
+                settings.Indent = true;
+                writer = XmlWriter.Create(System.AppDomain.CurrentDomain.BaseDirectory + "\\layout\\" + Layout + "\\WindowPlacement.xml", settings);
+                writer.WriteStartDocument();
+                writer.WriteStartElement("Windows");
 
-            WriteWindowPlacement(writer, this, "MainWindow");
+                WriteWindowPlacement(writer, this, "MainWindow");
 
-            /// Close OptionWindow
-            if (vm.Exchange1Visible)
-            {
-                var w = vm.Container.Resolve<OptionWindow>(vm.Exchange1.ToString());
-                w.SaveAndClose(writer);
+                /// Close OptionWindow
+                if (vm.Exchange1Visible)
+                {
+                    var w = vm.Container.Resolve<OptionWindow>(vm.Exchange1.ToString());
+                    w.SaveAndClose(writer);
+                }
+                if (vm.Exchange2Visible)
+                {
+                    var w = vm.Container.Resolve<OptionWindow>(vm.Exchange2.ToString());
+                    w.SaveAndClose(writer);
+                }
+                if (vm.Exchange3Visible)
+                {
+                    var w = vm.Container.Resolve<OptionWindow>(vm.Exchange3.ToString());
+                    w.SaveAndClose(writer);
+                }
+                if (vm.Exchange4Visible)
+                {
+                    var w = vm.Container.Resolve<OptionWindow>(vm.Exchange4.ToString());
+                    w.SaveAndClose(writer);
+                }
+
+                /// Close ExchangeWindow
+                vm.Container.Resolve<ExchangeWindow>().SaveAndClose(writer);
+
+                writer.WriteEndElement();
+                writer.WriteEndDocument();
+                writer.Flush();
             }
-            if (vm.Exchange2Visible)
+            catch (Exception) { }
+            finally
             {
-                var w = vm.Container.Resolve<OptionWindow>(vm.Exchange2.ToString());
-                w.SaveAndClose(writer);
+                if (writer != null) writer.Close();
             }
-            if (vm.Exchange3Visible)
-            {
-                var w = vm.Container.Resolve<OptionWindow>(vm.Exchange3.ToString());
-                w.SaveAndClose(writer);
-            }
-            if (vm.Exchange4Visible)
-            {
-                var w = vm.Container.Resolve<OptionWindow>(vm.Exchange4.ToString());
-                w.SaveAndClose(writer);
-            }
-            writer.WriteEndElement();
-            writer.WriteEndDocument();
-            writer.Flush();
-            writer.Close();
         }
 
         static public void WriteWindowPlacement(XmlWriter writer, Window window, string name)
         {
             writer.WriteStartElement("Window");
             writer.WriteAttributeString("Name", name);
+            writer.WriteAttributeString("Visible", (window.Visibility == Visibility.Visible).ToString());
             writer.WriteAttributeString("Left", window.Left.ToString());
             writer.WriteAttributeString("Top", window.Top.ToString());
             writer.WriteAttributeString("Width", window.ActualWidth.ToString());
@@ -195,72 +231,105 @@ namespace client.Views
             writer.Flush();
         }
 
-        static public void PlaceWindow(Window window, Tuple<double, double, double, double> placement)
+        private bool PlaceWindow(Window window, string name)
         {
-            window.Left = placement.Item1;
-            window.Top = placement.Item2;
-            window.Width = placement.Item3;
-            window.Height = placement.Item4;
+            Tuple<bool, double, double, double, double> placement = null;
+            if (placements.TryGetValue(name, out placement))
+            {
+                window.Visibility = placement.Item1 ? Visibility.Visible : Visibility.Hidden;
+                window.Left = placement.Item2;
+                window.Top = placement.Item3;
+                window.Width = placement.Item4;
+                window.Height = placement.Item5;
+                return placement.Item1;
+            }
+            return true;
+        }
+
+        static public void PlaceWindow(Window window, Tuple<bool, double, double, double, double> placement)
+        {
+            window.Visibility = placement.Item1 ? Visibility.Visible : Visibility.Hidden;
+            window.Left = placement.Item2;
+            window.Top = placement.Item3;
+            window.Width = placement.Item4;
+            window.Height = placement.Item5;
         }
 
         static public void LoadDataGridLayout(string name, DataGrid dg, Dictionary<int, string> formats)
         {
-            XmlReader reader = XmlReader.Create(System.AppDomain.CurrentDomain.BaseDirectory + "\\layout\\" + MainWindow.Layout + "\\datagrid\\" + name);
-            while (reader.Read())
+            XmlReader reader = null;
+            try
             {
-                if (reader.NodeType == XmlNodeType.Element)
+                reader = XmlReader.Create(System.AppDomain.CurrentDomain.BaseDirectory + "\\layout\\" + MainWindow.Layout + "\\datagrid\\" + name);
+                while (reader.Read())
                 {
-                    if (reader.Name == "Column")
+                    if (reader.NodeType == XmlNodeType.Element)
                     {
-                        int index = Convert.ToInt32(reader.GetAttribute("Index"));
-                        int displayIndex = Convert.ToInt32(reader.GetAttribute("DisplayIndex"));
-                        dg.Columns[index].DisplayIndex = displayIndex;
-                        dg.Columns[index].Width = Convert.ToDouble(reader.GetAttribute("Width"));
-                        dg.Columns[index].Visibility = Convert.ToBoolean(reader.GetAttribute("Visible")) ? Visibility.Visible : Visibility.Hidden;
-                        string decimalPlace = reader.GetAttribute("Decimal");
-                        if (decimalPlace != null)
+                        if (reader.Name == "Column")
                         {
-                            formats[displayIndex] = decimalPlace;
+                            int index = Convert.ToInt32(reader.GetAttribute("Index"));
+                            int displayIndex = Convert.ToInt32(reader.GetAttribute("DisplayIndex"));
+                            dg.Columns[index].DisplayIndex = displayIndex;
+                            dg.Columns[index].Width = Convert.ToDouble(reader.GetAttribute("Width"));
+                            dg.Columns[index].Visibility = Convert.ToBoolean(reader.GetAttribute("Visible")) ? Visibility.Visible : Visibility.Hidden;
+                            string decimalPlace = reader.GetAttribute("Decimal");
+                            if (decimalPlace != null)
+                            {
+                                formats[displayIndex] = decimalPlace;
+                            }
                         }
+                        //else if (reader.Name == "Columns")
+                        //{
+                        //    dg.Height = Convert.ToDouble(reader.GetAttribute("Height"));
+                        //}
                     }
-                    //else if (reader.Name == "Columns")
-                    //{
-                    //    dg.Height = Convert.ToDouble(reader.GetAttribute("Height"));
-                    //}
                 }
+            }
+            catch (Exception) { }
+            finally
+            {
+                if (reader != null) reader.Close();
             }
         }
 
         static public void SaveDataGridLayout(string name, DataGrid dg, Dictionary<int, string> formats)
         {
-            XmlWriterSettings settings = new XmlWriterSettings();
-            settings.Indent = true;
-            XmlWriter writer = XmlWriter.Create(System.AppDomain.CurrentDomain.BaseDirectory + "\\layout\\" + Layout + "\\datagrid\\" + name, settings);
-            writer.WriteStartDocument();
-            writer.WriteStartElement("Columns");
-            writer.WriteAttributeString("Height", dg.ActualHeight.ToString());
-            int index = 0;
-            foreach (var column in dg.Columns)
+            XmlWriter writer = null;
+            try
             {
-                writer.WriteStartElement("Column");
-                writer.WriteAttributeString("Index", index.ToString());
-                writer.WriteAttributeString("DisplayIndex", column.DisplayIndex.ToString());
-                writer.WriteAttributeString("Header", column.Header.ToString());
-                writer.WriteAttributeString("Width", column.ActualWidth.ToString("F2"));
-                writer.WriteAttributeString("Visible", (column.Visibility == Visibility.Visible).ToString());
-                string decimalPlaces = null;
-                if (formats.TryGetValue(column.DisplayIndex, out decimalPlaces))
+                XmlWriterSettings settings = new XmlWriterSettings();
+                settings.Indent = true;
+                writer = XmlWriter.Create(System.AppDomain.CurrentDomain.BaseDirectory + "\\layout\\" + Layout + "\\datagrid\\" + name, settings);
+                writer.WriteStartDocument();
+                writer.WriteStartElement("Columns");
+                writer.WriteAttributeString("Height", dg.ActualHeight.ToString());
+                int index = 0;
+                foreach (var column in dg.Columns)
                 {
-                    writer.WriteAttributeString("Decimal", decimalPlaces);
+                    writer.WriteStartElement("Column");
+                    writer.WriteAttributeString("Index", index.ToString());
+                    writer.WriteAttributeString("DisplayIndex", column.DisplayIndex.ToString());
+                    writer.WriteAttributeString("Header", column.Header.ToString());
+                    writer.WriteAttributeString("Width", column.ActualWidth.ToString("F2"));
+                    writer.WriteAttributeString("Visible", (column.Visibility == Visibility.Visible).ToString());
+                    string decimalPlaces = null;
+                    if (formats.TryGetValue(column.DisplayIndex, out decimalPlaces))
+                    {
+                        writer.WriteAttributeString("Decimal", decimalPlaces);
+                    }
+                    writer.WriteEndElement();
+                    ++index;
                 }
-                writer.WriteEndElement();
-                ++index;
-            }
 
-            writer.WriteEndElement();
-            writer.WriteEndDocument();
-            writer.Flush();
-            writer.Close();
+                writer.WriteEndElement();
+                writer.WriteEndDocument();
+                writer.Flush();
+            }
+            catch (Exception) { }
+            finally
+            {
+                if (writer != null) writer.Close();
+            }
         }
 
         static public string Layout = null;
@@ -282,6 +351,18 @@ namespace client.Views
 
             ColumnSettingWindow w = new ColumnSettingWindow(dg, formats);
             w.Show();
+        }
+
+        private void ExchangesMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            MainWindowViewModel vm = this.DataContext as MainWindowViewModel;
+            ExchangeWindow w = vm.Container.Resolve<ExchangeWindow>();
+            if (w.IsVisible == false)
+            {
+                w.Show();
+            }
+            w.Topmost = true;
+            w.Topmost = false;
         }
     }
 
