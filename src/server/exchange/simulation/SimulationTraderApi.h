@@ -26,6 +26,11 @@ protected:
   void PullQuote(const OrderPtr &bid, const OrderPtr &ask) override;
 
   virtual void QueryCash() override;
+
+private:
+  void MatchingProcess();
+
+  std::unique_ptr<std::thread> td_;
 };
 
 #endif

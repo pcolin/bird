@@ -10,6 +10,8 @@
 #include "Trade.pb.h"
 #include "Cash.pb.h"
 #include "Position.pb.h"
+#include "ExchangeParameter.pb.h"
+#include "InterestRate.pb.h"
 
 #include "nn.h"
 #include "pubsub.h"
@@ -70,6 +72,8 @@ int main(int argc, char *argv[])
   auto *trade = new Proto::Trade();
   auto *cash = new Proto::Cash();
   auto *position = new Proto::PositionReq();
+  auto *exchange_parameter = new Proto::ExchangeParameterReq();
+  auto *interest_rate = new Proto::InterestRateReq();
 
   int32_t serial_num = 0;
   while (true)
@@ -110,5 +114,7 @@ int main(int argc, char *argv[])
   delete trade;
   delete cash;
   delete position;
+  delete exchange_parameter;
+  delete interest_rate;
   return 0;
 }

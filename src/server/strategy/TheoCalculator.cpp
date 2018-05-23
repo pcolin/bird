@@ -237,6 +237,12 @@ void TheoCalculator::OnPricingSpec(const std::shared_ptr<Proto::PricingSpec> &sp
   }
 }
 
+void TheoCalculator::OnExchangeParameter(const std::shared_ptr<Proto::ExchangeParameterReq> &req)
+{
+  LOG_INF << "Recalculate due to exchange parameter update";
+  Recalculate();
+}
+
 void TheoCalculator::OnInterestRate(const std::shared_ptr<Proto::InterestRateReq> &req)
 {
   auto *pm = ParameterManager::GetInstance();

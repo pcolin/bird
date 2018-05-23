@@ -30,8 +30,8 @@ void ExchangeParameterDB::RefreshCache()
 
   if (cache_)
   {
-    const auto night_session_time = boost::posix_time::duration_from_string(
-        EnvConfig::GetInstance()->GetString(EnvVar::NIGHT_SESSION_TIME, "23:59:59.0"));
+    const auto time = EnvConfig::GetInstance()->GetString(EnvVar::NIGHT_SESSION_TIME, "23:59:59.0");
+    const auto night_session_time = boost::posix_time::duration_from_string(time);
     if (boost::posix_time::second_clock::local_time().time_of_day() > night_session_time)
     {
       trading_day += boost::gregorian::date_duration(1);
@@ -45,8 +45,8 @@ void ExchangeParameterDB::RefreshCache()
       {
         trading_day += boost::gregorian::date_duration(1);
       }
-      cache_->set_night_session(true);
     }
+    cache_->set_night_session_time(time);
   }
   trading_day_ = boost::gregorian::to_iso_string(trading_day);
   cache_->set_trading_day(trading_day_);
@@ -91,12 +91,12 @@ base::ProtoMessagePtr ExchangeParameterDB::OnRequest(
       std::ostringstream oss;
       for (auto &s : p.sessions())
       {
-        oss << s.begin() << '-' << s.end() << ',';
+        oss << s.begin() << '-' << s.end() << '-' << s.stop() << ',';
       }
       std::ostringstream oss1;
       for (auto &s : p.maturity_sessions())
       {
-        oss1 << s.begin() << '-' << s.end() << ',';
+        oss1 << s.begin() << '-' << s.end() << '-' << s.stop() << ',';
       }
       sprintf(sql, "INSERT OR REPLACE INTO %s VALUES(%d, '%s', '%s', '%s', %d, %d, %d)",
           table_name_.c_str(), static_cast<int32_t>(p.exchange()),

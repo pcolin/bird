@@ -249,6 +249,7 @@ void Middleware::RunResponder()
           reply->set_result(true);
           reply->set_error("");
         }
+        Publish(msg);
       }
       else
       {

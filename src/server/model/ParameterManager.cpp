@@ -300,6 +300,7 @@ void ParameterManager::OnExchangeParameterReq(
     {
       exchange_->OnExchangeParameter(p);
     }
+    ClusterManager::GetInstance()->Publish(req);
   }
 }
 
@@ -313,6 +314,7 @@ void ParameterManager::OnInterestRateReq(const std::shared_ptr<Proto::InterestRa
     {
       interest_rates_[r.days()] = r.rate();
     }
+    ClusterManager::GetInstance()->Publish(req);
   }
 }
 

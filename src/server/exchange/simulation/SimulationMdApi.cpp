@@ -63,7 +63,7 @@ void SimulationMdApi::Work()
     // std::cout << "Simulated MD is running..." << std::endl;
     for (auto &it : prices_)
     {
-      if (std::rand() % 4 != 0) continue;
+      if (std::rand() % 10 != 0) continue;
 
       auto *inst = it.second->instrument;
       auto *dm = ClusterManager::GetInstance()->FindDevice(inst->HedgeUnderlying());

@@ -6,6 +6,7 @@ Pricer::Pricer(const std::string &name, DeviceManager *dm)
 {
   dispatcher_.RegisterCallback<Proto::Heartbeat>([&](auto &m) { return calc_.OnEvent(m); });
   dispatcher_.RegisterCallback<Proto::PricingSpec>([&](auto &m) { return calc_.OnEvent(m); });
+  dispatcher_.RegisterCallback<Proto::ExchangeParameterReq>([&](auto &m) {return calc_.OnEvent(m);});
   dispatcher_.RegisterCallback<Proto::InterestRateReq>([&](auto &m) { return calc_.OnEvent(m); });
   dispatcher_.RegisterCallback<Proto::SSRateReq>([&](auto &m) { return calc_.OnEvent(m); });
   dispatcher_.RegisterCallback<Proto::VolatilityCurveReq>([&](auto &m) { return calc_.OnEvent(m); });

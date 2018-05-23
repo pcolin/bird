@@ -7,8 +7,6 @@
 #include "Instrument.pb.h"
 #include "boost/date_time/gregorian/gregorian.hpp"
 
-
-
 class Instrument
 {
   public:
