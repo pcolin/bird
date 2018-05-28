@@ -128,17 +128,24 @@ namespace client.ViewModels
         {
             this.container = container;
             //this.container.Resolve<EventAggregator>().GetEvent<StartWindowEvent>().Subscribe(this.StartWindow, ThreadOption.PublisherThread);
+            this.container.Resolve<EventAggregator>().GetEvent<GreeksEvent>().Subscribe(this.ReceiveGreeks, ThreadOption.BackgroundThread);
+            this.container.Resolve<EventAggregator>().GetEvent<ImpliedVolatilityEvent>().Subscribe(this.ReceiveIV, ThreadOption.BackgroundThread);
             this.dispatcher = dispatcher;
             this.exchange = exchange;
         }
 
-        public void Start(Dictionary<string, OptionUserControlViewModel> viewModels)
+        public void Start(Dictionary<Instrument, OptionUserControlViewModel> viewModels)
         {
             this.viewModels = viewModels;
 
-            var service = this.container.Resolve<ProxyService>(exchange.ToString());
-            service.RegisterAction("Price", new Action<IMessage>(p => this.ReceivePrice(p)));
-            service.RegisterAction("Cash", new Action<IMessage>(c => this.ReceiveCash(c)));
+            //var service = this.container.Resolve<ProxyService>(exchange.ToString());
+            //service.RegisterAction("Price", new Action<IMessage>(p => this.ReceivePrice(p)));
+            //service.RegisterAction("Cash", new Action<IMessage>(c => this.ReceiveCash(c)));
+
+            this.container.Resolve<EventAggregator>().GetEvent<GreeksEvent>().Subscribe(this.ReceiveGreeks, ThreadOption.BackgroundThread);
+            this.container.Resolve<EventAggregator>().GetEvent<ImpliedVolatilityEvent>().Subscribe(this.ReceiveIV, ThreadOption.BackgroundThread);
+            this.container.Resolve<EventAggregator>().GetEvent<PubSubEvent<Proto.Price>>().Subscribe(this.ReceivePrice, ThreadOption.BackgroundThread);
+            this.container.Resolve<EventAggregator>().GetEvent<PubSubEvent<Proto.Cash>>().Subscribe(this.ReceiveCash, ThreadOption.BackgroundThread);
         }
 
         //private void StartWindow()
@@ -167,12 +174,11 @@ namespace client.ViewModels
         //    service.RegisterAction((new Proto.Price()).GetType().ToString(), new Action<IMessage>(p => this.ReceivePrice(p)));
         //}
 
-        private void ReceivePrice(IMessage msg)
+        private void ReceivePrice(Proto.Price p)
         {
-            var p = msg as Proto.Price;
             if (p != null)
             {
-                ProductManager manager = this.container.Resolve<ProductManager>();
+                ProductManager manager = this.container.Resolve<ProductManager>(this.Exchange.ToString());
                 var inst = manager.FindId(p.Instrument);
                 OptionUserControlViewModel vm = null;
                 if (inst != null && this.viewModels.TryGetValue(inst.HedgeUnderlying, out vm))
@@ -183,9 +189,8 @@ namespace client.ViewModels
             }
         }
 
-        private void ReceiveCash(IMessage msg)
+        private void ReceiveCash(Proto.Cash cash)
         {
-            var cash = msg as Proto.Cash;
             if (cash != null)
             {
                 this.dispatcher.BeginInvoke((MethodInvoker)delegate
@@ -197,9 +202,27 @@ namespace client.ViewModels
             }
         }
 
+        private void ReceiveGreeks(GreeksData greeks)
+        {
+            OptionUserControlViewModel vm = null;
+            if (this.viewModels.TryGetValue(greeks.Option.HedgeUnderlying, out vm))
+            {
+                this.dispatcher.BeginInvoke((MethodInvoker)delegate { vm.ReceiveGreeks(greeks); });
+            }
+        }
+
+        private void ReceiveIV(ImpliedVolatilityData data)
+        {
+            OptionUserControlViewModel vm = null;
+            if (this.viewModels.TryGetValue(data.Option.HedgeUnderlying, out vm))
+            {
+                this.dispatcher.BeginInvoke((MethodInvoker)delegate { vm.ReceiveIV(data); });
+            }
+        }
+
         private IUnityContainer container;
         private Dispatcher dispatcher;
         private Proto.Exchange exchange;
-        private Dictionary<string, OptionUserControlViewModel> viewModels;
+        private Dictionary<Instrument, OptionUserControlViewModel> viewModels;
     }
 }

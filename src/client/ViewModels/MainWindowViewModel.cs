@@ -15,14 +15,6 @@ using System.Xml;
 
 namespace client.ViewModels
 {
-    //public enum Exchange
-    //{
-    //    DCE = 0,
-    //    CZCE,
-    //    CFFEX,
-    //    SHFE,
-    //};
-
     public enum ConnectStatus
     {
         Connected = 0,
@@ -331,7 +323,6 @@ namespace client.ViewModels
             //InitializeWindows();
         }
 
-
         private void InitializeService(Proto.Exchange exchange, string serverAddress, string databaseAddress, string proxyAddress)
         {
             var server = new ServerService();
@@ -342,11 +333,13 @@ namespace client.ViewModels
             database.Initialize(databaseAddress);
             this.container.RegisterInstance<DatabaseService>(exchange.ToString(), database);
 
-            var proxy = new ProxyService();
+            var proxy = new ProxyService(this.container, exchange);
             proxy.Initialize(proxyAddress);
             this.container.RegisterInstance<ProxyService>(exchange.ToString(), proxy);
-        }
 
+            var calculator = new TheoCalculator(this.container, exchange);
+            this.container.RegisterInstance<TheoCalculator>(exchange.ToString(), calculator);
+        }
         
         public void Stop()
         {
@@ -386,6 +379,12 @@ namespace client.ViewModels
             {
                 proxy.Stop();
             }
+
+            var calculator = this.container.Resolve<TheoCalculator>(exch);
+            if (calculator != null)
+            {
+                calculator.Stop();
+            }
         }
 
         private void InitializeWindows()
@@ -397,26 +396,38 @@ namespace client.ViewModels
         {
             if (IsExchange1Selected)
             {
-                Login(this.exchange1);
+                if (Login(this.exchange1))
+                {
+                    Exchange1Status = ConnectStatus.Connected;
+                }
             }
 
             if (IsExchange2Selected)
             {
-                Login(this.exchange2);
+                if (Login(this.exchange2))
+                {
+                    Exchange2Status = ConnectStatus.Connected;
+                }
             }
 
             if (IsExchange3Selected)
             {
-                Login(this.exchange3);
+                if (Login(this.exchange3))
+                {
+                    Exchange3Status = ConnectStatus.Connected;
+                }
             }
 
             if (IsExchange4Selected)
             {
-                Login(this.exchange4);
+                if (Login(this.exchange4))
+                {
+                    Exchange4Status = ConnectStatus.Connected;
+                }
             }
         }
 
-        private void Login(Proto.Exchange exchange)
+        private bool Login(Proto.Exchange exchange)
         {
             string ex = exchange.ToString();
             var server = this.container.Resolve<ServerService>(ex);
@@ -425,14 +436,17 @@ namespace client.ViewModels
             {
                 if (r.Result)
                 {
-                    Exchange1Status = ConnectStatus.Connected;
+                    
                     server.Start();
                     var database = this.container.Resolve<DatabaseService>(ex);
                     database.Start();
                     var proxy = this.container.Resolve<ProxyService>(ex);
                     proxy.Start();
 
+                    var calculator = this.container.Resolve<TheoCalculator>(ex);
+                    calculator.Start();
                     this.container.Resolve<EventAggregator>().GetEvent<StartWindowEvent>().Publish();
+                    return true;
                 }
                 else
                 {
@@ -443,6 +457,7 @@ namespace client.ViewModels
             {
                 NotificationRequest.Raise(new Notification { Content = "Login " + exchange + " timeout", Title = "Login Failed" });
             }
+            return false;
         }
 
         private void Logout(Proto.Exchange exchange)

@@ -41,17 +41,18 @@ namespace client.Views
             this.Dispatcher.BeginInvoke((MethodInvoker) delegate
             {
                 var vm = this.DataContext as OptionWindowViewModel;
-                ProductManager manager = vm.Container.Resolve<ProductManager>();
-                List<string> hedgeUnderlyings = manager.GetHedgeUnderlyings(vm.Exchange);
-                hedgeUnderlyings.Sort();
-                var viewModels = new Dictionary<string, OptionUserControlViewModel>();
-                for (int i = 0; i < hedgeUnderlyings.Count; ++i)
+                ProductManager manager = vm.Container.Resolve<ProductManager>(vm.Exchange.ToString());
+                //var hedgeUnderlyings = manager.GetHedgeUnderlyings();
+                //hedgeUnderlyings.Sort();
+                var hedgeUnderlyings = from underlying in manager.GetHedgeUnderlyings() orderby underlying.Id select underlying;
+                var viewModels = new Dictionary<Instrument, OptionUserControlViewModel>();
+                foreach (var underlying in hedgeUnderlyings)
                 {
-                    var viewModel = new OptionUserControlViewModel(hedgeUnderlyings[i], manager, vm.Container);
+                    var viewModel = new OptionUserControlViewModel(vm.Exchange, underlying, manager, vm.Container);
                     OptionUserControl control = new OptionUserControl(viewModel);
                     //control.DataContext = viewModel;
-                    viewModels[hedgeUnderlyings[i]] = viewModel;
-                    TabItem item = new TabItem() { Header = hedgeUnderlyings[i], Content = control };
+                    viewModels[underlying] = viewModel;
+                    TabItem item = new TabItem() { Header = underlying.Id, Content = control };
                     this.OptionTabControl.Items.Add(item);
                 }
                 vm.Start(viewModels);

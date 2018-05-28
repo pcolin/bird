@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -8,40 +9,104 @@ namespace client.Models
 {
     public class ProductManager
     {
-        public void Add(Proto.Instrument inst)
+        public void OnProtoMessage(Proto.InstrumentRep rep)
         {
-            //lock (this.mutex)
+            var instrumentUnderlyings = new Dictionary<string, Tuple<Instrument, string, string>>();
+            foreach (var inst in rep.Instruments)
             {
-                instruments.Add(inst.Id, inst);
-            }
-        }
-
-        public void Add(IList<Proto.Instrument> instruments)
-        {
-            //lock (this.mutex)
-            {
-                foreach (var inst in instruments)
+                try
                 {
-                    this.instruments.Add(inst.Id, inst);
+                    var maturity = DateTime.ParseExact(inst.Maturity, "yyyyMMdd", CultureInfo.InvariantCulture);
+                    Instrument instrument = null;
                     if (inst.Type == Proto.InstrumentType.Option)
                     {
-                        List<Proto.Instrument> opt = null;
-                        if (underlyingOptions.TryGetValue(inst.Underlying, out opt) == false)
-                        {
-                            opt = new List<Proto.Instrument>();
-                            underlyingOptions.Add(inst.Underlying, opt);
-                        }
-                        opt.Add(inst);
-                        if (hedgeUnderlyingOptions.TryGetValue(inst.HedgeUnderlying, out opt) == false)
-                        {
-                            opt = new List<Proto.Instrument>();
-                            hedgeUnderlyingOptions.Add(inst.HedgeUnderlying, opt);
-                        }
-                        opt.Add(inst);
+                        var option = new Option();
+                        option.OptionType = inst.CallPut;
+                        option.ExerciseType = inst.Exercise;
+                        option.SettlementType = inst.Settlement;
+                        option.Strike = inst.Strike;
+                        instrument = option;
                     }
+                    else
+                    {
+                        instrument = new Instrument();
+                    }
+                    instrument.Id = inst.Id;
+                    instrument.Symbol = inst.Symbol;
+                    instrument.Exchange = inst.Exchange;
+                    instrument.Type = inst.Type;
+                    instrument.Currency = inst.Currency;
+                    instrument.Tick = inst.Tick;
+                    instrument.Multiplier = inst.Multiplier;
+                    instrument.Highest = inst.Highest;
+                    instrument.Lowest = inst.Lowest;
+                    instrument.Maturity = maturity;
+                    //this.instruments.Add(inst.Id, instrument);
+                    instrumentUnderlyings.Add(inst.Id, Tuple.Create(instrument, inst.Underlying, inst.HedgeUnderlying));
+                }
+                catch (Exception) {}
+            }
+
+            foreach (var kvp in instrumentUnderlyings)
+            {
+                var inst = kvp.Value.Item1;
+                inst.Underlying = instrumentUnderlyings[kvp.Value.Item2].Item1;
+                inst.HedgeUnderlying = instrumentUnderlyings[kvp.Value.Item3].Item1;
+                this.instruments.Add(kvp.Key, inst);
+                if (inst.Type == Proto.InstrumentType.Option)
+                {
+                    var option = inst as Option;
+                    List<Option> options = null;
+                    if (underlyingOptions.TryGetValue(inst.Underlying, out options) == false)
+                    {
+                        options = new List<Option>();
+                        underlyingOptions.Add(inst.Underlying, options);
+                    }
+                    options.Add(option);
+                    if (hedgeUnderlyingOptions.TryGetValue(inst.HedgeUnderlying, out options) == false)
+                    {
+                        options = new List<Option>();
+                        hedgeUnderlyingOptions.Add(inst.HedgeUnderlying, options);
+                    }
+                    options.Add(option);
                 }
             }
         }
+
+        //public void Add(Proto.Instrument inst)
+        //{
+        //    //lock (this.mutex)
+        //    {
+        //        instruments.Add(inst.Id, inst);
+        //    }
+        //}
+
+        //public void Add(IList<Proto.Instrument> instruments)
+        //{
+        //    //lock (this.mutex)
+        //    {
+        //        foreach (var inst in instruments)
+        //        {
+        //            this.instruments.Add(inst.Id, inst);
+        //            if (inst.Type == Proto.InstrumentType.Option)
+        //            {
+        //                List<Proto.Instrument> opt = null;
+        //                if (underlyingOptions.TryGetValue(inst.Underlying, out opt) == false)
+        //                {
+        //                    opt = new List<Proto.Instrument>();
+        //                    underlyingOptions.Add(inst.Underlying, opt);
+        //                }
+        //                opt.Add(inst);
+        //                if (hedgeUnderlyingOptions.TryGetValue(inst.HedgeUnderlying, out opt) == false)
+        //                {
+        //                    opt = new List<Proto.Instrument>();
+        //                    hedgeUnderlyingOptions.Add(inst.HedgeUnderlying, opt);
+        //                }
+        //                opt.Add(inst);
+        //            }
+        //        }
+        //    }
+        //}
 
         public void Remove(Proto.Instrument inst)
         {
@@ -51,9 +116,9 @@ namespace client.Models
             }
         }
 
-        public Proto.Instrument FindId(string id)
+        public Instrument FindId(string id)
         {
-            Proto.Instrument inst = null;
+            Instrument inst = null;
             //lock (this.mutex)
             {
                 instruments.TryGetValue(id, out inst);
@@ -61,7 +126,7 @@ namespace client.Models
             return inst;
         }
 
-        public List<string> GetUnderlyings()
+        public IEnumerable<Instrument> GetUnderlyings()
         {
             //lock (this.mutex)
             {
@@ -69,9 +134,9 @@ namespace client.Models
             }
         }
 
-        public List<Proto.Instrument> GetUnderlyings(string hedgeUnderlying)
+        public List<Instrument> GetUnderlyings(Instrument hedgeUnderlying)
         {
-            List<Proto.Instrument> ret = new List<Proto.Instrument>();
+            var ret = new List<Instrument>();
             foreach (var kvp in instruments)
             {
                 if (kvp.Value.Type != Proto.InstrumentType.Option && kvp.Value.HedgeUnderlying == hedgeUnderlying)
@@ -82,50 +147,47 @@ namespace client.Models
             return ret;
         }
 
-        public List<string> GetHedgeUnderlyings()
+        public IEnumerable<Instrument> GetHedgeUnderlyings()
         {
             //lock (this.mutex)
             {
-                return hedgeUnderlyingOptions.Keys.ToList();
+                return hedgeUnderlyingOptions.Keys;
             }
         }
 
-        public List<string> GetHedgeUnderlyings(Proto.Exchange exchange)
-        {
-            List<string> ret = new List<string>();
-            foreach (var kvp in hedgeUnderlyingOptions)
-            {
-                if (kvp.Value.Count > 0 && kvp.Value[0].Exchange == exchange)
-                {
-                    ret.Add(kvp.Key);
-                }
-            }
-            return ret;
-        }
-
-        public List<Proto.Instrument> GetOptions(string underlying)
+        public List<Option> GetOptions(Instrument underlying)
         {
             //lock (this.mutex)
             {
-                List<Proto.Instrument> ret = null;
+                List<Option> ret = null;
                 underlyingOptions.TryGetValue(underlying, out ret);
                 return ret;
             }
         }
 
-        public List<Proto.Instrument> GetOptionsByHedgeUnderlying(string hedgeUnderlying)
+        public List<Option> GetOptionsByHedgeUnderlying(Instrument hedgeUnderlying)
         {
             //lock (this.mutex)
             {
-                List<Proto.Instrument> ret = null;
+                List<Option> ret = null;
                 hedgeUnderlyingOptions.TryGetValue(hedgeUnderlying, out ret);
                 return ret;
             }
         }
 
+        public IEnumerable<Option> GetOptionsByHedgeUnderlying(Instrument hedgeUnderlying, DateTime maturity)
+        {
+            List<Option> options = GetOptionsByHedgeUnderlying(hedgeUnderlying);
+            if (options != null)
+            {
+                return from option in options where option.Maturity == maturity orderby option.Id select option;
+            }
+            return null;
+        }
+
         //object mutex = new object();
-        Dictionary<string, Proto.Instrument> instruments = new Dictionary<string,Proto.Instrument>();
-        Dictionary<string, List<Proto.Instrument>> underlyingOptions = new Dictionary<string, List<Proto.Instrument>>();
-        Dictionary<string, List<Proto.Instrument>> hedgeUnderlyingOptions = new Dictionary<string, List<Proto.Instrument>>();
+        Dictionary<string, Instrument> instruments = new Dictionary<string, Instrument>();
+        Dictionary<Instrument, List<Option>> underlyingOptions = new Dictionary<Instrument, List<Option>>();
+        Dictionary<Instrument, List<Option>> hedgeUnderlyingOptions = new Dictionary<Instrument, List<Option>>();
     }
 }

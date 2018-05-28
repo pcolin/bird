@@ -9,10 +9,11 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>client</RootNamespace>
     <AssemblyName>client</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <WarningLevel>4</WarningLevel>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -40,6 +41,14 @@
   <ItemGroup>
     <Reference Include="Google.Protobuf, Version=3.5.1.0, Culture=neutral, PublicKeyToken=a7d26565bac4d604, processorArchitecture=MSIL">
       <HintPath>packages\Google.Protobuf.3.5.1\lib\net45\Google.Protobuf.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="InteractiveDataDisplay.WPF, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\InteractiveDataDisplay.WPF.1.0.0\lib\net452\InteractiveDataDisplay.WPF.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Maps.MapControl.WPF, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>packages\Microsoft.Maps.MapControl.WPF.1.0.0.3\lib\net40-Client\Microsoft.Maps.MapControl.WPF.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.Practices.ServiceLocation, Version=1.3.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
@@ -79,8 +88,29 @@
     <Reference Include="System.Configuration" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Reactive.Core, Version=3.0.3000.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
+      <HintPath>packages\System.Reactive.Core.3.1.1\lib\net46\System.Reactive.Core.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Reactive.Interfaces, Version=3.0.1000.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
+      <HintPath>packages\System.Reactive.Interfaces.3.1.1\lib\net45\System.Reactive.Interfaces.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Reactive.Linq, Version=3.0.3000.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
+      <HintPath>packages\System.Reactive.Linq.3.1.1\lib\net46\System.Reactive.Linq.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Reactive.PlatformServices, Version=3.0.3000.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
+      <HintPath>packages\System.Reactive.PlatformServices.3.1.1\lib\net46\System.Reactive.PlatformServices.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Reactive.Windows.Threading, Version=3.0.1000.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
+      <HintPath>packages\System.Reactive.Windows.Threading.3.1.1\lib\net45\System.Reactive.Windows.Threading.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.ServiceModel" />
+    <Reference Include="System.Windows" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Windows.Interactivity, Version=4.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>packages\Prism.Wpf.6.3.0\lib\net45\System.Windows.Interactivity.dll</HintPath>
@@ -112,34 +142,52 @@
     <Compile Include="Messages\CashLimit.cs" />
     <Compile Include="Messages\Currency.cs" />
     <Compile Include="Messages\Exchange.cs" />
+    <Compile Include="Messages\ExchangeParameter.cs" />
     <Compile Include="Messages\Heartbeat.cs" />
     <Compile Include="Messages\Instrument.cs" />
+    <Compile Include="Messages\InterestRate.cs" />
     <Compile Include="Messages\Login.cs" />
     <Compile Include="Messages\Order.cs" />
     <Compile Include="Messages\Position.cs" />
     <Compile Include="Messages\Price.cs" />
+    <Compile Include="Messages\PricingSpec.cs" />
     <Compile Include="Messages\Reply.cs" />
     <Compile Include="Messages\Request.cs" />
     <Compile Include="Messages\Server.cs" />
+    <Compile Include="Messages\SSRate.cs" />
     <Compile Include="Messages\Strategy.cs" />
     <Compile Include="Messages\Trade.cs" />
+    <Compile Include="Messages\Volatility.cs" />
     <Compile Include="Models\DatabaseService.cs" />
     <Compile Include="Models\ExchangeParameterManager.cs" />
+    <Compile Include="Models\GreeksEvent.cs" />
+    <Compile Include="Models\ImpliedVolatilityEvent.cs" />
+    <Compile Include="Models\Instrument.cs" />
+    <Compile Include="Models\InterestRateManager.cs" />
     <Compile Include="Models\ISocket.cs" />
     <Compile Include="Models\LoggingEventSource.cs" />
+    <Compile Include="Models\Option.cs" />
     <Compile Include="Models\PositionManager.cs" />
+    <Compile Include="Models\PricingSpecManager.cs" />
     <Compile Include="Models\ProductManager.cs" />
     <Compile Include="Models\ProtoMessageCoder.cs" />
+    <Compile Include="Models\ProtoMessageTypes.cs" />
     <Compile Include="Models\ProxyService.cs" />
-    <Compile Include="Models\ServerConnector.cs" />
     <Compile Include="Models\ServerService.cs" />
+    <Compile Include="Models\SSRateManager.cs" />
+    <Compile Include="Models\TheoCalculator.cs" />
+    <Compile Include="Models\VolatilityCurveManager.cs" />
     <Compile Include="ViewModels\CloseWindowEvent.cs" />
     <Compile Include="ViewModels\ExchangeUserControlViewModel.cs" />
     <Compile Include="ViewModels\ExchangeWindowViewModel.cs" />
     <Compile Include="ViewModels\MainWindowViewModel.cs" />
     <Compile Include="ViewModels\OptionUserControlViewModel.cs" />
     <Compile Include="ViewModels\OptionWindowViewModel.cs" />
+    <Compile Include="ViewModels\RateUserControlViewModel.cs" />
+    <Compile Include="ViewModels\RateWindowViewModel.cs" />
     <Compile Include="ViewModels\StartWindowEvent.cs" />
+    <Compile Include="ViewModels\VolatilityUserControlViewModel.cs" />
+    <Compile Include="ViewModels\VolatilityWindowViewModel.cs" />
     <Compile Include="Views\ColumnSettingWindow.xaml.cs">
       <DependentUpon>ColumnSettingWindow.xaml</DependentUpon>
     </Compile>
@@ -161,7 +209,6 @@
     <Compile Include="Views\MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\NonReloadingTabControl.cs" />
     <Compile Include="Views\OptionUserControl.xaml.cs">
       <DependentUpon>OptionUserControl.xaml</DependentUpon>
     </Compile>
@@ -170,6 +217,18 @@
     </Compile>
     <Compile Include="Views\PortfolioWindow.xaml.cs">
       <DependentUpon>PortfolioWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\RateUserControl.xaml.cs">
+      <DependentUpon>RateUserControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\RateWindow.xaml.cs">
+      <DependentUpon>RateWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\VolatilityUserControl.xaml.cs">
+      <DependentUpon>VolatilityUserControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\VolatilityWindow.xaml.cs">
+      <DependentUpon>VolatilityWindow.xaml</DependentUpon>
     </Compile>
   </ItemGroup>
   <ItemGroup>
@@ -252,6 +311,22 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views\RateUserControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\RateWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\VolatilityUserControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\VolatilityWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\bird.jpg" />
@@ -267,6 +342,12 @@
     <Content Include="x86\nanomsg.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="ModelLibrary\ModelLibrary.vcxproj">
+      <Project>{31b99dcb-e75a-4316-b6c8-f9853ab4e10f}</Project>
+      <Name>ModelLibrary</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -1,5 +1,6 @@
 ﻿using client.Models;
 using Microsoft.Practices.Unity;
+using ModelLibrary;
 using Prism.Commands;
 using Prism.Mvvm;
 using System;
@@ -51,7 +52,7 @@ namespace client.ViewModels
                 {
                     return hedgeUnderlying.Exchange;
                 }
-                return Proto.Exchange.De;
+                return Proto.Exchange.Dce;
             }
         }        
 
@@ -68,8 +69,8 @@ namespace client.ViewModels
         }
 
 
-        private Proto.Instrument hedgeUnderlying;
-        public Proto.Instrument HedgeUnderlying
+        private Instrument hedgeUnderlying;
+        public Instrument HedgeUnderlying
         {
             get { return hedgeUnderlying; }
             set
@@ -98,18 +99,11 @@ namespace client.ViewModels
             set { SetProperty(ref options, value); }
         }
 
-        //public OptionUserControlViewModel()
-        //{
-        //    List<UnderlyingItem> underlyingItems = new List<UnderlyingItem>();
-        //    this.underlyings = new ListCollectionView(underlyingItems);
-        //    List<OptionPairItem> optionItems = new List<OptionPairItem>();
-        //    this.options = new ListCollectionView(optionItems);
-
-        //}
-
-        public OptionUserControlViewModel(string hedgeUnderlying, ProductManager products, IUnityContainer container)
+        public OptionUserControlViewModel(Proto.Exchange exchange, Instrument hedgeUnderlying, ProductManager products, IUnityContainer container)
         {
-            var positions = container.Resolve<PositionManager>();
+            productManager = container.Resolve<ProductManager>(exchange.ToString());
+            ssrateManager = container.Resolve<SSRateManager>(exchange.ToString());
+            var positions = container.Resolve<PositionManager>(exchange.ToString());
 
             List<UnderlyingItem> items = new List<UnderlyingItem>();
             underlyingItems = new Dictionary<string, UnderlyingItem>();
@@ -128,6 +122,12 @@ namespace client.ViewModels
                     items.Add(item);
                 }
 
+                var opts = products.GetOptions(inst);
+                if (opts.Count > 0)
+                {
+                    item.Maturity = opts[0].Maturity;
+                }
+
                 underlyingItems[inst.Id] = item;
             }
             this.underlyings = new ListCollectionView(items);
@@ -139,13 +139,13 @@ namespace client.ViewModels
             var options = products.GetOptionsByHedgeUnderlying(hedgeUnderlying);
             if (options != null)
             {
-                var ret = options.OrderBy(x => x.Underlying).ThenBy(x => x.Strike).ThenBy(x => x.CallPut);
-                Proto.Instrument call = null;
-                string maturity = null;
+                var ret = options.OrderBy(x => x.Underlying.Id).ThenBy(x => x.Strike).ThenBy(x => x.OptionType);
+                Option call = null;
+                DateTime maturity = DateTime.MinValue;
                 int groupNo = 0;
                 foreach (var inst in ret)
                 {
-                    if (inst.CallPut == Proto.OptionType.Put)
+                    if (inst.OptionType == Proto.OptionType.Put)
                     {
                         if (call != null && call.Underlying == inst.Underlying && call.Strike == inst.Strike)
                         {
@@ -226,7 +226,7 @@ namespace client.ViewModels
         }
 
         //public delegate void ReceivePriceDelegate(Proto.Instrument inst, Proto.Price price);
-        public void ReceivePrice(Proto.Instrument inst, Proto.Price price)
+        public void ReceivePrice(Instrument inst, Proto.Price price)
         {
             if (inst.Type == Proto.InstrumentType.Option)
             {
@@ -245,6 +245,78 @@ namespace client.ViewModels
                     }
                     item.LastPrice = price.Last.Price;
                     item.LastVolume = price.Last.Volume;
+                }
+            }
+            else if (inst.HedgeUnderlying == inst)
+            {
+                foreach (var kvp in this.underlyingItems)
+                {
+                    if (kvp.Value.Underlying == inst)
+                    {
+                        if (price.Bids.Count > 0)
+                        {
+                            kvp.Value.MarketBidPrice = price.Bids[0].Price;
+                            kvp.Value.MarketBidVolume = price.Bids[0].Volume;
+                        }
+                        if (price.Asks.Count > 0)
+                        {
+                            kvp.Value.MarketAskPrice = price.Asks[0].Price;
+                            kvp.Value.MarketAskVolume = price.Asks[0].Volume;
+                        }
+                        kvp.Value.LastPrice = price.Last.Price;
+                        kvp.Value.LastVolume = price.Last.Volume;
+                        kvp.Value.PreClose = price.PreClose;
+                        kvp.Value.PreSettlement = price.PreSettlement;
+                    }
+
+                    var ssr = ssrateManager.GetSSRate(inst.Id, kvp.Value.Maturity);
+                    if (ssr.HasValue)
+                    {
+                        kvp.Value.Theo = price.AdjustedPrice + ssr.Value;
+                    }
+                    else
+                    {
+                        kvp.Value.Theo = price.AdjustedPrice;
+                    }
+
+                    int oldAtmIdx = -1, newAtmIdx = -1;
+                    double minSpread = double.MaxValue;
+                    for (int i = 0; i < this.options.Count; ++i)
+                    {
+                        if (this.options[i].Call.Option.Underlying == kvp.Value.Underlying)
+                        {
+                            double spread = Math.Abs(this.options[i].Call.Option.Strike - kvp.Value.Theo);
+                            if (spread < minSpread)
+                            {
+                                minSpread = spread;
+                                newAtmIdx = i;
+                            }
+                            if (this.options[i].IsAtmOption) oldAtmIdx = i;
+                        }
+                    }
+                    if (oldAtmIdx != newAtmIdx)
+                    {
+                        if (oldAtmIdx != -1) this.options[oldAtmIdx].IsAtmOption = false;
+                        if (newAtmIdx != -1) this.options[newAtmIdx].IsAtmOption = true;
+                    }
+                }
+                UnderlyingItem item = null;
+                if (this.underlyingItems.TryGetValue(inst.Id, out item))
+                {
+                    if (price.Bids.Count > 0)
+                    {
+                        item.MarketBidPrice = price.Bids[0].Price;
+                        item.MarketBidVolume = price.Bids[0].Volume;
+                    }
+                    if (price.Asks.Count > 0)
+                    {
+                        item.MarketAskPrice = price.Asks[0].Price;
+                        item.MarketAskVolume = price.Asks[0].Volume;
+                    }
+                    item.LastPrice = price.Last.Price;
+                    item.LastVolume = price.Last.Volume;
+                    item.PreClose = price.PreClose;
+                    item.PreSettlement = price.PreSettlement;
                 }
             }
             else
@@ -266,31 +338,31 @@ namespace client.ViewModels
                     item.LastVolume = price.Last.Volume;
                     item.PreClose = price.PreClose;
                     item.PreSettlement = price.PreSettlement;
-                    //if (price.Bids.Count > 0 && price.Asks.Count > 0)
-                    {
-                        item.Theo = price.AdjustedPrice;
-                        int oldAtmIdx = -1, newAtmIdx = -1;
-                        double minSpread = double.MaxValue;
-                        for (int i = 0; i < this.options.Count; ++i)
-                        {
-                            if (this.options[i].Call.Option.Underlying == inst.Id)
-                            {
-                                double spread = Math.Abs(this.options[i].Call.Option.Strike - item.Theo);
-                                if (spread < minSpread)
-                                {
-                                    minSpread = spread;
-                                    newAtmIdx = i;
-                                }
-                                if (this.options[i].IsAtmOption) oldAtmIdx = i;
-                            }
-                        }
-                        if (oldAtmIdx != newAtmIdx)
-                        {
-                            if (oldAtmIdx != -1) this.options[oldAtmIdx].IsAtmOption = false;
-                            if (newAtmIdx != -1) this.options[newAtmIdx].IsAtmOption = true;
-                        }
-                    }
                 }
+            }
+        }
+
+        public void ReceiveGreeks(GreeksData greeks)
+        {
+            OptionItem item = null;
+            if (this.optionItems.TryGetValue(greeks.Option.Id, out item))
+            {
+                item.Theo = greeks.Greeks.theo;
+                item.Volatility = greeks.Greeks.vol;
+                item.Delta = greeks.Greeks.delta;
+                item.Gamma = greeks.Greeks.gamma;
+                item.Vega = greeks.Greeks.vega;
+            }
+        }
+
+        public void ReceiveIV(ImpliedVolatilityData data)
+        {
+            OptionItem item = null;
+            if (this.optionItems.TryGetValue(data.Option.Id, out item))
+            {
+                item.ImpliedVol = data.LastIV;
+                item.BidVol = data.BidIV;
+                item.AskVol = data.AskIV;
             }
         }
 
@@ -433,11 +505,16 @@ namespace client.ViewModels
             OptionPairItem item = cell.Item as OptionPairItem;
             item.Put.EnquiryResponseOn = !item.Put.EnquiryResponseOn;
         }
+
+        private ProductManager productManager;
+        private SSRateManager ssrateManager;
     }
 
     class UnderlyingItem : BindableBase
     {
-        public Proto.Instrument Underlying { get; set; }
+        public Instrument Underlying { get; set; }
+        public DateTime Maturity { get; set; }
+
         private Proto.InstrumentStatus status;
         public Proto.InstrumentStatus Status
         {
@@ -541,7 +618,7 @@ namespace client.ViewModels
 
     public class OptionItem : BindableBase
     {
-        public Proto.Instrument Option { get; set; }
+        public Option Option { get; set; }
 
         private Proto.InstrumentStatus status;
         public Proto.InstrumentStatus Status

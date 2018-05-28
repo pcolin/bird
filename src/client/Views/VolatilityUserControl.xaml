@@ -1,0 +1,141 @@
+﻿<UserControl x:Class="client.Views.VolatilityUserControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:d3="clr-namespace:InteractiveDataDisplay.WPF;assembly=InteractiveDataDisplay.WPF"
+             xmlns:local="clr-namespace:client.Views"
+             mc:Ignorable="d" 
+             d:DesignHeight="600" d:DesignWidth="800">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="0">
+            <Grid.RowDefinitions>
+                <RowDefinition />
+                <RowDefinition />
+                <RowDefinition />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <DataGrid Grid.RowSpan="3"
+                      Margin="3"
+                      RowHeaderWidth="15"
+                      HorizontalGridLinesBrush="LightGray"                      
+                      VerticalGridLinesBrush="LightGray"
+                      CanUserSortColumns="False"
+                      CanUserReorderColumns="False"
+                      CanUserAddRows="False"
+                      AutoGenerateColumns="False"
+                      SelectedIndex="{Binding SelectedVolatility, Mode=TwoWay}"
+                      ItemsSource="{Binding Volatilities}">
+                <DataGrid.Resources>
+                    <local:BoolToStringConverter x:Key="BoolToStringConverter" />
+                    <local:PriceMultiValueConverter x:Key="PriceMultiValueConverter" />
+                </DataGrid.Resources>
+                <DataGrid.RowHeaderTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding DataContext.Modified, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=DataGridRowHeader}, Converter={StaticResource ResourceKey=BoolToStringConverter}}"
+                                   Foreground="Red"
+                                   FontSize="10"/>
+                    </DataTemplate>
+                </DataGrid.RowHeaderTemplate>
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Underlying" IsReadOnly="True" Binding="{Binding Underlying.Id}"></DataGridTextColumn>
+                    <DataGridTextColumn Header="Maturity" IsReadOnly="True" Binding="{Binding Maturity, StringFormat={}{0:yyyyMMdd}}"></DataGridTextColumn>
+                    <DataGridTextColumn Header="Spot" IsReadOnly="True">
+                        <DataGridTextColumn.Binding>
+                            <MultiBinding Converter="{StaticResource PriceMultiValueConverter}">
+                                <Binding Path="Spot" />
+                                <Binding Path="SSRate" />
+                            </MultiBinding>
+                        </DataGridTextColumn.Binding>
+                    </DataGridTextColumn>
+                    <DataGridTextColumn Header="SpotRef" Binding="{Binding SpotRef, Mode=TwoWay}"></DataGridTextColumn>
+                    <DataGridTextColumn Header="Convex" Binding="{Binding CallConvex, Mode=TwoWay}"></DataGridTextColumn>
+                    <DataGridTextColumn Header="Slope" Binding="{Binding CallSlope, Mode=TwoWay}"></DataGridTextColumn>
+                    <DataGridTextColumn Header="Cutoff" Binding="{Binding CallCutoff, Mode=TwoWay}"></DataGridTextColumn>
+                    <DataGridTextColumn Header="Skew" Binding="{Binding Skew, Mode=TwoWay}"></DataGridTextColumn>
+                    <DataGridTextColumn Header="AtmVol" Binding="{Binding AtmVol, Mode=TwoWay}"></DataGridTextColumn>
+                    <DataGridTextColumn Header="Cutoff" Binding="{Binding PutCutoff, Mode=TwoWay}"></DataGridTextColumn>
+                    <DataGridTextColumn Header="Slope" Binding="{Binding PutSlope, Mode=TwoWay}"></DataGridTextColumn>
+                    <DataGridTextColumn Header="Convex" Binding="{Binding PutConvex, Mode=TwoWay}"></DataGridTextColumn>
+                    <DataGridTextColumn Header="VCR" Binding="{Binding VCR, Mode=TwoWay}"></DataGridTextColumn>
+                    <DataGridTextColumn Header="SCR" Binding="{Binding SCR, Mode=TwoWay}"></DataGridTextColumn>
+                    <DataGridTextColumn Header="CCR" Binding="{Binding CCR, Mode=TwoWay}"></DataGridTextColumn>
+                    <DataGridTextColumn Header="SPCR" Binding="{Binding SPCR, Mode=TwoWay}"></DataGridTextColumn>
+                    <DataGridTextColumn Header="SCCR" Binding="{Binding SCCR, Mode=TwoWay}"></DataGridTextColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+            <GridSplitter Grid.Column="1" Grid.RowSpan="3" Width="3" VerticalAlignment="Stretch"></GridSplitter>            
+            <Button Grid.Row="0" Grid.Column="2" Margin="5" Command="{Binding RefreshCommand}" >Refresh</Button>
+            <Button Grid.Row="1" Grid.Column="2" Margin="5" Command="{Binding ModifyCommand}" >Modify</Button>
+            <Button Grid.Row="2" Grid.Column="2" Margin="5" Click="DrawButton_Click">Draw</Button>            
+        </Grid>
+        <GridSplitter Grid.Row="1" Height="3" HorizontalAlignment="Stretch"></GridSplitter>
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <d3:Chart x:Name="VolatilityChart" Margin="5" BottomTitle="Strike" LeftTitle="Volatility(%)">
+                <d3:Chart.Title>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock x:Name="UnderlyingMaturity"/>
+                        <TextBlock Text="   ∆ Call ○ Put" />
+                    </StackPanel>
+                </d3:Chart.Title>
+                <d3:Chart.LegendContent>
+                    <d3:LegendItemsPanel>
+                        <d3:LegendItemsPanel.Resources>
+                            <DataTemplate x:Key="InteractiveDataDisplay.WPF.LineGraph">
+                                <StackPanel Orientation="Horizontal" Visibility="{Binding Path=Visibility}">
+                                    <Line Width="15" Height="15" X1="0" Y1="0" X2="15" Y2="15" Stroke="{Binding Path=Stroke}" StrokeThickness="2"/>
+                                    <TextBlock Margin="5,0,0,0" Text="{Binding Path=Description}"/>
+                                </StackPanel>
+                            </DataTemplate>
+                            <DataTemplate x:Key="InteractiveDataDisplay.WPF.DiamondMarkerGraph">
+                                <StackPanel Orientation="Horizontal" Visibility="Collapsed">
+                                    <TextBlock Text="{Binding Path=Description}" />
+                                </StackPanel>
+                            </DataTemplate>
+                            <DataTemplate x:Key="InteractiveDataDisplay.WPF.TriangleMarkerGraph">
+                                <StackPanel Orientation="Horizontal" Visibility="Collapsed">
+                                    <TextBlock Text="{Binding Path=Description}" />
+                                </StackPanel>
+                            </DataTemplate>
+                            <DataTemplate x:Key="InteractiveDataDisplay.WPF.CircleMarkerGraph">
+                                <StackPanel Orientation="Horizontal" Visibility="Collapsed">
+                                    <TextBlock Text="{Binding Path=Description}" Foreground="{Binding Path=Stroke}" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </d3:LegendItemsPanel.Resources>
+                    </d3:LegendItemsPanel>
+                </d3:Chart.LegendContent>
+                <d3:Plot>
+                    <d3:LineGraph x:Name="NewVolGraph" Description="New Vol" Stroke="Red" StrokeThickness="3" Visibility="Collapsed" />
+                    <d3:LineGraph x:Name="OldVolGraph" Description="Old Vol" Stroke="Blue" StrokeThickness="3" />
+                    <d3:DiamondMarkerGraph x:Name="VolGraph" Stroke="Black" StrokeThickness="3" />
+                    <d3:TriangleMarkerGraph x:Name="CallBidIVGraph" Size="10" Color="Red" />
+                    <d3:TriangleMarkerGraph x:Name="CallAskIVGraph" Size="10" Color="Green" />
+                    <d3:CircleMarkerGraph x:Name="PutBidIVGraph" Size="10" Color="Red" />
+                    <d3:CircleMarkerGraph x:Name="PutAskIVGraph" Size="10" Color="Green" />
+                </d3:Plot>
+            </d3:Chart>
+            <GridSplitter Grid.Column="1" Width="3" VerticalAlignment="Stretch"></GridSplitter>
+            <DataGrid Grid.Column="2" Margin="3" Visibility="Collapsed">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Option" ></DataGridTextColumn>
+                    <DataGridTextColumn Header="Volatility" ></DataGridTextColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Grid>
+    </Grid>
+</UserControl>

@@ -24,9 +24,9 @@ namespace Proto {
     static ExchangeReflection() {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
-            "Cg5FeGNoYW5nZS5wcm90bxIFUHJvdG8qOgoIRXhjaGFuZ2USBgoCU0gQABIG",
-            "CgJTWhABEgYKAkNGEAISBgoCU0YQAxIGCgJERRAEEgYKAlpFEAViBnByb3Rv",
-            "Mw=="));
+            "Cg5FeGNoYW5nZS5wcm90bxIFUHJvdG8qRQoIRXhjaGFuZ2USBwoDU1NFEAAS",
+            "CAoEU1pTRRABEgkKBUNGRkVYEAISCAoEU0hGRRADEgcKA0RDRRAEEggKBENa",
+            "Q0UQBWIGcHJvdG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Proto.Exchange), }, null));
@@ -37,29 +37,29 @@ namespace Proto {
   #region Enums
   public enum Exchange {
     /// <summary>
-    //// SSE
+    //// SH
     /// </summary>
-    [pbr::OriginalName("SH")] Sh = 0,
+    [pbr::OriginalName("SSE")] Sse = 0,
     /// <summary>
-    //// SZSE
+    //// SZ
     /// </summary>
-    [pbr::OriginalName("SZ")] Sz = 1,
+    [pbr::OriginalName("SZSE")] Szse = 1,
     /// <summary>
-    //// CFFEX
+    //// CF
     /// </summary>
-    [pbr::OriginalName("CF")] Cf = 2,
+    [pbr::OriginalName("CFFEX")] Cffex = 2,
     /// <summary>
-    //// SHFE
+    //// SF
     /// </summary>
-    [pbr::OriginalName("SF")] Sf = 3,
+    [pbr::OriginalName("SHFE")] Shfe = 3,
     /// <summary>
-    //// DCE
+    //// DE
     /// </summary>
-    [pbr::OriginalName("DE")] De = 4,
+    [pbr::OriginalName("DCE")] Dce = 4,
     /// <summary>
-    //// CZCE
+    //// CE
     /// </summary>
-    [pbr::OriginalName("ZE")] Ze = 5,
+    [pbr::OriginalName("CZCE")] Czce = 5,
   }
 
   #endregion

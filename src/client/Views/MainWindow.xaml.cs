@@ -114,24 +114,31 @@ namespace client.Views
             //}
             PlaceWindow(this, "MainWindow");
 
+            List<Proto.Exchange> exchanges = new List<Proto.Exchange>();
             if (vm.Exchange1Visible)
             {
                 NewOptionViewWindow(vm.Container, vm.Exchange1);
+                exchanges.Add(vm.Exchange1);
             }
             if (vm.Exchange2Visible)
             {
                 NewOptionViewWindow(vm.Container, vm.Exchange2);
+                exchanges.Add(vm.Exchange2);
             }
             if (vm.Exchange3Visible)
             {
                 NewOptionViewWindow(vm.Container, vm.Exchange3);
+                exchanges.Add(vm.Exchange3);
             }
             if (vm.Exchange4Visible)
             {
                 NewOptionViewWindow(vm.Container, vm.Exchange4);
+                exchanges.Add(vm.Exchange4);
             }
 
-            NewExchangeWindow(vm.Container); 
+            NewExchangeWindow(vm.Container, exchanges);
+            NewRateWindow(vm.Container, exchanges);
+            NewVolatilityWindow(vm.Container, exchanges);
         }
 
         private void NewOptionViewWindow(IUnityContainer container, Proto.Exchange exchange)
@@ -154,15 +161,55 @@ namespace client.Views
             t.Start();
         }
 
-        private void NewExchangeWindow(IUnityContainer container)
+        private void NewExchangeWindow(IUnityContainer container, List<Proto.Exchange> exchanges)
         {
             ExchangeWindow w = new ExchangeWindow();
-            w.DataContext = new ExchangeWindowViewModel(container);
+            w.DataContext = new ExchangeWindowViewModel(container, exchanges);
             if (PlaceWindow(w, "ExchangeWindow"))
             {
                 w.Show();
             }
             container.RegisterInstance<ExchangeWindow>(w);
+        }
+
+        private void NewRateWindow(IUnityContainer container, List<Proto.Exchange> exchanges)
+        {
+            RateWindow w = new RateWindow();
+            w.DataContext = new RateWindowViewModel(container, exchanges);
+            if (PlaceWindow(w, "RateWindow"))
+            {
+                w.Show();
+            }
+            container.RegisterInstance<RateWindow>(w);
+        }
+
+        private void NewVolatilityWindow(IUnityContainer container, List<Proto.Exchange> exchanges)
+        {
+            //VolatilityWindow w = new VolatilityWindow();
+            //w.DataContext = new VolatilityWindowViewModel(container, w.Dispatcher, exchanges);
+            //if (PlaceWindow(w, "VolatilityWindow"))
+            //{
+            //    w.Show();
+            //}
+            //container.RegisterInstance<VolatilityWindow>(w);
+
+            Thread t = new Thread(() =>
+            {
+                VolatilityWindow w = new VolatilityWindow();
+                w.DataContext = new VolatilityWindowViewModel(container, w.Dispatcher, exchanges);
+                if (PlaceWindow(w, "VolatilityWindow"))
+                {
+                    w.Show();
+                }
+
+                container.RegisterInstance<VolatilityWindow>(w);
+                w.Closed += (sender2, e2) => w.Dispatcher.InvokeShutdown();
+
+                System.Windows.Threading.Dispatcher.Run();
+            });
+            t.SetApartmentState(ApartmentState.STA);
+            //t.IsBackground = true;
+            t.Start();
         }
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
@@ -206,6 +253,8 @@ namespace client.Views
 
                 /// Close ExchangeWindow
                 vm.Container.Resolve<ExchangeWindow>().SaveAndClose(writer);
+                vm.Container.Resolve<RateWindow>().SaveAndClose(writer);
+                vm.Container.Resolve<VolatilityWindow>().SaveAndClose(writer);
 
                 writer.WriteEndElement();
                 writer.WriteEndDocument();
@@ -355,14 +404,40 @@ namespace client.Views
 
         private void ExchangesMenuItem_Click(object sender, RoutedEventArgs e)
         {
+            ShowWindow<ExchangeWindow>();
+        }
+
+        private void RateMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            ShowWindow<RateWindow>();
+        }
+
+        private void VolatilityMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            ShowWindow<VolatilityWindow>();
+        }
+
+        private void ShowWindow<T>() where T : Window
+        {
             MainWindowViewModel vm = this.DataContext as MainWindowViewModel;
-            ExchangeWindow w = vm.Container.Resolve<ExchangeWindow>();
-            if (w.IsVisible == false)
+            T w = vm.Container.Resolve<T>();
+            Action action = () =>
             {
-                w.Show();
+                if (w.IsVisible == false)
+                {
+                    w.Show();
+                }
+                w.Topmost = true;
+                w.Topmost = false;
+            };
+            if (w.Dispatcher.CheckAccess())
+            {
+                action();
             }
-            w.Topmost = true;
-            w.Topmost = false;
+            else
+            {
+                w.Dispatcher.Invoke(action);
+            }
         }
     }
 
@@ -374,13 +449,13 @@ namespace client.Views
             switch (status)
             {
                 case ConnectStatus.Connected:
-                    return "Green";
+                    return Brushes.Green;
                 case ConnectStatus.Disconnected:
-                    return "Red";
+                    return Brushes.Red;
                 case ConnectStatus.Disabled:
-                    return "Gray";
+                    return Brushes.Gray;
                 default:
-                    return "Gray";
+                    return Brushes.Gray;
             }
         }
 

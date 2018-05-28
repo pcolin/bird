@@ -40,8 +40,8 @@
                 <MenuItem Header="Monitor"></MenuItem>
                 <Separator></Separator>
                 <MenuItem Header="Credit"></MenuItem>
-                <MenuItem Header="Volatility"></MenuItem>
-                <MenuItem Header="Rate"></MenuItem>
+                <MenuItem Header="Volatility" Click="VolatilityMenuItem_Click"></MenuItem>
+                <MenuItem Header="Rate" Click="RateMenuItem_Click"></MenuItem>
                 <Separator></Separator>
                 <MenuItem Header="Emergency"></MenuItem>
             </MenuItem>
@@ -72,9 +72,7 @@
                 <MenuItem Header="Layout"></MenuItem>
             </MenuItem>
             <MenuItem Header="CONFIG">
-                <MenuItem Header="Exchanges"
-                          Click="ExchangesMenuItem_Click">                    
-                </MenuItem>
+                <MenuItem Header="Exchanges" Click="ExchangesMenuItem_Click" />
                 <MenuItem Header="Default"></MenuItem>
                 <Separator></Separator>
                 <MenuItem Header="About"></MenuItem>

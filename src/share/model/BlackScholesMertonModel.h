@@ -9,7 +9,7 @@ namespace Model
 class BlackScholesMertonModel : public PricingModel
 {
 public:
-  const char* Name() const { return "BS"; }
+  const char* Name() const { return "BSM"; }
 
   void Calculate(bool call, double s, double k, double v, double r, double q, double t,
       GreeksData &theo) override;

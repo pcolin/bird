@@ -26,27 +26,27 @@ namespace Proto {
           string.Concat(
             "ChdFeGNoYW5nZVBhcmFtZXRlci5wcm90bxIFUHJvdG8aDkV4Y2hhbmdlLnBy",
             "b3RvGg1SZXF1ZXN0LnByb3RvGgtSZXBseS5wcm90byInCgdIb2xpZGF5EgwK",
-            "BGRhdGUYASABKAkSDgoGd2VpZ2h0GAIgASgBIiwKDlRyYWRpbmdTZXNzaW9u",
-            "Eg0KBWJlZ2luGAEgASgJEgsKA2VuZBgCIAEoCSK1AgoRRXhjaGFuZ2VQYXJh",
-            "bWV0ZXISIQoIZXhjaGFuZ2UYASABKA4yDy5Qcm90by5FeGNoYW5nZRInCghz",
-            "ZXNzaW9ucxgCIAMoCzIVLlByb3RvLlRyYWRpbmdTZXNzaW9uEjAKEW1hdHVy",
-            "aXR5X3Nlc3Npb25zGAMgAygLMhUuUHJvdG8uVHJhZGluZ1Nlc3Npb24SIAoI",
-            "aG9saWRheXMYBCADKAsyDi5Qcm90by5Ib2xpZGF5EhgKEGNoYXJtX3N0YXJ0",
-            "X3RpbWUYBSABKAkSEQoJcmZxX2RlbGF5GAYgASgFEhMKC3JmcV90aW1lb3V0",
-            "GAcgASgFEhIKCnJmcV92b2x1bWUYCCABKAUSEwoLdHJhZGluZ19kYXkYCSAB",
-            "KAkSFQoNbmlnaHRfc2Vzc2lvbhgKIAEoCCKXAQoURXhjaGFuZ2VQYXJhbWV0",
-            "ZXJSZXESIAoEdHlwZRgBIAEoDjISLlByb3RvLlJlcXVlc3RUeXBlEiwKCnBh",
-            "cmFtZXRlcnMYAiADKAsyGC5Qcm90by5FeGNoYW5nZVBhcmFtZXRlchIhCghl",
-            "eGNoYW5nZRgDIAEoDjIPLlByb3RvLkV4Y2hhbmdlEgwKBHVzZXIYBCABKAki",
-            "YgoURXhjaGFuZ2VQYXJhbWV0ZXJSZXASLAoKcGFyYW1ldGVycxgBIAMoCzIY",
-            "LlByb3RvLkV4Y2hhbmdlUGFyYW1ldGVyEhwKBnJlc3VsdBgCIAEoCzIMLlBy",
-            "b3RvLlJlcGx5YgZwcm90bzM="));
+            "BGRhdGUYASABKAkSDgoGd2VpZ2h0GAIgASgBIjoKDlRyYWRpbmdTZXNzaW9u",
+            "Eg0KBWJlZ2luGAEgASgJEgsKA2VuZBgCIAEoCRIMCgRzdG9wGAMgASgJIroC",
+            "ChFFeGNoYW5nZVBhcmFtZXRlchIhCghleGNoYW5nZRgBIAEoDjIPLlByb3Rv",
+            "LkV4Y2hhbmdlEicKCHNlc3Npb25zGAIgAygLMhUuUHJvdG8uVHJhZGluZ1Nl",
+            "c3Npb24SMAoRbWF0dXJpdHlfc2Vzc2lvbnMYAyADKAsyFS5Qcm90by5UcmFk",
+            "aW5nU2Vzc2lvbhIgCghob2xpZGF5cxgEIAMoCzIOLlByb3RvLkhvbGlkYXkS",
+            "GAoQY2hhcm1fc3RhcnRfdGltZRgFIAEoCRIRCglyZnFfZGVsYXkYBiABKAUS",
+            "EwoLcmZxX3RpbWVvdXQYByABKAUSEgoKcmZxX3ZvbHVtZRgIIAEoBRITCgt0",
+            "cmFkaW5nX2RheRgJIAEoCRIaChJuaWdodF9zZXNzaW9uX3RpbWUYCiABKAki",
+            "lwEKFEV4Y2hhbmdlUGFyYW1ldGVyUmVxEiAKBHR5cGUYASABKA4yEi5Qcm90",
+            "by5SZXF1ZXN0VHlwZRIsCgpwYXJhbWV0ZXJzGAIgAygLMhguUHJvdG8uRXhj",
+            "aGFuZ2VQYXJhbWV0ZXISIQoIZXhjaGFuZ2UYAyABKA4yDy5Qcm90by5FeGNo",
+            "YW5nZRIMCgR1c2VyGAQgASgJImIKFEV4Y2hhbmdlUGFyYW1ldGVyUmVwEiwK",
+            "CnBhcmFtZXRlcnMYASADKAsyGC5Qcm90by5FeGNoYW5nZVBhcmFtZXRlchIc",
+            "CgZyZXN1bHQYAiABKAsyDC5Qcm90by5SZXBseWIGcHJvdG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Proto.ExchangeReflection.Descriptor, global::Proto.RequestReflection.Descriptor, global::Proto.ReplyReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
             new pbr::GeneratedClrTypeInfo(typeof(global::Proto.Holiday), global::Proto.Holiday.Parser, new[]{ "Date", "Weight" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Proto.TradingSession), global::Proto.TradingSession.Parser, new[]{ "Begin", "End" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Proto.ExchangeParameter), global::Proto.ExchangeParameter.Parser, new[]{ "Exchange", "Sessions", "MaturitySessions", "Holidays", "CharmStartTime", "RfqDelay", "RfqTimeout", "RfqVolume", "TradingDay", "NightSession" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Proto.TradingSession), global::Proto.TradingSession.Parser, new[]{ "Begin", "End", "Stop" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Proto.ExchangeParameter), global::Proto.ExchangeParameter.Parser, new[]{ "Exchange", "Sessions", "MaturitySessions", "Holidays", "CharmStartTime", "RfqDelay", "RfqTimeout", "RfqVolume", "TradingDay", "NightSessionTime" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Proto.ExchangeParameterReq), global::Proto.ExchangeParameterReq.Parser, new[]{ "Type", "Parameters", "Exchange", "User" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Proto.ExchangeParameterRep), global::Proto.ExchangeParameterRep.Parser, new[]{ "Parameters", "Result" }, null, null, null)
           }));
@@ -239,6 +239,7 @@ namespace Proto {
     public TradingSession(TradingSession other) : this() {
       begin_ = other.begin_;
       end_ = other.end_;
+      stop_ = other.stop_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -269,6 +270,17 @@ namespace Proto {
       }
     }
 
+    /// <summary>Field number for the "stop" field.</summary>
+    public const int StopFieldNumber = 3;
+    private string stop_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string Stop {
+      get { return stop_; }
+      set {
+        stop_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as TradingSession);
@@ -284,6 +296,7 @@ namespace Proto {
       }
       if (Begin != other.Begin) return false;
       if (End != other.End) return false;
+      if (Stop != other.Stop) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -292,6 +305,7 @@ namespace Proto {
       int hash = 1;
       if (Begin.Length != 0) hash ^= Begin.GetHashCode();
       if (End.Length != 0) hash ^= End.GetHashCode();
+      if (Stop.Length != 0) hash ^= Stop.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -313,6 +327,10 @@ namespace Proto {
         output.WriteRawTag(18);
         output.WriteString(End);
       }
+      if (Stop.Length != 0) {
+        output.WriteRawTag(26);
+        output.WriteString(Stop);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -326,6 +344,9 @@ namespace Proto {
       }
       if (End.Length != 0) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(End);
+      }
+      if (Stop.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(Stop);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -344,6 +365,9 @@ namespace Proto {
       if (other.End.Length != 0) {
         End = other.End;
       }
+      if (other.Stop.Length != 0) {
+        Stop = other.Stop;
+      }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
 
@@ -361,6 +385,10 @@ namespace Proto {
           }
           case 18: {
             End = input.ReadString();
+            break;
+          }
+          case 26: {
+            Stop = input.ReadString();
             break;
           }
         }
@@ -403,7 +431,7 @@ namespace Proto {
       rfqTimeout_ = other.rfqTimeout_;
       rfqVolume_ = other.rfqVolume_;
       tradingDay_ = other.tradingDay_;
-      nightSession_ = other.nightSession_;
+      nightSessionTime_ = other.nightSessionTime_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -508,14 +536,14 @@ namespace Proto {
       }
     }
 
-    /// <summary>Field number for the "night_session" field.</summary>
-    public const int NightSessionFieldNumber = 10;
-    private bool nightSession_;
+    /// <summary>Field number for the "night_session_time" field.</summary>
+    public const int NightSessionTimeFieldNumber = 10;
+    private string nightSessionTime_ = "";
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool NightSession {
-      get { return nightSession_; }
+    public string NightSessionTime {
+      get { return nightSessionTime_; }
       set {
-        nightSession_ = value;
+        nightSessionTime_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -541,7 +569,7 @@ namespace Proto {
       if (RfqTimeout != other.RfqTimeout) return false;
       if (RfqVolume != other.RfqVolume) return false;
       if (TradingDay != other.TradingDay) return false;
-      if (NightSession != other.NightSession) return false;
+      if (NightSessionTime != other.NightSessionTime) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -557,7 +585,7 @@ namespace Proto {
       if (RfqTimeout != 0) hash ^= RfqTimeout.GetHashCode();
       if (RfqVolume != 0) hash ^= RfqVolume.GetHashCode();
       if (TradingDay.Length != 0) hash ^= TradingDay.GetHashCode();
-      if (NightSession != false) hash ^= NightSession.GetHashCode();
+      if (NightSessionTime.Length != 0) hash ^= NightSessionTime.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -598,9 +626,9 @@ namespace Proto {
         output.WriteRawTag(74);
         output.WriteString(TradingDay);
       }
-      if (NightSession != false) {
-        output.WriteRawTag(80);
-        output.WriteBool(NightSession);
+      if (NightSessionTime.Length != 0) {
+        output.WriteRawTag(82);
+        output.WriteString(NightSessionTime);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
@@ -631,8 +659,8 @@ namespace Proto {
       if (TradingDay.Length != 0) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(TradingDay);
       }
-      if (NightSession != false) {
-        size += 1 + 1;
+      if (NightSessionTime.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(NightSessionTime);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -666,8 +694,8 @@ namespace Proto {
       if (other.TradingDay.Length != 0) {
         TradingDay = other.TradingDay;
       }
-      if (other.NightSession != false) {
-        NightSession = other.NightSession;
+      if (other.NightSessionTime.Length != 0) {
+        NightSessionTime = other.NightSessionTime;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -716,8 +744,8 @@ namespace Proto {
             TradingDay = input.ReadString();
             break;
           }
-          case 80: {
-            NightSession = input.ReadBool();
+          case 82: {
+            NightSessionTime = input.ReadString();
             break;
           }
         }

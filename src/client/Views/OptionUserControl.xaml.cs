@@ -442,12 +442,12 @@ namespace client.Views
 
     public class BackgroundConverter : IValueConverter
     {
-        string[] colors = new string[] { "LightGreen", "LightSalmon" };
+        //Brush[] colors = new Brush[] { Brushes.LightGreen, Brushes.LightSalmon };
 
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
             int groupNo = (int)value;
-            return colors[groupNo % 2];
+            return groupNo % 2 == 0 ? Brushes.LightGreen : Brushes.LightSalmon;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
@@ -479,11 +479,17 @@ namespace client.Views
         {
             int pos = (int)value;
             if (pos > 0)
-                return "Red";
+            {
+                return Brushes.Red;
+            }
             else if (pos < 0)
-                return "Green";
-            return string.Empty;
-            //return pos > 0 ? "Red" : "";
+            {
+                return Brushes.Green;
+            }
+            else
+            {
+                return Brushes.Black;
+            }
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)

@@ -29,6 +29,11 @@ namespace client.Models
         {
             bool ok = QueryInstruments();
             ok = ok && QueryPositions();
+            ok = ok && QueryExchangeParameters();
+            ok = ok && QueryInterestRates();
+            ok = ok && QuerySSRates();
+            ok = ok && QueryVolatilityCurves();
+            ok = ok && QueryPricingSpecs();
             return ok;
         }
 
@@ -52,9 +57,9 @@ namespace client.Models
                 var rep = ProtoMessageCoder.Decode<Proto.InstrumentRep>(bytes);
                 if (rep.Result.Result)
                 {
-                    ProductManager instruments = new ProductManager();
-                    instruments.Add(rep.Instruments);
-                    this.container.RegisterInstance<ProductManager>(instruments);
+                    ProductManager pm = new ProductManager();
+                    pm.OnProtoMessage(rep);
+                    this.container.RegisterInstance<ProductManager>(exchange.ToString(), pm);
                     return true;
                 }
             }
@@ -79,7 +84,133 @@ namespace client.Models
                 {
                     PositionManager positions = new PositionManager();
                     positions.Add(rep.Positions);
-                    this.container.RegisterInstance<PositionManager>(positions);
+                    this.container.RegisterInstance<PositionManager>(exchange.ToString(), positions);
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private bool QueryExchangeParameters()
+        {
+            Proto.ExchangeParameterReq req = new Proto.ExchangeParameterReq();
+            req.Type = Proto.RequestType.Get;
+            req.User = user;
+
+            byte[] bytes = ProtoMessageCoder.Encode(req);
+            socket.Send(bytes);
+
+            bytes = socket.Receive();
+            if (bytes != null)
+            {
+                var rep = ProtoMessageCoder.Decode<Proto.ExchangeParameterRep>(bytes);
+                if (rep.Result.Result)
+                {
+                    ExchangeParameterManager manager = new ExchangeParameterManager();
+                    manager.OnProtoMessage(rep);
+                    this.container.RegisterInstance<ExchangeParameterManager>(exchange.ToString(), manager);
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private bool QueryInterestRates()
+        {
+            Proto.InterestRateReq req = new Proto.InterestRateReq();
+            req.Type = Proto.RequestType.Get;
+            req.User = user;
+
+            byte[] bytes = ProtoMessageCoder.Encode(req);
+            socket.Send(bytes);
+
+            bytes = socket.Receive();
+            if (bytes != null)
+            {
+                var rep = ProtoMessageCoder.Decode<Proto.InterestRateRep>(bytes);
+                if (rep.Result.Result)
+                {
+                    InterestRateManager manager = new InterestRateManager();
+                    manager.OnProtoMessage(rep);
+                    this.container.RegisterInstance<InterestRateManager>(exchange.ToString(), manager);
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private bool QuerySSRates()
+        {
+            Proto.SSRateReq req = new Proto.SSRateReq();
+            req.Type = Proto.RequestType.Get;
+            req.User = user;
+
+            byte[] bytes = ProtoMessageCoder.Encode(req);
+            socket.Send(bytes);
+
+            bytes = socket.Receive();
+            if (bytes != null)
+            {
+                var rep = ProtoMessageCoder.Decode<Proto.SSRateRep>(bytes);
+                if (rep.Result.Result)
+                {
+                    SSRateManager manager = new SSRateManager();
+                    manager.OnProtoMessage(rep);
+                    this.container.RegisterInstance<SSRateManager>(exchange.ToString(), manager);
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private bool QueryVolatilityCurves()
+        {
+            Proto.VolatilityCurveReq req = new Proto.VolatilityCurveReq();
+            req.Type = Proto.RequestType.Get;
+            req.User = user;
+
+            byte[] bytes = ProtoMessageCoder.Encode(req);
+            socket.Send(bytes);
+
+            bytes = socket.Receive();
+            if (bytes != null)
+            {
+                var rep = ProtoMessageCoder.Decode<Proto.VolatilityCurveRep>(bytes);
+                if (rep.Result.Result)
+                {
+                    VolatilityCurveManager manager = new VolatilityCurveManager();
+                    if (rep.Curves.Count > 0)
+                    {
+                        manager.OnProtoMessage(rep);
+                    }
+                    this.container.RegisterInstance<VolatilityCurveManager>(exchange.ToString(), manager);
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private bool QueryPricingSpecs()
+        {
+            Proto.PricingSpecReq req = new Proto.PricingSpecReq();
+            req.Type = Proto.RequestType.Get;
+            req.User = user;
+
+            byte[] bytes = ProtoMessageCoder.Encode(req);
+            socket.Send(bytes);
+
+            bytes = socket.Receive();
+            if (bytes != null)
+            {
+                var rep = ProtoMessageCoder.Decode<Proto.PricingSpecRep>(bytes);
+                if (rep.Result.Result)
+                {
+                    PricingSpecManager manager = new PricingSpecManager();
+                    if (rep.Pricings.Count > 0)
+                    {
+                        manager.OnProtoMessage(rep);
+                    }
+                    this.container.RegisterInstance<PricingSpecManager>(exchange.ToString(), manager);
                     return true;
                 }
             }

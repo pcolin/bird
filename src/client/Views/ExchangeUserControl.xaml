@@ -3,8 +3,14 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:client.Views"
              mc:Ignorable="d" 
              d:DesignHeight="400" d:DesignWidth="600">
+    <UserControl.Resources>
+        <local:DateConverter x:Key="DateConverter" />
+        <local:TimeConverter x:Key="TimeConverter" />
+        <local:WeightConverter x:Key="WeightConverter" />
+    </UserControl.Resources>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition />
@@ -12,8 +18,8 @@
             <RowDefinition Height="Auto" MinHeight="35"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition />
-            <ColumnDefinition />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="Auto" />
             <ColumnDefinition />
         </Grid.ColumnDefinitions>
         <GroupBox Margin="5" Header="General" Grid.RowSpan="2">
@@ -26,45 +32,93 @@
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition></ColumnDefinition>
-                    <ColumnDefinition></ColumnDefinition>
+                    <ColumnDefinition MinWidth="50"></ColumnDefinition>
                 </Grid.ColumnDefinitions>
-                <TextBlock Margin="5" VerticalAlignment="Center">CharmCutOff:</TextBlock>
-                <TextBox Margin="5" Grid.Column="1">09:59:59</TextBox>
-                <TextBlock Margin="5" VerticalAlignment="Center" Grid.Row="1">QRDelay:</TextBlock>
+                <TextBlock Margin="5" VerticalAlignment="Center">CharmCutoff:</TextBlock>
+                <TextBox Margin="5" Grid.Column="1" Text="{Binding CharmCutoff, Mode=TwoWay, Converter={StaticResource TimeConverter}}"></TextBox>
+                <!--TextBlock Margin="5" VerticalAlignment="Center" Grid.Row="1">QRDelay:</>
                 <TextBox Margin="5" Grid.Row="1" Grid.Column="1">15</TextBox>
                 <TextBlock Margin="5" VerticalAlignment="Center" Grid.Row="2">QRTimeout:</TextBlock>
                 <TextBox Margin="5" Grid.Row="2" Grid.Column="1">10</TextBox>
                 <TextBlock Margin="5" VerticalAlignment="Center" Grid.Row="3">QRVolume:</TextBlock>
-                <TextBox Margin="5" Grid.Row="3" Grid.Column="1">10</TextBox>
+                <TextBox Margin="5" Grid.Row="3" Grid.Column="1">10</TextBox-->
             </Grid>
         </GroupBox>
         <GroupBox Margin="0,5,0,5" Header="Holidays" Grid.Column="1" Grid.RowSpan="2">
-            <DataGrid Margin="3">
+            <DataGrid Margin="3"
+                      RowHeaderWidth="0"
+                      HorizontalGridLinesBrush="LightGray"                      
+                      VerticalGridLinesBrush="LightGray"
+                      CanUserSortColumns="False"
+                      CanUserReorderColumns="False"
+                      CanUserAddRows="False"
+                      AutoGenerateColumns="False"
+                      SelectedIndex="{Binding SelectedHoliday, Mode=TwoWay}"
+                      ItemsSource="{Binding Holidays}">
+                <DataGrid.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="Add" Command="{Binding AddHolidayCommand}" />
+                        <MenuItem Header="Delete" Command="{Binding DeleteHolidayCommand}" />
+                    </ContextMenu>
+                </DataGrid.ContextMenu>
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="Holidays" Width="80"></DataGridTextColumn>
-                    <DataGridTextColumn Header="Weight"></DataGridTextColumn>
+                    <DataGridTextColumn Header="Holidays" Width="80" Binding="{Binding Holiday, Mode=TwoWay, Converter={StaticResource DateConverter}}" />
+                    <DataGridTextColumn Header="Weight" MinWidth="50" Binding="{Binding Weight, Mode=TwoWay, Converter={StaticResource WeightConverter}}" />
                 </DataGrid.Columns>
             </DataGrid>
         </GroupBox>
-        <GroupBox Margin="5" Header="TradingSessions" Grid.Column="3">
-            <DataGrid Margin="3">
+        <GroupBox Margin="5" Header="TradingSessions" Grid.Column="2">
+            <DataGrid Margin="3"
+                      RowHeaderWidth="0"
+                      HorizontalGridLinesBrush="LightGray"                      
+                      VerticalGridLinesBrush="LightGray"
+                      CanUserSortColumns="False"
+                      CanUserReorderColumns="False"
+                      CanUserAddRows="False"
+                      AutoGenerateColumns="False"
+                      SelectedIndex="{Binding SelectedTradingSession}"
+                      ItemsSource="{Binding TradingSessions}">
+                <DataGrid.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="Add" Command="{Binding AddTradingSessionCommand}" />
+                        <MenuItem Header="Delete" Command="{Binding DeleteTradingSessionCommand}" />
+                    </ContextMenu>
+                </DataGrid.ContextMenu>
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="Begin" MinWidth="70"></DataGridTextColumn>
-                    <DataGridTextColumn Header="End" MinWidth="70"></DataGridTextColumn>
+                    <DataGridTextColumn Header="Begin" MinWidth="70" Binding="{Binding Begin, Mode=TwoWay, Converter={StaticResource TimeConverter}}" />
+                    <DataGridTextColumn Header="End" MinWidth="70" Binding="{Binding End, Mode=TwoWay, Converter={StaticResource TimeConverter}}" />
+                    <DataGridTextColumn Header="Stop" MinWidth="70" Binding="{Binding Stop, Mode=TwoWay, Converter={StaticResource TimeConverter}}" />
                 </DataGrid.Columns>
             </DataGrid>
         </GroupBox>
-        <GroupBox Margin="5" Header="MaturityTradingSessions" Grid.Row="1" Grid.Column="3">
-            <DataGrid Margin="3">
+        <GroupBox Margin="5" Header="MaturityTradingSessions" Grid.Row="1" Grid.Column="2">
+            <DataGrid Margin="3"
+                      RowHeaderWidth="0"
+                      HorizontalGridLinesBrush="LightGray"                      
+                      VerticalGridLinesBrush="LightGray"
+                      CanUserSortColumns="False"
+                      CanUserReorderColumns="False"
+                      CanUserAddRows="False"
+                      AutoGenerateColumns="False"
+                      SelectedIndex="{Binding SelectedMaturityTradingSession}"
+                      ItemsSource="{Binding MaturityTradingSessions}">
+                <DataGrid.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="Add" Command="{Binding AddMaturityTradingSessionCommand}" />
+                        <MenuItem Header="Delete" Command="{Binding DeleteMaturityTradingSessionCommand}" />
+                    </ContextMenu>
+                </DataGrid.ContextMenu>
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="Begin" MinWidth="70"></DataGridTextColumn>
-                    <DataGridTextColumn Header="End" MinWidth="70"></DataGridTextColumn>
+                    <DataGridTextColumn Header="Begin" MinWidth="70" Binding="{Binding Begin, Mode=TwoWay, Converter={StaticResource TimeConverter}}" />
+                    <DataGridTextColumn Header="End" MinWidth="70" Binding="{Binding End, Mode=TwoWay, Converter={StaticResource TimeConverter}}" />
+                    <DataGridTextColumn Header="Stop" MinWidth="70" Binding="{Binding Stop, Mode=TwoWay, Converter={StaticResource TimeConverter}}" />
+                    <!--DataGridTextColumn Header="Stop" MinWidth="70" Binding="{Binding Stop, StringFormat={}{0:HH:mm:ss}, Mode=TwoWay}" /-->
                 </DataGrid.Columns>
             </DataGrid>
         </GroupBox>
         <StackPanel Grid.Row="2" Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right">
-        <Button Name="ButtonRefresh" Margin="5" MinWidth="70">Refresh</Button>
-        <Button Name="ButtonOK" Margin="5" MinWidth="70">OK</Button>
+        <Button Name="ButtonRefresh" Margin="5" MinWidth="70" Command="{Binding RefreshCommand}">Refresh</Button>
+        <Button Name="ButtonOK" Margin="5" MinWidth="70" Command="{Binding ModifyCommand}">OK</Button>
         </StackPanel>
     </Grid>
 </UserControl>
