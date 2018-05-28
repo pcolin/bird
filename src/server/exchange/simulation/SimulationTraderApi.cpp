@@ -112,6 +112,7 @@ void SimulationTraderApi::MatchingProcess()
 {
   std::this_thread::sleep_for(std::chrono::seconds(5));
   LOG_INF << "Start matching process....";
+
   int i = 0;
   auto insts = ProductManager::GetInstance()->FindInstruments([](const Instrument*){ return true; });
   for (auto &inst : insts)
@@ -137,5 +138,35 @@ void SimulationTraderApi::MatchingProcess()
     p->set_yesterday_short(3);
 
     ClusterManager::GetInstance()->FindDevice(inst->HedgeUnderlying())->Publish(p);
+  }
+
+  i = 0;
+  while (true)
+  {
+    auto cash = std::make_shared<Proto::Cash>();
+    cash->set_currency(Proto::CNY);
+    cash->set_account("99665550");
+    cash->set_total(8888888.88 + 3333333.33);
+    cash->set_available(8888888.88);
+    cash->set_margin(2222222.22);
+    static const double limit = EnvConfig::GetInstance()->GetDouble(EnvVar::OPT_CASH_LIMIT);
+    cash->set_is_enough(cash->available() >= limit);
+    ClusterManager::GetInstance()->OnCash(cash);
+
+    if (i % 12 == 0)
+    {
+      auto status = i % 9 ?  Proto::InstrumentStatus::Trading : Proto::InstrumentStatus::Halt;
+      auto statuses = Message::NewProto<Proto::InstrumentStatusUpdate>();
+      statuses->set_status(status);
+      for (auto &inst : insts)
+      {
+        Instrument *instrument = const_cast<Instrument*>(inst);
+        instrument->Status(status);
+      }
+      ClusterManager::GetInstance()->OnInstrumentStatusUpdate(statuses);
+    }
+
+    ++i;
+    std::this_thread::sleep_for(std::chrono::seconds(5));
   }
 }

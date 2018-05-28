@@ -20,6 +20,7 @@ protected:
   virtual void OnLastEvent() override;
 
 private:
+  bool OnInstrumentStatusUpdate(const std::shared_ptr<Proto::InstrumentStatusUpdate> &status);
   bool OnPosition(const std::shared_ptr<Proto::Position> &position);
   bool OnPriceReq(const std::shared_ptr<Proto::PriceReq> &req);
   int und_price_time_;

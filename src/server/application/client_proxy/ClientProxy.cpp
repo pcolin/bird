@@ -12,6 +12,7 @@
 #include "Position.pb.h"
 #include "ExchangeParameter.pb.h"
 #include "InterestRate.pb.h"
+#include "Volatility.pb.h"
 
 #include "nn.h"
 #include "pubsub.h"
@@ -74,6 +75,7 @@ int main(int argc, char *argv[])
   auto *position = new Proto::PositionReq();
   auto *exchange_parameter = new Proto::ExchangeParameterReq();
   auto *interest_rate = new Proto::InterestRateReq();
+  auto *volatility = new Proto::VolatilityCurveReq();
 
   int32_t serial_num = 0;
   while (true)
@@ -116,5 +118,6 @@ int main(int argc, char *argv[])
   delete position;
   delete exchange_parameter;
   delete interest_rate;
+  delete volatility;
   return 0;
 }

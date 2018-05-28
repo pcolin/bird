@@ -85,3 +85,9 @@ message InstrumentRep
   repeated Instrument instruments = 1;
   Reply result = 2;
 }
+
+message InstrumentStatusUpdate
+{
+  repeated string instruments = 1;
+  InstrumentStatus status = 2;
+}
