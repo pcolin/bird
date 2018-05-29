@@ -26,7 +26,7 @@ public:
   std::shared_ptr<Proto::PricingSpec> FindPricingSpec(const Instrument *underlying);
 
   void OnHeartbeat(const std::shared_ptr<Proto::Heartbeat> &heartbeat);
-  void OnInstrumentStatusUpdate(const std::shared_ptr<Proto::InstrumentStatusUpdate> &statuses);
+  void OnInstrumentReq(const std::shared_ptr<Proto::InstrumentReq> &req);
   void OnCash(const std::shared_ptr<Proto::Cash> &cash);
   void OnPriceReq(const std::shared_ptr<Proto::PriceReq> &req);
   void OnPricingSpecReq(const std::shared_ptr<Proto::PricingSpecReq> &req);

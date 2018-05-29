@@ -79,17 +79,29 @@ base::ProtoMessagePtr InstrumentDB::OnRequest(const std::shared_ptr<Proto::Instr
     TransactionGuard tg(this);
     for (auto &inst : msg->instruments())
     {
-      sprintf(sql, "INSERT OR REPLACE INTO %s VALUES('%s', '%s', %d, %d, %d, '%s', '%s', %f, "
-                   "%f, %f, %f, %d, '%s', %d, %d, %f)",
-              table_name_.c_str(), inst.id().c_str(), inst.symbol().c_str(),
-              static_cast<int32_t>(inst.exchange()), static_cast<int32_t>(inst.type()),
-              static_cast<int32_t>(inst.currency()), inst.underlying().c_str(),
-              inst.hedge_underlying().c_str(), inst.tick(), inst.multiplier(), inst.highest(),
-              inst.lowest(), static_cast<int32_t>(inst.call_put()), inst.maturity().c_str(),
-              static_cast<int32_t>(inst.exercise()), static_cast<int32_t>(inst.settlement()),
-              inst.strike());
-      ExecSql(sql);
-      UpdateInstrument(inst, inst.type() == Proto::InstrumentType::Option ? options_ : underlyings_);
+      if (!inst.symbol().empty())
+      {
+        sprintf(sql, "INSERT OR REPLACE INTO %s VALUES('%s', '%s', %d, %d, %d, '%s', '%s', %f, "
+                     "%f, %f, %f, %d, '%s', %d, %d, %f, %d)",
+                table_name_.c_str(), inst.id().c_str(), inst.symbol().c_str(),
+                static_cast<int32_t>(inst.exchange()), static_cast<int32_t>(inst.type()),
+                static_cast<int32_t>(inst.currency()), inst.underlying().c_str(),
+                inst.hedge_underlying().c_str(), inst.tick(), inst.multiplier(), inst.highest(),
+                inst.lowest(), static_cast<int32_t>(inst.call_put()), inst.maturity().c_str(),
+                static_cast<int32_t>(inst.exercise()), static_cast<int32_t>(inst.settlement()),
+                inst.strike(), static_cast<int32_t>(inst.status()));
+        ExecSql(sql);
+        UpdateInstrument(inst,
+            inst.type() == Proto::InstrumentType::Option ? options_ : underlyings_);
+      }
+      else if (inst.status() != Proto::InstrumentStatus::Unkown)
+      {
+        sprintf(sql, "UPDATE %s SET status = %d WHERE id = %s", table_name_.c_str(),
+            static_cast<int32_t>(inst.status()), inst.id().c_str());
+        ExecSql(sql);
+        UpdateInstrumentStatus(inst,
+            inst.type() == Proto::InstrumentType::Option ? options_ : underlyings_);
+      }
     }
   }
   else if (msg->type() == Proto::RequestType::Del)
@@ -113,6 +125,15 @@ void InstrumentDB::UpdateInstrument(const Proto::Instrument &inst, InstrumentMap
   }
 }
 
+void InstrumentDB::UpdateInstrumentStatus(const Proto::Instrument &inst, InstrumentMap &cache)
+{
+  auto it = cache.find(inst.id());
+  if (it != cache.end())
+  {
+    it->second->set_status(inst.status());
+  }
+}
+
 int InstrumentDB::UnderlyingCallback(void *data, int argc, char **argv, char **col_name)
 {
   auto type = static_cast<Proto::InstrumentType>(atoi(argv[3]));
@@ -133,6 +154,7 @@ int InstrumentDB::UnderlyingCallback(void *data, int argc, char **argv, char **c
     inst->set_highest(atof(argv[9]));
     inst->set_lowest(atof(argv[10]));
     inst->set_maturity(argv[12]);
+    inst->set_status(static_cast<Proto::InstrumentStatus>(atoi(argv[16])));
     cache[id] = inst;
   }
   return 0;
@@ -163,6 +185,7 @@ int InstrumentDB::OptionCallback(void *data, int argc, char **argv, char **col_n
     inst->set_exercise(static_cast<Proto::ExerciseType>(atoi(argv[13])));
     inst->set_settlement(static_cast<Proto::SettlementType>(atoi(argv[14])));
     inst->set_strike(atof(argv[15]));
+    inst->set_status(static_cast<Proto::InstrumentStatus>(atoi(argv[16])));
     cache[id] = inst;
   }
   return 0;

@@ -156,14 +156,16 @@ void SimulationTraderApi::MatchingProcess()
     if (i % 12 == 0)
     {
       auto status = i % 9 ?  Proto::InstrumentStatus::Trading : Proto::InstrumentStatus::Halt;
-      auto statuses = Message::NewProto<Proto::InstrumentStatusUpdate>();
-      statuses->set_status(status);
+      auto req = Message::NewProto<Proto::InstrumentReq>();
+      req->set_type(Proto::RequestType::Set);
       for (auto &inst : insts)
       {
         Instrument *instrument = const_cast<Instrument*>(inst);
         instrument->Status(status);
+        req->add_instruments()->set_id(inst->Id());
+        req->add_instruments()->set_status(status);
       }
-      ClusterManager::GetInstance()->OnInstrumentStatusUpdate(statuses);
+      ClusterManager::GetInstance()->OnInstrumentReq(req);
     }
 
     ++i;

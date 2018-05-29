@@ -43,4 +43,5 @@ void Instrument::Serialize(Proto::Instrument *inst) const
     base::convert(tmp + 7, day);
   }
   inst->set_maturity(tmp);
+  inst->set_status(status_);
 }

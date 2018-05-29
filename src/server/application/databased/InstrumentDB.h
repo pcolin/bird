@@ -21,6 +21,7 @@ private:
 
   base::ProtoMessagePtr OnRequest(const std::shared_ptr<Proto::InstrumentReq> &msg);
   void UpdateInstrument(const Proto::Instrument &inst, InstrumentMap &cache);
+  void UpdateInstrumentStatus(const Proto::Instrument &inst, InstrumentMap &cache);
 
   static int UnderlyingCallback(void *data, int argc, char **argv, char **col_name);
   static int OptionCallback(void *data, int argc, char **argv, char **col_name);

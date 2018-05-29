@@ -6,7 +6,7 @@
 
 class MarketMonitor : public Strategy
 {
-  typedef std::unordered_map<const Instrument*, std::shared_ptr<Proto::Price>> PriceMap; 
+  typedef std::unordered_map<const Instrument*, std::shared_ptr<Proto::Price>> PriceMap;
 public:
   MarketMonitor(const std::string &name, DeviceManager *dm);
 
@@ -20,7 +20,7 @@ protected:
   virtual void OnLastEvent() override;
 
 private:
-  bool OnInstrumentStatusUpdate(const std::shared_ptr<Proto::InstrumentStatusUpdate> &status);
+  bool OnInstrumentReq(const std::shared_ptr<Proto::InstrumentReq> &req);
   bool OnPosition(const std::shared_ptr<Proto::Position> &position);
   bool OnPriceReq(const std::shared_ptr<Proto::PriceReq> &req);
   int und_price_time_;

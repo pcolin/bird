@@ -57,7 +57,6 @@ message Instrument
   string symbol = 2;
   Exchange exchange = 3;
   InstrumentType type = 4;
-  //InstrumentStatus status = 5;
   Currency currency = 5;
   string underlying = 6;
   string hedge_underlying = 7;
@@ -70,6 +69,7 @@ message Instrument
   ExerciseType exercise = 14;
   SettlementType settlement = 15;
   double strike = 16;
+  InstrumentStatus status = 17;
 }
 
 message InstrumentReq
@@ -84,10 +84,4 @@ message InstrumentRep
 {
   repeated Instrument instruments = 1;
   Reply result = 2;
-}
-
-message InstrumentStatusUpdate
-{
-  repeated string instruments = 1;
-  InstrumentStatus status = 2;
 }

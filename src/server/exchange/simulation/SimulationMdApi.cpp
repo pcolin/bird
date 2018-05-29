@@ -75,7 +75,7 @@ void SimulationMdApi::Work()
 
       if (inst->Type() != Proto::InstrumentType::Option)
       {
-        chg = (1 - std::rand() % 3) * 0.001;
+        chg = (1 - std::rand() % 3) * 0.0001;
         it.second->adjust = PRICE_UNDEFINED;
       }
 

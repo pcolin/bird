@@ -126,33 +126,13 @@ void ClusterManager::OnHeartbeat(const std::shared_ptr<Proto::Heartbeat> &heartb
   // }
 }
 
-void ClusterManager::OnInstrumentStatusUpdate(
-    const std::shared_ptr<Proto::InstrumentStatusUpdate> &status)
+void ClusterManager::OnInstrumentReq(const std::shared_ptr<Proto::InstrumentReq> &req)
 {
-  if (status->instruments().size() == 0)
+  if (req->type() == Proto::RequestType::Set && req->instruments().size() > 0)
   {
-    Publish(status);
+    Publish(req);
+    Middleware::GetInstance()->Publish(req);
   }
-  else
-  {
-    for (auto &s : status->instruments())
-    {
-      auto *inst = ProductManager::GetInstance()->FindId(s);
-      if (inst && inst->HedgeUnderlying())
-      {
-        auto it = devices_.find(inst->HedgeUnderlying());
-        if (it != devices_.end())
-        {
-          it->second->Publish(status);
-        }
-        else
-        {
-          LOG_ERR << "Can't find instrument " << s;
-        }
-      }
-    }
-  }
-  Middleware::GetInstance()->Publish(status);
 }
 
 void ClusterManager::OnCash(const std::shared_ptr<Proto::Cash> &cash)

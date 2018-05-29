@@ -18,8 +18,8 @@ MarketMonitor::MarketMonitor(const std::string &name, DeviceManager *dm)
   und_price_time_ = tv.tv_sec;
   opt_price_time_ = tv.tv_sec;
 
-  dispatcher_.RegisterCallback<Proto::InstrumentStatusUpdate>(
-      std::bind(&MarketMonitor::OnInstrumentStatusUpdate, this, std::placeholders::_1));
+  dispatcher_.RegisterCallback<Proto::InstrumentReq>(
+      std::bind(&MarketMonitor::OnInstrumentReq, this, std::placeholders::_1));
   dispatcher_.RegisterCallback<Proto::PriceReq>(
       std::bind(&MarketMonitor::OnPriceReq, this, std::placeholders::_1));
   dispatcher_.RegisterCallback<Proto::Position>(
@@ -93,10 +93,9 @@ void MarketMonitor::OnLastEvent()
   }
 }
 
-bool MarketMonitor::OnInstrumentStatusUpdate(
-    const std::shared_ptr<Proto::InstrumentStatusUpdate> &status)
+bool MarketMonitor::OnInstrumentReq(const std::shared_ptr<Proto::InstrumentReq> &req)
 {
-  LOG_INF << "InstrumentStatusUpdate: " << status->ShortDebugString();
+  LOG_INF << "InstrumentReq: " << req->ShortDebugString();
   // Middleware::GetInstance()->Publish(status);
 }
 
