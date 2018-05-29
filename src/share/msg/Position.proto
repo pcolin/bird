@@ -1,22 +1,24 @@
 syntax = "proto3";
 package Proto;
 
+import "Exchange.proto";
 import "Request.proto";
 import "Reply.proto";
 
 message Position
 {
   string instrument = 1;
+  Exchange exchange = 2;
 
-  int32 total_long = 2;
-  int32 liquid_long = 3;
-  int32 yesterday_long = 4;
+  int32 total_long = 3;
+  int32 liquid_long = 4;
+  int32 yesterday_long = 5;
 
-  int32 total_short = 5;
-  int32 liquid_short = 6;
-  int32 yesterday_short = 7;
+  int32 total_short = 6;
+  int32 liquid_short = 7;
+  int32 yesterday_short = 8;
 
-  uint64 time = 8;
+  uint64 time = 9;
 }
 
 message PositionReq

@@ -19,6 +19,7 @@ std::shared_ptr<Proto::Trade> Trade::Serialize() const
   auto t = Message::NewProto<Proto::Trade>();
   t->set_id(id);
   t->set_instrument(instrument->Id());
+  t->set_exchange(instrument->Exchange());
   t->set_side(static_cast<Proto::Side>(side));
   t->set_price(price);
   t->set_volume(volume);

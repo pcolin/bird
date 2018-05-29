@@ -1,6 +1,7 @@
 syntax = "proto3";
 package Proto;
 
+import "Exchange.proto";
 import "Request.proto";
 import "Reply.proto";
 
@@ -34,9 +35,10 @@ message PricingSpec
 message PricingSpecReq
 {
   RequestType type = 1;
-  repeated PricingSpec pricings = 2;
-  string name = 3;
-  string user = 4;
+  Exchange exchange = 2;
+  repeated PricingSpec pricings = 3;
+  string name = 4;
+  string user = 5;
 }
 
 message PricingSpecRep

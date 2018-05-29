@@ -1,6 +1,7 @@
 syntax = "proto3";
 package Proto;
 
+import "Exchange.proto";
 import "Request.proto";
 import "Reply.proto";
 
@@ -14,9 +15,10 @@ message SSRate
 message SSRateReq
 {
   RequestType type = 1;
-  string underlying = 2;
-  repeated SSRate rates = 3;
-  string user = 4;
+  Exchange exchange = 2;
+  string underlying = 3;
+  repeated SSRate rates = 4;
+  string user = 5;
 }
 
 message SSRateRep

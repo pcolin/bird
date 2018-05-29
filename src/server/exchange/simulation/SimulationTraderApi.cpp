@@ -121,6 +121,7 @@ void SimulationTraderApi::MatchingProcess()
 
     auto p = Message::NewProto<Proto::Position>();
     p->set_instrument(inst->Id());
+    p->set_exchange(inst->Exchange());
 
     if (i % 3)
     {
@@ -144,6 +145,7 @@ void SimulationTraderApi::MatchingProcess()
   while (true)
   {
     auto cash = std::make_shared<Proto::Cash>();
+    cash->set_exchange(Proto::Exchange::DCE);
     cash->set_currency(Proto::CNY);
     cash->set_account("99665550");
     cash->set_total(8888888.88 + 3333333.33);
@@ -158,6 +160,7 @@ void SimulationTraderApi::MatchingProcess()
       auto status = i % 9 ?  Proto::InstrumentStatus::Trading : Proto::InstrumentStatus::Halt;
       auto req = Message::NewProto<Proto::InstrumentReq>();
       req->set_type(Proto::RequestType::Set);
+      req->set_exchange(Proto::Exchange::DCE);
       for (auto &inst : insts)
       {
         Instrument *instrument = const_cast<Instrument*>(inst);

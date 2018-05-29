@@ -1,6 +1,7 @@
 syntax = "proto3";
 package Proto;
 
+import "Exchange.proto";
 import "Request.proto";
 import "Reply.proto";
 
@@ -13,8 +14,9 @@ message InterestRate
 message InterestRateReq
 {
   RequestType type = 1;
-  repeated InterestRate rates = 2;
-  string user = 3;
+  Exchange exchange = 2;
+  repeated InterestRate rates = 3;
+  string user = 4;
 }
 
 message InterestRateRep

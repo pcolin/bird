@@ -2,6 +2,7 @@ syntax = "proto3";
 package Proto;
 
 // import "google/protobuf/timestamp.proto";
+import "Exchange.proto";
 
 enum Side
 {
@@ -44,18 +45,19 @@ message Order
 {
   uint64 id = 1;
   string instrument = 2;
-  string counter_id = 3;
-  string exchange_id = 4;
-  string note = 5;
-  double price = 6;
-  double avg_executed_price = 7;
-  int32 volume = 8;
-  int32 executed_volume = 9;
-  Side side = 10;
-  TimeCondition time_condition = 11;
-  OrderType type = 12;
-  OrderStatus status = 13;
+  Exchange exchange = 3;
+  string counter_id = 4;
+  string exchange_id = 5;
+  string note = 6;
+  double price = 7;
+  double avg_executed_price = 8;
+  int32 volume = 9;
+  int32 executed_volume = 10;
+  Side side = 11;
+  TimeCondition time_condition = 12;
+  OrderType type = 13;
+  OrderStatus status = 14;
   //google.protobuf.Timestamp time = 14;
-  uint64 time = 14;
-  int32 latency = 15;
+  uint64 time = 15;
+  int32 latency = 16;
 }

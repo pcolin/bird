@@ -75,8 +75,8 @@ message Instrument
 message InstrumentReq
 {
   RequestType type = 1;
-  repeated Instrument instruments = 2;
-  Exchange exchange = 3;
+  Exchange exchange = 2;
+  repeated Instrument instruments = 3;
   string user = 4;
 }
 

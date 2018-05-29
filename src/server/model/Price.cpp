@@ -84,6 +84,7 @@ std::shared_ptr<Proto::Price> Price::Serialize() const
 {
   auto p = Message::NewProto<Proto::Price>();
   p->set_instrument(instrument->Id());
+  p->set_exchange(instrument->Exchange());
   if (last.price != base::PRICE_UNDEFINED)
   {
     auto *l = p->mutable_last();

@@ -1,17 +1,19 @@
 syntax = "proto3";
 package Proto;
 
+import "Exchange.proto";
 import "Order.proto";
 // import "google/protobuf/timestamp.proto";
 
 message Trade
-{ 
+{
   string id = 1;
   string instrument = 2;
-  Side side = 3;
-  double price = 4;
-  int32 volume = 5;
+  Exchange exchange = 3;
+  Side side = 4;
+  double price = 5;
+  int32 volume = 6;
   //google.protobuf.Timestamp time = 6;
-  uint64 time = 6;
-  uint64 order_id = 7;
+  uint64 time = 7;
+  uint64 order_id = 8;
 }

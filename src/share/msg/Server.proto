@@ -2,16 +2,18 @@ syntax = "proto3";
 package Proto;
 
 //import "google/protobuf/timestamp.proto"
+import "Exchange.proto";
 
 message ServerInfo
 {
-  string info = 1;
+  Exchange exchange = 1;
+  string info = 2;
   enum Type
   {
     PUB = 0;
     WAN = 1;
     ERR = 2;
   }
-  Type type = 2;
-  uint64 time = 3;
+  Type type = 3;
+  uint64 time = 4;
 }

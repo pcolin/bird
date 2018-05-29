@@ -59,6 +59,7 @@ std::shared_ptr<Proto::Order> Order::Serialize() const
   std::shared_ptr<Proto::Order> ord = Message::NewProto<Proto::Order>();
   ord->set_id(id);
   ord->set_instrument(instrument->Id());
+  ord->set_exchange(instrument->Exchange());
   ord->set_counter_id(counter_id);
   ord->set_exchange_id(exchange_id);
   ord->set_note(note);

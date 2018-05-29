@@ -1,6 +1,7 @@
 syntax = "proto3";
 package Proto;
 
+import "Exchange.proto";
 import "Request.proto";
 import "Reply.proto";
 
@@ -13,9 +14,10 @@ message Destriker
 message DestrikerReq
 {
   RequestType type = 1;
-  repeated Destriker destrikers = 2;
-  string instrument = 3;
-  string user = 4;
+  Exchange exchange = 2;
+  repeated Destriker destrikers = 3;
+  string instrument = 4;
+  string user = 5;
 }
 
 message DestrikerRep

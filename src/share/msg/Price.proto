@@ -1,6 +1,7 @@
 syntax = "proto3";
 package Proto;
 
+import "Exchange.proto";
 import "Request.proto";
 
 message PriceLevel
@@ -12,19 +13,20 @@ message PriceLevel
 message Price
 {
   string instrument = 1;
-  PriceLevel last = 2;
-  repeated PriceLevel bids = 3;
-  repeated PriceLevel asks = 4;
-  double adjusted_price = 5;
-  double adjust = 6;
-  double open = 7;
-  double high = 8;
-  double low = 9;
-  double close = 10;
-  double pre_close = 11;
-  double pre_settlement = 12;
-  double amount = 13;
-  int32 volume = 14;
+  Exchange exchange = 2;
+  PriceLevel last = 3;
+  repeated PriceLevel bids = 4;
+  repeated PriceLevel asks = 5;
+  double adjusted_price = 6;
+  double adjust = 7;
+  double open = 8;
+  double high = 9;
+  double low = 10;
+  double close = 11;
+  double pre_close = 12;
+  double pre_settlement = 13;
+  double amount = 14;
+  int32 volume = 15;
 }
 
 message PriceReq
