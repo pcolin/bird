@@ -21,11 +21,11 @@ namespace client.ViewModels
     {
         public InteractionRequest<INotification> NotificationRequest { get; set; }
 
-        private readonly ObservableCollection<OptionUserControlViewModel> tabItems = new ObservableCollection<OptionUserControlViewModel>();
-        public ObservableCollection<OptionUserControlViewModel> TabItems
-        {
-            get { return tabItems; }
-        }
+        //private readonly ObservableCollection<OptionUserControlViewModel> tabItems = new ObservableCollection<OptionUserControlViewModel>();
+        //public ObservableCollection<OptionUserControlViewModel> TabItems
+        //{
+        //    get { return tabItems; }
+        //}
         //private readonly List<BindableBase> tabItems = new List<BindableBase>();
         //public List<BindableBase> TabItems
         //{
@@ -128,8 +128,8 @@ namespace client.ViewModels
         {
             this.container = container;
             //this.container.Resolve<EventAggregator>().GetEvent<StartWindowEvent>().Subscribe(this.StartWindow, ThreadOption.PublisherThread);
-            this.container.Resolve<EventAggregator>().GetEvent<GreeksEvent>().Subscribe(this.ReceiveGreeks, ThreadOption.BackgroundThread);
-            this.container.Resolve<EventAggregator>().GetEvent<ImpliedVolatilityEvent>().Subscribe(this.ReceiveIV, ThreadOption.BackgroundThread);
+            //this.container.Resolve<EventAggregator>().GetEvent<GreeksEvent>().Subscribe(this.ReceiveGreeks, ThreadOption.BackgroundThread);
+            //this.container.Resolve<EventAggregator>().GetEvent<ImpliedVolatilityEvent>().Subscribe(this.ReceiveIV, ThreadOption.BackgroundThread);
             this.dispatcher = dispatcher;
             this.exchange = exchange;
         }
@@ -144,6 +144,7 @@ namespace client.ViewModels
 
             this.container.Resolve<EventAggregator>().GetEvent<GreeksEvent>().Subscribe(this.ReceiveGreeks, ThreadOption.BackgroundThread);
             this.container.Resolve<EventAggregator>().GetEvent<ImpliedVolatilityEvent>().Subscribe(this.ReceiveIV, ThreadOption.BackgroundThread);
+            this.container.Resolve<EventAggregator>().GetEvent<PubSubEvent<Proto.InstrumentReq>>().Subscribe(this.ReceiveInstrumentReq, ThreadOption.BackgroundThread);
             this.container.Resolve<EventAggregator>().GetEvent<PubSubEvent<Proto.Price>>().Subscribe(this.ReceivePrice, ThreadOption.BackgroundThread);
             this.container.Resolve<EventAggregator>().GetEvent<PubSubEvent<Proto.Cash>>().Subscribe(this.ReceiveCash, ThreadOption.BackgroundThread);
         }
@@ -173,6 +174,20 @@ namespace client.ViewModels
         //    var service = this.container.Resolve<ProxyService>(exchange.ToString());
         //    service.RegisterAction((new Proto.Price()).GetType().ToString(), new Action<IMessage>(p => this.ReceivePrice(p)));
         //}
+
+        private void ReceiveInstrumentReq(Proto.InstrumentReq req)
+        {
+            ProductManager manager = this.container.Resolve<ProductManager>(this.Exchange.ToString());
+            foreach (var inst in req.Instruments)
+            {
+                var instrument = manager.FindId(inst.Id);
+                OptionUserControlViewModel vm = null;
+                if (inst != null && this.viewModels.TryGetValue(instrument.HedgeUnderlying, out vm))
+                {
+                    this.dispatcher.BeginInvoke((MethodInvoker)delegate { vm.RefreshInstrumentStatus(instrument, inst.Status); });
+                }
+            }
+        }
 
         private void ReceivePrice(Proto.Price p)
         {

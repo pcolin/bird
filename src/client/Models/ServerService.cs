@@ -32,7 +32,7 @@ namespace client.Models
             /// Send PriceReq
             Proto.PriceReq req = new Proto.PriceReq();
             req.Type = Proto.RequestType.Get;
-            req.User = user;
+            req.User = this.User;
             Request(req);
 
             return true;
@@ -61,7 +61,7 @@ namespace client.Models
             byte[] bytes = ProtoMessageCoder.Encode(login);
             socket.Send(bytes);
 
-            this.user = user;
+            this.User = user;
             this.lastSentTime = DateTime.Now;
 
             bytes = socket.Receive();
@@ -86,6 +86,8 @@ namespace client.Models
             return null; ;
         }
 
+        public string User { get; set; }
+
         public void Request(IMessage req)
         {
             messages.Enqueue(req);
@@ -96,7 +98,7 @@ namespace client.Models
             const int TimeoutInterval = 5;
             Proto.Heartbeat heartbeat = new Proto.Heartbeat();
             heartbeat.Type = Proto.ProcessorType.Gui;
-            heartbeat.Name = user;
+            heartbeat.Name = this.User;
             try
             {
                 while (running)
@@ -166,7 +168,6 @@ namespace client.Models
         private ConcurrentQueue<IMessage> messages = new ConcurrentQueue<IMessage>();
         private Thread thread;
 
-        private string user;
         private DateTime lastSentTime;
     }
 }

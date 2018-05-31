@@ -5,7 +5,7 @@
         Icon="/Images/bird_32x32.ico"
         Title="Volatility Setting" Height="300" Width="300"
         Closing="Window_Closing">
-    <TabControl x:Name="VolatilityTabControl" ItemsSource="{Binding TabItems}" SelectedItem="{Binding SelectedTab}">
+    <!--TabControl x:Name="VolatilityTabControl" ItemsSource="{Binding TabItems}" SelectedItem="{Binding SelectedTab}">
         <TabControl.ItemTemplate>
             <DataTemplate>
                 <TextBlock Text="{Binding Exchange}" />
@@ -16,5 +16,6 @@
                 <local:VolatilityUserControl />
             </DataTemplate>
         </TabControl.ContentTemplate>
-    </TabControl>
+    </TabControl-->
+    <TabControl Name="VolatilityTabControl" />
 </Window>

@@ -17,9 +17,10 @@ using System.Windows.Threading;
 
 namespace client.ViewModels
 {
-    class VolatilityUserControlViewModel : BindableBase
+    public class VolatilityUserControlViewModel : BindableBase
     {
-        public ICommand ModifyCommand { get; set; }
+        public ICommand SetSsrCommand { get; set; }
+        public ICommand SetVolCommand { get; set; }
         public ICommand RefreshCommand { get; set; }
 
         private Proto.Exchange exchange;
@@ -44,70 +45,26 @@ namespace client.ViewModels
         }
 
         public IUnityContainer Container { get; set; }
+        private Dispatcher dispatcher;
 
-        Action<Proto.Price> PriceAction { get; set; }
-        Action<Proto.SSRateReq> SSRateReqAction { get; set; }
+        //Action<Proto.Price> PriceAction { get; set; }
+        //Action<Proto.SSRateReq> SSRateReqAction { get; set; }
         ProductManager productManager;
         Dictionary<Instrument, Dictionary<DateTime, VolatilityItem>> items = new Dictionary<Instrument,Dictionary<DateTime,VolatilityItem>>();
         
         public VolatilityUserControlViewModel(IUnityContainer container, Dispatcher dispatcher, Proto.Exchange exchange)
         {
             this.Container = container;
+            this.dispatcher = dispatcher;
             Exchange = exchange;
 
-            RefreshCommand = new DelegateCommand(this.Refresh);
-            ModifyCommand = new DelegateCommand(this.ModifyExecute);
-
-            this.PriceAction = p =>
-                {
-                    var inst = this.productManager.FindId(p.Instrument);
-                    if (inst != null && inst.Type != Proto.InstrumentType.Option)
-                    {
-                        Dictionary<DateTime, VolatilityItem> item = null;
-                        if (this.items.TryGetValue(inst, out item))
-                        {
-                            dispatcher.BeginInvoke((MethodInvoker)delegate
-                            {
-                                foreach (var kvp in item)
-                                {
-                                    kvp.Value.Spot = p.AdjustedPrice;
-                                }
-                            });
-                        }
-                    }
-                };
-
-            this.SSRateReqAction = req =>
-                {
-                    foreach (var r in req.Rates)
-                    {
-                        var inst = this.productManager.FindId(r.Underlying);
-                        if (inst != null)
-                        {
-                            Dictionary<DateTime, VolatilityItem> item = null;
-                            if (this.items.TryGetValue(inst, out item))
-                            {
-                                VolatilityItem vol = null;
-                                try
-                                {
-                                    var maturity = DateTime.ParseExact(r.Maturity, "yyyyMMdd", CultureInfo.InvariantCulture);
-                                    if (item.TryGetValue(maturity, out vol))
-                                    {
-                                        dispatcher.BeginInvoke((MethodInvoker)delegate { vol.SSRate = r.Rate; });
-                                    }
-                                }
-                                catch (Exception) { }
-                            }
-                        }
-                    }
-                };
-        }
-
-        public void Initialize()
-        {
             productManager = this.Container.Resolve<ProductManager>(Exchange.ToString());
             if (productManager != null)
             {
+                RefreshCommand = new DelegateCommand(this.Refresh);
+                SetSsrCommand = new DelegateCommand(this.SetSsrExecute, this.CanSetSsrExecute);
+                SetVolCommand = new DelegateCommand(this.SetVolExecute, this.CanSetVolExecute);
+
                 var ssm = this.Container.Resolve<SSRateManager>(Exchange.ToString());
                 VolatilityCurveManager vcm = this.Container.Resolve<VolatilityCurveManager>(Exchange.ToString());
                 var volatilities = new ObservableCollection<VolatilityItem>();
@@ -134,21 +91,66 @@ namespace client.ViewModels
                             var curve = vcm.GetVolatilityCurve(underlying.Id, m);
                             if (curve != null)
                             {
-                                var vol = new VolatilityItem(underlying, curve, ssr);
+                                var vol = new VolatilityItem(underlying, curve, ssr, this.SetVolCommand, this.SetSsrCommand);
                                 volatilities.Add(vol);
                                 AddVolatilityItem(vol);
                                 continue;
                             }
                         }
-                        var vi = new VolatilityItem(underlying, m, ssr);
+                        var vi = new VolatilityItem(underlying, m, ssr, this.SetVolCommand, this.SetSsrCommand);
                         volatilities.Add(vi);
                         AddVolatilityItem(vi);
                     }
                 }
                 Volatilities = volatilities;
+            }
+        }
 
-                this.Container.Resolve<EventAggregator>().GetEvent<PubSubEvent<Proto.Price>>().Subscribe(this.PriceAction, ThreadOption.BackgroundThread);
-                this.Container.Resolve<EventAggregator>().GetEvent<PubSubEvent<Proto.SSRateReq>>().Subscribe(this.SSRateReqAction, ThreadOption.BackgroundThread);
+        public void ReceivePrice(Proto.Price p)
+        {
+            var inst = this.productManager.FindId(p.Instrument);
+            if (inst != null && inst.Type != Proto.InstrumentType.Option)
+            {
+                Dictionary<DateTime, VolatilityItem> item = null;
+                if (this.items.TryGetValue(inst, out item))
+                {
+                    dispatcher.BeginInvoke((MethodInvoker)delegate
+                    {
+                        foreach (var kvp in item)
+                        {
+                            kvp.Value.Spot = p.AdjustedPrice;
+                        }
+                    });
+                }
+            }
+        }
+
+        public void ReceiveSSRateReq(Proto.SSRateReq req)
+        {
+            foreach (var r in req.Rates)
+            {
+                var inst = this.productManager.FindId(r.Underlying);
+                if (inst != null)
+                {
+                    Dictionary<DateTime, VolatilityItem> item = null;
+                    if (this.items.TryGetValue(inst, out item))
+                    {
+                        VolatilityItem vol = null;
+                        try
+                        {
+                            var maturity = DateTime.ParseExact(r.Maturity, "yyyyMMdd", CultureInfo.InvariantCulture);
+                            if (item.TryGetValue(maturity, out vol))
+                            {
+                                dispatcher.BeginInvoke((MethodInvoker)delegate
+                                {
+                                    vol.SSRate = r.Rate;
+                                    vol.SSRateModified = false;
+                                });
+                            }
+                        }
+                        catch (Exception) { }
+                    }
+                }
             }
         }
 
@@ -181,9 +183,42 @@ namespace client.ViewModels
             }
         }
 
-        private void ModifyExecute()
+        private void SetSsrExecute()
         {
-            var req = new Proto.VolatilityCurveReq();
+            var req = new Proto.SSRateReq();
+            req.Type = Proto.RequestType.Set;
+            req.Exchange = this.Exchange;
+            foreach (var item in this.Volatilities)
+            {
+                if (item.SSRateModified)
+                {
+                    var ssr = new Proto.SSRate();
+                    ssr.Underlying = item.Underlying.Id;
+                    ssr.Maturity = item.Maturity.ToString("yyyyMMdd");
+                    ssr.Rate = item.SSRate;
+
+                    req.Rates.Add(ssr);
+                    item.SSRateModified = false;
+                }
+            }
+
+            var service = this.Container.Resolve<ServerService>(this.Exchange.ToString());
+            req.User = service.User;
+            service.Request(req);
+        }
+
+        private bool CanSetSsrExecute()
+        {
+            foreach (var item in this.Volatilities)
+            {
+                if (item.SSRateModified) return true;
+            }
+            return false;
+        }
+
+        private void SetVolExecute()
+        {
+            var req = new Proto.VolatilityCurveReq() { Type = Proto.RequestType.Set, Exchange = this.Exchange };
             foreach (var item in this.Volatilities)
             {
                 if (item.Modified)
@@ -210,16 +245,22 @@ namespace client.ViewModels
                 }
             }
 
-            if (req.Curves.Count > 0)
+            var service = this.Container.Resolve<ServerService>(this.Exchange.ToString());
+            req.User = service.User;
+            service.Request(req);
+        }
+
+        private bool CanSetVolExecute()
+        {
+            foreach (var item in this.Volatilities)
             {
-                req.Type = Proto.RequestType.Set;
-                var service = this.Container.Resolve<ServerService>(this.Exchange.ToString());
-                service.Request(req);
+                if (item.Modified) return true;
             }
+            return false;
         }
     }
 
-    class VolatilityItem : BindableBase
+    public class VolatilityItem : BindableBase
     {
         private Instrument underlying;
         public Instrument Underlying
@@ -239,7 +280,26 @@ namespace client.ViewModels
         public bool Modified
         {
             get { return modified; }
-            set { SetProperty(ref modified, value); }
+            set
+            {
+                if (SetProperty(ref modified, value))
+                {
+                    (this.volCommand as DelegateCommand).RaiseCanExecuteChanged();
+                }
+            }
+        }
+
+        private bool ssrateModified;
+        public bool SSRateModified
+        {
+            get { return ssrateModified; }
+            set
+            {
+                if (SetProperty(ref ssrateModified, value))
+                {
+                    (this.ssrCommand as DelegateCommand).RaiseCanExecuteChanged();
+                }
+            }
         }        
 
         private double spot;
@@ -253,7 +313,7 @@ namespace client.ViewModels
         public double SSRate
         {
             get { return ssrate; }
-            set { SetProperty(ref ssrate, value); }
+            set { SSRateModified = SetProperty(ref ssrate, value); }
         }        
 
         private double spotRef;
@@ -353,15 +413,21 @@ namespace client.ViewModels
             get { return sccr; }
             set { Modified = SetProperty(ref sccr, value); }
         }
+
+        private ICommand volCommand;
+        private ICommand ssrCommand;
         
-        public VolatilityItem(Instrument underlying, DateTime maturity, double ssr)
+        public VolatilityItem(Instrument underlying, DateTime maturity, double ssr, ICommand volCommand, ICommand ssrCommand)
         {
             this.Underlying = underlying;
             this.Maturity = maturity;
             this.ssrate = ssr;
+
+            this.volCommand = volCommand;
+            this.ssrCommand = ssrCommand;
         }
 
-        public VolatilityItem(Instrument underlying, Proto.VolatilityCurve curve, double ssr)
+        public VolatilityItem(Instrument underlying, Proto.VolatilityCurve curve, double ssr, ICommand volCommand, ICommand ssrCommand)
         {
             this.underlying = underlying;
             this.maturity = DateTime.ParseExact(curve.Maturity, "yyyyMMdd", CultureInfo.InvariantCulture);
@@ -380,6 +446,9 @@ namespace client.ViewModels
             this.ccr = curve.Ccr;
             this.spcr = curve.Spcr;
             this.sccr = curve.Sccr;
+
+            this.volCommand = volCommand;
+            this.ssrCommand = ssrCommand;
         }
 
         public void Update(Proto.VolatilityCurve curve)

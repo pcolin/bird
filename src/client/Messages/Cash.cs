@@ -24,14 +24,15 @@ namespace Proto {
     static CashReflection() {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
-            "CgpDYXNoLnByb3RvEgVQcm90bxoOQ3VycmVuY3kucHJvdG8ifwoEQ2FzaBIh",
-            "CghjdXJyZW5jeRgBIAEoDjIPLlByb3RvLkN1cnJlbmN5Eg8KB2FjY291bnQY",
-            "AiABKAkSDQoFdG90YWwYAyABKAESEQoJYXZhaWxhYmxlGAQgASgBEhEKCWlz",
-            "X2Vub3VnaBgFIAEoCBIOCgZtYXJnaW4YBiABKAFiBnByb3RvMw=="));
+            "CgpDYXNoLnByb3RvEgVQcm90bxoORXhjaGFuZ2UucHJvdG8aDkN1cnJlbmN5",
+            "LnByb3RvIqIBCgRDYXNoEiEKCGV4Y2hhbmdlGAEgASgOMg8uUHJvdG8uRXhj",
+            "aGFuZ2USIQoIY3VycmVuY3kYAiABKA4yDy5Qcm90by5DdXJyZW5jeRIPCgdh",
+            "Y2NvdW50GAMgASgJEg0KBXRvdGFsGAQgASgBEhEKCWF2YWlsYWJsZRgFIAEo",
+            "ARIRCglpc19lbm91Z2gYBiABKAgSDgoGbWFyZ2luGAcgASgBYgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
-          new pbr::FileDescriptor[] { global::Proto.CurrencyReflection.Descriptor, },
+          new pbr::FileDescriptor[] { global::Proto.ExchangeReflection.Descriptor, global::Proto.CurrencyReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::Proto.Cash), global::Proto.Cash.Parser, new[]{ "Currency", "Account", "Total", "Available", "IsEnough", "Margin" }, null, null, null)
+            new pbr::GeneratedClrTypeInfo(typeof(global::Proto.Cash), global::Proto.Cash.Parser, new[]{ "Exchange", "Currency", "Account", "Total", "Available", "IsEnough", "Margin" }, null, null, null)
           }));
     }
     #endregion
@@ -63,6 +64,7 @@ namespace Proto {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public Cash(Cash other) : this() {
+      exchange_ = other.exchange_;
       currency_ = other.currency_;
       account_ = other.account_;
       total_ = other.total_;
@@ -77,8 +79,19 @@ namespace Proto {
       return new Cash(this);
     }
 
+    /// <summary>Field number for the "exchange" field.</summary>
+    public const int ExchangeFieldNumber = 1;
+    private global::Proto.Exchange exchange_ = 0;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::Proto.Exchange Exchange {
+      get { return exchange_; }
+      set {
+        exchange_ = value;
+      }
+    }
+
     /// <summary>Field number for the "currency" field.</summary>
-    public const int CurrencyFieldNumber = 1;
+    public const int CurrencyFieldNumber = 2;
     private global::Proto.Currency currency_ = 0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Proto.Currency Currency {
@@ -89,7 +102,7 @@ namespace Proto {
     }
 
     /// <summary>Field number for the "account" field.</summary>
-    public const int AccountFieldNumber = 2;
+    public const int AccountFieldNumber = 3;
     private string account_ = "";
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string Account {
@@ -100,7 +113,7 @@ namespace Proto {
     }
 
     /// <summary>Field number for the "total" field.</summary>
-    public const int TotalFieldNumber = 3;
+    public const int TotalFieldNumber = 4;
     private double total_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public double Total {
@@ -111,7 +124,7 @@ namespace Proto {
     }
 
     /// <summary>Field number for the "available" field.</summary>
-    public const int AvailableFieldNumber = 4;
+    public const int AvailableFieldNumber = 5;
     private double available_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public double Available {
@@ -122,7 +135,7 @@ namespace Proto {
     }
 
     /// <summary>Field number for the "is_enough" field.</summary>
-    public const int IsEnoughFieldNumber = 5;
+    public const int IsEnoughFieldNumber = 6;
     private bool isEnough_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool IsEnough {
@@ -133,7 +146,7 @@ namespace Proto {
     }
 
     /// <summary>Field number for the "margin" field.</summary>
-    public const int MarginFieldNumber = 6;
+    public const int MarginFieldNumber = 7;
     private double margin_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public double Margin {
@@ -156,6 +169,7 @@ namespace Proto {
       if (ReferenceEquals(other, this)) {
         return true;
       }
+      if (Exchange != other.Exchange) return false;
       if (Currency != other.Currency) return false;
       if (Account != other.Account) return false;
       if (!pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.Equals(Total, other.Total)) return false;
@@ -168,6 +182,7 @@ namespace Proto {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
+      if (Exchange != 0) hash ^= Exchange.GetHashCode();
       if (Currency != 0) hash ^= Currency.GetHashCode();
       if (Account.Length != 0) hash ^= Account.GetHashCode();
       if (Total != 0D) hash ^= pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.GetHashCode(Total);
@@ -187,28 +202,32 @@ namespace Proto {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      if (Currency != 0) {
+      if (Exchange != 0) {
         output.WriteRawTag(8);
+        output.WriteEnum((int) Exchange);
+      }
+      if (Currency != 0) {
+        output.WriteRawTag(16);
         output.WriteEnum((int) Currency);
       }
       if (Account.Length != 0) {
-        output.WriteRawTag(18);
+        output.WriteRawTag(26);
         output.WriteString(Account);
       }
       if (Total != 0D) {
-        output.WriteRawTag(25);
+        output.WriteRawTag(33);
         output.WriteDouble(Total);
       }
       if (Available != 0D) {
-        output.WriteRawTag(33);
+        output.WriteRawTag(41);
         output.WriteDouble(Available);
       }
       if (IsEnough != false) {
-        output.WriteRawTag(40);
+        output.WriteRawTag(48);
         output.WriteBool(IsEnough);
       }
       if (Margin != 0D) {
-        output.WriteRawTag(49);
+        output.WriteRawTag(57);
         output.WriteDouble(Margin);
       }
       if (_unknownFields != null) {
@@ -219,6 +238,9 @@ namespace Proto {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
+      if (Exchange != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Exchange);
+      }
       if (Currency != 0) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Currency);
       }
@@ -247,6 +269,9 @@ namespace Proto {
     public void MergeFrom(Cash other) {
       if (other == null) {
         return;
+      }
+      if (other.Exchange != 0) {
+        Exchange = other.Exchange;
       }
       if (other.Currency != 0) {
         Currency = other.Currency;
@@ -278,26 +303,30 @@ namespace Proto {
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
           case 8: {
+            exchange_ = (global::Proto.Exchange) input.ReadEnum();
+            break;
+          }
+          case 16: {
             currency_ = (global::Proto.Currency) input.ReadEnum();
             break;
           }
-          case 18: {
+          case 26: {
             Account = input.ReadString();
             break;
           }
-          case 25: {
+          case 33: {
             Total = input.ReadDouble();
             break;
           }
-          case 33: {
+          case 41: {
             Available = input.ReadDouble();
             break;
           }
-          case 40: {
+          case 48: {
             IsEnough = input.ReadBool();
             break;
           }
-          case 49: {
+          case 57: {
             Margin = input.ReadDouble();
             break;
           }

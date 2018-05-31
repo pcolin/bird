@@ -225,6 +225,38 @@ namespace client.ViewModels
             this.EnquiryResponsePutSwitchCommand = new DelegateCommand<object>(new Action<object>(this.EnquiryResponsePutSwitchExecute));
         }
 
+        //public void RefreshInstrumentStatus(Proto.InstrumentStatusUpdate status)
+        //{
+        //    foreach (var kvp in this.underlyingItems)
+        //    {
+        //        kvp.Value.Status = status.Status;
+        //    }
+        //    foreach (var kvp in this.optionItems)
+        //    {
+        //        kvp.Value.Status = status.Status;
+        //    }
+        //}
+
+        public void RefreshInstrumentStatus(Instrument inst, Proto.InstrumentStatus status)
+        {
+            if (inst.Type == Proto.InstrumentType.Option)
+            {
+                OptionItem item = null;
+                if (this.optionItems.TryGetValue(inst.Id, out item))
+                {
+                    item.Status = status;
+                }
+            }
+            else
+            {
+                UnderlyingItem item = null;
+                if (this.underlyingItems.TryGetValue(inst.Id, out item))
+                {
+                    item.Status = status;
+                }
+            }
+        }
+
         //public delegate void ReceivePriceDelegate(Proto.Instrument inst, Proto.Price price);
         public void ReceivePrice(Instrument inst, Proto.Price price)
         {

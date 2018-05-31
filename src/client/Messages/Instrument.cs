@@ -25,7 +25,7 @@ namespace Proto {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
             "ChBJbnN0cnVtZW50LnByb3RvEgVQcm90bxoORXhjaGFuZ2UucHJvdG8aDVJl",
-            "cXVlc3QucHJvdG8aC1JlcGx5LnByb3RvGg5DdXJyZW5jeS5wcm90byKdAwoK",
+            "cXVlc3QucHJvdG8aC1JlcGx5LnByb3RvGg5DdXJyZW5jeS5wcm90byLGAwoK",
             "SW5zdHJ1bWVudBIKCgJpZBgBIAEoCRIOCgZzeW1ib2wYAiABKAkSIQoIZXhj",
             "aGFuZ2UYAyABKA4yDy5Qcm90by5FeGNoYW5nZRIjCgR0eXBlGAQgASgOMhUu",
             "UHJvdG8uSW5zdHJ1bWVudFR5cGUSIQoIY3VycmVuY3kYBSABKA4yDy5Qcm90",
@@ -35,25 +35,26 @@ namespace Proto {
             "GAwgASgOMhEuUHJvdG8uT3B0aW9uVHlwZRIQCghtYXR1cml0eRgNIAEoCRIl",
             "CghleGVyY2lzZRgOIAEoDjITLlByb3RvLkV4ZXJjaXNlVHlwZRIpCgpzZXR0",
             "bGVtZW50GA8gASgOMhUuUHJvdG8uU2V0dGxlbWVudFR5cGUSDgoGc3RyaWtl",
-            "GBAgASgBIooBCg1JbnN0cnVtZW50UmVxEiAKBHR5cGUYASABKA4yEi5Qcm90",
-            "by5SZXF1ZXN0VHlwZRImCgtpbnN0cnVtZW50cxgCIAMoCzIRLlByb3RvLklu",
-            "c3RydW1lbnQSIQoIZXhjaGFuZ2UYAyABKA4yDy5Qcm90by5FeGNoYW5nZRIM",
-            "CgR1c2VyGAQgASgJIlUKDUluc3RydW1lbnRSZXASJgoLaW5zdHJ1bWVudHMY",
-            "ASADKAsyES5Qcm90by5JbnN0cnVtZW50EhwKBnJlc3VsdBgCIAEoCzIMLlBy",
-            "b3RvLlJlcGx5KjMKDkluc3RydW1lbnRUeXBlEgkKBVN0b2NrEAASCgoGRnV0",
-            "dXJlEAESCgoGT3B0aW9uEAIqjQEKEEluc3RydW1lbnRTdGF0dXMSCgoGVW5r",
-            "b3duEAASCgoGQ2xvc2VkEAESCwoHUHJlT3BlbhACEhIKDk9wZW5pbmdBdWN0",
-            "aW9uEAMSCwoHVHJhZGluZxAEEggKBEZ1c2UQBRILCgdBdWN0aW9uEAYSEgoO",
-            "Q2xvc2luZ0F1Y3Rpb24QBxIICgRIYWx0EAgqHwoKT3B0aW9uVHlwZRIICgRD",
-            "YWxsEAASBwoDUHV0EAEqKgoMRXhlcmNpc2VUeXBlEgwKCEV1cm9wZWFuEAAS",
-            "DAoIQW1lcmljYW4QASo8Cg5TZXR0bGVtZW50VHlwZRISCg5DYXNoU2V0dGxl",
-            "bWVudBAAEhYKElBoeXNpY2FsU2V0dGxlbWVudBABKi8KDlJvdW5kRGlyZWN0",
-            "aW9uEgsKB05lYXJlc3QQABIGCgJVcBABEggKBERvd24QAmIGcHJvdG8z"));
+            "GBAgASgBEicKBnN0YXR1cxgRIAEoDjIXLlByb3RvLkluc3RydW1lbnRTdGF0",
+            "dXMiigEKDUluc3RydW1lbnRSZXESIAoEdHlwZRgBIAEoDjISLlByb3RvLlJl",
+            "cXVlc3RUeXBlEiEKCGV4Y2hhbmdlGAIgASgOMg8uUHJvdG8uRXhjaGFuZ2US",
+            "JgoLaW5zdHJ1bWVudHMYAyADKAsyES5Qcm90by5JbnN0cnVtZW50EgwKBHVz",
+            "ZXIYBCABKAkiVQoNSW5zdHJ1bWVudFJlcBImCgtpbnN0cnVtZW50cxgBIAMo",
+            "CzIRLlByb3RvLkluc3RydW1lbnQSHAoGcmVzdWx0GAIgASgLMgwuUHJvdG8u",
+            "UmVwbHkqMwoOSW5zdHJ1bWVudFR5cGUSCQoFU3RvY2sQABIKCgZGdXR1cmUQ",
+            "ARIKCgZPcHRpb24QAiqNAQoQSW5zdHJ1bWVudFN0YXR1cxIKCgZVbmtvd24Q",
+            "ABIKCgZDbG9zZWQQARILCgdQcmVPcGVuEAISEgoOT3BlbmluZ0F1Y3Rpb24Q",
+            "AxILCgdUcmFkaW5nEAQSCAoERnVzZRAFEgsKB0F1Y3Rpb24QBhISCg5DbG9z",
+            "aW5nQXVjdGlvbhAHEggKBEhhbHQQCCofCgpPcHRpb25UeXBlEggKBENhbGwQ",
+            "ABIHCgNQdXQQASoqCgxFeGVyY2lzZVR5cGUSDAoIRXVyb3BlYW4QABIMCghB",
+            "bWVyaWNhbhABKjwKDlNldHRsZW1lbnRUeXBlEhIKDkNhc2hTZXR0bGVtZW50",
+            "EAASFgoSUGh5c2ljYWxTZXR0bGVtZW50EAEqLwoOUm91bmREaXJlY3Rpb24S",
+            "CwoHTmVhcmVzdBAAEgYKAlVwEAESCAoERG93bhACYgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Proto.ExchangeReflection.Descriptor, global::Proto.RequestReflection.Descriptor, global::Proto.ReplyReflection.Descriptor, global::Proto.CurrencyReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Proto.InstrumentType), typeof(global::Proto.InstrumentStatus), typeof(global::Proto.OptionType), typeof(global::Proto.ExerciseType), typeof(global::Proto.SettlementType), typeof(global::Proto.RoundDirection), }, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::Proto.Instrument), global::Proto.Instrument.Parser, new[]{ "Id", "Symbol", "Exchange", "Type", "Currency", "Underlying", "HedgeUnderlying", "Tick", "Multiplier", "Highest", "Lowest", "CallPut", "Maturity", "Exercise", "Settlement", "Strike" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Proto.InstrumentReq), global::Proto.InstrumentReq.Parser, new[]{ "Type", "Instruments", "Exchange", "User" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Proto.Instrument), global::Proto.Instrument.Parser, new[]{ "Id", "Symbol", "Exchange", "Type", "Currency", "Underlying", "HedgeUnderlying", "Tick", "Multiplier", "Highest", "Lowest", "CallPut", "Maturity", "Exercise", "Settlement", "Strike", "Status" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Proto.InstrumentReq), global::Proto.InstrumentReq.Parser, new[]{ "Type", "Exchange", "Instruments", "User" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Proto.InstrumentRep), global::Proto.InstrumentRep.Parser, new[]{ "Instruments", "Result" }, null, null, null)
           }));
     }
@@ -144,6 +145,7 @@ namespace Proto {
       exercise_ = other.exercise_;
       settlement_ = other.settlement_;
       strike_ = other.strike_;
+      status_ = other.status_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -199,9 +201,6 @@ namespace Proto {
     /// <summary>Field number for the "currency" field.</summary>
     public const int CurrencyFieldNumber = 5;
     private global::Proto.Currency currency_ = 0;
-    /// <summary>
-    ///InstrumentStatus status = 5;
-    /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Proto.Currency Currency {
       get { return currency_; }
@@ -331,6 +330,17 @@ namespace Proto {
       }
     }
 
+    /// <summary>Field number for the "status" field.</summary>
+    public const int StatusFieldNumber = 17;
+    private global::Proto.InstrumentStatus status_ = 0;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::Proto.InstrumentStatus Status {
+      get { return status_; }
+      set {
+        status_ = value;
+      }
+    }
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as Instrument);
@@ -360,6 +370,7 @@ namespace Proto {
       if (Exercise != other.Exercise) return false;
       if (Settlement != other.Settlement) return false;
       if (!pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.Equals(Strike, other.Strike)) return false;
+      if (Status != other.Status) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -382,6 +393,7 @@ namespace Proto {
       if (Exercise != 0) hash ^= Exercise.GetHashCode();
       if (Settlement != 0) hash ^= Settlement.GetHashCode();
       if (Strike != 0D) hash ^= pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.GetHashCode(Strike);
+      if (Status != 0) hash ^= Status.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -459,6 +471,10 @@ namespace Proto {
         output.WriteRawTag(129, 1);
         output.WriteDouble(Strike);
       }
+      if (Status != 0) {
+        output.WriteRawTag(136, 1);
+        output.WriteEnum((int) Status);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -514,6 +530,9 @@ namespace Proto {
       }
       if (Strike != 0D) {
         size += 2 + 8;
+      }
+      if (Status != 0) {
+        size += 2 + pb::CodedOutputStream.ComputeEnumSize((int) Status);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -573,6 +592,9 @@ namespace Proto {
       }
       if (other.Strike != 0D) {
         Strike = other.Strike;
+      }
+      if (other.Status != 0) {
+        Status = other.Status;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -649,6 +671,10 @@ namespace Proto {
             Strike = input.ReadDouble();
             break;
           }
+          case 136: {
+            status_ = (global::Proto.InstrumentStatus) input.ReadEnum();
+            break;
+          }
         }
       }
     }
@@ -681,8 +707,8 @@ namespace Proto {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public InstrumentReq(InstrumentReq other) : this() {
       type_ = other.type_;
-      instruments_ = other.instruments_.Clone();
       exchange_ = other.exchange_;
+      instruments_ = other.instruments_.Clone();
       user_ = other.user_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
@@ -703,18 +729,8 @@ namespace Proto {
       }
     }
 
-    /// <summary>Field number for the "instruments" field.</summary>
-    public const int InstrumentsFieldNumber = 2;
-    private static readonly pb::FieldCodec<global::Proto.Instrument> _repeated_instruments_codec
-        = pb::FieldCodec.ForMessage(18, global::Proto.Instrument.Parser);
-    private readonly pbc::RepeatedField<global::Proto.Instrument> instruments_ = new pbc::RepeatedField<global::Proto.Instrument>();
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public pbc::RepeatedField<global::Proto.Instrument> Instruments {
-      get { return instruments_; }
-    }
-
     /// <summary>Field number for the "exchange" field.</summary>
-    public const int ExchangeFieldNumber = 3;
+    public const int ExchangeFieldNumber = 2;
     private global::Proto.Exchange exchange_ = 0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Proto.Exchange Exchange {
@@ -722,6 +738,16 @@ namespace Proto {
       set {
         exchange_ = value;
       }
+    }
+
+    /// <summary>Field number for the "instruments" field.</summary>
+    public const int InstrumentsFieldNumber = 3;
+    private static readonly pb::FieldCodec<global::Proto.Instrument> _repeated_instruments_codec
+        = pb::FieldCodec.ForMessage(26, global::Proto.Instrument.Parser);
+    private readonly pbc::RepeatedField<global::Proto.Instrument> instruments_ = new pbc::RepeatedField<global::Proto.Instrument>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<global::Proto.Instrument> Instruments {
+      get { return instruments_; }
     }
 
     /// <summary>Field number for the "user" field.</summary>
@@ -749,8 +775,8 @@ namespace Proto {
         return true;
       }
       if (Type != other.Type) return false;
-      if(!instruments_.Equals(other.instruments_)) return false;
       if (Exchange != other.Exchange) return false;
+      if(!instruments_.Equals(other.instruments_)) return false;
       if (User != other.User) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
@@ -759,8 +785,8 @@ namespace Proto {
     public override int GetHashCode() {
       int hash = 1;
       if (Type != 0) hash ^= Type.GetHashCode();
-      hash ^= instruments_.GetHashCode();
       if (Exchange != 0) hash ^= Exchange.GetHashCode();
+      hash ^= instruments_.GetHashCode();
       if (User.Length != 0) hash ^= User.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
@@ -779,11 +805,11 @@ namespace Proto {
         output.WriteRawTag(8);
         output.WriteEnum((int) Type);
       }
-      instruments_.WriteTo(output, _repeated_instruments_codec);
       if (Exchange != 0) {
-        output.WriteRawTag(24);
+        output.WriteRawTag(16);
         output.WriteEnum((int) Exchange);
       }
+      instruments_.WriteTo(output, _repeated_instruments_codec);
       if (User.Length != 0) {
         output.WriteRawTag(34);
         output.WriteString(User);
@@ -799,10 +825,10 @@ namespace Proto {
       if (Type != 0) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Type);
       }
-      size += instruments_.CalculateSize(_repeated_instruments_codec);
       if (Exchange != 0) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Exchange);
       }
+      size += instruments_.CalculateSize(_repeated_instruments_codec);
       if (User.Length != 0) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(User);
       }
@@ -820,10 +846,10 @@ namespace Proto {
       if (other.Type != 0) {
         Type = other.Type;
       }
-      instruments_.Add(other.instruments_);
       if (other.Exchange != 0) {
         Exchange = other.Exchange;
       }
+      instruments_.Add(other.instruments_);
       if (other.User.Length != 0) {
         User = other.User;
       }
@@ -842,12 +868,12 @@ namespace Proto {
             type_ = (global::Proto.RequestType) input.ReadEnum();
             break;
           }
-          case 18: {
-            instruments_.AddEntriesFrom(input, _repeated_instruments_codec);
+          case 16: {
+            exchange_ = (global::Proto.Exchange) input.ReadEnum();
             break;
           }
-          case 24: {
-            exchange_ = (global::Proto.Exchange) input.ReadEnum();
+          case 26: {
+            instruments_.AddEntriesFrom(input, _repeated_instruments_codec);
             break;
           }
           case 34: {
