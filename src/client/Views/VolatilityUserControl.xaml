@@ -4,9 +4,11 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:d3="clr-namespace:InteractiveDataDisplay.WPF;assembly=InteractiveDataDisplay.WPF"
+             xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
              xmlns:local="clr-namespace:client.Views"
              mc:Ignorable="d" 
-             d:DesignHeight="600" d:DesignWidth="800">
+             d:DesignHeight="600" d:DesignWidth="800"
+             Initialized="UserControl_Initialized">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -18,13 +20,14 @@
                 <RowDefinition />
                 <RowDefinition />
                 <RowDefinition />
+                <RowDefinition />
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition />
-                <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
-            <DataGrid Grid.RowSpan="3"
+            <DataGrid Name="VolatilityDataGrid"
+                      Grid.RowSpan="4"
                       Margin="3"
                       RowHeaderWidth="15"
                       HorizontalGridLinesBrush="LightGray"                      
@@ -37,7 +40,34 @@
                       ItemsSource="{Binding Volatilities}">
                 <DataGrid.Resources>
                     <local:BoolToStringConverter x:Key="BoolToStringConverter" />
+                    <local:VolatilityPercentDoubleFormatConverter x:Key="VolatilityPercentDoubleFormatConverter" />
+                    <local:DoubleFormatMultiConverter x:Key="DoubleFormatMultiConverter" />
+                    <local:PercentDoubleFormatMultiConverter x:Key="PercentDoubleFormatMultiConverter" />
+                    <local:StringFormatConverter x:Key="StringFormatConverter" />
                     <local:PriceMultiValueConverter x:Key="PriceMultiValueConverter" />
+                    
+                    <DataTemplate x:Key="SSRateTemplate">
+                        <TextBox Margin="-1">
+                            <TextBox.Text>
+                                <MultiBinding Converter="{StaticResource PercentDoubleFormatMultiConverter}" Mode="TwoWay" UpdateSourceTrigger="LostFocus">
+                                    <Binding Path="SSRate" />
+                                    <Binding Path="Column.DisplayIndex" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGridCell}}" Mode="OneWay" />
+                                    <Binding Path="Formats" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" Mode="OneWay" />
+                                </MultiBinding>
+                            </TextBox.Text>
+                        </TextBox>
+                    </DataTemplate>
+                    <DataTemplate x:Key="BasisTemplate">
+                        <TextBox Margin="-1">
+                            <TextBox.Text>
+                                <MultiBinding Converter="{StaticResource DoubleFormatMultiConverter}" Mode="TwoWay" UpdateSourceTrigger="LostFocus">
+                                    <Binding Path="SSRate" />
+                                    <Binding Path="Column.DisplayIndex" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGridCell}}" Mode="OneWay" />
+                                    <Binding Path="Formats" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" Mode="OneWay" />
+                                </MultiBinding>
+                            </TextBox.Text>
+                        </TextBox>
+                    </DataTemplate>
                 </DataGrid.Resources>
                 <DataGrid.RowHeaderTemplate>
                     <DataTemplate>
@@ -46,37 +76,267 @@
                                    FontSize="10"/>
                     </DataTemplate>
                 </DataGrid.RowHeaderTemplate>
+                <DataGrid.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="Setting..." Click="MenuItem_Click" />
+                    </ContextMenu>
+                </DataGrid.ContextMenu>
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="Underlying" IsReadOnly="True" Binding="{Binding Underlying.Id}"></DataGridTextColumn>
                     <DataGridTextColumn Header="Maturity" IsReadOnly="True" Binding="{Binding Maturity, StringFormat={}{0:yyyyMMdd}}"></DataGridTextColumn>
+                    <!--DataGridTextColumn Header="SSRate" x:Name="SSRateColumn">
+                        <DataGridTextColumn.Binding>
+                            <MultiBinding Converter="{StaticResource DoubleFormatMultiConverter}">
+                                <Binding Path="SSRate" Mode="TwoWay" UpdateSourceTrigger="PropertyChanged"/>
+                                <Binding Path="Column.DisplayIndex" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGridCell}}" />
+                                <Binding Path="Formats" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
+                            </MultiBinding>
+                        </DataGridTextColumn.Binding>
+                    </DataGridTextColumn-->
+                    <DataGridTemplateColumn Header="SSRate(%)" x:Name="SSRateColumn">
+                        <DataGridTemplateColumn.CellTemplateSelector>
+                            <local:SSRateBasisTemplateSelector SSRateTemplate="{StaticResource SSRateTemplate}" BasisTemplate="{StaticResource BasisTemplate}" />
+                        </DataGridTemplateColumn.CellTemplateSelector>
+                    </DataGridTemplateColumn>
                     <DataGridTextColumn Header="Spot" IsReadOnly="True">
                         <DataGridTextColumn.Binding>
                             <MultiBinding Converter="{StaticResource PriceMultiValueConverter}">
                                 <Binding Path="Spot" />
                                 <Binding Path="SSRate" />
+                                <Binding Path="Column.DisplayIndex" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGridCell}}" />
+                                <Binding Path="Formats" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
                             </MultiBinding>
                         </DataGridTextColumn.Binding>
                     </DataGridTextColumn>
-                    <DataGridTextColumn Header="SpotRef" Binding="{Binding SpotRef, Mode=TwoWay}"></DataGridTextColumn>
-                    <DataGridTextColumn Header="Convex" Binding="{Binding CallConvex, Mode=TwoWay}"></DataGridTextColumn>
-                    <DataGridTextColumn Header="Slope" Binding="{Binding CallSlope, Mode=TwoWay}"></DataGridTextColumn>
-                    <DataGridTextColumn Header="Cutoff" Binding="{Binding CallCutoff, Mode=TwoWay}"></DataGridTextColumn>
-                    <DataGridTextColumn Header="Skew" Binding="{Binding Skew, Mode=TwoWay}"></DataGridTextColumn>
-                    <DataGridTextColumn Header="AtmVol" Binding="{Binding AtmVol, Mode=TwoWay}"></DataGridTextColumn>
-                    <DataGridTextColumn Header="Cutoff" Binding="{Binding PutCutoff, Mode=TwoWay}"></DataGridTextColumn>
-                    <DataGridTextColumn Header="Slope" Binding="{Binding PutSlope, Mode=TwoWay}"></DataGridTextColumn>
-                    <DataGridTextColumn Header="Convex" Binding="{Binding PutConvex, Mode=TwoWay}"></DataGridTextColumn>
-                    <DataGridTextColumn Header="VCR" Binding="{Binding VCR, Mode=TwoWay}"></DataGridTextColumn>
-                    <DataGridTextColumn Header="SCR" Binding="{Binding SCR, Mode=TwoWay}"></DataGridTextColumn>
-                    <DataGridTextColumn Header="CCR" Binding="{Binding CCR, Mode=TwoWay}"></DataGridTextColumn>
-                    <DataGridTextColumn Header="SPCR" Binding="{Binding SPCR, Mode=TwoWay}"></DataGridTextColumn>
-                    <DataGridTextColumn Header="SCCR" Binding="{Binding SCCR, Mode=TwoWay}"></DataGridTextColumn>
+                    <!--DataGridTextColumn Header="SpotRef" Binding="{Binding SpotRef, Mode=TwoWay}"></DataGridTextColumn-->
+                    <DataGridTemplateColumn Header="SpotRef">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBox Margin="-1">
+                                    <TextBox.Text>
+                                        <MultiBinding Converter="{StaticResource DoubleFormatMultiConverter}" Mode="TwoWay" UpdateSourceTrigger="LostFocus">
+                                            <Binding Path="SpotRef" />
+                                            <Binding Path="Column.DisplayIndex" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGridCell}}" Mode="OneWay" />
+                                            <Binding Path="Formats" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" Mode="OneWay" />
+                                        </MultiBinding>
+                                    </TextBox.Text>
+                                </TextBox>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <!--DataGridTextColumn Header="Skew(%)" Binding="{Binding Skew, Mode=TwoWay}"></DataGridTextColumn-->
+                    <DataGridTemplateColumn Header="Skew(%)">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBox Margin="-1">
+                                    <TextBox.Text>
+                                        <MultiBinding Converter="{StaticResource PercentDoubleFormatMultiConverter}" Mode="TwoWay" UpdateSourceTrigger="LostFocus">
+                                            <Binding Path="Skew" />
+                                            <Binding Path="Column.DisplayIndex" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGridCell}}" Mode="OneWay" />
+                                            <Binding Path="Formats" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" Mode="OneWay" />
+                                        </MultiBinding>
+                                    </TextBox.Text>
+                                </TextBox>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTemplateColumn Header="AtmVol(%)" x:Name="AtmVolColumn">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <xctk:DoubleUpDown Margin="-1" Increment=".1" Initialized="DoubleUpDown_Initialized"
+                                                   Value="{Binding AtmVol, Converter={StaticResource VolatilityPercentDoubleFormatConverter}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                                    <!--xctk:DoubleUpDown.FormatString>
+                                        <MultiBinding Converter="{StaticResource StringFormatConverter}">
+                                            <Binding Path="Column.DisplayIndex" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGridCell}}" />
+                                            <Binding RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
+                                        </MultiBinding>
+                                    </xctk:DoubleUpDown.FormatString-->
+                                </xctk:DoubleUpDown>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <!--DataGridTextColumn Header="ConvexP(%)" Binding="{Binding PutConvex, Mode=TwoWay}"></DataGridTextColumn-->
+                    <DataGridTemplateColumn Header="ConvexP(%)">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBox Margin="-1">
+                                    <TextBox.Text>
+                                        <MultiBinding Converter="{StaticResource PercentDoubleFormatMultiConverter}" Mode="TwoWay" UpdateSourceTrigger="LostFocus">
+                                            <Binding Path="PutConvex" />
+                                            <Binding Path="Column.DisplayIndex" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGridCell}}" Mode="OneWay" />
+                                            <Binding Path="Formats" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" Mode="OneWay" />
+                                        </MultiBinding>
+                                    </TextBox.Text>
+                                </TextBox>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <!--DataGridTextColumn Header="ConvexC(%)" Binding="{Binding CallConvex, Mode=TwoWay}"></DataGridTextColumn-->
+                    <DataGridTemplateColumn Header="ConvexC(%)">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBox Margin="-1">
+                                    <TextBox.Text>
+                                        <MultiBinding Converter="{StaticResource PercentDoubleFormatMultiConverter}" Mode="TwoWay" UpdateSourceTrigger="LostFocus">
+                                            <Binding Path="CallConvex" />
+                                            <Binding Path="Column.DisplayIndex" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGridCell}}" Mode="OneWay" />
+                                            <Binding Path="Formats" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" Mode="OneWay" />
+                                        </MultiBinding>
+                                    </TextBox.Text>
+                                </TextBox>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <!--DataGridTextColumn Header="SlopeP(%)" Binding="{Binding PutSlope, Mode=TwoWay}"></DataGridTextColumn-->
+                    <DataGridTemplateColumn Header="SlopeP(%)">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBox Margin="-1">
+                                    <TextBox.Text>
+                                        <MultiBinding Converter="{StaticResource PercentDoubleFormatMultiConverter}" Mode="TwoWay" UpdateSourceTrigger="LostFocus">
+                                            <Binding Path="PutSlope" />
+                                            <Binding Path="Column.DisplayIndex" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGridCell}}" Mode="OneWay" />
+                                            <Binding Path="Formats" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" Mode="OneWay" />
+                                        </MultiBinding>
+                                    </TextBox.Text>
+                                </TextBox>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <!--DataGridTextColumn Header="SlopeC(%)" Binding="{Binding CallSlope, Mode=TwoWay}"></DataGridTextColumn-->
+                    <DataGridTemplateColumn Header="SlopeC(%)">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBox Margin="-1">
+                                    <TextBox.Text>
+                                        <MultiBinding Converter="{StaticResource PercentDoubleFormatMultiConverter}" Mode="TwoWay" UpdateSourceTrigger="LostFocus">
+                                            <Binding Path="CallSlope" />
+                                            <Binding Path="Column.DisplayIndex" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGridCell}}" Mode="OneWay" />
+                                            <Binding Path="Formats" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" Mode="OneWay" />
+                                        </MultiBinding>
+                                    </TextBox.Text>
+                                </TextBox>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <!--DataGridTextColumn Header="CutoffP(%)" Binding="{Binding PutCutoff, Mode=TwoWay}"></DataGridTextColumn-->
+                    <DataGridTemplateColumn Header="CutoffP(%)">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBox Margin="-1">
+                                    <TextBox.Text>
+                                        <MultiBinding Converter="{StaticResource PercentDoubleFormatMultiConverter}" Mode="TwoWay" UpdateSourceTrigger="LostFocus">
+                                            <Binding Path="PutCutoff" />
+                                            <Binding Path="Column.DisplayIndex" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGridCell}}" Mode="OneWay" />
+                                            <Binding Path="Formats" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" Mode="OneWay" />
+                                        </MultiBinding>
+                                    </TextBox.Text>
+                                </TextBox>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <!--DataGridTextColumn Header="CutoffC(%)" Binding="{Binding CallCutoff, Mode=TwoWay}"></DataGridTextColumn-->
+                    <DataGridTemplateColumn Header="CutoffC(%)">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBox Margin="-1">
+                                    <TextBox.Text>
+                                        <MultiBinding Converter="{StaticResource PercentDoubleFormatMultiConverter}" Mode="TwoWay" UpdateSourceTrigger="LostFocus">
+                                            <Binding Path="CallCutoff" />
+                                            <Binding Path="Column.DisplayIndex" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGridCell}}" Mode="OneWay" />
+                                            <Binding Path="Formats" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" Mode="OneWay" />
+                                        </MultiBinding>
+                                    </TextBox.Text>
+                                </TextBox>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <!--DataGridTextColumn Header="SCR" Binding="{Binding SCR, Mode=TwoWay}"></DataGridTextColumn-->
+                    <DataGridTemplateColumn Header="SCR">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBox Margin="-1">
+                                    <TextBox.Text>
+                                        <MultiBinding Converter="{StaticResource DoubleFormatMultiConverter}" Mode="TwoWay" UpdateSourceTrigger="LostFocus">
+                                            <Binding Path="SCR" />
+                                            <Binding Path="Column.DisplayIndex" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGridCell}}" Mode="OneWay" />
+                                            <Binding Path="Formats" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" Mode="OneWay" />
+                                        </MultiBinding>
+                                    </TextBox.Text>
+                                </TextBox>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <!--DataGridTextColumn Header="VCR" Binding="{Binding VCR, Mode=TwoWay}"></DataGridTextColumn-->
+                    <DataGridTemplateColumn Header="VCR">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBox Margin="-1">
+                                    <TextBox.Text>
+                                        <MultiBinding Converter="{StaticResource DoubleFormatMultiConverter}" Mode="TwoWay" UpdateSourceTrigger="LostFocus">
+                                            <Binding Path="VCR" />
+                                            <Binding Path="Column.DisplayIndex" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGridCell}}" Mode="OneWay" />
+                                            <Binding Path="Formats" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" Mode="OneWay" />
+                                        </MultiBinding>
+                                    </TextBox.Text>
+                                </TextBox>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <!--DataGridTextColumn Header="CCR" Binding="{Binding CCR, Mode=TwoWay}"></DataGridTextColumn-->
+                    <DataGridTemplateColumn Header="CCR">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBox Margin="-1">
+                                    <TextBox.Text>
+                                        <MultiBinding Converter="{StaticResource DoubleFormatMultiConverter}" Mode="TwoWay" UpdateSourceTrigger="LostFocus">
+                                            <Binding Path="CCR" />
+                                            <Binding Path="Column.DisplayIndex" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGridCell}}" Mode="OneWay" />
+                                            <Binding Path="Formats" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" Mode="OneWay" />
+                                        </MultiBinding>
+                                    </TextBox.Text>
+                                </TextBox>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <!--DataGridTextColumn Header="SPCR" Binding="{Binding SPCR, Mode=TwoWay}"></DataGridTextColumn-->
+                    <DataGridTemplateColumn Header="SPCR">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBox Margin="-1">
+                                    <TextBox.Text>
+                                        <MultiBinding Converter="{StaticResource DoubleFormatMultiConverter}" Mode="TwoWay" UpdateSourceTrigger="LostFocus">
+                                            <Binding Path="SPCR" />
+                                            <Binding Path="Column.DisplayIndex" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGridCell}}" Mode="OneWay" />
+                                            <Binding Path="Formats" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" Mode="OneWay" />
+                                        </MultiBinding>
+                                    </TextBox.Text>
+                                </TextBox>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <!--DataGridTextColumn Header="SCCR" Binding="{Binding SCCR, Mode=TwoWay}"></DataGridTextColumn-->
+                    <DataGridTemplateColumn Header="SCCR">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBox Margin="-1">
+                                    <TextBox.Text>
+                                        <MultiBinding Converter="{StaticResource DoubleFormatMultiConverter}" Mode="TwoWay" UpdateSourceTrigger="LostFocus">
+                                            <Binding Path="SCCR" />
+                                            <Binding Path="Column.DisplayIndex" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGridCell}}" Mode="OneWay" />
+                                            <Binding Path="Formats" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" Mode="OneWay" />
+                                        </MultiBinding>
+                                    </TextBox.Text>
+                                </TextBox>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
                 </DataGrid.Columns>
             </DataGrid>
-            <GridSplitter Grid.Column="1" Grid.RowSpan="3" Width="3" VerticalAlignment="Stretch"></GridSplitter>            
             <Button Grid.Row="0" Grid.Column="2" Margin="5" Command="{Binding RefreshCommand}" >Refresh</Button>
-            <Button Grid.Row="1" Grid.Column="2" Margin="5" Command="{Binding ModifyCommand}" >Modify</Button>
-            <Button Grid.Row="2" Grid.Column="2" Margin="5" Click="DrawButton_Click">Draw</Button>            
+            <Button Grid.Row="1" Grid.Column="2" Margin="5" Command="{Binding SetSsrCommand}" >Set SSR</Button>
+            <Button Grid.Row="2" Grid.Column="2" Margin="5" Command="{Binding SetVolCommand}" >Set VOL</Button>
+            <Button Grid.Row="3" Grid.Column="2" Margin="5" Click="DrawButton_Click">Draw</Button>            
         </Grid>
         <GridSplitter Grid.Row="1" Height="3" HorizontalAlignment="Stretch"></GridSplitter>
         <Grid Grid.Row="2">
@@ -95,12 +355,12 @@
                 <d3:Chart.LegendContent>
                     <d3:LegendItemsPanel>
                         <d3:LegendItemsPanel.Resources>
-                            <DataTemplate x:Key="InteractiveDataDisplay.WPF.LineGraph">
+                            <!--DataTemplate x:Key="InteractiveDataDisplay.WPF.LineGraph">
                                 <StackPanel Orientation="Horizontal" Visibility="{Binding Path=Visibility}">
                                     <Line Width="15" Height="15" X1="0" Y1="0" X2="15" Y2="15" Stroke="{Binding Path=Stroke}" StrokeThickness="2"/>
                                     <TextBlock Margin="5,0,0,0" Text="{Binding Path=Description}"/>
                                 </StackPanel>
-                            </DataTemplate>
+                            </DataTemplate-->
                             <DataTemplate x:Key="InteractiveDataDisplay.WPF.DiamondMarkerGraph">
                                 <StackPanel Orientation="Horizontal" Visibility="Collapsed">
                                     <TextBlock Text="{Binding Path=Description}" />
@@ -113,20 +373,20 @@
                             </DataTemplate>
                             <DataTemplate x:Key="InteractiveDataDisplay.WPF.CircleMarkerGraph">
                                 <StackPanel Orientation="Horizontal" Visibility="Collapsed">
-                                    <TextBlock Text="{Binding Path=Description}" Foreground="{Binding Path=Stroke}" />
+                                    <TextBlock Text="{Binding Path=Description}" />
                                 </StackPanel>
                             </DataTemplate>
                         </d3:LegendItemsPanel.Resources>
                     </d3:LegendItemsPanel>
                 </d3:Chart.LegendContent>
                 <d3:Plot>
-                    <d3:LineGraph x:Name="NewVolGraph" Description="New Vol" Stroke="Red" StrokeThickness="3" Visibility="Collapsed" />
-                    <d3:LineGraph x:Name="OldVolGraph" Description="Old Vol" Stroke="Blue" StrokeThickness="3" />
+                    <d3:LineGraph x:Name="NewVolGraph" Description="New Vol" Stroke="Red" StrokeThickness="2" Visibility="Collapsed" />
+                    <d3:LineGraph x:Name="OldVolGraph" Description="Old Vol" Stroke="Blue" StrokeThickness="2" />
                     <d3:DiamondMarkerGraph x:Name="VolGraph" Stroke="Black" StrokeThickness="3" />
-                    <d3:TriangleMarkerGraph x:Name="CallBidIVGraph" Size="10" Color="Red" />
-                    <d3:TriangleMarkerGraph x:Name="CallAskIVGraph" Size="10" Color="Green" />
-                    <d3:CircleMarkerGraph x:Name="PutBidIVGraph" Size="10" Color="Red" />
-                    <d3:CircleMarkerGraph x:Name="PutAskIVGraph" Size="10" Color="Green" />
+                    <d3:TriangleMarkerGraph x:Name="CallBidIVGraph" Size="10" Color="Red" Opacity="10" />
+                    <d3:TriangleMarkerGraph x:Name="CallAskIVGraph" Size="10" Color="Green" Opacity="10" />
+                    <d3:CircleMarkerGraph x:Name="PutBidIVGraph" Size="11" Color="Red" Opacity="10" />
+                    <d3:CircleMarkerGraph x:Name="PutAskIVGraph" Size="11" Color="Green" Opacity="10" />
                 </d3:Plot>
             </d3:Chart>
             <GridSplitter Grid.Column="1" Width="3" VerticalAlignment="Stretch"></GridSplitter>

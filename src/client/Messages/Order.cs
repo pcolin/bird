@@ -24,27 +24,28 @@ namespace Proto {
     static OrderReflection() {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
-            "CgtPcmRlci5wcm90bxIFUHJvdG8i3gIKBU9yZGVyEgoKAmlkGAEgASgEEhIK",
-            "Cmluc3RydW1lbnQYAiABKAkSEgoKY291bnRlcl9pZBgDIAEoCRITCgtleGNo",
-            "YW5nZV9pZBgEIAEoCRIMCgRub3RlGAUgASgJEg0KBXByaWNlGAYgASgBEhoK",
-            "EmF2Z19leGVjdXRlZF9wcmljZRgHIAEoARIOCgZ2b2x1bWUYCCABKAUSFwoP",
-            "ZXhlY3V0ZWRfdm9sdW1lGAkgASgFEhkKBHNpZGUYCiABKA4yCy5Qcm90by5T",
-            "aWRlEiwKDnRpbWVfY29uZGl0aW9uGAsgASgOMhQuUHJvdG8uVGltZUNvbmRp",
-            "dGlvbhIeCgR0eXBlGAwgASgOMhAuUHJvdG8uT3JkZXJUeXBlEiIKBnN0YXR1",
-            "cxgNIAEoDjISLlByb3RvLk9yZGVyU3RhdHVzEgwKBHRpbWUYDiABKAQSDwoH",
-            "bGF0ZW5jeRgPIAEoBSqMAQoEU2lkZRIHCgNCdXkQABIICgRTZWxsEAESDAoI",
-            "QnV5Q292ZXIQAhIRCg1CdXlDb3ZlclRvZGF5EAMSFQoRQnV5Q292ZXJZZXN0",
-            "ZXJkYXkQBBINCglTZWxsQ292ZXIQBRISCg5TZWxsQ292ZXJUb2RheRAGEhYK",
-            "ElNlbGxDb3Zlclllc3RlcmRheRAHKiEKDVRpbWVDb25kaXRpb24SBwoDR1RE",
-            "EAASBwoDSU9DEAEqIgoJT3JkZXJUeXBlEgkKBUxpbWl0EAASCgoGTWFya2V0",
-            "EAEqlQEKC09yZGVyU3RhdHVzEg0KCVVuZGVmaW5lZBAAEgkKBUxvY2FsEAES",
-            "DQoJU3VibWl0dGVkEAISBwoDTmV3EAMSEQoNUGFydGlhbEZpbGxlZBAEEgoK",
-            "BkZpbGxlZBAFEhkKFVBhcnRpYWxGaWxsZWRDYW5jZWxlZBAGEgwKCENhbmNl",
-            "bGVkEAcSDAoIUmVqZWN0ZWQQCGIGcHJvdG8z"));
+            "CgtPcmRlci5wcm90bxIFUHJvdG8aDkV4Y2hhbmdlLnByb3RvIoEDCgVPcmRl",
+            "chIKCgJpZBgBIAEoBBISCgppbnN0cnVtZW50GAIgASgJEiEKCGV4Y2hhbmdl",
+            "GAMgASgOMg8uUHJvdG8uRXhjaGFuZ2USEgoKY291bnRlcl9pZBgEIAEoCRIT",
+            "CgtleGNoYW5nZV9pZBgFIAEoCRIMCgRub3RlGAYgASgJEg0KBXByaWNlGAcg",
+            "ASgBEhoKEmF2Z19leGVjdXRlZF9wcmljZRgIIAEoARIOCgZ2b2x1bWUYCSAB",
+            "KAUSFwoPZXhlY3V0ZWRfdm9sdW1lGAogASgFEhkKBHNpZGUYCyABKA4yCy5Q",
+            "cm90by5TaWRlEiwKDnRpbWVfY29uZGl0aW9uGAwgASgOMhQuUHJvdG8uVGlt",
+            "ZUNvbmRpdGlvbhIeCgR0eXBlGA0gASgOMhAuUHJvdG8uT3JkZXJUeXBlEiIK",
+            "BnN0YXR1cxgOIAEoDjISLlByb3RvLk9yZGVyU3RhdHVzEgwKBHRpbWUYDyAB",
+            "KAQSDwoHbGF0ZW5jeRgQIAEoBSqMAQoEU2lkZRIHCgNCdXkQABIICgRTZWxs",
+            "EAESDAoIQnV5Q292ZXIQAhIRCg1CdXlDb3ZlclRvZGF5EAMSFQoRQnV5Q292",
+            "ZXJZZXN0ZXJkYXkQBBINCglTZWxsQ292ZXIQBRISCg5TZWxsQ292ZXJUb2Rh",
+            "eRAGEhYKElNlbGxDb3Zlclllc3RlcmRheRAHKiEKDVRpbWVDb25kaXRpb24S",
+            "BwoDR1REEAASBwoDSU9DEAEqIgoJT3JkZXJUeXBlEgkKBUxpbWl0EAASCgoG",
+            "TWFya2V0EAEqlQEKC09yZGVyU3RhdHVzEg0KCVVuZGVmaW5lZBAAEgkKBUxv",
+            "Y2FsEAESDQoJU3VibWl0dGVkEAISBwoDTmV3EAMSEQoNUGFydGlhbEZpbGxl",
+            "ZBAEEgoKBkZpbGxlZBAFEhkKFVBhcnRpYWxGaWxsZWRDYW5jZWxlZBAGEgwK",
+            "CENhbmNlbGVkEAcSDAoIUmVqZWN0ZWQQCGIGcHJvdG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
-          new pbr::FileDescriptor[] { },
+          new pbr::FileDescriptor[] { global::Proto.ExchangeReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Proto.Side), typeof(global::Proto.TimeCondition), typeof(global::Proto.OrderType), typeof(global::Proto.OrderStatus), }, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::Proto.Order), global::Proto.Order.Parser, new[]{ "Id", "Instrument", "CounterId", "ExchangeId", "Note", "Price", "AvgExecutedPrice", "Volume", "ExecutedVolume", "Side", "TimeCondition", "Type", "Status", "Time", "Latency" }, null, null, null)
+            new pbr::GeneratedClrTypeInfo(typeof(global::Proto.Order), global::Proto.Order.Parser, new[]{ "Id", "Instrument", "Exchange", "CounterId", "ExchangeId", "Note", "Price", "AvgExecutedPrice", "Volume", "ExecutedVolume", "Side", "TimeCondition", "Type", "Status", "Time", "Latency" }, null, null, null)
           }));
     }
     #endregion
@@ -114,6 +115,7 @@ namespace Proto {
     public Order(Order other) : this() {
       id_ = other.id_;
       instrument_ = other.instrument_;
+      exchange_ = other.exchange_;
       counterId_ = other.counterId_;
       exchangeId_ = other.exchangeId_;
       note_ = other.note_;
@@ -157,8 +159,19 @@ namespace Proto {
       }
     }
 
+    /// <summary>Field number for the "exchange" field.</summary>
+    public const int ExchangeFieldNumber = 3;
+    private global::Proto.Exchange exchange_ = 0;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::Proto.Exchange Exchange {
+      get { return exchange_; }
+      set {
+        exchange_ = value;
+      }
+    }
+
     /// <summary>Field number for the "counter_id" field.</summary>
-    public const int CounterIdFieldNumber = 3;
+    public const int CounterIdFieldNumber = 4;
     private string counterId_ = "";
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string CounterId {
@@ -169,7 +182,7 @@ namespace Proto {
     }
 
     /// <summary>Field number for the "exchange_id" field.</summary>
-    public const int ExchangeIdFieldNumber = 4;
+    public const int ExchangeIdFieldNumber = 5;
     private string exchangeId_ = "";
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string ExchangeId {
@@ -180,7 +193,7 @@ namespace Proto {
     }
 
     /// <summary>Field number for the "note" field.</summary>
-    public const int NoteFieldNumber = 5;
+    public const int NoteFieldNumber = 6;
     private string note_ = "";
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string Note {
@@ -191,7 +204,7 @@ namespace Proto {
     }
 
     /// <summary>Field number for the "price" field.</summary>
-    public const int PriceFieldNumber = 6;
+    public const int PriceFieldNumber = 7;
     private double price_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public double Price {
@@ -202,7 +215,7 @@ namespace Proto {
     }
 
     /// <summary>Field number for the "avg_executed_price" field.</summary>
-    public const int AvgExecutedPriceFieldNumber = 7;
+    public const int AvgExecutedPriceFieldNumber = 8;
     private double avgExecutedPrice_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public double AvgExecutedPrice {
@@ -213,7 +226,7 @@ namespace Proto {
     }
 
     /// <summary>Field number for the "volume" field.</summary>
-    public const int VolumeFieldNumber = 8;
+    public const int VolumeFieldNumber = 9;
     private int volume_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int Volume {
@@ -224,7 +237,7 @@ namespace Proto {
     }
 
     /// <summary>Field number for the "executed_volume" field.</summary>
-    public const int ExecutedVolumeFieldNumber = 9;
+    public const int ExecutedVolumeFieldNumber = 10;
     private int executedVolume_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int ExecutedVolume {
@@ -235,7 +248,7 @@ namespace Proto {
     }
 
     /// <summary>Field number for the "side" field.</summary>
-    public const int SideFieldNumber = 10;
+    public const int SideFieldNumber = 11;
     private global::Proto.Side side_ = 0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Proto.Side Side {
@@ -246,7 +259,7 @@ namespace Proto {
     }
 
     /// <summary>Field number for the "time_condition" field.</summary>
-    public const int TimeConditionFieldNumber = 11;
+    public const int TimeConditionFieldNumber = 12;
     private global::Proto.TimeCondition timeCondition_ = 0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Proto.TimeCondition TimeCondition {
@@ -257,7 +270,7 @@ namespace Proto {
     }
 
     /// <summary>Field number for the "type" field.</summary>
-    public const int TypeFieldNumber = 12;
+    public const int TypeFieldNumber = 13;
     private global::Proto.OrderType type_ = 0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Proto.OrderType Type {
@@ -268,7 +281,7 @@ namespace Proto {
     }
 
     /// <summary>Field number for the "status" field.</summary>
-    public const int StatusFieldNumber = 13;
+    public const int StatusFieldNumber = 14;
     private global::Proto.OrderStatus status_ = 0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Proto.OrderStatus Status {
@@ -279,7 +292,7 @@ namespace Proto {
     }
 
     /// <summary>Field number for the "time" field.</summary>
-    public const int TimeFieldNumber = 14;
+    public const int TimeFieldNumber = 15;
     private ulong time_;
     /// <summary>
     ///google.protobuf.Timestamp time = 14;
@@ -293,7 +306,7 @@ namespace Proto {
     }
 
     /// <summary>Field number for the "latency" field.</summary>
-    public const int LatencyFieldNumber = 15;
+    public const int LatencyFieldNumber = 16;
     private int latency_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int Latency {
@@ -318,6 +331,7 @@ namespace Proto {
       }
       if (Id != other.Id) return false;
       if (Instrument != other.Instrument) return false;
+      if (Exchange != other.Exchange) return false;
       if (CounterId != other.CounterId) return false;
       if (ExchangeId != other.ExchangeId) return false;
       if (Note != other.Note) return false;
@@ -339,6 +353,7 @@ namespace Proto {
       int hash = 1;
       if (Id != 0UL) hash ^= Id.GetHashCode();
       if (Instrument.Length != 0) hash ^= Instrument.GetHashCode();
+      if (Exchange != 0) hash ^= Exchange.GetHashCode();
       if (CounterId.Length != 0) hash ^= CounterId.GetHashCode();
       if (ExchangeId.Length != 0) hash ^= ExchangeId.GetHashCode();
       if (Note.Length != 0) hash ^= Note.GetHashCode();
@@ -373,56 +388,60 @@ namespace Proto {
         output.WriteRawTag(18);
         output.WriteString(Instrument);
       }
+      if (Exchange != 0) {
+        output.WriteRawTag(24);
+        output.WriteEnum((int) Exchange);
+      }
       if (CounterId.Length != 0) {
-        output.WriteRawTag(26);
+        output.WriteRawTag(34);
         output.WriteString(CounterId);
       }
       if (ExchangeId.Length != 0) {
-        output.WriteRawTag(34);
+        output.WriteRawTag(42);
         output.WriteString(ExchangeId);
       }
       if (Note.Length != 0) {
-        output.WriteRawTag(42);
+        output.WriteRawTag(50);
         output.WriteString(Note);
       }
       if (Price != 0D) {
-        output.WriteRawTag(49);
+        output.WriteRawTag(57);
         output.WriteDouble(Price);
       }
       if (AvgExecutedPrice != 0D) {
-        output.WriteRawTag(57);
+        output.WriteRawTag(65);
         output.WriteDouble(AvgExecutedPrice);
       }
       if (Volume != 0) {
-        output.WriteRawTag(64);
+        output.WriteRawTag(72);
         output.WriteInt32(Volume);
       }
       if (ExecutedVolume != 0) {
-        output.WriteRawTag(72);
+        output.WriteRawTag(80);
         output.WriteInt32(ExecutedVolume);
       }
       if (Side != 0) {
-        output.WriteRawTag(80);
+        output.WriteRawTag(88);
         output.WriteEnum((int) Side);
       }
       if (TimeCondition != 0) {
-        output.WriteRawTag(88);
+        output.WriteRawTag(96);
         output.WriteEnum((int) TimeCondition);
       }
       if (Type != 0) {
-        output.WriteRawTag(96);
+        output.WriteRawTag(104);
         output.WriteEnum((int) Type);
       }
       if (Status != 0) {
-        output.WriteRawTag(104);
+        output.WriteRawTag(112);
         output.WriteEnum((int) Status);
       }
       if (Time != 0UL) {
-        output.WriteRawTag(112);
+        output.WriteRawTag(120);
         output.WriteUInt64(Time);
       }
       if (Latency != 0) {
-        output.WriteRawTag(120);
+        output.WriteRawTag(128, 1);
         output.WriteInt32(Latency);
       }
       if (_unknownFields != null) {
@@ -438,6 +457,9 @@ namespace Proto {
       }
       if (Instrument.Length != 0) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(Instrument);
+      }
+      if (Exchange != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Exchange);
       }
       if (CounterId.Length != 0) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(CounterId);
@@ -476,7 +498,7 @@ namespace Proto {
         size += 1 + pb::CodedOutputStream.ComputeUInt64Size(Time);
       }
       if (Latency != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Latency);
+        size += 2 + pb::CodedOutputStream.ComputeInt32Size(Latency);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -494,6 +516,9 @@ namespace Proto {
       }
       if (other.Instrument.Length != 0) {
         Instrument = other.Instrument;
+      }
+      if (other.Exchange != 0) {
+        Exchange = other.Exchange;
       }
       if (other.CounterId.Length != 0) {
         CounterId = other.CounterId;
@@ -553,55 +578,59 @@ namespace Proto {
             Instrument = input.ReadString();
             break;
           }
-          case 26: {
-            CounterId = input.ReadString();
+          case 24: {
+            exchange_ = (global::Proto.Exchange) input.ReadEnum();
             break;
           }
           case 34: {
-            ExchangeId = input.ReadString();
+            CounterId = input.ReadString();
             break;
           }
           case 42: {
+            ExchangeId = input.ReadString();
+            break;
+          }
+          case 50: {
             Note = input.ReadString();
             break;
           }
-          case 49: {
+          case 57: {
             Price = input.ReadDouble();
             break;
           }
-          case 57: {
+          case 65: {
             AvgExecutedPrice = input.ReadDouble();
             break;
           }
-          case 64: {
+          case 72: {
             Volume = input.ReadInt32();
             break;
           }
-          case 72: {
+          case 80: {
             ExecutedVolume = input.ReadInt32();
             break;
           }
-          case 80: {
+          case 88: {
             side_ = (global::Proto.Side) input.ReadEnum();
             break;
           }
-          case 88: {
+          case 96: {
             timeCondition_ = (global::Proto.TimeCondition) input.ReadEnum();
             break;
           }
-          case 96: {
+          case 104: {
             type_ = (global::Proto.OrderType) input.ReadEnum();
             break;
           }
-          case 104: {
+          case 112: {
             status_ = (global::Proto.OrderStatus) input.ReadEnum();
             break;
           }
-          case 112: {
+          case 120: {
             Time = input.ReadUInt64();
             break;
           }
-          case 120: {
+          case 128: {
             Latency = input.ReadInt32();
             break;
           }

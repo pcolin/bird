@@ -394,10 +394,12 @@ namespace client.ViewModels
        
         private void LoginExecute()
         {
+            List<Proto.Exchange> exchanges = new List<Proto.Exchange>();
             if (IsExchange1Selected)
             {
                 if (Login(this.exchange1))
                 {
+                    exchanges.Add(this.exchange1);
                     Exchange1Status = ConnectStatus.Connected;
                 }
             }
@@ -406,6 +408,7 @@ namespace client.ViewModels
             {
                 if (Login(this.exchange2))
                 {
+                    exchanges.Add(this.exchange2);
                     Exchange2Status = ConnectStatus.Connected;
                 }
             }
@@ -414,6 +417,7 @@ namespace client.ViewModels
             {
                 if (Login(this.exchange3))
                 {
+                    exchanges.Add(this.exchange3);
                     Exchange3Status = ConnectStatus.Connected;
                 }
             }
@@ -422,8 +426,13 @@ namespace client.ViewModels
             {
                 if (Login(this.exchange4))
                 {
+                    exchanges.Add(this.exchange4);
                     Exchange4Status = ConnectStatus.Connected;
                 }
+            }
+            if (exchanges.Count > 0)
+            {
+                this.container.Resolve<EventAggregator>().GetEvent<PubSubEvent<List<Proto.Exchange>>>().Publish(exchanges);
             }
         }
 
@@ -445,7 +454,6 @@ namespace client.ViewModels
 
                     var calculator = this.container.Resolve<TheoCalculator>(ex);
                     calculator.Start();
-                    this.container.Resolve<EventAggregator>().GetEvent<StartWindowEvent>().Publish();
                     return true;
                 }
                 else

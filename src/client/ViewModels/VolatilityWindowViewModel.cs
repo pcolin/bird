@@ -15,46 +15,41 @@ namespace client.ViewModels
 {
     class VolatilityWindowViewModel : BindableBase
     {
-        private readonly ObservableCollection<VolatilityUserControlViewModel> tabItems = new ObservableCollection<VolatilityUserControlViewModel>();
-        public ObservableCollection<VolatilityUserControlViewModel> TabItems
+        public IUnityContainer Container { get; set; }
+
+        public VolatilityWindowViewModel(IUnityContainer container)
         {
-            get { return tabItems; }
-        }
+            this.Container = container;
 
-        private BindableBase selectedTab;
-        public BindableBase SelectedTab
-        {
-            get { return selectedTab; }
-            set { SetProperty(ref selectedTab, value); }
-        }
-
-        public VolatilityWindowViewModel(IUnityContainer container, Dispatcher dispatcher, List<Proto.Exchange> exchanges)
-        {
-            this.container = container;
-            this.dispatcher = dispatcher;
-            this.exchanges = exchanges;
-
-            this.container.Resolve<EventAggregator>().GetEvent<StartWindowEvent>().Subscribe(this.StartWindow, ThreadOption.PublisherThread);
-
-        }
-
-        private void StartWindow()
-        {
-            this.dispatcher.BeginInvoke((MethodInvoker)delegate
+            this.PriceAction = p =>
             {
-                foreach (var exch in this.exchanges)
+                VolatilityUserControlViewModel vm = null;
+                if (this.viewModels.TryGetValue(p.Exchange, out vm))
                 {
-                    VolatilityUserControlViewModel vm = new VolatilityUserControlViewModel(this.container, this.dispatcher, exch);
-                    vm.Initialize();
-                    tabItems.Add(vm);
-                    //this.viewModels[exch] = vm;
+                    vm.ReceivePrice(p);
                 }
-            });
+            };
+
+            this.SSRateReqAction = req =>
+            {
+                VolatilityUserControlViewModel vm = null;
+                if (this.viewModels.TryGetValue(req.Exchange, out vm))
+                {
+                    vm.ReceiveSSRateReq(req);
+                }
+            };
         }
 
-        private IUnityContainer container;
-        private Dispatcher dispatcher;
-        List<Proto.Exchange> exchanges;
-        //Dictionary<Proto.Exchange, VolatilityUserControlViewModel> viewModels = new Dictionary<Proto.Exchange, VolatilityUserControlViewModel>();
+        public void Start(Dictionary<Proto.Exchange, VolatilityUserControlViewModel> viewModels)
+        {
+            this.viewModels = viewModels;
+
+            this.Container.Resolve<EventAggregator>().GetEvent<PubSubEvent<Proto.Price>>().Subscribe(this.PriceAction, ThreadOption.BackgroundThread);
+            this.Container.Resolve<EventAggregator>().GetEvent<PubSubEvent<Proto.SSRateReq>>().Subscribe(this.SSRateReqAction, ThreadOption.BackgroundThread);
+        }
+
+        Action<Proto.Price> PriceAction { get; set; }
+        Action<Proto.SSRateReq> SSRateReqAction { get; set; }
+        Dictionary<Proto.Exchange, VolatilityUserControlViewModel> viewModels;
     }
 }

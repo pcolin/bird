@@ -108,6 +108,21 @@ namespace client.Models
         //    }
         //}
 
+        public void OnProtoMessage(Proto.InstrumentReq req)
+        {
+            if (req.Type == Proto.RequestType.Set)
+            {
+                foreach (var inst in req.Instruments)
+                {
+                    var instrument = FindId(inst.Id);
+                    if (instrument != null)
+                    {
+                        inst.Status = inst.Status;
+                    }
+                }
+            }
+        }
+
         public void Remove(Proto.Instrument inst)
         {
             //lock (this.mutex)

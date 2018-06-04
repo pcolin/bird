@@ -120,6 +120,7 @@ namespace client.Models
             try
             {
                 var exch = this.exchange.ToString();
+                var pm = this.container.Resolve<ProductManager>(exch);
                 var em = this.container.Resolve<ExchangeParameterManager>(exch);
                 var im = this.container.Resolve<InterestRateManager>(exch);
                 var sm = this.container.Resolve<SSRateManager>(exch);
@@ -150,6 +151,15 @@ namespace client.Models
                         if (c != null)
                         {
                             this.container.Resolve<EventAggregator>().GetEvent<PubSubEvent<Proto.Cash>>().Publish(c);
+                        }
+                    }
+                    else if (type == "InstrumentReq")
+                    {
+                        var r = Proto.InstrumentReq.Parser.ParseFrom(bytes, len + 5, bytes.Count() - len - 5);
+                        if (r != null)
+                        {
+                            pm.OnProtoMessage(r);
+                            this.container.Resolve<EventAggregator>().GetEvent<PubSubEvent<Proto.InstrumentReq>>().Publish(r);
                         }
                     }
                     else if (type == "ExchangeParameterReq")

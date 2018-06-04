@@ -24,11 +24,11 @@ namespace client.Views
     {
         public OptionUserControl(OptionUserControlViewModel vm)
         {
+            UnderlyingFormats = new Dictionary<int, string>();
+            OptionFormats = new Dictionary<int, string>();
             this.DataContext = vm;
             InitializeComponent();
 
-            UnderlyingFormats = new Dictionary<int, string>();
-            OptionFormats = new Dictionary<int, string>();
         }
 
         public void SaveLayout()

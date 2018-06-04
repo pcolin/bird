@@ -24,18 +24,19 @@ namespace Proto {
     static InterestRateReflection() {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
-            "ChJJbnRlcmVzdFJhdGUucHJvdG8SBVByb3RvGg1SZXF1ZXN0LnByb3RvGgtS",
-            "ZXBseS5wcm90byIqCgxJbnRlcmVzdFJhdGUSDAoEZGF5cxgBIAEoBRIMCgRy",
-            "YXRlGAIgASgBImUKD0ludGVyZXN0UmF0ZVJlcRIgCgR0eXBlGAEgASgOMhIu",
-            "UHJvdG8uUmVxdWVzdFR5cGUSIgoFcmF0ZXMYAiADKAsyEy5Qcm90by5JbnRl",
-            "cmVzdFJhdGUSDAoEdXNlchgDIAEoCSJTCg9JbnRlcmVzdFJhdGVSZXASIgoF",
-            "cmF0ZXMYASADKAsyEy5Qcm90by5JbnRlcmVzdFJhdGUSHAoGcmVzdWx0GAIg",
-            "ASgLMgwuUHJvdG8uUmVwbHliBnByb3RvMw=="));
+            "ChJJbnRlcmVzdFJhdGUucHJvdG8SBVByb3RvGg5FeGNoYW5nZS5wcm90bxoN",
+            "UmVxdWVzdC5wcm90bxoLUmVwbHkucHJvdG8iKgoMSW50ZXJlc3RSYXRlEgwK",
+            "BGRheXMYASABKAUSDAoEcmF0ZRgCIAEoASKIAQoPSW50ZXJlc3RSYXRlUmVx",
+            "EiAKBHR5cGUYASABKA4yEi5Qcm90by5SZXF1ZXN0VHlwZRIhCghleGNoYW5n",
+            "ZRgCIAEoDjIPLlByb3RvLkV4Y2hhbmdlEiIKBXJhdGVzGAMgAygLMhMuUHJv",
+            "dG8uSW50ZXJlc3RSYXRlEgwKBHVzZXIYBCABKAkiUwoPSW50ZXJlc3RSYXRl",
+            "UmVwEiIKBXJhdGVzGAEgAygLMhMuUHJvdG8uSW50ZXJlc3RSYXRlEhwKBnJl",
+            "c3VsdBgCIAEoCzIMLlByb3RvLlJlcGx5YgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
-          new pbr::FileDescriptor[] { global::Proto.RequestReflection.Descriptor, global::Proto.ReplyReflection.Descriptor, },
+          new pbr::FileDescriptor[] { global::Proto.ExchangeReflection.Descriptor, global::Proto.RequestReflection.Descriptor, global::Proto.ReplyReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
             new pbr::GeneratedClrTypeInfo(typeof(global::Proto.InterestRate), global::Proto.InterestRate.Parser, new[]{ "Days", "Rate" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Proto.InterestRateReq), global::Proto.InterestRateReq.Parser, new[]{ "Type", "Rates", "User" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Proto.InterestRateReq), global::Proto.InterestRateReq.Parser, new[]{ "Type", "Exchange", "Rates", "User" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Proto.InterestRateRep), global::Proto.InterestRateRep.Parser, new[]{ "Rates", "Result" }, null, null, null)
           }));
     }
@@ -226,6 +227,7 @@ namespace Proto {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public InterestRateReq(InterestRateReq other) : this() {
       type_ = other.type_;
+      exchange_ = other.exchange_;
       rates_ = other.rates_.Clone();
       user_ = other.user_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
@@ -247,10 +249,21 @@ namespace Proto {
       }
     }
 
+    /// <summary>Field number for the "exchange" field.</summary>
+    public const int ExchangeFieldNumber = 2;
+    private global::Proto.Exchange exchange_ = 0;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::Proto.Exchange Exchange {
+      get { return exchange_; }
+      set {
+        exchange_ = value;
+      }
+    }
+
     /// <summary>Field number for the "rates" field.</summary>
-    public const int RatesFieldNumber = 2;
+    public const int RatesFieldNumber = 3;
     private static readonly pb::FieldCodec<global::Proto.InterestRate> _repeated_rates_codec
-        = pb::FieldCodec.ForMessage(18, global::Proto.InterestRate.Parser);
+        = pb::FieldCodec.ForMessage(26, global::Proto.InterestRate.Parser);
     private readonly pbc::RepeatedField<global::Proto.InterestRate> rates_ = new pbc::RepeatedField<global::Proto.InterestRate>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<global::Proto.InterestRate> Rates {
@@ -258,7 +271,7 @@ namespace Proto {
     }
 
     /// <summary>Field number for the "user" field.</summary>
-    public const int UserFieldNumber = 3;
+    public const int UserFieldNumber = 4;
     private string user_ = "";
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string User {
@@ -282,6 +295,7 @@ namespace Proto {
         return true;
       }
       if (Type != other.Type) return false;
+      if (Exchange != other.Exchange) return false;
       if(!rates_.Equals(other.rates_)) return false;
       if (User != other.User) return false;
       return Equals(_unknownFields, other._unknownFields);
@@ -291,6 +305,7 @@ namespace Proto {
     public override int GetHashCode() {
       int hash = 1;
       if (Type != 0) hash ^= Type.GetHashCode();
+      if (Exchange != 0) hash ^= Exchange.GetHashCode();
       hash ^= rates_.GetHashCode();
       if (User.Length != 0) hash ^= User.GetHashCode();
       if (_unknownFields != null) {
@@ -310,9 +325,13 @@ namespace Proto {
         output.WriteRawTag(8);
         output.WriteEnum((int) Type);
       }
+      if (Exchange != 0) {
+        output.WriteRawTag(16);
+        output.WriteEnum((int) Exchange);
+      }
       rates_.WriteTo(output, _repeated_rates_codec);
       if (User.Length != 0) {
-        output.WriteRawTag(26);
+        output.WriteRawTag(34);
         output.WriteString(User);
       }
       if (_unknownFields != null) {
@@ -325,6 +344,9 @@ namespace Proto {
       int size = 0;
       if (Type != 0) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Type);
+      }
+      if (Exchange != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Exchange);
       }
       size += rates_.CalculateSize(_repeated_rates_codec);
       if (User.Length != 0) {
@@ -343,6 +365,9 @@ namespace Proto {
       }
       if (other.Type != 0) {
         Type = other.Type;
+      }
+      if (other.Exchange != 0) {
+        Exchange = other.Exchange;
       }
       rates_.Add(other.rates_);
       if (other.User.Length != 0) {
@@ -363,11 +388,15 @@ namespace Proto {
             type_ = (global::Proto.RequestType) input.ReadEnum();
             break;
           }
-          case 18: {
-            rates_.AddEntriesFrom(input, _repeated_rates_codec);
+          case 16: {
+            exchange_ = (global::Proto.Exchange) input.ReadEnum();
             break;
           }
           case 26: {
+            rates_.AddEntriesFrom(input, _repeated_rates_codec);
+            break;
+          }
+          case 34: {
             User = input.ReadString();
             break;
           }

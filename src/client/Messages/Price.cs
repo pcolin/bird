@@ -24,22 +24,23 @@ namespace Proto {
     static PriceReflection() {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
-            "CgtQcmljZS5wcm90bxIFUHJvdG8aDVJlcXVlc3QucHJvdG8iKwoKUHJpY2VM",
-            "ZXZlbBINCgVwcmljZRgBIAEoARIOCgZ2b2x1bWUYAiABKAUiqQIKBVByaWNl",
-            "EhIKCmluc3RydW1lbnQYASABKAkSHwoEbGFzdBgCIAEoCzIRLlByb3RvLlBy",
-            "aWNlTGV2ZWwSHwoEYmlkcxgDIAMoCzIRLlByb3RvLlByaWNlTGV2ZWwSHwoE",
-            "YXNrcxgEIAMoCzIRLlByb3RvLlByaWNlTGV2ZWwSFgoOYWRqdXN0ZWRfcHJp",
-            "Y2UYBSABKAESDgoGYWRqdXN0GAYgASgBEgwKBG9wZW4YByABKAESDAoEaGln",
-            "aBgIIAEoARILCgNsb3cYCSABKAESDQoFY2xvc2UYCiABKAESEQoJcHJlX2Ns",
-            "b3NlGAsgASgBEhYKDnByZV9zZXR0bGVtZW50GAwgASgBEg4KBmFtb3VudBgN",
-            "IAEoARIOCgZ2b2x1bWUYDiABKAUiTgoIUHJpY2VSZXESIAoEdHlwZRgBIAEo",
-            "DjISLlByb3RvLlJlcXVlc3RUeXBlEhIKCmluc3RydW1lbnQYAiABKAkSDAoE",
-            "dXNlchgDIAEoCWIGcHJvdG8z"));
+            "CgtQcmljZS5wcm90bxIFUHJvdG8aDkV4Y2hhbmdlLnByb3RvGg1SZXF1ZXN0",
+            "LnByb3RvIisKClByaWNlTGV2ZWwSDQoFcHJpY2UYASABKAESDgoGdm9sdW1l",
+            "GAIgASgFIswCCgVQcmljZRISCgppbnN0cnVtZW50GAEgASgJEiEKCGV4Y2hh",
+            "bmdlGAIgASgOMg8uUHJvdG8uRXhjaGFuZ2USHwoEbGFzdBgDIAEoCzIRLlBy",
+            "b3RvLlByaWNlTGV2ZWwSHwoEYmlkcxgEIAMoCzIRLlByb3RvLlByaWNlTGV2",
+            "ZWwSHwoEYXNrcxgFIAMoCzIRLlByb3RvLlByaWNlTGV2ZWwSFgoOYWRqdXN0",
+            "ZWRfcHJpY2UYBiABKAESDgoGYWRqdXN0GAcgASgBEgwKBG9wZW4YCCABKAES",
+            "DAoEaGlnaBgJIAEoARILCgNsb3cYCiABKAESDQoFY2xvc2UYCyABKAESEQoJ",
+            "cHJlX2Nsb3NlGAwgASgBEhYKDnByZV9zZXR0bGVtZW50GA0gASgBEg4KBmFt",
+            "b3VudBgOIAEoARIOCgZ2b2x1bWUYDyABKAUiTgoIUHJpY2VSZXESIAoEdHlw",
+            "ZRgBIAEoDjISLlByb3RvLlJlcXVlc3RUeXBlEhIKCmluc3RydW1lbnQYAiAB",
+            "KAkSDAoEdXNlchgDIAEoCWIGcHJvdG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
-          new pbr::FileDescriptor[] { global::Proto.RequestReflection.Descriptor, },
+          new pbr::FileDescriptor[] { global::Proto.ExchangeReflection.Descriptor, global::Proto.RequestReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
             new pbr::GeneratedClrTypeInfo(typeof(global::Proto.PriceLevel), global::Proto.PriceLevel.Parser, new[]{ "Price", "Volume" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Proto.Price), global::Proto.Price.Parser, new[]{ "Instrument", "Last", "Bids", "Asks", "AdjustedPrice", "Adjust", "Open", "High", "Low", "Close", "PreClose", "PreSettlement", "Amount", "Volume" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Proto.Price), global::Proto.Price.Parser, new[]{ "Instrument", "Exchange", "Last", "Bids", "Asks", "AdjustedPrice", "Adjust", "Open", "High", "Low", "Close", "PreClose", "PreSettlement", "Amount", "Volume" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Proto.PriceReq), global::Proto.PriceReq.Parser, new[]{ "Type", "Instrument", "User" }, null, null, null)
           }));
     }
@@ -230,6 +231,7 @@ namespace Proto {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public Price(Price other) : this() {
       instrument_ = other.instrument_;
+      exchange_ = other.exchange_;
       Last = other.last_ != null ? other.Last.Clone() : null;
       bids_ = other.bids_.Clone();
       asks_ = other.asks_.Clone();
@@ -262,8 +264,19 @@ namespace Proto {
       }
     }
 
+    /// <summary>Field number for the "exchange" field.</summary>
+    public const int ExchangeFieldNumber = 2;
+    private global::Proto.Exchange exchange_ = 0;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::Proto.Exchange Exchange {
+      get { return exchange_; }
+      set {
+        exchange_ = value;
+      }
+    }
+
     /// <summary>Field number for the "last" field.</summary>
-    public const int LastFieldNumber = 2;
+    public const int LastFieldNumber = 3;
     private global::Proto.PriceLevel last_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Proto.PriceLevel Last {
@@ -274,9 +287,9 @@ namespace Proto {
     }
 
     /// <summary>Field number for the "bids" field.</summary>
-    public const int BidsFieldNumber = 3;
+    public const int BidsFieldNumber = 4;
     private static readonly pb::FieldCodec<global::Proto.PriceLevel> _repeated_bids_codec
-        = pb::FieldCodec.ForMessage(26, global::Proto.PriceLevel.Parser);
+        = pb::FieldCodec.ForMessage(34, global::Proto.PriceLevel.Parser);
     private readonly pbc::RepeatedField<global::Proto.PriceLevel> bids_ = new pbc::RepeatedField<global::Proto.PriceLevel>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<global::Proto.PriceLevel> Bids {
@@ -284,9 +297,9 @@ namespace Proto {
     }
 
     /// <summary>Field number for the "asks" field.</summary>
-    public const int AsksFieldNumber = 4;
+    public const int AsksFieldNumber = 5;
     private static readonly pb::FieldCodec<global::Proto.PriceLevel> _repeated_asks_codec
-        = pb::FieldCodec.ForMessage(34, global::Proto.PriceLevel.Parser);
+        = pb::FieldCodec.ForMessage(42, global::Proto.PriceLevel.Parser);
     private readonly pbc::RepeatedField<global::Proto.PriceLevel> asks_ = new pbc::RepeatedField<global::Proto.PriceLevel>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<global::Proto.PriceLevel> Asks {
@@ -294,7 +307,7 @@ namespace Proto {
     }
 
     /// <summary>Field number for the "adjusted_price" field.</summary>
-    public const int AdjustedPriceFieldNumber = 5;
+    public const int AdjustedPriceFieldNumber = 6;
     private double adjustedPrice_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public double AdjustedPrice {
@@ -305,7 +318,7 @@ namespace Proto {
     }
 
     /// <summary>Field number for the "adjust" field.</summary>
-    public const int AdjustFieldNumber = 6;
+    public const int AdjustFieldNumber = 7;
     private double adjust_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public double Adjust {
@@ -316,7 +329,7 @@ namespace Proto {
     }
 
     /// <summary>Field number for the "open" field.</summary>
-    public const int OpenFieldNumber = 7;
+    public const int OpenFieldNumber = 8;
     private double open_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public double Open {
@@ -327,7 +340,7 @@ namespace Proto {
     }
 
     /// <summary>Field number for the "high" field.</summary>
-    public const int HighFieldNumber = 8;
+    public const int HighFieldNumber = 9;
     private double high_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public double High {
@@ -338,7 +351,7 @@ namespace Proto {
     }
 
     /// <summary>Field number for the "low" field.</summary>
-    public const int LowFieldNumber = 9;
+    public const int LowFieldNumber = 10;
     private double low_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public double Low {
@@ -349,7 +362,7 @@ namespace Proto {
     }
 
     /// <summary>Field number for the "close" field.</summary>
-    public const int CloseFieldNumber = 10;
+    public const int CloseFieldNumber = 11;
     private double close_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public double Close {
@@ -360,7 +373,7 @@ namespace Proto {
     }
 
     /// <summary>Field number for the "pre_close" field.</summary>
-    public const int PreCloseFieldNumber = 11;
+    public const int PreCloseFieldNumber = 12;
     private double preClose_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public double PreClose {
@@ -371,7 +384,7 @@ namespace Proto {
     }
 
     /// <summary>Field number for the "pre_settlement" field.</summary>
-    public const int PreSettlementFieldNumber = 12;
+    public const int PreSettlementFieldNumber = 13;
     private double preSettlement_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public double PreSettlement {
@@ -382,7 +395,7 @@ namespace Proto {
     }
 
     /// <summary>Field number for the "amount" field.</summary>
-    public const int AmountFieldNumber = 13;
+    public const int AmountFieldNumber = 14;
     private double amount_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public double Amount {
@@ -393,7 +406,7 @@ namespace Proto {
     }
 
     /// <summary>Field number for the "volume" field.</summary>
-    public const int VolumeFieldNumber = 14;
+    public const int VolumeFieldNumber = 15;
     private int volume_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int Volume {
@@ -417,6 +430,7 @@ namespace Proto {
         return true;
       }
       if (Instrument != other.Instrument) return false;
+      if (Exchange != other.Exchange) return false;
       if (!object.Equals(Last, other.Last)) return false;
       if(!bids_.Equals(other.bids_)) return false;
       if(!asks_.Equals(other.asks_)) return false;
@@ -437,6 +451,7 @@ namespace Proto {
     public override int GetHashCode() {
       int hash = 1;
       if (Instrument.Length != 0) hash ^= Instrument.GetHashCode();
+      if (Exchange != 0) hash ^= Exchange.GetHashCode();
       if (last_ != null) hash ^= Last.GetHashCode();
       hash ^= bids_.GetHashCode();
       hash ^= asks_.GetHashCode();
@@ -467,50 +482,54 @@ namespace Proto {
         output.WriteRawTag(10);
         output.WriteString(Instrument);
       }
+      if (Exchange != 0) {
+        output.WriteRawTag(16);
+        output.WriteEnum((int) Exchange);
+      }
       if (last_ != null) {
-        output.WriteRawTag(18);
+        output.WriteRawTag(26);
         output.WriteMessage(Last);
       }
       bids_.WriteTo(output, _repeated_bids_codec);
       asks_.WriteTo(output, _repeated_asks_codec);
       if (AdjustedPrice != 0D) {
-        output.WriteRawTag(41);
+        output.WriteRawTag(49);
         output.WriteDouble(AdjustedPrice);
       }
       if (Adjust != 0D) {
-        output.WriteRawTag(49);
+        output.WriteRawTag(57);
         output.WriteDouble(Adjust);
       }
       if (Open != 0D) {
-        output.WriteRawTag(57);
+        output.WriteRawTag(65);
         output.WriteDouble(Open);
       }
       if (High != 0D) {
-        output.WriteRawTag(65);
+        output.WriteRawTag(73);
         output.WriteDouble(High);
       }
       if (Low != 0D) {
-        output.WriteRawTag(73);
+        output.WriteRawTag(81);
         output.WriteDouble(Low);
       }
       if (Close != 0D) {
-        output.WriteRawTag(81);
+        output.WriteRawTag(89);
         output.WriteDouble(Close);
       }
       if (PreClose != 0D) {
-        output.WriteRawTag(89);
+        output.WriteRawTag(97);
         output.WriteDouble(PreClose);
       }
       if (PreSettlement != 0D) {
-        output.WriteRawTag(97);
+        output.WriteRawTag(105);
         output.WriteDouble(PreSettlement);
       }
       if (Amount != 0D) {
-        output.WriteRawTag(105);
+        output.WriteRawTag(113);
         output.WriteDouble(Amount);
       }
       if (Volume != 0) {
-        output.WriteRawTag(112);
+        output.WriteRawTag(120);
         output.WriteInt32(Volume);
       }
       if (_unknownFields != null) {
@@ -523,6 +542,9 @@ namespace Proto {
       int size = 0;
       if (Instrument.Length != 0) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(Instrument);
+      }
+      if (Exchange != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Exchange);
       }
       if (last_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(Last);
@@ -572,6 +594,9 @@ namespace Proto {
       }
       if (other.Instrument.Length != 0) {
         Instrument = other.Instrument;
+      }
+      if (other.Exchange != 0) {
+        Exchange = other.Exchange;
       }
       if (other.last_ != null) {
         if (last_ == null) {
@@ -626,58 +651,62 @@ namespace Proto {
             Instrument = input.ReadString();
             break;
           }
-          case 18: {
+          case 16: {
+            exchange_ = (global::Proto.Exchange) input.ReadEnum();
+            break;
+          }
+          case 26: {
             if (last_ == null) {
               last_ = new global::Proto.PriceLevel();
             }
             input.ReadMessage(last_);
             break;
           }
-          case 26: {
+          case 34: {
             bids_.AddEntriesFrom(input, _repeated_bids_codec);
             break;
           }
-          case 34: {
+          case 42: {
             asks_.AddEntriesFrom(input, _repeated_asks_codec);
             break;
           }
-          case 41: {
+          case 49: {
             AdjustedPrice = input.ReadDouble();
             break;
           }
-          case 49: {
+          case 57: {
             Adjust = input.ReadDouble();
             break;
           }
-          case 57: {
+          case 65: {
             Open = input.ReadDouble();
             break;
           }
-          case 65: {
+          case 73: {
             High = input.ReadDouble();
             break;
           }
-          case 73: {
+          case 81: {
             Low = input.ReadDouble();
             break;
           }
-          case 81: {
+          case 89: {
             Close = input.ReadDouble();
             break;
           }
-          case 89: {
+          case 97: {
             PreClose = input.ReadDouble();
             break;
           }
-          case 97: {
+          case 105: {
             PreSettlement = input.ReadDouble();
             break;
           }
-          case 105: {
+          case 113: {
             Amount = input.ReadDouble();
             break;
           }
-          case 112: {
+          case 120: {
             Volume = input.ReadInt32();
             break;
           }

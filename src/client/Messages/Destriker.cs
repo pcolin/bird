@@ -24,19 +24,20 @@ namespace Proto {
     static DestrikerReflection() {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
-            "Cg9EZXN0cmlrZXIucHJvdG8SBVByb3RvGg1SZXF1ZXN0LnByb3RvGgtSZXBs",
-            "eS5wcm90byIyCglEZXN0cmlrZXISEgoKaW5zdHJ1bWVudBgBIAEoCRIRCglk",
-            "ZXN0cmlrZXIYAiABKAEieAoMRGVzdHJpa2VyUmVxEiAKBHR5cGUYASABKA4y",
-            "Ei5Qcm90by5SZXF1ZXN0VHlwZRIkCgpkZXN0cmlrZXJzGAIgAygLMhAuUHJv",
-            "dG8uRGVzdHJpa2VyEhIKCmluc3RydW1lbnQYAyABKAkSDAoEdXNlchgEIAEo",
-            "CSJSCgxEZXN0cmlrZXJSZXASJAoKZGVzdHJpa2VycxgBIAMoCzIQLlByb3Rv",
-            "LkRlc3RyaWtlchIcCgZyZXN1bHQYAiABKAsyDC5Qcm90by5SZXBseWIGcHJv",
-            "dG8z"));
+            "Cg9EZXN0cmlrZXIucHJvdG8SBVByb3RvGg5FeGNoYW5nZS5wcm90bxoNUmVx",
+            "dWVzdC5wcm90bxoLUmVwbHkucHJvdG8iMgoJRGVzdHJpa2VyEhIKCmluc3Ry",
+            "dW1lbnQYASABKAkSEQoJZGVzdHJpa2VyGAIgASgBIpsBCgxEZXN0cmlrZXJS",
+            "ZXESIAoEdHlwZRgBIAEoDjISLlByb3RvLlJlcXVlc3RUeXBlEiEKCGV4Y2hh",
+            "bmdlGAIgASgOMg8uUHJvdG8uRXhjaGFuZ2USJAoKZGVzdHJpa2VycxgDIAMo",
+            "CzIQLlByb3RvLkRlc3RyaWtlchISCgppbnN0cnVtZW50GAQgASgJEgwKBHVz",
+            "ZXIYBSABKAkiUgoMRGVzdHJpa2VyUmVwEiQKCmRlc3RyaWtlcnMYASADKAsy",
+            "EC5Qcm90by5EZXN0cmlrZXISHAoGcmVzdWx0GAIgASgLMgwuUHJvdG8uUmVw",
+            "bHliBnByb3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
-          new pbr::FileDescriptor[] { global::Proto.RequestReflection.Descriptor, global::Proto.ReplyReflection.Descriptor, },
+          new pbr::FileDescriptor[] { global::Proto.ExchangeReflection.Descriptor, global::Proto.RequestReflection.Descriptor, global::Proto.ReplyReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
             new pbr::GeneratedClrTypeInfo(typeof(global::Proto.Destriker), global::Proto.Destriker.Parser, new[]{ "Instrument", "Destriker_" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Proto.DestrikerReq), global::Proto.DestrikerReq.Parser, new[]{ "Type", "Destrikers", "Instrument", "User" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Proto.DestrikerReq), global::Proto.DestrikerReq.Parser, new[]{ "Type", "Exchange", "Destrikers", "Instrument", "User" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Proto.DestrikerRep), global::Proto.DestrikerRep.Parser, new[]{ "Destrikers", "Result" }, null, null, null)
           }));
     }
@@ -227,6 +228,7 @@ namespace Proto {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public DestrikerReq(DestrikerReq other) : this() {
       type_ = other.type_;
+      exchange_ = other.exchange_;
       destrikers_ = other.destrikers_.Clone();
       instrument_ = other.instrument_;
       user_ = other.user_;
@@ -249,10 +251,21 @@ namespace Proto {
       }
     }
 
+    /// <summary>Field number for the "exchange" field.</summary>
+    public const int ExchangeFieldNumber = 2;
+    private global::Proto.Exchange exchange_ = 0;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::Proto.Exchange Exchange {
+      get { return exchange_; }
+      set {
+        exchange_ = value;
+      }
+    }
+
     /// <summary>Field number for the "destrikers" field.</summary>
-    public const int DestrikersFieldNumber = 2;
+    public const int DestrikersFieldNumber = 3;
     private static readonly pb::FieldCodec<global::Proto.Destriker> _repeated_destrikers_codec
-        = pb::FieldCodec.ForMessage(18, global::Proto.Destriker.Parser);
+        = pb::FieldCodec.ForMessage(26, global::Proto.Destriker.Parser);
     private readonly pbc::RepeatedField<global::Proto.Destriker> destrikers_ = new pbc::RepeatedField<global::Proto.Destriker>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<global::Proto.Destriker> Destrikers {
@@ -260,7 +273,7 @@ namespace Proto {
     }
 
     /// <summary>Field number for the "instrument" field.</summary>
-    public const int InstrumentFieldNumber = 3;
+    public const int InstrumentFieldNumber = 4;
     private string instrument_ = "";
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string Instrument {
@@ -271,7 +284,7 @@ namespace Proto {
     }
 
     /// <summary>Field number for the "user" field.</summary>
-    public const int UserFieldNumber = 4;
+    public const int UserFieldNumber = 5;
     private string user_ = "";
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string User {
@@ -295,6 +308,7 @@ namespace Proto {
         return true;
       }
       if (Type != other.Type) return false;
+      if (Exchange != other.Exchange) return false;
       if(!destrikers_.Equals(other.destrikers_)) return false;
       if (Instrument != other.Instrument) return false;
       if (User != other.User) return false;
@@ -305,6 +319,7 @@ namespace Proto {
     public override int GetHashCode() {
       int hash = 1;
       if (Type != 0) hash ^= Type.GetHashCode();
+      if (Exchange != 0) hash ^= Exchange.GetHashCode();
       hash ^= destrikers_.GetHashCode();
       if (Instrument.Length != 0) hash ^= Instrument.GetHashCode();
       if (User.Length != 0) hash ^= User.GetHashCode();
@@ -325,13 +340,17 @@ namespace Proto {
         output.WriteRawTag(8);
         output.WriteEnum((int) Type);
       }
+      if (Exchange != 0) {
+        output.WriteRawTag(16);
+        output.WriteEnum((int) Exchange);
+      }
       destrikers_.WriteTo(output, _repeated_destrikers_codec);
       if (Instrument.Length != 0) {
-        output.WriteRawTag(26);
+        output.WriteRawTag(34);
         output.WriteString(Instrument);
       }
       if (User.Length != 0) {
-        output.WriteRawTag(34);
+        output.WriteRawTag(42);
         output.WriteString(User);
       }
       if (_unknownFields != null) {
@@ -344,6 +363,9 @@ namespace Proto {
       int size = 0;
       if (Type != 0) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Type);
+      }
+      if (Exchange != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Exchange);
       }
       size += destrikers_.CalculateSize(_repeated_destrikers_codec);
       if (Instrument.Length != 0) {
@@ -365,6 +387,9 @@ namespace Proto {
       }
       if (other.Type != 0) {
         Type = other.Type;
+      }
+      if (other.Exchange != 0) {
+        Exchange = other.Exchange;
       }
       destrikers_.Add(other.destrikers_);
       if (other.Instrument.Length != 0) {
@@ -388,15 +413,19 @@ namespace Proto {
             type_ = (global::Proto.RequestType) input.ReadEnum();
             break;
           }
-          case 18: {
-            destrikers_.AddEntriesFrom(input, _repeated_destrikers_codec);
+          case 16: {
+            exchange_ = (global::Proto.Exchange) input.ReadEnum();
             break;
           }
           case 26: {
-            Instrument = input.ReadString();
+            destrikers_.AddEntriesFrom(input, _repeated_destrikers_codec);
             break;
           }
           case 34: {
+            Instrument = input.ReadString();
+            break;
+          }
+          case 42: {
             User = input.ReadString();
             break;
           }

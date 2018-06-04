@@ -31,31 +31,37 @@ namespace client.Views
 
             this.DataContext = new OptionWindowViewModel(container, this.Dispatcher, exchange);
             
-            container.Resolve<EventAggregator>().GetEvent<StartWindowEvent>().Subscribe(this.StartWindow, ThreadOption.PublisherThread);
-            
-            //container.Resolve<EventAggregator>().GetEvent<CloseWindowEvent>().Subscribe(this.CloseWindow, ThreadOption.PublisherThread);
+            container.Resolve<EventAggregator>().GetEvent<PubSubEvent<List<Proto.Exchange>>>().Subscribe(this.StartWindow, ThreadOption.PublisherThread);            
         }
 
-        private void StartWindow()
+        private void StartWindow(List<Proto.Exchange> exchanges)
         {
             this.Dispatcher.BeginInvoke((MethodInvoker) delegate
             {
                 var vm = this.DataContext as OptionWindowViewModel;
-                ProductManager manager = vm.Container.Resolve<ProductManager>(vm.Exchange.ToString());
-                //var hedgeUnderlyings = manager.GetHedgeUnderlyings();
-                //hedgeUnderlyings.Sort();
-                var hedgeUnderlyings = from underlying in manager.GetHedgeUnderlyings() orderby underlying.Id select underlying;
-                var viewModels = new Dictionary<Instrument, OptionUserControlViewModel>();
-                foreach (var underlying in hedgeUnderlyings)
+                if (exchanges.Contains(vm.Exchange))
                 {
-                    var viewModel = new OptionUserControlViewModel(vm.Exchange, underlying, manager, vm.Container);
-                    OptionUserControl control = new OptionUserControl(viewModel);
-                    //control.DataContext = viewModel;
-                    viewModels[underlying] = viewModel;
-                    TabItem item = new TabItem() { Header = underlying.Id, Content = control };
-                    this.OptionTabControl.Items.Add(item);
+                    ProductManager manager = vm.Container.Resolve<ProductManager>(vm.Exchange.ToString());
+                    //var hedgeUnderlyings = manager.GetHedgeUnderlyings();
+                    //hedgeUnderlyings.Sort();
+                    var hedgeUnderlyings = from underlying in manager.GetHedgeUnderlyings() orderby underlying.Id select underlying;
+                    var viewModels = new Dictionary<Instrument, OptionUserControlViewModel>();
+                    foreach (var underlying in hedgeUnderlyings)
+                    {
+                        var viewModel = new OptionUserControlViewModel(vm.Exchange, underlying, manager, vm.Container);
+                        OptionUserControl control = new OptionUserControl(viewModel);
+                        //control.DataContext = viewModel;
+                        viewModels[underlying] = viewModel;
+                        TabItem item = new TabItem() { Header = underlying.Id, Content = control };
+                        this.OptionTabControl.Items.Add(item);
+                    }
+                    //this.OptionTabControl.SelectedIndex = 0;
+                    vm.Start(viewModels);
                 }
-                vm.Start(viewModels);
+                else
+                {
+                    this.Close();
+                }
             });
         }
 

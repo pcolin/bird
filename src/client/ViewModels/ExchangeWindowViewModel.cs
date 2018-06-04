@@ -27,14 +27,14 @@ namespace client.ViewModels
             set { SetProperty(ref selectedTab, value); }
         }
 
-        public ExchangeWindowViewModel(IUnityContainer container, List<Proto.Exchange> exchanges)
+        public ExchangeWindowViewModel(IUnityContainer container)
         {
             this.container = container;
-            this.container.Resolve<EventAggregator>().GetEvent<StartWindowEvent>().Subscribe(this.StartWindow, ThreadOption.PublisherThread);
-            this.exchanges = exchanges;
+            this.container.Resolve<EventAggregator>().GetEvent<PubSubEvent<List<Proto.Exchange>>>().Subscribe(this.StartWindow, ThreadOption.PublisherThread);
+            //this.exchanges = exchanges;
         }
 
-        private void StartWindow()
+        private void StartWindow(List<Proto.Exchange> exchanges)
         {
             foreach (var exchange in exchanges)
             {
@@ -42,9 +42,10 @@ namespace client.ViewModels
                 vm.Refresh();
                 tabItems.Add(vm);
             }
+            SelectedTab = tabItems.First();
         }
 
         private IUnityContainer container;
-        List<Proto.Exchange> exchanges;
+        //List<Proto.Exchange> exchanges;
     }
 }

@@ -24,33 +24,34 @@ namespace Proto {
     static VolatilityReflection() {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
-            "ChBWb2xhdGlsaXR5LnByb3RvEgVQcm90bxoNUmVxdWVzdC5wcm90bxoLUmVw",
-            "bHkucHJvdG8iNAoKVm9sYXRpbGl0eRISCgppbnN0cnVtZW50GAEgASgJEhIK",
-            "CnZvbGF0aWxpdHkYAiABKAEifAoNVm9sYXRpbGl0eVJlcRIgCgR0eXBlGAEg",
-            "ASgOMhIuUHJvdG8uUmVxdWVzdFR5cGUSJwoMdm9sYXRpbGl0aWVzGAIgAygL",
-            "MhEuUHJvdG8uVm9sYXRpbGl0eRISCgppbnN0cnVtZW50GAMgASgJEgwKBHVz",
-            "ZXIYBCABKAkiVgoNVm9sYXRpbGl0eVJlcBInCgx2b2xhdGlsaXRpZXMYASAD",
-            "KAsyES5Qcm90by5Wb2xhdGlsaXR5EhwKBnJlc3VsdBgCIAEoCzIMLlByb3Rv",
-            "LlJlcGx5IqACCg9Wb2xhdGlsaXR5Q3VydmUSEgoKdW5kZXJseWluZxgBIAEo",
-            "CRIQCghtYXR1cml0eRgCIAEoCRIMCgRzcG90GAMgASgBEg8KB2F0bV92b2wY",
-            "BCABKAESDAoEc2tldxgFIAEoARITCgtjYWxsX2NvbnZleBgGIAEoARISCgpw",
-            "dXRfY29udmV4GAcgASgBEhIKCmNhbGxfc2xvcGUYCCABKAESEQoJcHV0X3Ns",
-            "b3BlGAkgASgBEhMKC2NhbGxfY3V0b2ZmGAogASgBEhIKCnB1dF9jdXRvZmYY",
-            "CyABKAESCwoDdmNyGAwgASgBEgsKA3NjchgNIAEoARILCgNjY3IYDiABKAES",
-            "DAoEc3BjchgPIAEoARIMCgRzY2NyGBAgASgBIoABChJWb2xhdGlsaXR5Q3Vy",
-            "dmVSZXESIAoEdHlwZRgBIAEoDjISLlByb3RvLlJlcXVlc3RUeXBlEhIKCnVu",
-            "ZGVybHlpbmcYAiABKAkSJgoGY3VydmVzGAMgAygLMhYuUHJvdG8uVm9sYXRp",
-            "bGl0eUN1cnZlEgwKBHVzZXIYBCABKAkiWgoSVm9sYXRpbGl0eUN1cnZlUmVw",
-            "EiYKBmN1cnZlcxgBIAMoCzIWLlByb3RvLlZvbGF0aWxpdHlDdXJ2ZRIcCgZy",
-            "ZXN1bHQYAiABKAsyDC5Qcm90by5SZXBseWIGcHJvdG8z"));
+            "ChBWb2xhdGlsaXR5LnByb3RvEgVQcm90bxoORXhjaGFuZ2UucHJvdG8aDVJl",
+            "cXVlc3QucHJvdG8aC1JlcGx5LnByb3RvIjQKClZvbGF0aWxpdHkSEgoKaW5z",
+            "dHJ1bWVudBgBIAEoCRISCgp2b2xhdGlsaXR5GAIgASgBInwKDVZvbGF0aWxp",
+            "dHlSZXESIAoEdHlwZRgBIAEoDjISLlByb3RvLlJlcXVlc3RUeXBlEicKDHZv",
+            "bGF0aWxpdGllcxgCIAMoCzIRLlByb3RvLlZvbGF0aWxpdHkSEgoKaW5zdHJ1",
+            "bWVudBgDIAEoCRIMCgR1c2VyGAQgASgJIlYKDVZvbGF0aWxpdHlSZXASJwoM",
+            "dm9sYXRpbGl0aWVzGAEgAygLMhEuUHJvdG8uVm9sYXRpbGl0eRIcCgZyZXN1",
+            "bHQYAiABKAsyDC5Qcm90by5SZXBseSKgAgoPVm9sYXRpbGl0eUN1cnZlEhIK",
+            "CnVuZGVybHlpbmcYASABKAkSEAoIbWF0dXJpdHkYAiABKAkSDAoEc3BvdBgD",
+            "IAEoARIPCgdhdG1fdm9sGAQgASgBEgwKBHNrZXcYBSABKAESEwoLY2FsbF9j",
+            "b252ZXgYBiABKAESEgoKcHV0X2NvbnZleBgHIAEoARISCgpjYWxsX3Nsb3Bl",
+            "GAggASgBEhEKCXB1dF9zbG9wZRgJIAEoARITCgtjYWxsX2N1dG9mZhgKIAEo",
+            "ARISCgpwdXRfY3V0b2ZmGAsgASgBEgsKA3ZjchgMIAEoARILCgNzY3IYDSAB",
+            "KAESCwoDY2NyGA4gASgBEgwKBHNwY3IYDyABKAESDAoEc2NjchgQIAEoASKj",
+            "AQoSVm9sYXRpbGl0eUN1cnZlUmVxEiAKBHR5cGUYASABKA4yEi5Qcm90by5S",
+            "ZXF1ZXN0VHlwZRIhCghleGNoYW5nZRgCIAEoDjIPLlByb3RvLkV4Y2hhbmdl",
+            "EhIKCnVuZGVybHlpbmcYAyABKAkSJgoGY3VydmVzGAQgAygLMhYuUHJvdG8u",
+            "Vm9sYXRpbGl0eUN1cnZlEgwKBHVzZXIYBSABKAkiWgoSVm9sYXRpbGl0eUN1",
+            "cnZlUmVwEiYKBmN1cnZlcxgBIAMoCzIWLlByb3RvLlZvbGF0aWxpdHlDdXJ2",
+            "ZRIcCgZyZXN1bHQYAiABKAsyDC5Qcm90by5SZXBseWIGcHJvdG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
-          new pbr::FileDescriptor[] { global::Proto.RequestReflection.Descriptor, global::Proto.ReplyReflection.Descriptor, },
+          new pbr::FileDescriptor[] { global::Proto.ExchangeReflection.Descriptor, global::Proto.RequestReflection.Descriptor, global::Proto.ReplyReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
             new pbr::GeneratedClrTypeInfo(typeof(global::Proto.Volatility), global::Proto.Volatility.Parser, new[]{ "Instrument", "Volatility_" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Proto.VolatilityReq), global::Proto.VolatilityReq.Parser, new[]{ "Type", "Volatilities", "Instrument", "User" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Proto.VolatilityRep), global::Proto.VolatilityRep.Parser, new[]{ "Volatilities", "Result" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Proto.VolatilityCurve), global::Proto.VolatilityCurve.Parser, new[]{ "Underlying", "Maturity", "Spot", "AtmVol", "Skew", "CallConvex", "PutConvex", "CallSlope", "PutSlope", "CallCutoff", "PutCutoff", "Vcr", "Scr", "Ccr", "Spcr", "Sccr" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Proto.VolatilityCurveReq), global::Proto.VolatilityCurveReq.Parser, new[]{ "Type", "Underlying", "Curves", "User" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Proto.VolatilityCurveReq), global::Proto.VolatilityCurveReq.Parser, new[]{ "Type", "Exchange", "Underlying", "Curves", "User" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Proto.VolatilityCurveRep), global::Proto.VolatilityCurveRep.Parser, new[]{ "Curves", "Result" }, null, null, null)
           }));
     }
@@ -1150,6 +1151,7 @@ namespace Proto {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public VolatilityCurveReq(VolatilityCurveReq other) : this() {
       type_ = other.type_;
+      exchange_ = other.exchange_;
       underlying_ = other.underlying_;
       curves_ = other.curves_.Clone();
       user_ = other.user_;
@@ -1172,8 +1174,19 @@ namespace Proto {
       }
     }
 
+    /// <summary>Field number for the "exchange" field.</summary>
+    public const int ExchangeFieldNumber = 2;
+    private global::Proto.Exchange exchange_ = 0;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::Proto.Exchange Exchange {
+      get { return exchange_; }
+      set {
+        exchange_ = value;
+      }
+    }
+
     /// <summary>Field number for the "underlying" field.</summary>
-    public const int UnderlyingFieldNumber = 2;
+    public const int UnderlyingFieldNumber = 3;
     private string underlying_ = "";
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string Underlying {
@@ -1184,9 +1197,9 @@ namespace Proto {
     }
 
     /// <summary>Field number for the "curves" field.</summary>
-    public const int CurvesFieldNumber = 3;
+    public const int CurvesFieldNumber = 4;
     private static readonly pb::FieldCodec<global::Proto.VolatilityCurve> _repeated_curves_codec
-        = pb::FieldCodec.ForMessage(26, global::Proto.VolatilityCurve.Parser);
+        = pb::FieldCodec.ForMessage(34, global::Proto.VolatilityCurve.Parser);
     private readonly pbc::RepeatedField<global::Proto.VolatilityCurve> curves_ = new pbc::RepeatedField<global::Proto.VolatilityCurve>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<global::Proto.VolatilityCurve> Curves {
@@ -1194,7 +1207,7 @@ namespace Proto {
     }
 
     /// <summary>Field number for the "user" field.</summary>
-    public const int UserFieldNumber = 4;
+    public const int UserFieldNumber = 5;
     private string user_ = "";
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string User {
@@ -1218,6 +1231,7 @@ namespace Proto {
         return true;
       }
       if (Type != other.Type) return false;
+      if (Exchange != other.Exchange) return false;
       if (Underlying != other.Underlying) return false;
       if(!curves_.Equals(other.curves_)) return false;
       if (User != other.User) return false;
@@ -1228,6 +1242,7 @@ namespace Proto {
     public override int GetHashCode() {
       int hash = 1;
       if (Type != 0) hash ^= Type.GetHashCode();
+      if (Exchange != 0) hash ^= Exchange.GetHashCode();
       if (Underlying.Length != 0) hash ^= Underlying.GetHashCode();
       hash ^= curves_.GetHashCode();
       if (User.Length != 0) hash ^= User.GetHashCode();
@@ -1248,13 +1263,17 @@ namespace Proto {
         output.WriteRawTag(8);
         output.WriteEnum((int) Type);
       }
+      if (Exchange != 0) {
+        output.WriteRawTag(16);
+        output.WriteEnum((int) Exchange);
+      }
       if (Underlying.Length != 0) {
-        output.WriteRawTag(18);
+        output.WriteRawTag(26);
         output.WriteString(Underlying);
       }
       curves_.WriteTo(output, _repeated_curves_codec);
       if (User.Length != 0) {
-        output.WriteRawTag(34);
+        output.WriteRawTag(42);
         output.WriteString(User);
       }
       if (_unknownFields != null) {
@@ -1267,6 +1286,9 @@ namespace Proto {
       int size = 0;
       if (Type != 0) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Type);
+      }
+      if (Exchange != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Exchange);
       }
       if (Underlying.Length != 0) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(Underlying);
@@ -1288,6 +1310,9 @@ namespace Proto {
       }
       if (other.Type != 0) {
         Type = other.Type;
+      }
+      if (other.Exchange != 0) {
+        Exchange = other.Exchange;
       }
       if (other.Underlying.Length != 0) {
         Underlying = other.Underlying;
@@ -1311,15 +1336,19 @@ namespace Proto {
             type_ = (global::Proto.RequestType) input.ReadEnum();
             break;
           }
-          case 18: {
-            Underlying = input.ReadString();
+          case 16: {
+            exchange_ = (global::Proto.Exchange) input.ReadEnum();
             break;
           }
           case 26: {
-            curves_.AddEntriesFrom(input, _repeated_curves_codec);
+            Underlying = input.ReadString();
             break;
           }
           case 34: {
+            curves_.AddEntriesFrom(input, _repeated_curves_codec);
+            break;
+          }
+          case 42: {
             User = input.ReadString();
             break;
           }

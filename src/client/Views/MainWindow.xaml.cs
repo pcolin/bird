@@ -106,39 +106,29 @@ namespace client.Views
             {
                 if (reader != null) reader.Close();
             }
-            //MessageBox.Show("mainwindow in " + Thread.CurrentThread.ManagedThreadId);
-            //Tuple<bool, double, double, double, double> placement = null;
-            //if (placements.TryGetValue("ExchangeWindow", out placement))
-            //{
-            //    PlaceWindow(this, placements["MainWindow"]);
-            //}
+
             PlaceWindow(this, "MainWindow");
 
-            List<Proto.Exchange> exchanges = new List<Proto.Exchange>();
             if (vm.Exchange1Visible)
             {
                 NewOptionViewWindow(vm.Container, vm.Exchange1);
-                exchanges.Add(vm.Exchange1);
             }
             if (vm.Exchange2Visible)
             {
                 NewOptionViewWindow(vm.Container, vm.Exchange2);
-                exchanges.Add(vm.Exchange2);
             }
             if (vm.Exchange3Visible)
             {
                 NewOptionViewWindow(vm.Container, vm.Exchange3);
-                exchanges.Add(vm.Exchange3);
             }
             if (vm.Exchange4Visible)
             {
                 NewOptionViewWindow(vm.Container, vm.Exchange4);
-                exchanges.Add(vm.Exchange4);
             }
 
-            NewExchangeWindow(vm.Container, exchanges);
-            NewRateWindow(vm.Container, exchanges);
-            NewVolatilityWindow(vm.Container, exchanges);
+            NewExchangeWindow(vm.Container);
+            NewRateWindow(vm.Container);
+            NewVolatilityWindow(vm.Container);
         }
 
         private void NewOptionViewWindow(IUnityContainer container, Proto.Exchange exchange)
@@ -161,10 +151,10 @@ namespace client.Views
             t.Start();
         }
 
-        private void NewExchangeWindow(IUnityContainer container, List<Proto.Exchange> exchanges)
+        private void NewExchangeWindow(IUnityContainer container)
         {
             ExchangeWindow w = new ExchangeWindow();
-            w.DataContext = new ExchangeWindowViewModel(container, exchanges);
+            w.DataContext = new ExchangeWindowViewModel(container);
             if (PlaceWindow(w, "ExchangeWindow"))
             {
                 w.Show();
@@ -172,10 +162,10 @@ namespace client.Views
             container.RegisterInstance<ExchangeWindow>(w);
         }
 
-        private void NewRateWindow(IUnityContainer container, List<Proto.Exchange> exchanges)
+        private void NewRateWindow(IUnityContainer container)
         {
             RateWindow w = new RateWindow();
-            w.DataContext = new RateWindowViewModel(container, exchanges);
+            w.DataContext = new RateWindowViewModel(container);
             if (PlaceWindow(w, "RateWindow"))
             {
                 w.Show();
@@ -183,20 +173,12 @@ namespace client.Views
             container.RegisterInstance<RateWindow>(w);
         }
 
-        private void NewVolatilityWindow(IUnityContainer container, List<Proto.Exchange> exchanges)
+        private void NewVolatilityWindow(IUnityContainer container)
         {
-            //VolatilityWindow w = new VolatilityWindow();
-            //w.DataContext = new VolatilityWindowViewModel(container, w.Dispatcher, exchanges);
-            //if (PlaceWindow(w, "VolatilityWindow"))
-            //{
-            //    w.Show();
-            //}
-            //container.RegisterInstance<VolatilityWindow>(w);
-
             Thread t = new Thread(() =>
             {
-                VolatilityWindow w = new VolatilityWindow();
-                w.DataContext = new VolatilityWindowViewModel(container, w.Dispatcher, exchanges);
+                VolatilityWindow w = new VolatilityWindow(container);
+                //w.DataContext = new VolatilityWindowViewModel(container, w.Dispatcher, exchanges);
                 if (PlaceWindow(w, "VolatilityWindow"))
                 {
                     w.Show();

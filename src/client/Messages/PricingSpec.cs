@@ -24,25 +24,26 @@ namespace Proto {
     static PricingSpecReflection() {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
-            "ChFQcmljaW5nU3BlYy5wcm90bxIFUHJvdG8aDVJlcXVlc3QucHJvdG8aC1Jl",
-            "cGx5LnByb3RvIvUBCgtQcmljaW5nU3BlYxIMCgRuYW1lGAEgASgJEhIKCnVu",
-            "ZGVybHlpbmcYAiABKAkSIgoFbW9kZWwYAyABKA4yEy5Qcm90by5QcmljaW5n",
-            "TW9kZWwSDwoHb3B0aW9ucxgEIAMoCRINCgVkZXB0aBgFIAEoBRIQCghpbnRl",
-            "cnZhbBgGIAEoBRIsCgl0aGVvX3R5cGUYByABKA4yGS5Qcm90by5VbmRlcmx5",
-            "aW5nVGhlb1R5cGUSGAoQd2Fybl90aWNrX2NoYW5nZRgIIAEoBRIPCgdlbGFz",
-            "dGljGAkgASgBEhUKDWVsYXN0aWNfbGltaXQYCiABKAEidAoOUHJpY2luZ1Nw",
-            "ZWNSZXESIAoEdHlwZRgBIAEoDjISLlByb3RvLlJlcXVlc3RUeXBlEiQKCHBy",
-            "aWNpbmdzGAIgAygLMhIuUHJvdG8uUHJpY2luZ1NwZWMSDAoEbmFtZRgDIAEo",
-            "CRIMCgR1c2VyGAQgASgJIlQKDlByaWNpbmdTcGVjUmVwEiQKCHByaWNpbmdz",
-            "GAEgAygLMhIuUHJvdG8uUHJpY2luZ1NwZWMSHAoGcmVzdWx0GAIgASgLMgwu",
-            "UHJvdG8uUmVwbHkqIAoMUHJpY2luZ01vZGVsEgcKA0JTTRAAEgcKA0NSUhAB",
-            "KkEKElVuZGVybHlpbmdUaGVvVHlwZRIMCghNaWRwb2ludBAAEg4KCkJhcnlD",
-            "ZW50cmUQARINCglEZXB0aEJhcnkQAmIGcHJvdG8z"));
+            "ChFQcmljaW5nU3BlYy5wcm90bxIFUHJvdG8aDkV4Y2hhbmdlLnByb3RvGg1S",
+            "ZXF1ZXN0LnByb3RvGgtSZXBseS5wcm90byL1AQoLUHJpY2luZ1NwZWMSDAoE",
+            "bmFtZRgBIAEoCRISCgp1bmRlcmx5aW5nGAIgASgJEiIKBW1vZGVsGAMgASgO",
+            "MhMuUHJvdG8uUHJpY2luZ01vZGVsEg8KB29wdGlvbnMYBCADKAkSDQoFZGVw",
+            "dGgYBSABKAUSEAoIaW50ZXJ2YWwYBiABKAUSLAoJdGhlb190eXBlGAcgASgO",
+            "MhkuUHJvdG8uVW5kZXJseWluZ1RoZW9UeXBlEhgKEHdhcm5fdGlja19jaGFu",
+            "Z2UYCCABKAUSDwoHZWxhc3RpYxgJIAEoARIVCg1lbGFzdGljX2xpbWl0GAog",
+            "ASgBIpcBCg5QcmljaW5nU3BlY1JlcRIgCgR0eXBlGAEgASgOMhIuUHJvdG8u",
+            "UmVxdWVzdFR5cGUSIQoIZXhjaGFuZ2UYAiABKA4yDy5Qcm90by5FeGNoYW5n",
+            "ZRIkCghwcmljaW5ncxgDIAMoCzISLlByb3RvLlByaWNpbmdTcGVjEgwKBG5h",
+            "bWUYBCABKAkSDAoEdXNlchgFIAEoCSJUCg5QcmljaW5nU3BlY1JlcBIkCghw",
+            "cmljaW5ncxgBIAMoCzISLlByb3RvLlByaWNpbmdTcGVjEhwKBnJlc3VsdBgC",
+            "IAEoCzIMLlByb3RvLlJlcGx5KiAKDFByaWNpbmdNb2RlbBIHCgNCU00QABIH",
+            "CgNDUlIQASpBChJVbmRlcmx5aW5nVGhlb1R5cGUSDAoITWlkcG9pbnQQABIO",
+            "CgpCYXJ5Q2VudHJlEAESDQoJRGVwdGhCYXJ5EAJiBnByb3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
-          new pbr::FileDescriptor[] { global::Proto.RequestReflection.Descriptor, global::Proto.ReplyReflection.Descriptor, },
+          new pbr::FileDescriptor[] { global::Proto.ExchangeReflection.Descriptor, global::Proto.RequestReflection.Descriptor, global::Proto.ReplyReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Proto.PricingModel), typeof(global::Proto.UnderlyingTheoType), }, new pbr::GeneratedClrTypeInfo[] {
             new pbr::GeneratedClrTypeInfo(typeof(global::Proto.PricingSpec), global::Proto.PricingSpec.Parser, new[]{ "Name", "Underlying", "Model", "Options", "Depth", "Interval", "TheoType", "WarnTickChange", "Elastic", "ElasticLimit" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Proto.PricingSpecReq), global::Proto.PricingSpecReq.Parser, new[]{ "Type", "Pricings", "Name", "User" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Proto.PricingSpecReq), global::Proto.PricingSpecReq.Parser, new[]{ "Type", "Exchange", "Pricings", "Name", "User" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Proto.PricingSpecRep), global::Proto.PricingSpecRep.Parser, new[]{ "Pricings", "Result" }, null, null, null)
           }));
     }
@@ -463,6 +464,7 @@ namespace Proto {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public PricingSpecReq(PricingSpecReq other) : this() {
       type_ = other.type_;
+      exchange_ = other.exchange_;
       pricings_ = other.pricings_.Clone();
       name_ = other.name_;
       user_ = other.user_;
@@ -485,10 +487,21 @@ namespace Proto {
       }
     }
 
+    /// <summary>Field number for the "exchange" field.</summary>
+    public const int ExchangeFieldNumber = 2;
+    private global::Proto.Exchange exchange_ = 0;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::Proto.Exchange Exchange {
+      get { return exchange_; }
+      set {
+        exchange_ = value;
+      }
+    }
+
     /// <summary>Field number for the "pricings" field.</summary>
-    public const int PricingsFieldNumber = 2;
+    public const int PricingsFieldNumber = 3;
     private static readonly pb::FieldCodec<global::Proto.PricingSpec> _repeated_pricings_codec
-        = pb::FieldCodec.ForMessage(18, global::Proto.PricingSpec.Parser);
+        = pb::FieldCodec.ForMessage(26, global::Proto.PricingSpec.Parser);
     private readonly pbc::RepeatedField<global::Proto.PricingSpec> pricings_ = new pbc::RepeatedField<global::Proto.PricingSpec>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<global::Proto.PricingSpec> Pricings {
@@ -496,7 +509,7 @@ namespace Proto {
     }
 
     /// <summary>Field number for the "name" field.</summary>
-    public const int NameFieldNumber = 3;
+    public const int NameFieldNumber = 4;
     private string name_ = "";
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string Name {
@@ -507,7 +520,7 @@ namespace Proto {
     }
 
     /// <summary>Field number for the "user" field.</summary>
-    public const int UserFieldNumber = 4;
+    public const int UserFieldNumber = 5;
     private string user_ = "";
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string User {
@@ -531,6 +544,7 @@ namespace Proto {
         return true;
       }
       if (Type != other.Type) return false;
+      if (Exchange != other.Exchange) return false;
       if(!pricings_.Equals(other.pricings_)) return false;
       if (Name != other.Name) return false;
       if (User != other.User) return false;
@@ -541,6 +555,7 @@ namespace Proto {
     public override int GetHashCode() {
       int hash = 1;
       if (Type != 0) hash ^= Type.GetHashCode();
+      if (Exchange != 0) hash ^= Exchange.GetHashCode();
       hash ^= pricings_.GetHashCode();
       if (Name.Length != 0) hash ^= Name.GetHashCode();
       if (User.Length != 0) hash ^= User.GetHashCode();
@@ -561,13 +576,17 @@ namespace Proto {
         output.WriteRawTag(8);
         output.WriteEnum((int) Type);
       }
+      if (Exchange != 0) {
+        output.WriteRawTag(16);
+        output.WriteEnum((int) Exchange);
+      }
       pricings_.WriteTo(output, _repeated_pricings_codec);
       if (Name.Length != 0) {
-        output.WriteRawTag(26);
+        output.WriteRawTag(34);
         output.WriteString(Name);
       }
       if (User.Length != 0) {
-        output.WriteRawTag(34);
+        output.WriteRawTag(42);
         output.WriteString(User);
       }
       if (_unknownFields != null) {
@@ -580,6 +599,9 @@ namespace Proto {
       int size = 0;
       if (Type != 0) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Type);
+      }
+      if (Exchange != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Exchange);
       }
       size += pricings_.CalculateSize(_repeated_pricings_codec);
       if (Name.Length != 0) {
@@ -601,6 +623,9 @@ namespace Proto {
       }
       if (other.Type != 0) {
         Type = other.Type;
+      }
+      if (other.Exchange != 0) {
+        Exchange = other.Exchange;
       }
       pricings_.Add(other.pricings_);
       if (other.Name.Length != 0) {
@@ -624,15 +649,19 @@ namespace Proto {
             type_ = (global::Proto.RequestType) input.ReadEnum();
             break;
           }
-          case 18: {
-            pricings_.AddEntriesFrom(input, _repeated_pricings_codec);
+          case 16: {
+            exchange_ = (global::Proto.Exchange) input.ReadEnum();
             break;
           }
           case 26: {
-            Name = input.ReadString();
+            pricings_.AddEntriesFrom(input, _repeated_pricings_codec);
             break;
           }
           case 34: {
+            Name = input.ReadString();
+            break;
+          }
+          case 42: {
             User = input.ReadString();
             break;
           }

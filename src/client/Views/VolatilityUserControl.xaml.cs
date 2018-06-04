@@ -16,6 +16,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Microsoft.Practices.Unity;
 using ModelLibrary;
+using Xceed.Wpf.Toolkit;
 
 namespace client.Views
 {
@@ -24,10 +25,22 @@ namespace client.Views
     /// </summary>
     public partial class VolatilityUserControl : UserControl
     {
-        public VolatilityUserControl()
+        public VolatilityUserControl(VolatilityUserControlViewModel viewModel)
         {
+            Formats = new Dictionary<int, string>();
+            this.DataContext = viewModel;
             InitializeComponent();
         }
+
+        public void SaveLayout()
+        {
+            var vm = this.DataContext as VolatilityUserControlViewModel;
+            string name = "Volatility_" + vm.Exchange + ".xml";
+            MainWindow.SaveDataGridLayout(name, this.VolatilityDataGrid, Formats);
+        }
+
+        public Dictionary<int, string> Formats { get; set; }
+        private DoubleUpDown volDoubleUpDown;
 
         private void DrawButton_Click(object sender, RoutedEventArgs e)
         {
@@ -128,7 +141,7 @@ namespace client.Views
             }
 
             this.CallBidIVGraph.Plot(strikers, callBidIV);
-            this.CallAskIVGraph.Plot(strikers, callBidIV);
+            this.CallAskIVGraph.Plot(strikers, callAskIV);
             this.PutBidIVGraph.Plot(strikers, putBidIV);
             this.PutAskIVGraph.Plot(strikers, putAskIV);
 
@@ -147,6 +160,37 @@ namespace client.Views
         }
 
         private VolatilityModelWrapper model = new VolatilityModelWrapper();
+
+        private void UserControl_Initialized(object sender, EventArgs e)
+        {
+            var vm = this.DataContext as VolatilityUserControlViewModel;
+            if (vm != null)
+            {
+                if (vm.Volatilities[vm.SelectedVolatility].Underlying.Type == Proto.InstrumentType.Future)
+                {
+                    this.SSRateColumn.Header = "Basis";
+
+                    //this.SSRateColumn.CellTemplate.
+                }
+
+                /// load layout
+                string name = "Volatility_" + vm.Exchange + ".xml";
+                MainWindow.LoadDataGridLayout(name, this.VolatilityDataGrid, this.Formats);
+                //this.volDoubleUpDown.FormatString = this.Formats[this.AtmVolColumn.DisplayIndex];
+            }
+        }
+
+        private void MenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            ColumnSettingWindow setting = new ColumnSettingWindow(this.VolatilityDataGrid, this.Formats);
+            setting.Show();
+            this.volDoubleUpDown.FormatString = this.Formats[this.AtmVolColumn.DisplayIndex];
+        }
+
+        private void DoubleUpDown_Initialized(object sender, EventArgs e)
+        {
+            this.volDoubleUpDown = sender as DoubleUpDown;
+        }
     }
 
     public class BoolToStringConverter : IValueConverter
@@ -163,13 +207,97 @@ namespace client.Views
         }
     }
 
-    public class PriceMultiValueConverter : IMultiValueConverter
+    public class VolatilityPercentDoubleFormatConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            double result = (double)value;
+            return result * 100;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            double result = (double)value;
+            return result / 100;
+        }
+    }
+
+
+    public class DoubleFormatMultiConverter : IMultiValueConverter
     {
         public object Convert(object[] values, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
-            double spot = (double)values[0];
-            double ssrate = (double)values[1];
-            return (spot + ssrate).ToString("F2");
+            if (values[0] is double)
+            {
+                double value = (double)values[0];
+                Dictionary<int, string> formats = values[2] as Dictionary<int, string>;
+                if (formats != null)
+                {
+                    int index = (int)values[1];
+                    string format = null;
+                    if (formats.TryGetValue(index, out format))
+                    {
+                        return value.ToString(format);
+                    }
+                }
+                return value.ToString("N2");
+            }
+            return null;
+        }
+
+        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, System.Globalization.CultureInfo culture)
+        {
+            double result = 0;
+            double.TryParse(value.ToString(), out result);
+            return new object[3] { result, null, null };
+        }
+    }
+
+    public class PercentDoubleFormatMultiConverter : IMultiValueConverter
+    {
+        public object Convert(object[] values, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            if (values[0] is double)
+            {
+                double value = (double)values[0];
+                Dictionary<int, string> formats = values[2] as Dictionary<int, string>;
+                if (formats != null)
+                {
+                    int index = (int)values[1];
+                    string format = null;
+                    if (formats.TryGetValue(index, out format))
+                    {
+                        return (value * 100).ToString(format);
+                    }
+                }
+                return (value * 100).ToString("N2");
+            }
+            return null;
+        }
+
+        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, System.Globalization.CultureInfo culture)
+        {
+            double result = 0;
+            double.TryParse(value.ToString(), out result);
+            return new object[3] { result / 100, null, null };
+        }
+    }
+
+    public class StringFormatConverter : IMultiValueConverter
+    {
+        public object Convert(object[] values, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            VolatilityUserControl control = values[1] as VolatilityUserControl;
+            if (control != null)
+            {
+                int index = (int)values[0];
+                string format = null;
+                if (control.Formats.TryGetValue(index, out format))
+                {
+                    return format;
+                }
+            }
+            return "N3";
         }
 
         public object[] ConvertBack(object value, Type[] targetTypes, object parameter, System.Globalization.CultureInfo culture)
@@ -177,4 +305,55 @@ namespace client.Views
             throw new NotImplementedException();
         }
     }
+
+    public class PriceMultiValueConverter : IMultiValueConverter
+    {
+        public object Convert(object[] values, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            double spot = (double)values[0];
+            double ssrate = (double)values[1];
+
+            Dictionary<int, string> formats = values[3] as Dictionary<int, string>;
+            if (formats != null)
+            {
+                int index = (int)values[2];
+                string format = null;
+                if (formats.TryGetValue(index, out format))
+                {
+                    return (spot + ssrate).ToString(format);
+                }
+            }
+
+            return (spot + ssrate).ToString("N2");
+        }
+
+        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, System.Globalization.CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    public class SSRateBasisTemplateSelector : DataTemplateSelector
+    {
+        public DataTemplate SSRateTemplate { get; set; }
+        public DataTemplate BasisTemplate { get; set; }
+
+        public override DataTemplate SelectTemplate(object item, DependencyObject container)
+        {
+            if (item is VolatilityItem)
+            {
+                VolatilityItem underlying = (VolatilityItem)item;
+                if (underlying.Underlying.Type == Proto.InstrumentType.Future)
+                {
+                    return BasisTemplate;
+                }
+                else
+                {
+                    return SSRateTemplate;
+                }
+            }
+            return null;
+        }
+    }
+
 }

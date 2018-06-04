@@ -24,14 +24,15 @@ namespace Proto {
     static TradeReflection() {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
-            "CgtUcmFkZS5wcm90bxIFUHJvdG8aC09yZGVyLnByb3RvIoEBCgVUcmFkZRIK",
-            "CgJpZBgBIAEoCRISCgppbnN0cnVtZW50GAIgASgJEhkKBHNpZGUYAyABKA4y",
-            "Cy5Qcm90by5TaWRlEg0KBXByaWNlGAQgASgBEg4KBnZvbHVtZRgFIAEoBRIM",
-            "CgR0aW1lGAYgASgEEhAKCG9yZGVyX2lkGAcgASgEYgZwcm90bzM="));
+            "CgtUcmFkZS5wcm90bxIFUHJvdG8aDkV4Y2hhbmdlLnByb3RvGgtPcmRlci5w",
+            "cm90byKkAQoFVHJhZGUSCgoCaWQYASABKAkSEgoKaW5zdHJ1bWVudBgCIAEo",
+            "CRIhCghleGNoYW5nZRgDIAEoDjIPLlByb3RvLkV4Y2hhbmdlEhkKBHNpZGUY",
+            "BCABKA4yCy5Qcm90by5TaWRlEg0KBXByaWNlGAUgASgBEg4KBnZvbHVtZRgG",
+            "IAEoBRIMCgR0aW1lGAcgASgEEhAKCG9yZGVyX2lkGAggASgEYgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
-          new pbr::FileDescriptor[] { global::Proto.OrderReflection.Descriptor, },
+          new pbr::FileDescriptor[] { global::Proto.ExchangeReflection.Descriptor, global::Proto.OrderReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::Proto.Trade), global::Proto.Trade.Parser, new[]{ "Id", "Instrument", "Side", "Price", "Volume", "Time", "OrderId" }, null, null, null)
+            new pbr::GeneratedClrTypeInfo(typeof(global::Proto.Trade), global::Proto.Trade.Parser, new[]{ "Id", "Instrument", "Exchange", "Side", "Price", "Volume", "Time", "OrderId" }, null, null, null)
           }));
     }
     #endregion
@@ -65,6 +66,7 @@ namespace Proto {
     public Trade(Trade other) : this() {
       id_ = other.id_;
       instrument_ = other.instrument_;
+      exchange_ = other.exchange_;
       side_ = other.side_;
       price_ = other.price_;
       volume_ = other.volume_;
@@ -100,8 +102,19 @@ namespace Proto {
       }
     }
 
+    /// <summary>Field number for the "exchange" field.</summary>
+    public const int ExchangeFieldNumber = 3;
+    private global::Proto.Exchange exchange_ = 0;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::Proto.Exchange Exchange {
+      get { return exchange_; }
+      set {
+        exchange_ = value;
+      }
+    }
+
     /// <summary>Field number for the "side" field.</summary>
-    public const int SideFieldNumber = 3;
+    public const int SideFieldNumber = 4;
     private global::Proto.Side side_ = 0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Proto.Side Side {
@@ -112,7 +125,7 @@ namespace Proto {
     }
 
     /// <summary>Field number for the "price" field.</summary>
-    public const int PriceFieldNumber = 4;
+    public const int PriceFieldNumber = 5;
     private double price_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public double Price {
@@ -123,7 +136,7 @@ namespace Proto {
     }
 
     /// <summary>Field number for the "volume" field.</summary>
-    public const int VolumeFieldNumber = 5;
+    public const int VolumeFieldNumber = 6;
     private int volume_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int Volume {
@@ -134,7 +147,7 @@ namespace Proto {
     }
 
     /// <summary>Field number for the "time" field.</summary>
-    public const int TimeFieldNumber = 6;
+    public const int TimeFieldNumber = 7;
     private ulong time_;
     /// <summary>
     ///google.protobuf.Timestamp time = 6;
@@ -148,7 +161,7 @@ namespace Proto {
     }
 
     /// <summary>Field number for the "order_id" field.</summary>
-    public const int OrderIdFieldNumber = 7;
+    public const int OrderIdFieldNumber = 8;
     private ulong orderId_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public ulong OrderId {
@@ -173,6 +186,7 @@ namespace Proto {
       }
       if (Id != other.Id) return false;
       if (Instrument != other.Instrument) return false;
+      if (Exchange != other.Exchange) return false;
       if (Side != other.Side) return false;
       if (!pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.Equals(Price, other.Price)) return false;
       if (Volume != other.Volume) return false;
@@ -186,6 +200,7 @@ namespace Proto {
       int hash = 1;
       if (Id.Length != 0) hash ^= Id.GetHashCode();
       if (Instrument.Length != 0) hash ^= Instrument.GetHashCode();
+      if (Exchange != 0) hash ^= Exchange.GetHashCode();
       if (Side != 0) hash ^= Side.GetHashCode();
       if (Price != 0D) hash ^= pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.GetHashCode(Price);
       if (Volume != 0) hash ^= Volume.GetHashCode();
@@ -212,24 +227,28 @@ namespace Proto {
         output.WriteRawTag(18);
         output.WriteString(Instrument);
       }
-      if (Side != 0) {
+      if (Exchange != 0) {
         output.WriteRawTag(24);
+        output.WriteEnum((int) Exchange);
+      }
+      if (Side != 0) {
+        output.WriteRawTag(32);
         output.WriteEnum((int) Side);
       }
       if (Price != 0D) {
-        output.WriteRawTag(33);
+        output.WriteRawTag(41);
         output.WriteDouble(Price);
       }
       if (Volume != 0) {
-        output.WriteRawTag(40);
+        output.WriteRawTag(48);
         output.WriteInt32(Volume);
       }
       if (Time != 0UL) {
-        output.WriteRawTag(48);
+        output.WriteRawTag(56);
         output.WriteUInt64(Time);
       }
       if (OrderId != 0UL) {
-        output.WriteRawTag(56);
+        output.WriteRawTag(64);
         output.WriteUInt64(OrderId);
       }
       if (_unknownFields != null) {
@@ -245,6 +264,9 @@ namespace Proto {
       }
       if (Instrument.Length != 0) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(Instrument);
+      }
+      if (Exchange != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Exchange);
       }
       if (Side != 0) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Side);
@@ -277,6 +299,9 @@ namespace Proto {
       }
       if (other.Instrument.Length != 0) {
         Instrument = other.Instrument;
+      }
+      if (other.Exchange != 0) {
+        Exchange = other.Exchange;
       }
       if (other.Side != 0) {
         Side = other.Side;
@@ -313,22 +338,26 @@ namespace Proto {
             break;
           }
           case 24: {
+            exchange_ = (global::Proto.Exchange) input.ReadEnum();
+            break;
+          }
+          case 32: {
             side_ = (global::Proto.Side) input.ReadEnum();
             break;
           }
-          case 33: {
+          case 41: {
             Price = input.ReadDouble();
             break;
           }
-          case 40: {
+          case 48: {
             Volume = input.ReadInt32();
             break;
           }
-          case 48: {
+          case 56: {
             Time = input.ReadUInt64();
             break;
           }
-          case 56: {
+          case 64: {
             OrderId = input.ReadUInt64();
             break;
           }
