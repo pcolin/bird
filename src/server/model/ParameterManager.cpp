@@ -3,6 +3,7 @@
 #include "Message.h"
 #include "Middleware.h"
 #include "strategy/ClusterManager.h"
+#include "config/EnvConfig.h"
 
 ParameterManager* ParameterManager::GetInstance()
 {
@@ -38,7 +39,7 @@ void ParameterManager::InitGlobal()
 void ParameterManager::Init()
 {
   auto user = EnvConfig::GetInstance()->GetString(EnvVar::EXCHANGE);
-  /// Sync Exchange
+  // /// Sync Exchange
   // {
   //   auto req = Message::NewProto<Proto::ExchangeParameterReq>();
   //   req->set_type(Proto::RequestType::Get);
@@ -291,7 +292,7 @@ bool ParameterManager::GetDestriker(const Instrument *instrument, double &destri
 //   return false;
 // }
 
-void ParameterManager::OnExchangeParameterReq(
+ParameterManager::ProtoReplyPtr ParameterManager::OnExchangeParameterReq(
     const std::shared_ptr<Proto::ExchangeParameterReq> &req)
 {
   if (req->type() == Proto::RequestType::Set)
@@ -302,69 +303,83 @@ void ParameterManager::OnExchangeParameterReq(
     }
     ClusterManager::GetInstance()->Publish(req);
   }
+  return nullptr;
 }
 
-void ParameterManager::OnInterestRateReq(const std::shared_ptr<Proto::InterestRateReq> &req)
+ParameterManager::ProtoReplyPtr ParameterManager::OnInterestRateReq(
+    const std::shared_ptr<Proto::InterestRateReq> &req)
 {
   if (req->type() == Proto::RequestType::Set)
   {
-    std::lock_guard<std::mutex> lck(interest_rates_mtx_);
-    interest_rates_.clear();
-    for (auto &r : req->rates())
     {
-      interest_rates_[r.days()] = r.rate();
+      std::lock_guard<std::mutex> lck(interest_rates_mtx_);
+      interest_rates_.clear();
+      for (auto &r : req->rates())
+      {
+        interest_rates_[r.days()] = r.rate();
+      }
     }
     ClusterManager::GetInstance()->Publish(req);
+    LOG_PUB << req->user() << " set interest rates";
   }
+  return nullptr;
 }
 
-void ParameterManager::OnSSRateReq(const std::shared_ptr<Proto::SSRateReq> &req)
+ParameterManager::ProtoReplyPtr ParameterManager::OnSSRateReq(
+    const std::shared_ptr<Proto::SSRateReq> &req)
 {
   auto type = req->type();
   if (type == Proto::RequestType::Set)
   {
-    auto *inst = ProductManager::GetInstance()->FindId(req->underlying());
-    if (inst)
+    for (auto &r : req->rates())
     {
+      auto *inst = ProductManager::GetInstance()->FindId(r.underlying());
+      if (inst)
+      {
+        auto p = Message::NewProto<Proto::SSRate>();
+        p->CopyFrom(r);
+        auto *dm = ClusterManager::GetInstance()->FindDevice(inst);
+        if (dm)
+        {
+          dm->Publish(p);
+        }
+        auto maturity = boost::gregorian::from_undelimited_string(r.maturity());
+        std::lock_guard<std::mutex> lck(ssrates_mtx_);
+        auto it = ssrates_.find(inst);
+        if (it == ssrates_.end())
+        {
+          it = ssrates_.emplace(inst, std::make_shared<DateRateMap>()).first;
+        }
+        (*it->second)[maturity] = r.rate();
+      }
+      LOG_PUB << boost::format("%1% set ssrate of %2%@%3%") %
+        req->user() % r.underlying() % r.maturity();
+    }
+  }
+  else if (type == Proto::RequestType::Del)
+  {
+    for (auto &r : req->rates())
+    {
+      auto *inst = ProductManager::GetInstance()->FindId(r.underlying());
+      if (inst)
       {
         std::lock_guard<std::mutex> lck(ssrates_mtx_);
         auto it = ssrates_.find(inst);
         if (it != ssrates_.end())
         {
-          for (auto &r : req->rates())
-          {
-            auto maturity = boost::gregorian::from_undelimited_string(r.maturity());
-            (*it->second)[maturity] = r.rate();
-          }
-        }
-      }
-      auto *dm = ClusterManager::GetInstance()->FindDevice(inst);
-      if (dm)
-      {
-        dm->Publish(req);
-      }
-    }
-  }
-  else if (type == Proto::RequestType::Del)
-  {
-    auto *inst = ProductManager::GetInstance()->FindId(req->underlying());
-    if (inst)
-    {
-      std::lock_guard<std::mutex> lck(ssrates_mtx_);
-      auto it = ssrates_.find(inst);
-      if (it != ssrates_.end())
-      {
-        for (auto &r : req->rates())
-        {
           auto maturity = boost::gregorian::from_undelimited_string(r.maturity());
           it->second->erase(maturity);
         }
       }
+      LOG_PUB << boost::format("%1% delete ssrate of %2%@%3%") %
+        req->user() % r.underlying() % r.maturity();
     }
   }
+  return nullptr;
 }
 
-//void ParameterManager::OnVolatilityReq(const std::shared_ptr<Proto::VolatilityReq> &req)
+//ParameterManager::ProtoReplyPtr ParameterManager::OnVolatilityReq(
+//const std::shared_ptr<Proto::VolatilityReq> &req)
 //{
 //  auto type = req->type();
 //  if (type == Proto::RequestType::Set)
@@ -393,59 +408,64 @@ void ParameterManager::OnSSRateReq(const std::shared_ptr<Proto::SSRateReq> &req)
 //  }
 //}
 
-void ParameterManager::OnVolatilityCurveReq(const std::shared_ptr<Proto::VolatilityCurveReq> &req)
+ParameterManager::ProtoReplyPtr ParameterManager::OnVolatilityCurveReq(
+    const std::shared_ptr<Proto::VolatilityCurveReq> &req)
 {
   auto type = req->type();
   if (type == Proto::RequestType::Set)
   {
-    auto *inst = ProductManager::GetInstance()->FindId(req->underlying());
-    if (inst)
+    for (auto &vc : req->curves())
     {
+      auto *inst = ProductManager::GetInstance()->FindId(vc.underlying());
+      if (inst)
       {
+        auto p = Message::NewProto<Proto::VolatilityCurve>();
+        p->CopyFrom(vc);
+        auto *dm = ClusterManager::GetInstance()->FindDevice(inst);
+        if (dm)
+        {
+          dm->Publish(p);
+        }
+        auto date = boost::gregorian::from_undelimited_string(vc.maturity());
         std::lock_guard<std::mutex> lck(volatility_curves_mtx_);
         auto it = volatility_curves_.find(inst);
         if (it == volatility_curves_.end())
         {
           it = volatility_curves_.emplace(inst, std::make_shared<DateVolatilityMap>()).first;
         }
-        for (auto &v : req->curves())
-        {
-          auto date = boost::gregorian::from_undelimited_string(v.maturity());
-          auto curve = Message::NewProto<Proto::VolatilityCurve>();
-          curve->CopyFrom(v);
-          (*it->second)[date] = curve;
-        }
+        (*it->second)[date] = p;
       }
-      auto *dm = ClusterManager::GetInstance()->FindDevice(inst);
-      if (dm)
-      {
-        dm->Publish(req);
-      }
+      LOG_PUB << boost::format("%1% set volatility curve of %2%@%3%") %
+        req->user() % vc.underlying() % vc.maturity();
     }
   }
   else if (type == Proto::RequestType::Del)
   {
-    auto *inst = ProductManager::GetInstance()->FindId(req->underlying());
-    if (inst)
+    for (auto &vc : req->curves())
     {
-      std::lock_guard<std::mutex> lck(volatility_curves_mtx_);
-      auto it = volatility_curves_.find(inst);
-      if (it != volatility_curves_.end())
+      auto *inst = ProductManager::GetInstance()->FindId(vc.underlying());
+      if (inst)
       {
-        for (auto &v : req->curves())
+        std::lock_guard<std::mutex> lck(volatility_curves_mtx_);
+        auto it = volatility_curves_.find(inst);
+        if (it != volatility_curves_.end())
         {
-          it->second->erase(boost::gregorian::from_undelimited_string(v.maturity()));
-        }
-        if (it->second->empty())
-        {
-          volatility_curves_.erase(it);
+          it->second->erase(boost::gregorian::from_undelimited_string(vc.maturity()));
+          if (it->second->empty())
+          {
+            volatility_curves_.erase(it);
+          }
         }
       }
+      LOG_PUB << boost::format("%1% delete volatility curve of %2%@%3%") %
+        req->user() % vc.underlying() % vc.maturity();
     }
   }
+  return nullptr;
 }
 
-void ParameterManager::OnDestrikerReq(const std::shared_ptr<Proto::DestrikerReq> &req)
+ParameterManager::ProtoReplyPtr ParameterManager::OnDestrikerReq(
+    const std::shared_ptr<Proto::DestrikerReq> &req)
 {
   auto type = req->type();
   if (type == Proto::RequestType::Set)
@@ -471,6 +491,7 @@ void ParameterManager::OnDestrikerReq(const std::shared_ptr<Proto::DestrikerReq>
         dm->Publish(req);
       }
     }
+    LOG_PUB << req->user() << " set destrikers";
   }
   else if (type == Proto::RequestType::Del)
   {
@@ -483,10 +504,12 @@ void ParameterManager::OnDestrikerReq(const std::shared_ptr<Proto::DestrikerReq>
         destrikers_.erase(inst);
       }
     }
+    LOG_PUB << req->user() << " delete destrikers";
   }
+  return nullptr;
 }
 
-// void ParameterManager::OnElasticReq(const std::shared_ptr<Proto::ElasticReq> &req)
+// ParameterManager::ProtoReplyPtr ParameterManager::OnElasticReq(const std::shared_ptr<Proto::ElasticReq> &req)
 // {
 //   auto type = req->type();
 //   if (type == Proto::RequestType::Set)

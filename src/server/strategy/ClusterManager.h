@@ -2,6 +2,7 @@
 #define STRATEGY_CLUSTER_MANAGER_H
 
 #include "Heartbeat.pb.h"
+#include "Reply.pb.h"
 #include "Cash.pb.h"
 #include "PricingSpec.pb.h"
 #include "DeviceManager.h"
@@ -10,9 +11,9 @@
 #include <unordered_map>
 #include <memory>
 
-// class DeviceManager;
 class ClusterManager
 {
+  typedef std::shared_ptr<Proto::Reply> ProtoReplyPtr;
 public:
   static ClusterManager* GetInstance();
   ~ClusterManager();
@@ -28,8 +29,10 @@ public:
   void OnHeartbeat(const std::shared_ptr<Proto::Heartbeat> &heartbeat);
   void OnInstrumentReq(const std::shared_ptr<Proto::InstrumentReq> &req);
   void OnCash(const std::shared_ptr<Proto::Cash> &cash);
-  void OnPriceReq(const std::shared_ptr<Proto::PriceReq> &req);
-  void OnPricingSpecReq(const std::shared_ptr<Proto::PricingSpecReq> &req);
+
+  ProtoReplyPtr OnPriceReq(const std::shared_ptr<Proto::PriceReq> &req);
+  ProtoReplyPtr OnPricingSpecReq(const std::shared_ptr<Proto::PricingSpecReq> &req);
+  ProtoReplyPtr OnStrategyStatusReq(const std::shared_ptr<Proto::StrategyStatusReq> &req);
 
   template<class Type> void Publish(const Type &msg)
   {

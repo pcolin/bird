@@ -5,13 +5,6 @@
 #include "base/logger/Logging.h"
 #include "base/common/ProtoMessageCoder.h"
 #include "base/common/ProtoMessageDispatcher.h"
-#include "config/EnvConfig.h"
-#include "Heartbeat.pb.h"
-#include "Login.pb.h"
-#include "Price.pb.h"
-#include "Reply.pb.h"
-#include "PricingSpec.pb.h"
-#include "Strategy.pb.h"
 
 #include "nn.h"
 #include "reqrep.h"
@@ -20,8 +13,6 @@
 
 class Middleware
 {
-  // typedef std::shared_ptr<google::protobuf::Message> ProtoMessagePtr;
-  typedef std::shared_ptr<Proto::Reply> ProtoReplyPtr;
 public:
   static Middleware* GetInstance();
   ~Middleware() {}
@@ -96,12 +87,10 @@ public:
 
 private:
   Middleware();
-  ProtoReplyPtr OnHeartbeat(const std::shared_ptr<Proto::Heartbeat> &msg);
-  // ProtoReplyPtr OnLogin(const std::shared_ptr<Proto::Login> &msg);
-  // ProtoReplyPtr OnLogout(const std::shared_ptr<Proto::Logout> &msg);
-  ProtoReplyPtr OnPriceReq(const std::shared_ptr<Proto::PriceReq> &msg);
-  ProtoReplyPtr OnPricingSpecReq(const std::shared_ptr<Proto::PricingSpecReq> &msg);
-  ProtoReplyPtr OnStrategyStatusReq(const std::shared_ptr<Proto::StrategyStatusReq> &msg);
+  // ProtoReplyPtr OnHeartbeat(const std::shared_ptr<Proto::Heartbeat> &msg);
+  // ProtoReplyPtr OnPriceReq(const std::shared_ptr<Proto::PriceReq> &msg);
+  // ProtoReplyPtr OnPricingSpecReq(const std::shared_ptr<Proto::PricingSpecReq> &msg);
+  // ProtoReplyPtr OnStrategyStatusReq(const std::shared_ptr<Proto::StrategyStatusReq> &msg);
 
   void RunTimer();
   void RunPublisher();

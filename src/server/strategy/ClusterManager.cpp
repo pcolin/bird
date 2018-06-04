@@ -5,6 +5,8 @@
 #include "model/Middleware.h"
 #include "model/ProductManager.h"
 #include "model/CashManager.h"
+#include "model/ParameterManager.h"
+#include "config/EnvConfig.h"
 
 // #include "Exchange.pb.h"
 
@@ -120,10 +122,6 @@ std::shared_ptr<Proto::PricingSpec> ClusterManager::FindPricingSpec(const Instru
 void ClusterManager::OnHeartbeat(const std::shared_ptr<Proto::Heartbeat> &heartbeat)
 {
   Publish(heartbeat);
-  // for (auto &it : devices_)
-  // {
-  //   it.second->Publish(heartbeat);
-  // }
 }
 
 void ClusterManager::OnInstrumentReq(const std::shared_ptr<Proto::InstrumentReq> &req)
@@ -146,7 +144,7 @@ void ClusterManager::OnCash(const std::shared_ptr<Proto::Cash> &cash)
   Middleware::GetInstance()->Publish(cash);
 }
 
-void ClusterManager::OnPriceReq(const std::shared_ptr<Proto::PriceReq> &req)
+ClusterManager::ProtoReplyPtr ClusterManager::OnPriceReq(const std::shared_ptr<Proto::PriceReq> &req)
 {
   if (req->instrument().empty())
   {
@@ -168,9 +166,11 @@ void ClusterManager::OnPriceReq(const std::shared_ptr<Proto::PriceReq> &req)
       LOG_ERR << "Can't find instrument " << req->instrument();
     }
   }
+  return nullptr;
 }
 
-void ClusterManager::OnPricingSpecReq(const std::shared_ptr<Proto::PricingSpecReq> &req)
+ClusterManager::ProtoReplyPtr ClusterManager::OnPricingSpecReq(
+    const std::shared_ptr<Proto::PricingSpecReq> &req)
 {
   if (req->type() != Proto::RequestType::Get)
   {
@@ -192,6 +192,7 @@ void ClusterManager::OnPricingSpecReq(const std::shared_ptr<Proto::PricingSpecRe
           pricings_[p.name()] = copy;
         }
       }
+      LOG_PUB << req->user() << " set PricingSpec";
     }
     else if (req->type() == Proto::RequestType::Del)
     {
@@ -200,9 +201,38 @@ void ClusterManager::OnPricingSpecReq(const std::shared_ptr<Proto::PricingSpecRe
       {
         pricings_.erase(p.name());
       }
+      LOG_PUB << req->user() << " delete PricingSpec";
     }
     Middleware::GetInstance()->Publish(req);
   }
+  return nullptr;
+}
+
+ClusterManager::ProtoReplyPtr ClusterManager::OnStrategyStatusReq(
+    const std::shared_ptr<Proto::StrategyStatusReq> &req)
+{
+  if (req->type() == Proto::RequestType::Set)
+  {
+    for (auto &status : req->statuses())
+    {
+      const Instrument *underlying = ProductManager::GetInstance()->FindId(status.underlying());
+      if (underlying)
+      {
+        auto *dm = FindDevice(underlying);
+        if (dm)
+        {
+          dm->OnStrategyStatusReq(req);
+        }
+      }
+      else
+      {
+        LOG_ERR << "Can't find underlying " << status.underlying();
+      }
+    }
+    Publish(req);
+    LOG_PUB << req->user() << " set StrategyStatus";
+  }
+  return nullptr;
 }
 
 bool ClusterManager::IsStrategiesRunning() const

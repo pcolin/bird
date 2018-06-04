@@ -2,9 +2,11 @@
 #include "Message.h"
 #include "ClientManager.h"
 #include "ProductManager.h"
+#include "ParameterManager.h"
 #include "Instrument.pb.h"
 #include "strategy/DeviceManager.h"
 #include "strategy/ClusterManager.h"
+#include "config/EnvConfig.h"
 
 #include "pubsub.h"
 
@@ -84,56 +86,17 @@ base::ProtoMessagePtr Middleware::Request(const base::ProtoMessagePtr &request)
   return reply;
 }
 
-Middleware::ProtoReplyPtr Middleware::OnHeartbeat(const std::shared_ptr<Proto::Heartbeat> &msg)
-{
-  if (msg->type() == Proto::ProcessorType::GUI)
-  {
-    ClientManager::GetInstance()->OnHeartbeat(msg);
-    auto reply = Message::NewProto<Proto::Reply>();
-    reply->set_result(true);
-    reply->set_error("");
-    return reply;
-  }
-}
-
-Middleware::ProtoReplyPtr Middleware::OnPriceReq(const std::shared_ptr<Proto::PriceReq> &msg)
-{
-  ClusterManager::GetInstance()->OnPriceReq(msg);
-  return nullptr;
-}
-
-Middleware::ProtoReplyPtr Middleware::OnPricingSpecReq(
-    const std::shared_ptr<Proto::PricingSpecReq> &msg)
-{
-  ClusterManager::GetInstance()->OnPricingSpecReq(msg);
-  return nullptr;
-}
-
-Middleware::ProtoReplyPtr Middleware::OnStrategyStatusReq(const std::shared_ptr<Proto::StrategyStatusReq> &msg)
-{
-  if (msg->type() == Proto::RequestType::Set)
-  {
-    for (auto &status : msg->statuses())
-    {
-      const Instrument *underlying = ProductManager::GetInstance()->FindId(status.underlying());
-      if (underlying)
-      {
-        auto *dm = ClusterManager::GetInstance()->FindDevice(underlying);
-        if (dm)
-        {
-          dm->OnStrategyStatusReq(msg);
-        }
-      }
-      else
-      {
-        LOG_ERR << "Can't find underlying " << status.underlying();
-      }
-    }
-    Publish(msg);
-  }
-  // return Message::NewProto<Proto::StrategyStatusRep>();
-  return nullptr;
-}
+// Middleware::ProtoReplyPtr Middleware::OnHeartbeat(const std::shared_ptr<Proto::Heartbeat> &msg)
+// {
+//   if (msg->type() == Proto::ProcessorType::GUI)
+//   {
+//     ClientManager::GetInstance()->OnHeartbeat(msg);
+//     auto reply = Message::NewProto<Proto::Reply>();
+//     reply->set_result(true);
+//     reply->set_error("");
+//     return reply;
+//   }
+// }
 
 void Middleware::RunTimer()
 {
@@ -213,18 +176,29 @@ void Middleware::RunResponder()
     return;
   }
   base::ProtoMessageDispatcher<std::shared_ptr<Proto::Reply>> dispatcher;
-  dispatcher.RegisterCallback<Proto::Heartbeat>(
-    std::bind(&Middleware::OnHeartbeat, this, std::placeholders::_1));
-  dispatcher.RegisterCallback<Proto::Login>(
-    std::bind(&ClientManager::Login, ClientManager::GetInstance(), std::placeholders::_1));
-  dispatcher.RegisterCallback<Proto::Logout>(
-    std::bind(&ClientManager::Logout, ClientManager::GetInstance(), std::placeholders::_1));
-  dispatcher.RegisterCallback<Proto::PriceReq>(
-    std::bind(&Middleware::OnPriceReq, this, std::placeholders::_1));
-  dispatcher.RegisterCallback<Proto::PricingSpecReq>(
-    std::bind(&Middleware::OnPricingSpecReq, this, std::placeholders::_1));
-  dispatcher.RegisterCallback<Proto::StrategyStatusReq>(
-    std::bind(&Middleware::OnStrategyStatusReq, this, std::placeholders::_1));
+  dispatcher.RegisterCallback<Proto::Heartbeat>(std::bind(
+        &ClientManager::OnHeartbeat, ClientManager::GetInstance(), std::placeholders::_1));
+  dispatcher.RegisterCallback<Proto::Login>(std::bind(
+        &ClientManager::Login, ClientManager::GetInstance(), std::placeholders::_1));
+  dispatcher.RegisterCallback<Proto::Logout>(std::bind(
+        &ClientManager::Logout, ClientManager::GetInstance(), std::placeholders::_1));
+  dispatcher.RegisterCallback<Proto::ExchangeParameterReq>(std::bind(
+        &ParameterManager::OnExchangeParameterReq, ParameterManager::GetInstance(),
+        std::placeholders::_1));
+  dispatcher.RegisterCallback<Proto::InterestRateReq>(std::bind(
+        &ParameterManager::OnInterestRateReq, ParameterManager::GetInstance(),
+        std::placeholders::_1));
+  dispatcher.RegisterCallback<Proto::SSRateReq>(std::bind(
+        &ParameterManager::OnSSRateReq, ParameterManager::GetInstance(), std::placeholders::_1));
+  dispatcher.RegisterCallback<Proto::VolatilityCurveReq>(std::bind(
+        &ParameterManager::OnVolatilityCurveReq, ParameterManager::GetInstance(),
+        std::placeholders::_1));
+  dispatcher.RegisterCallback<Proto::PriceReq>(std::bind(
+        &ClusterManager::OnPriceReq, ClusterManager::GetInstance(), std::placeholders::_1));
+  dispatcher.RegisterCallback<Proto::PricingSpecReq>(std::bind(
+        &ClusterManager::OnPricingSpecReq, ClusterManager::GetInstance(), std::placeholders::_1));
+  dispatcher.RegisterCallback<Proto::StrategyStatusReq>(std::bind(
+        &ClusterManager::OnStrategyStatusReq, ClusterManager::GetInstance(), std::placeholders::_1));
   size_t n = 64;
   char *send_buf = new char[n];
   auto reply = Message::NewProto<Proto::Reply>();

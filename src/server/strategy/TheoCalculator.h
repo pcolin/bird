@@ -23,11 +23,11 @@ class TheoCalculator
   typedef boost::variant<PricePtr,
                          TradePtr,
                          std::shared_ptr<Proto::Heartbeat>,
+                         std::shared_ptr<Proto::VolatilityCurve>,
+                         std::shared_ptr<Proto::SSRate>,
                          std::shared_ptr<Proto::PricingSpec>,
                          std::shared_ptr<Proto::ExchangeParameterReq>,
-                         std::shared_ptr<Proto::InterestRateReq>,
-                         std::shared_ptr<Proto::SSRateReq>,
-                         std::shared_ptr<Proto::VolatilityCurveReq>> CalculatorEvent;
+                         std::shared_ptr<Proto::InterestRateReq>> CalculatorEvent;
 
   struct Parameter
   {
@@ -36,6 +36,7 @@ class TheoCalculator
     std::shared_ptr<Model::VolatilityModel::Parameter> volatility = nullptr;
   };
   typedef std::unordered_map<const Option*, std::shared_ptr<Parameter>> ParameterMap;
+  typedef std::map<boost::gregorian::date, ParameterMap> MaturityParameterMap;
 public:
   TheoCalculator(const std::string &name, DeviceManager *dm);
 
@@ -46,18 +47,26 @@ public:
 private:
   bool Initialize(const std::shared_ptr<Proto::PricingSpec> &spec);
 
-  void OnPrice(const PricePtr &p);
+  void OnPrice(const PricePtr &price);
   void OnTrade(const TradePtr &t);
   void OnHeartbeat(const std::shared_ptr<Proto::Heartbeat> &h);
   void OnPricingSpec(const std::shared_ptr<Proto::PricingSpec> &spec);
   void OnExchangeParameter(const std::shared_ptr<Proto::ExchangeParameterReq> &req);
   void OnInterestRate(const std::shared_ptr<Proto::InterestRateReq> &req);
-  void OnSSRateReq(const std::shared_ptr<Proto::SSRateReq> &req);
-  void OnVolatilityCurve(const std::shared_ptr<Proto::VolatilityCurveReq> &req);
+  void OnSSRate(const std::shared_ptr<Proto::SSRate> &ssr);
+  void OnVolatilityCurve(const std::shared_ptr<Proto::VolatilityCurve> &vc);
 
-  void Recalculate();
+  int64_t RecalculateAll();
+  void Recalculate(const boost::gregorian::date &maturity, ParameterMap &parameters,
+      base::TickType lower, base::TickType upper);
   TheoMatrixPtr CalculateTheo(const Option* op, const std::shared_ptr<Parameter> &param,
       base::TickType lower, base::TickType upper, double time_value);
+
+  void SetLowerUpper(base::TickType &lower, base::TickType &upper)
+  {
+    lower = std::max(1, tick_ - TheoMatrix::DEPTH);
+    upper = tick_ + TheoMatrix::DEPTH;
+  }
 
 private:
   class EventVisitor : public boost::static_visitor<void>
@@ -95,14 +104,14 @@ private:
       calculator_->OnInterestRate(req);
     }
 
-    void operator()(const std::shared_ptr<Proto::SSRateReq> &req)
+    void operator()(const std::shared_ptr<Proto::SSRate> &ssr)
     {
-      calculator_->OnSSRateReq(req);
+      calculator_->OnSSRate(ssr);
     }
 
-    void operator()(const std::shared_ptr<Proto::VolatilityCurveReq> &req)
+    void operator()(const std::shared_ptr<Proto::VolatilityCurve> &vc)
     {
-      calculator_->OnVolatilityCurve(req);
+      calculator_->OnVolatilityCurve(vc);
     }
 
   private:
@@ -119,14 +128,15 @@ private:
   std::shared_ptr<Model::PricingModel> model_;
   std::shared_ptr<Model::VolatilityModel> vol_model_;
 
-  base::PriceType spot_ = base::PRICE_UNDEFINED;
+  // base::PriceType spot_ = base::PRICE_UNDEFINED;
+  base::TickType tick_ = 0;
   base::TickType lower_ = INT_MAX;
   base::TickType upper_ = INT_MIN;
 
   int64_t interval_;
   int64_t calculate_time_;
 
-  ParameterMap parameters_;
+  MaturityParameterMap parameters_;
 };
 
 #endif

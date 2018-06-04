@@ -99,7 +99,8 @@ std::shared_ptr<Proto::Reply> ClientManager::Logout(const std::shared_ptr<Proto:
   return reply;
 }
 
-void ClientManager::OnHeartbeat(const std::shared_ptr<Proto::Heartbeat> &heartbeat)
+ClientManager::ProtoReplyPtr ClientManager::OnHeartbeat(
+    const std::shared_ptr<Proto::Heartbeat> &heartbeat)
 {
   if (heartbeat->type() == Proto::ProcessorType::Middleware)
   {
@@ -136,4 +137,5 @@ void ClientManager::OnHeartbeat(const std::shared_ptr<Proto::Heartbeat> &heartbe
       std::get<1>(it->second) = time(NULL);
     }
   }
+  return nullptr;
 }

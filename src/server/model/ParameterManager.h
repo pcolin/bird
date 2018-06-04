@@ -12,6 +12,7 @@
 
 class ParameterManager
 {
+  typedef std::shared_ptr<Proto::Reply> ProtoReplyPtr;
 public:
   static ParameterManager* GetInstance();
   ~ParameterManager() {}
@@ -27,12 +28,12 @@ public:
   bool GetDestriker(const Instrument *instrument, double &destriker);
   bool GetElastic(const Instrument *instrument, double &elastic);
 
-  void OnExchangeParameterReq(const std::shared_ptr<Proto::ExchangeParameterReq> &req);
-  void OnInterestRateReq(const std::shared_ptr<Proto::InterestRateReq> &req);
-  void OnSSRateReq(const std::shared_ptr<Proto::SSRateReq> &req);
-  // void OnVolatilityReq(const std::shared_ptr<Proto::VolatilityReq> &req);
-  void OnVolatilityCurveReq(const std::shared_ptr<Proto::VolatilityCurveReq> &req);
-  void OnDestrikerReq(const std::shared_ptr<Proto::DestrikerReq> &req);
+  ProtoReplyPtr OnExchangeParameterReq(const std::shared_ptr<Proto::ExchangeParameterReq> &req);
+  ProtoReplyPtr OnInterestRateReq(const std::shared_ptr<Proto::InterestRateReq> &req);
+  ProtoReplyPtr OnSSRateReq(const std::shared_ptr<Proto::SSRateReq> &req);
+  // ProtoReplyPtr OnVolatilityReq(const std::shared_ptr<Proto::VolatilityReq> &req);
+  ProtoReplyPtr OnVolatilityCurveReq(const std::shared_ptr<Proto::VolatilityCurveReq> &req);
+  ProtoReplyPtr OnDestrikerReq(const std::shared_ptr<Proto::DestrikerReq> &req);
   // void OnElasticReq(const std::shared_ptr<Proto::ElasticReq> &req);
 
 private:

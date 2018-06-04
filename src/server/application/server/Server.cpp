@@ -30,9 +30,12 @@ int main(int argc, char *args[])
                          EnvConfig::GetInstance()->GetBool(EnvVar::ASYNC_LOGGING) == false);
   Logger::SetLogLevel(static_cast<Logger::LogLevel>(
         EnvConfig::GetInstance()->GetInt32(EnvVar::LOGGING_LEVEL)));
-  Logger::SetNetOutput([](Logger::LogLevel lvl, const char *data, int n)
+  Proto::Exchange exchange;
+  Proto::Exchange_Parse(EnvConfig::GetInstance()->GetString(EnvVar::EXCHANGE), &exchange);
+  Logger::SetNetOutput([&](Logger::LogLevel lvl, const char *data, int n)
       {
         auto info = Message::NewProto<Proto::ServerInfo>();
+        info->set_exchange(exchange);
         info->set_info(data, n);
         info->set_type(static_cast<Proto::ServerInfo::Type>(lvl - Logger::PUBLISH));
         info->set_time(time(NULL));
@@ -67,14 +70,14 @@ int main(int argc, char *args[])
   ///// test
   std::this_thread::sleep_for(std::chrono::seconds(3));
   //// const Instrument* inst = ProductManager::GetInstance()->FindId("SR801");
-  const std::string id = "m1901";
+  const std::string id = "m1809";
   const Instrument* inst = ProductManager::GetInstance()->FindId(id);
   if (inst)
   {
     auto *dm = ClusterManager::GetInstance()->FindDevice(inst);
     if (dm)
     {
-      auto s = dm->FindStrategyDevice("M1901_P");
+      auto s = dm->FindStrategyDevice("M1809_P");
       if (s)
       {
         LOG_INF << "Start pricing strategy";

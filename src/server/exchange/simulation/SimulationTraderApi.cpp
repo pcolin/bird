@@ -4,6 +4,7 @@
 #include "model/Option.h"
 #include "model/ProductManager.h"
 #include "strategy/ClusterManager.h"
+#include "config/EnvConfig.h"
 #include "Position.pb.h"
 
 #include <future>

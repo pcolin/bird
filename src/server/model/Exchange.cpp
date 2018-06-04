@@ -68,12 +68,11 @@ void Exchange::OnExchangeParameter(const Proto::ExchangeParameter &param)
   days_to_maturity_.clear();
 }
 
-double Exchange::GetTimeValue(const Option *option)
+double Exchange::GetTimeValue(const boost::gregorian::date &maturity)
 {
   double trading_days = 0;
   double fraction = 0;
 
-  const auto &maturity = option->Maturity();
   std::lock_guard<std::mutex> lck(mtx_);
   auto it = days_to_maturity_.find(maturity);
   if (it != days_to_maturity_.end())
