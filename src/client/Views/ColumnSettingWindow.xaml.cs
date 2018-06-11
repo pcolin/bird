@@ -83,8 +83,8 @@ namespace client.Views
         private void SettingDataGrid_SelectedCellsChanged(object sender, SelectedCellsChangedEventArgs e)
         {
             int index = this.SettingDataGrid.SelectedIndex;
-            this.ButtonUP.IsEnabled = index > 0;
-            this.ButtonDown.IsEnabled = index >= 0 && index < this.SettingDataGrid.Items.Count - 1;
+            this.ButtonUP.IsEnabled = index > this.dg.FrozenColumnCount;
+            this.ButtonDown.IsEnabled = index >= this.dg.FrozenColumnCount && index < this.SettingDataGrid.Items.Count - 1;
         }
 
         private void SettingDataGrid_LoadingRow(object sender, DataGridRowEventArgs e)

@@ -61,6 +61,8 @@ namespace client.Views
                         put_convex = item.PutConvex,
                         call_slope = item.CallSlope,
                         put_slope = item.PutSlope,
+                        call_cutoff = item.CallCutoff,
+                        put_cutoff = item.PutCutoff,
                         vcr = item.VCR,
                         scr = item.SCR,
                         ccr = item.CCR,
@@ -70,7 +72,7 @@ namespace client.Views
                 var rm = vm.Container.Resolve<InterestRateManager>(vm.Exchange.ToString());
                 if (rm != null)
                 {
-                    rate = rm.GetInterestRate(item.Maturity).Value;
+                    rate = rm.GetInterestRate(item.Maturity);
                 }
 
                 //var sm = vm.Container.Resolve<SSRateManager>(vm.Exchange.ToString());
@@ -82,7 +84,7 @@ namespace client.Views
                 var em = vm.Container.Resolve<ExchangeParameterManager>(vm.Exchange.ToString());
                 if (em != null)
                 {
-                    timeValue = em.GetTimeValue(item.Maturity).Value;
+                    timeValue = em.GetTimeValue(item.Maturity);
                 }
             }
 
@@ -169,8 +171,6 @@ namespace client.Views
                 if (vm.Volatilities[vm.SelectedVolatility].Underlying.Type == Proto.InstrumentType.Future)
                 {
                     this.SSRateColumn.Header = "Basis";
-
-                    //this.SSRateColumn.CellTemplate.
                 }
 
                 /// load layout
@@ -223,65 +223,65 @@ namespace client.Views
     }
 
 
-    public class DoubleFormatMultiConverter : IMultiValueConverter
-    {
-        public object Convert(object[] values, Type targetType, object parameter, System.Globalization.CultureInfo culture)
-        {
-            if (values[0] is double)
-            {
-                double value = (double)values[0];
-                Dictionary<int, string> formats = values[2] as Dictionary<int, string>;
-                if (formats != null)
-                {
-                    int index = (int)values[1];
-                    string format = null;
-                    if (formats.TryGetValue(index, out format))
-                    {
-                        return value.ToString(format);
-                    }
-                }
-                return value.ToString("N2");
-            }
-            return null;
-        }
+    //public class DoubleFormatMultiConverter : IMultiValueConverter
+    //{
+    //    public object Convert(object[] values, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+    //    {
+    //        if (values[0] is double)
+    //        {
+    //            double value = (double)values[0];
+    //            Dictionary<int, string> formats = values[2] as Dictionary<int, string>;
+    //            if (formats != null)
+    //            {
+    //                int index = (int)values[1];
+    //                string format = null;
+    //                if (formats.TryGetValue(index, out format))
+    //                {
+    //                    return value.ToString(format);
+    //                }
+    //            }
+    //            return value.ToString("N2");
+    //        }
+    //        return null;
+    //    }
 
-        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, System.Globalization.CultureInfo culture)
-        {
-            double result = 0;
-            double.TryParse(value.ToString(), out result);
-            return new object[3] { result, null, null };
-        }
-    }
+    //    public object[] ConvertBack(object value, Type[] targetTypes, object parameter, System.Globalization.CultureInfo culture)
+    //    {
+    //        double result = 0;
+    //        double.TryParse(value.ToString(), out result);
+    //        return new object[3] { result, null, null };
+    //    }
+    //}
 
-    public class PercentDoubleFormatMultiConverter : IMultiValueConverter
-    {
-        public object Convert(object[] values, Type targetType, object parameter, System.Globalization.CultureInfo culture)
-        {
-            if (values[0] is double)
-            {
-                double value = (double)values[0];
-                Dictionary<int, string> formats = values[2] as Dictionary<int, string>;
-                if (formats != null)
-                {
-                    int index = (int)values[1];
-                    string format = null;
-                    if (formats.TryGetValue(index, out format))
-                    {
-                        return (value * 100).ToString(format);
-                    }
-                }
-                return (value * 100).ToString("N2");
-            }
-            return null;
-        }
+    //public class PercentDoubleFormatMultiConverter : IMultiValueConverter
+    //{
+    //    public object Convert(object[] values, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+    //    {
+    //        if (values[0] is double)
+    //        {
+    //            double value = (double)values[0];
+    //            Dictionary<int, string> formats = values[2] as Dictionary<int, string>;
+    //            if (formats != null)
+    //            {
+    //                int index = (int)values[1];
+    //                string format = null;
+    //                if (formats.TryGetValue(index, out format))
+    //                {
+    //                    return (value * 100).ToString(format);
+    //                }
+    //            }
+    //            return (value * 100).ToString("N2");
+    //        }
+    //        return null;
+    //    }
 
-        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, System.Globalization.CultureInfo culture)
-        {
-            double result = 0;
-            double.TryParse(value.ToString(), out result);
-            return new object[3] { result / 100, null, null };
-        }
-    }
+    //    public object[] ConvertBack(object value, Type[] targetTypes, object parameter, System.Globalization.CultureInfo culture)
+    //    {
+    //        double result = 0;
+    //        double.TryParse(value.ToString(), out result);
+    //        return new object[3] { result / 100, null, null };
+    //    }
+    //}
 
     public class StringFormatConverter : IMultiValueConverter
     {

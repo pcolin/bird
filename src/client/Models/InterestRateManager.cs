@@ -61,7 +61,7 @@ namespace client.Models
             }
         }
 
-        public double? GetInterestRate(System.DateTime maturity)
+        public double GetInterestRate(System.DateTime maturity)
         {
             lock (this.mutex)
             {
@@ -90,7 +90,7 @@ namespace client.Models
                     }
                 }
             }
-            return null;
+            return double.NaN;
         }
 
         private SortedList<int, double> rates = new SortedList<int, double>();

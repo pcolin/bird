@@ -24,6 +24,7 @@ namespace client.Models
         {
             socket = new SubscribeSocket();
             socket.Options.TcpNoDelay = true;
+            socket.Options.ReceiveBuffer = 10000;
             socket.Connect(address);
         }
 
@@ -98,13 +99,21 @@ namespace client.Models
                         if (serialNum != 1 && serialNum != sn)
                         {
                             /// !!!lost message!!!
+                            var err = new Proto.ServerInfo()
+                                {
+                                    Time = (ulong)((DateTime.Now - new DateTime(1970, 1, 1, 8, 0, 0)).TotalSeconds),
+                                    Type = Proto.ServerInfo.Types.Type.Warn,
+                                    Exchange = this.exchange,
+                                    Info = "Lost proxy messages(" + serialNum + ", " + (sn - 1) + ")"
+                                };
+                            this.container.Resolve<EventAggregator>().GetEvent<PubSubEvent<Proto.ServerInfo>>().Publish(err);
                         }
                         serialNum = sn;
                         messages.Add(bytes);
                     }
                     else
                     {
-                        Thread.Sleep(50);
+                        Thread.Sleep(10);
                     }
                 }
             }
@@ -125,6 +134,7 @@ namespace client.Models
                 var im = this.container.Resolve<InterestRateManager>(exch);
                 var sm = this.container.Resolve<SSRateManager>(exch);
                 var vm = this.container.Resolve<VolatilityCurveManager>(exch);
+                if (vm == null) return;
                 while (running)
                 {
                     byte[] bytes = messages.Take();
@@ -192,10 +202,18 @@ namespace client.Models
                     else if (type == "VolatilityCurveReq")
                     {
                         var v = Proto.VolatilityCurveReq.Parser.ParseFrom(bytes, len + 5, bytes.Count() - len - 5);
-                        if (v != null && vm != null)
+                        if (v != null)
                         {
                             vm.OnProtoMessage(v);
                             this.container.Resolve<EventAggregator>().GetEvent<PubSubEvent<Proto.VolatilityCurveReq>>().Publish(v);
+                        }
+                    }
+                    else if (type == "ServerInfo")
+                    {
+                        var i = Proto.ServerInfo.Parser.ParseFrom(bytes, len + 5, bytes.Count() - len - 5);
+                        if (i != null)
+                        {
+                            this.container.Resolve<EventAggregator>().GetEvent<PubSubEvent<Proto.ServerInfo>>().Publish(i);
                         }
                     }
                     /// to be done...

@@ -204,8 +204,11 @@
     <Compile Include="ViewModels\ExchangeUserControlViewModel.cs" />
     <Compile Include="ViewModels\ExchangeWindowViewModel.cs" />
     <Compile Include="ViewModels\MainWindowViewModel.cs" />
+    <Compile Include="ViewModels\MessageWindowViewModel.cs" />
     <Compile Include="ViewModels\OptionUserControlViewModel.cs" />
     <Compile Include="ViewModels\OptionWindowViewModel.cs" />
+    <Compile Include="ViewModels\PortfolioWindowViewModel.cs" />
+    <Compile Include="ViewModels\RangeObservableCollection.cs" />
     <Compile Include="ViewModels\RateUserControlViewModel.cs" />
     <Compile Include="ViewModels\RateWindowViewModel.cs" />
     <Compile Include="ViewModels\VolatilityUserControlViewModel.cs" />
@@ -213,6 +216,7 @@
     <Compile Include="Views\ColumnSettingWindow.xaml.cs">
       <DependentUpon>ColumnSettingWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\DoubleToStringMultiConverter.cs" />
     <Compile Include="Views\ExchangeUserControl.xaml.cs">
       <DependentUpon>ExchangeUserControl.xaml</DependentUpon>
     </Compile>
@@ -231,12 +235,16 @@
     <Compile Include="Views\MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\MessageWindow.xaml.cs">
+      <DependentUpon>MessageWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\OptionUserControl.xaml.cs">
       <DependentUpon>OptionUserControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\OptionWindow.xaml.cs">
       <DependentUpon>OptionWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\PercentDoubleToStringMultiConverter.cs" />
     <Compile Include="Views\PortfolioWindow.xaml.cs">
       <DependentUpon>PortfolioWindow.xaml</DependentUpon>
     </Compile>
@@ -318,6 +326,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\MainWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\MessageWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

@@ -356,89 +356,89 @@ namespace client.Views
         }
     }
 
-    public class DoubleFormatConverter : IMultiValueConverter
-    {
-        public object Convert(object[] values, Type targetType, object parameter, System.Globalization.CultureInfo culture)
-        {
-            double value = (double)values[1];
-            if (value != 0.0)
-            {
-                OptionUserControl control = values[3] as OptionUserControl;
-                if (control != null)
-                {
-                    Proto.InstrumentType type = (Proto.InstrumentType)values[0];
-                    int index = (int)values[2];
-                    string format = null;
-                    if (type == Proto.InstrumentType.Option)
-                    {
-                        if (control.OptionFormats.TryGetValue(index, out format))
-                        {
-                            return value.ToString(format);
-                        }
-                    }
-                    else
-                    {
-                        if (control.UnderlyingFormats.TryGetValue(index, out format))
-                        {
-                            return value.ToString(format);
-                        }
-                    }
-                }
-                return value.ToString("N2");
-            }
-            else
-            {
-                return String.Empty;
-            }
-        }
+    //public class DoubleFormatConverter : IMultiValueConverter
+    //{
+    //    public object Convert(object[] values, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+    //    {
+    //        double value = (double)values[1];
+    //        if (value != 0.0)
+    //        {
+    //            OptionUserControl control = values[3] as OptionUserControl;
+    //            if (control != null)
+    //            {
+    //                Proto.InstrumentType type = (Proto.InstrumentType)values[0];
+    //                int index = (int)values[2];
+    //                string format = null;
+    //                if (type == Proto.InstrumentType.Option)
+    //                {
+    //                    if (control.OptionFormats.TryGetValue(index, out format))
+    //                    {
+    //                        return value.ToString(format);
+    //                    }
+    //                }
+    //                else
+    //                {
+    //                    if (control.UnderlyingFormats.TryGetValue(index, out format))
+    //                    {
+    //                        return value.ToString(format);
+    //                    }
+    //                }
+    //            }
+    //            return value.ToString("N2");
+    //        }
+    //        else
+    //        {
+    //            return String.Empty;
+    //        }
+    //    }
 
-        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, System.Globalization.CultureInfo culture)
-        {
-            throw new NotImplementedException();
-        }
-    }
+    //    public object[] ConvertBack(object value, Type[] targetTypes, object parameter, System.Globalization.CultureInfo culture)
+    //    {
+    //        throw new NotImplementedException();
+    //    }
+    //}
 
-    public class PercentDoubleFormatConverter : IMultiValueConverter
-    {
-        public object Convert(object[] values, Type targetType, object parameter, System.Globalization.CultureInfo culture)
-        {
-            double value = (double)values[1];
-            if (value != 0.0)
-            {
-                OptionUserControl control = values[3] as OptionUserControl;
-                if (control != null)
-                {
-                    Proto.InstrumentType type = (Proto.InstrumentType)values[0];
-                    int index = (int)values[2];
-                    string format = null;
-                    if (type == Proto.InstrumentType.Option)
-                    {
-                        if (control.OptionFormats.TryGetValue(index, out format))
-                        {
-                            return (value * 100).ToString(format);
-                        }
-                    }
-                    else
-                    {
-                        if (control.UnderlyingFormats.TryGetValue(index, out format))
-                        {
-                            return (value * 100).ToString(format);
-                        }
-                    }
-                }
-                return (value * 100).ToString("N2");
-            }
-            else
-            {
-                return String.Empty;
-            }
-        }
+    //public class PercentDoubleFormatConverter : IMultiValueConverter
+    //{
+    //    public object Convert(object[] values, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+    //    {
+    //        double value = (double)values[1];
+    //        if (value != 0.0)
+    //        {
+    //            OptionUserControl control = values[3] as OptionUserControl;
+    //            if (control != null)
+    //            {
+    //                Proto.InstrumentType type = (Proto.InstrumentType)values[0];
+    //                int index = (int)values[2];
+    //                string format = null;
+    //                if (type == Proto.InstrumentType.Option)
+    //                {
+    //                    if (control.OptionFormats.TryGetValue(index, out format))
+    //                    {
+    //                        return (value * 100).ToString(format);
+    //                    }
+    //                }
+    //                else
+    //                {
+    //                    if (control.UnderlyingFormats.TryGetValue(index, out format))
+    //                    {
+    //                        return (value * 100).ToString(format);
+    //                    }
+    //                }
+    //            }
+    //            return (value * 100).ToString("N2");
+    //        }
+    //        else
+    //        {
+    //            return String.Empty;
+    //        }
+    //    }
 
-        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, System.Globalization.CultureInfo culture)
-        {
-            throw new NotImplementedException();
-        }
-    }
+    //    public object[] ConvertBack(object value, Type[] targetTypes, object parameter, System.Globalization.CultureInfo culture)
+    //    {
+    //        throw new NotImplementedException();
+    //    }
+    //}
 
     public class BackgroundConverter : IValueConverter
     {

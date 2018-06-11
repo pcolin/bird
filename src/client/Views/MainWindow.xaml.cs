@@ -129,6 +129,8 @@ namespace client.Views
             NewExchangeWindow(vm.Container);
             NewRateWindow(vm.Container);
             NewVolatilityWindow(vm.Container);
+            NewMessageWindow(vm.Container);
+            NewPortfolioWindow(vm.Container);
         }
 
         private void NewOptionViewWindow(IUnityContainer container, Proto.Exchange exchange)
@@ -194,6 +196,46 @@ namespace client.Views
             t.Start();
         }
 
+        private void NewPortfolioWindow(IUnityContainer container)
+        {
+            Thread t = new Thread(() =>
+            {
+                PortfolioWindow w = new PortfolioWindow(container);
+                w.DataContext = new PortfolioWindowViewModel(container, w.Dispatcher);
+                if (PlaceWindow(w, "PortfolioWindow"))
+                {
+                    w.Show();
+                }
+
+                container.RegisterInstance<PortfolioWindow>(w);
+                w.Closed += (sender2, e2) => w.Dispatcher.InvokeShutdown();
+
+                System.Windows.Threading.Dispatcher.Run();
+            });
+            t.SetApartmentState(ApartmentState.STA);
+            t.Start();
+        }
+
+        private void NewMessageWindow(IUnityContainer container)
+        {
+            Thread t = new Thread(() =>
+            {
+                MessageWindow w = new MessageWindow();
+                w.DataContext = new MessageWindowViewModel(container, w.Dispatcher);
+                if (PlaceWindow(w, "MessageWindow"))
+                {
+                    w.Show();
+                }
+
+                container.RegisterInstance<MessageWindow>(w);
+                w.Closed += (sender2, e2) => w.Dispatcher.InvokeShutdown();
+
+                System.Windows.Threading.Dispatcher.Run();
+            });
+            t.SetApartmentState(ApartmentState.STA);
+            t.Start();
+        }
+
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             MainWindowViewModel vm = this.DataContext as MainWindowViewModel;
@@ -237,6 +279,8 @@ namespace client.Views
                 vm.Container.Resolve<ExchangeWindow>().SaveAndClose(writer);
                 vm.Container.Resolve<RateWindow>().SaveAndClose(writer);
                 vm.Container.Resolve<VolatilityWindow>().SaveAndClose(writer);
+                vm.Container.Resolve<MessageWindow>().SaveAndClose(writer);
+                vm.Container.Resolve<PortfolioWindow>().SaveAndClose(writer);
 
                 writer.WriteEndElement();
                 writer.WriteEndDocument();
@@ -397,6 +441,16 @@ namespace client.Views
         private void VolatilityMenuItem_Click(object sender, RoutedEventArgs e)
         {
             ShowWindow<VolatilityWindow>();
+        }
+
+        private void MessagesMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            ShowWindow<MessageWindow>();
+        }
+
+        private void PortfoliosMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            ShowWindow<PortfolioWindow>();
         }
 
         private void ShowWindow<T>() where T : Window

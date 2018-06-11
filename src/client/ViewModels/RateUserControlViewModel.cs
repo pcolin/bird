@@ -83,6 +83,7 @@ namespace client.ViewModels
             }
 
             var service = this.container.Resolve<ServerService>(exchange.ToString());
+            req.User = service.User;
             service.Request(req);
             UnsetModified();
         }

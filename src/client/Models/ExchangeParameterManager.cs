@@ -73,6 +73,15 @@ namespace client.Models
                         holidays[DateTime.ParseExact(h.Date, "yyyyMMdd", CultureInfo.InvariantCulture)] = h.Weight;
                     }
 
+                    //DateTime nextTradingDay = this.tradingDay.AddDays(1);
+                    //while (nextTradingDay.DayOfWeek == DayOfWeek.Saturday || nextTradingDay.DayOfWeek == DayOfWeek.Sunday || holidays.ContainsKey(nextTradingDay))
+                    //{
+                    //    nextTradingDay = nextTradingDay.AddDays(1);
+                    //}
+                    var now = DateTime.Now;
+                    var charmTime = DateTime.ParseExact(param.CharmStartTime, "HH:mm:ss", CultureInfo.InvariantCulture);
+                    this.charmDateTime = new DateTime(now.Year, now.Month, now.Day, charmTime.Hour, charmTime.Minute, charmTime.Second);
+
                     this.sessionSeconds = parseSessionFunc(param.Sessions, sessions);
                     this.maturitySessionSeconds = parseSessionFunc(param.MaturitySessions, maturitySessions);
 
@@ -105,16 +114,84 @@ namespace client.Models
             }
         }
 
-        public double? GetTimeValue(DateTime maturity)
+        public double GetTimeValue(DateTime maturity)
+        {            
+            lock (this.mutex)
+            {
+                return GetTimeValue(maturity, this.tradingDay, DateTime.Now, this.daysToMaturity);
+            }
+        }
+
+        public double GetCharmTimeValue(DateTime maturity)
         {
             lock (this.mutex)
             {
-                if (parameter == null) return null;
+                return GetTimeValue(maturity, this.tradingDay.AddDays(1), this.charmDateTime, charmDaysToMaturity);
+            }
+        }
+
+        public double GetTimeValue(DateTime maturity, DateTime date, DateTime time, Dictionary<DateTime, double> days)
+        {
+            if (parameter == null) return double.NaN;
+
+            double tradingDays = 0;
+            if (days.TryGetValue(maturity, out tradingDays) == false)
+            {
+                for (var d = date.AddDays(1); d <= maturity; d = d.AddDays(1))
+                {
+                    if (d.DayOfWeek != DayOfWeek.Saturday && d.DayOfWeek != DayOfWeek.Sunday)
+                    {
+                        double weight = 0;
+                        if (holidays.TryGetValue(d, out weight))
+                        {
+                            tradingDays += weight;
+                        }
+                        else
+                        {
+                            tradingDays += 1;
+                        }
+                    }
+                }
+                days.Add(maturity, tradingDays);
+            }
+
+            if (date < maturity)
+            {
+                return (tradingDays + GetFraction(time, this.sessions, sessionSeconds)) / AnnalTradingDays;
+            }
+            else if (date == maturity)
+            {
+                return (tradingDays + GetFraction(time, maturitySessions, maturitySessionSeconds)) / AnnalTradingDays;
+            }
+            else
+            {
+                return 0;
+            }
+        }
+
+        double GetFraction(DateTime now, List<Tuple<DateTime, DateTime>> sessions, double seconds)
+        {
+            double ret = 0;
+            for (int i = sessions.Count - 1; i >= 0 && now < sessions[i].Item2; --i)
+            {
+                if (now > sessions[i].Item1)
+                {
+                    ret += (sessions[i].Item2 - now).TotalSeconds / seconds;
+                }
+            }
+            return ret;
+        }
+
+        double GetTimeValue(DateTime date, DateTime time, DateTime maturity)
+        {
+            lock (this.mutex)
+            {
+                if (parameter == null) return double.NaN;
 
                 double tradingDays = 0;
                 if (daysToMaturity.TryGetValue(maturity, out tradingDays) == false)
                 {
-                    for (var d = tradingDay.AddDays(1); d <= maturity; d = d.AddDays(1))
+                    for (var d = date.AddDays(1); d <= maturity; d = d.AddDays(1))
                     {
                         if (d.DayOfWeek != DayOfWeek.Saturday && d.DayOfWeek != DayOfWeek.Sunday)
                         {
@@ -132,25 +209,24 @@ namespace client.Models
                     daysToMaturity.Add(maturity, tradingDays);
                 }
 
-                var now = DateTime.Now;
                 Func<List<Tuple<DateTime, DateTime>>, int, double> fractionFunc = (sessions, seconds) =>
                 {
                     double ret = 0;
-                    for (int i = sessions.Count - 1; i >= 0 && now < sessions[i].Item2; --i)
+                    for (int i = sessions.Count - 1; i >= 0 && time < sessions[i].Item2; --i)
                     {
-                        if (now > sessions[i].Item1)
+                        if (time > sessions[i].Item1)
                         {
-                            ret += (sessions[i].Item2 - now).TotalSeconds / seconds;
+                            ret += (sessions[i].Item2 - time).TotalSeconds / seconds;
                         }
-                    }                    
+                    }
                     return ret;
                 };
 
-                if (tradingDay < maturity)
+                if (date < maturity)
                 {
                     return (tradingDays + fractionFunc(this.sessions, sessionSeconds)) / AnnalTradingDays;
                 }
-                else
+                else 
                 {
                     return (tradingDays + fractionFunc(maturitySessions, maturitySessionSeconds)) / AnnalTradingDays;
                 }
@@ -161,11 +237,13 @@ namespace client.Models
         private object mutex = new object();
 
         DateTime tradingDay;
+        DateTime charmDateTime;
         SortedList<DateTime, double> holidays = new SortedList<DateTime, double>();
         List<Tuple<DateTime, DateTime>> sessions = new List<Tuple<DateTime, DateTime>>();
         List<Tuple<DateTime, DateTime>> maturitySessions = new List<Tuple<DateTime, DateTime>>();
         int sessionSeconds;
         int maturitySessionSeconds;
         Dictionary<DateTime, double> daysToMaturity = new Dictionary<DateTime, double>();
+        Dictionary<DateTime, double> charmDaysToMaturity = new Dictionary<DateTime, double>();
     }
 }

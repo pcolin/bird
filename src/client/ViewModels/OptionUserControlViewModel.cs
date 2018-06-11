@@ -91,7 +91,7 @@ namespace client.ViewModels
             set { SetProperty(ref underlyings, value); }
         }
 
-        private Dictionary<string, OptionItem> optionItems;
+        private Dictionary<Option, OptionItem> optionItems;
         private ObservableCollection<OptionPairItem> options;
         public ObservableCollection<OptionPairItem> Options
         {
@@ -123,7 +123,7 @@ namespace client.ViewModels
                 }
 
                 var opts = products.GetOptions(inst);
-                if (opts.Count > 0)
+                if (opts != null && opts.Count > 0)
                 {
                     item.Maturity = opts[0].Maturity;
                 }
@@ -134,7 +134,7 @@ namespace client.ViewModels
 
             List<OptionPairItem> optionPairItems = new List<OptionPairItem>();
             List<OptionPairItem> dominantOptionPairItems = new List<OptionPairItem>();
-            this.optionItems = new Dictionary<string, OptionItem>();
+            this.optionItems = new Dictionary<Option, OptionItem>();
             //List<OptionItem> optionItems = new List<OptionItem>();
             var options = products.GetOptionsByHedgeUnderlying(hedgeUnderlying);
             if (options != null)
@@ -183,8 +183,8 @@ namespace client.ViewModels
                             {
                                 optionPairItems.Add(new OptionPairItem() { Call = callItem, Put = putItem, IsFirst = isFirst, GroupNo = groupNo });
                             }
-                            optionItems[call.Id] = callItem;
-                            optionItems[inst.Id] = putItem;
+                            optionItems[call] = callItem;
+                            optionItems[inst] = putItem;
                             maturity = inst.Maturity;
                         }
                         call = null;
@@ -242,7 +242,7 @@ namespace client.ViewModels
             if (inst.Type == Proto.InstrumentType.Option)
             {
                 OptionItem item = null;
-                if (this.optionItems.TryGetValue(inst.Id, out item))
+                if (this.optionItems.TryGetValue(inst as Option, out item))
                 {
                     item.Status = status;
                 }
@@ -263,7 +263,7 @@ namespace client.ViewModels
             if (inst.Type == Proto.InstrumentType.Option)
             {
                 OptionItem item = null;
-                if (this.optionItems.TryGetValue(inst.Id, out item))
+                if (this.optionItems.TryGetValue(inst as Option, out item))
                 {
                     if (price.Bids.Count > 0)
                     {
@@ -302,13 +302,9 @@ namespace client.ViewModels
                     }
 
                     var ssr = ssrateManager.GetSSRate(inst.Id, kvp.Value.Maturity);
-                    if (ssr.HasValue)
+                    if (double.IsNaN(ssr) == false)
                     {
-                        kvp.Value.Theo = price.AdjustedPrice + ssr.Value;
-                    }
-                    else
-                    {
-                        kvp.Value.Theo = price.AdjustedPrice;
+                        kvp.Value.Theo = price.AdjustedPrice + ssr;
                     }
 
                     int oldAtmIdx = -1, newAtmIdx = -1;
@@ -377,20 +373,29 @@ namespace client.ViewModels
         public void ReceiveGreeks(GreeksData greeks)
         {
             OptionItem item = null;
-            if (this.optionItems.TryGetValue(greeks.Option.Id, out item))
+            if (this.optionItems.TryGetValue(greeks.Option, out item))
             {
                 item.Theo = greeks.Greeks.theo;
                 item.Volatility = greeks.Greeks.vol;
                 item.Delta = greeks.Greeks.delta;
                 item.Gamma = greeks.Greeks.gamma;
                 item.Vega = greeks.Greeks.vega;
+                if (greeks.Option.OptionType == Proto.OptionType.Call)
+                {
+                    item.SkewSensi = greeks.SkewSensi;
+                    item.ConvexSensi = greeks.CallConvexSensi * 1000;
+                }
+                else
+                {
+                    item.ConvexSensi = greeks.PutConvexSensi * 1000;
+                }
             }
         }
 
         public void ReceiveIV(ImpliedVolatilityData data)
         {
             OptionItem item = null;
-            if (this.optionItems.TryGetValue(data.Option.Id, out item))
+            if (this.optionItems.TryGetValue(data.Option, out item))
             {
                 item.ImpliedVol = data.LastIV;
                 item.BidVol = data.BidIV;
@@ -630,13 +635,6 @@ namespace client.ViewModels
         public OptionItem Call { get; set; }
         public OptionItem Put { get; set; }
 
-        private double skewSense;
-        public double SkewSense
-        {
-            get { return skewSense; }
-            set { SetProperty(ref skewSense, value); }
-        }
-
         private bool isAtmOption;
         public bool IsAtmOption
         {
@@ -659,28 +657,28 @@ namespace client.ViewModels
             set { SetProperty(ref status, value); }
         }
 
-        private double quoterCredit;
+        private double quoterCredit = double.NaN;
         public double QuoterCredit
         {
             get { return quoterCredit; }
             set { SetProperty(ref quoterCredit, value); }
         }
 
-        private string quoterCreditFormat;
-        public string QuoterCreditFormat
-        {
-            get { return quoterCreditFormat; }
-            set { SetProperty(ref quoterCreditFormat, value); }
-        }        
+        //private string quoterCreditFormat;
+        //public string QuoterCreditFormat
+        //{
+        //    get { return quoterCreditFormat; }
+        //    set { SetProperty(ref quoterCreditFormat, value); }
+        //}        
 
-        private double hitterCredit;
+        private double hitterCredit = double.NaN;
         public double HitterCredit
         {
             get { return hitterCredit; }
             set { SetProperty(ref hitterCredit, value); }
         }
 
-        private double dimerCredit;
+        private double dimerCredit = double.NaN;
         public double DimerCredit
         {
             get { return dimerCredit; }
@@ -820,7 +818,7 @@ namespace client.ViewModels
             set { SetProperty(ref marketAskVolume, value); }
         }
 
-        private double theo;
+        private double theo = double.NaN;
         public double Theo
         {
             get { return theo; }
@@ -904,21 +902,21 @@ namespace client.ViewModels
             set { SetProperty(ref changedPosition, value); }
         }
 
-        private double delta;
+        private double delta = double.NaN;
         public double Delta
         {
             get { return delta; }
             set { SetProperty(ref delta, value); }
         }
 
-        private double gamma;
+        private double gamma = double.NaN;
         public double Gamma
         {
             get { return gamma; }
             set { SetProperty(ref gamma, value); }
         }
 
-        private double vega;
+        private double vega = double.NaN;
         public double Vega
         {
             get { return vega; }
@@ -946,18 +944,25 @@ namespace client.ViewModels
             set { SetProperty(ref askVol, value); }
         }
 
-        private double volatility;
+        private double volatility = double.NaN;
         public double Volatility
         {
             get { return volatility; }
             set { SetProperty(ref volatility, value); }
         }
 
-        private double convex;
-        public double Convex
+        private double skewSensi = double.NaN;
+        public double SkewSensi
         {
-            get { return convex; }
-            set { SetProperty(ref convex, value); }
+            get { return skewSensi; }
+            set { SetProperty(ref skewSensi, value); }
+        }
+
+        private double convexSensi = double.NaN;
+        public double ConvexSensi
+        {
+            get { return convexSensi; }
+            set { SetProperty(ref convexSensi, value); }
         }        
         
         //public OptionItem()

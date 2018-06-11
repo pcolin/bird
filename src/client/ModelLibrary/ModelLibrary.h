@@ -12,6 +12,7 @@ public ref struct GreeksDataWrapper
 {
 	double spot;
 	double vol;
+	double time_value;
 	double theo;
 	double delta;
 	double gamma;
@@ -22,8 +23,8 @@ public ref struct GreeksDataWrapper
 	double vol_theta;
 	double rate_theta;
 
-	GreeksDataWrapper(const Model::GreeksData &data, double v)
-		: spot(data.spot), vol(v), theo(data.theo), delta(data.delta), gamma(data.gamma), theta(data.theta), vega(data.vega),
+	GreeksDataWrapper(const Model::GreeksData &data, double v, double t)
+		: spot(data.spot), vol(v), time_value(t), theo(data.theo), delta(data.delta), gamma(data.gamma), theta(data.theta), vega(data.vega),
 		rho1(data.rho1), rho2(data.rho2), vol_theta(data.vol_theta), rate_theta(data.rate_theta)
 	{}
 };
@@ -79,7 +80,7 @@ public:
 	{
 		Model::GreeksData data;
 		model_->Calculate(call, s, k, v, r, q, t, data);
-		return gcnew GreeksDataWrapper(data, v);
+		return gcnew GreeksDataWrapper(data, v, t);
 	}
 
 	TheoDataWrapper^ CalculateTheo(bool call, double s, double k, double v, double r, double q, double t)
@@ -87,6 +88,11 @@ public:
 		Model::TheoData data;
 		model_->Calculate(call, s, k, v, r, q, t, data);
 		return gcnew TheoDataWrapper(data);
+	}
+
+	double CalculateDelta(bool call, double s, double k, double v, double r, double q, double t)
+	{
+		return model_->CalculateDelta(call, s, k, v, r, q, t);
 	}
 
 	double CalculateIV(bool call, double v, double p, double s, double k, double r, double q, double t)

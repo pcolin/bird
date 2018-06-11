@@ -86,6 +86,14 @@ namespace client.Models
             }
             catch (InvalidOperationException)
             {
+                var err = new Proto.ServerInfo()
+                {
+                    Time = (ulong)((DateTime.Now - new DateTime(1970, 1, 1, 8, 0, 0)).TotalSeconds),
+                    Type = Proto.ServerInfo.Types.Type.Error,
+                    Exchange = this.exchange,
+                    Info = "Theo calculator stopped(InvalidOperationException)",
+                };
+                this.container.Resolve<EventAggregator>().GetEvent<PubSubEvent<Proto.ServerInfo>>().Publish(err);
                 return;
             }
             catch (ThreadAbortException)
@@ -131,50 +139,58 @@ namespace client.Models
             var hedgeUnderlyings = pm.GetHedgeUnderlyings();
             foreach (var underlying in hedgeUnderlyings)
             {
-                var pricing = new Pricing();
-                var options = pm.GetOptionsByHedgeUnderlying(underlying);
                 var ps = psm.GetPricingSpec(underlying.Id);
                 if (ps != null)
                 {
-                    pricing.PricingModel = new PricingModelWrapper(ps.Model == Proto.PricingModel.Bsm);
-                    pricing.VolatilityModel = new VolatilityModelWrapper();
-
-                    Dictionary<Option, PricingParameter> parameters = new Dictionary<Option, PricingParameter>();
+                    var pricing = new Pricing()
+                        {
+                            Spot = double.NaN,
+                            PricingModel = new PricingModelWrapper(ps.Model == Proto.PricingModel.Bsm),
+                            VolatilityModel = new VolatilityModelWrapper(),
+                            Parameters = new Dictionary<DateTime, PricingParameters>(),
+                        };
                     foreach (var op in ps.Options)
                     {
                         var option = pm.FindId(op) as Option;
                         if (option != null)
                         {
-                            var parameter = new PricingParameter();
-                            parameter.Rate = rm.GetInterestRate(option.Maturity);
-                            parameter.SSRate = ssm.GetSSRate(option.HedgeUnderlying.Id, option.Maturity);
-                            var vc = vcm.GetVolatilityCurve(option.HedgeUnderlying.Id, option.Maturity);
-                            if (vc != null)
+                            PricingParameters parameters = null;
+                            if (pricing.Parameters.TryGetValue(option.Maturity, out parameters) == false)
                             {
-                                parameter.VolatilityParameter = new VolatilityParameterWrapper()
+                                parameters = new PricingParameters()
                                     {
-                                        spot = vc.Spot,
-                                        skew = vc.Skew,
-                                        atm_vol = vc.AtmVol,
-                                        call_convex = vc.CallConvex,
-                                        put_convex = vc.PutConvex,
-                                        call_slope = vc.CallSlope,
-                                        put_slope = vc.PutSlope,
-                                        call_cutoff = vc.CallCutoff,
-                                        put_cutoff = vc.PutCutoff,
-                                        vcr = vc.Vcr,
-                                        scr = vc.Scr,
-                                        ccr = vc.Ccr,
-                                        spcr = vc.Spcr,
-                                        sccr = vc.Sccr
+                                        Rate = rm.GetInterestRate(option.Maturity),
+                                        SSRate = ssm.GetSSRate(option.HedgeUnderlying.Id, option.Maturity),
+                                        Volatilities = new Dictionary<Option, double>(),
                                     };
+                                var vc = vcm.GetVolatilityCurve(option.HedgeUnderlying.Id, option.Maturity);
+                                if (vc != null)
+                                {
+                                    parameters.Volatility = new VolatilityParameterWrapper()
+                                        {
+                                            spot = vc.Spot,
+                                            skew = vc.Skew,
+                                            atm_vol = vc.AtmVol,
+                                            call_convex = vc.CallConvex,
+                                            put_convex = vc.PutConvex,
+                                            call_slope = vc.CallSlope,
+                                            put_slope = vc.PutSlope,
+                                            call_cutoff = vc.CallCutoff,
+                                            put_cutoff = vc.PutCutoff,
+                                            vcr = vc.Vcr,
+                                            scr = vc.Scr,
+                                            ccr = vc.Ccr,
+                                            spcr = vc.Spcr,
+                                            sccr = vc.Sccr
+                                        };
+                                }
+                                pricing.Parameters.Add(option.Maturity, parameters);
                             }
-                            parameters[option] = parameter;
+                            parameters.Volatilities[option] = 0;
                         }
                     }
-                    pricing.Parameters = parameters;
+                    this.pricings.Add(underlying, pricing);
                 }
-                this.pricings[underlying] = pricing;
             }
         }
 
@@ -190,13 +206,17 @@ namespace client.Models
                     if (this.pricings.TryGetValue(inst.HedgeUnderlying, out pricing))
                     {
                         Option option = inst as Option;
-                        PricingParameter parameter = null;
-                        if (pricing.Parameters.TryGetValue(option, out parameter))
+                        PricingParameters parameters = null; 
+                        if (pricing.Parameters.TryGetValue(option.Maturity, out parameters))
                         {
-                            double? t = this.epm.GetTimeValue(option.Maturity);
-                            if (t.HasValue)
+                            double v = 0;
+                            if (parameters.Volatilities.TryGetValue(option, out v))
                             {
-                                CalculatePublishIV(option, p, pricing, parameter, t.Value);
+                                double t = this.epm.GetTimeValue(option.Maturity);
+                                if (double.IsNaN(t) == false)
+                                {
+                                    CalculatePublishIV(option, p, pricing, parameters, v, t);
+                                }
                             }
                         }
                     }
@@ -209,17 +229,20 @@ namespace client.Models
                     {
                         pricing.Spot = p.AdjustedPrice;
 
-                        Dictionary<DateTime, double?> time_values = new Dictionary<DateTime, double?>();
                         foreach (var kvp in pricing.Parameters)
                         {
-                            double? tv = null;
-                            if (time_values.TryGetValue(kvp.Key.Maturity, out tv) == false)
+                            double t = epm.GetTimeValue(kvp.Key);
+                            double t1 = epm.GetCharmTimeValue(kvp.Key);
+                            if (double.IsNaN(t) == false)
                             {
-                                 tv = epm.GetTimeValue(kvp.Key.Maturity);
-                            }
-                            if (tv.HasValue)
-                            {
-                                CalculatePublishGreeks(kvp.Key, pricing, kvp.Value, tv.Value);
+                                foreach(var option in kvp.Value.Volatilities.Keys.ToList())
+                                {
+                                    double v = 0;
+                                    if (CalculatePublishGreeks(option, pricing, kvp.Value, ref v, t, t1))
+                                    {
+                                        kvp.Value.Volatilities[option] = v;
+                                    }
+                                }
                             }
                         }
                     }
@@ -248,40 +271,73 @@ namespace client.Models
                                 if (option != null)
                                 {
                                     options.Add(option);
-                                    if (pricing.Parameters.ContainsKey(option) == false)
+                                    PricingParameters parameters = null;
+                                    if (pricing.Parameters.TryGetValue(option.Maturity, out parameters) == false)
                                     {
-                                        var parameter = new PricingParameter();
-                                        parameter.Rate = rm.GetInterestRate(option.Maturity);
-                                        parameter.SSRate = ssm.GetSSRate(option.HedgeUnderlying.Id, option.Maturity);
+                                        parameters = new PricingParameters()
+                                            {
+                                                Rate = rm.GetInterestRate(option.Maturity),
+                                                SSRate = ssm.GetSSRate(option.HedgeUnderlying.Id, option.Maturity),
+                                                Volatilities = new Dictionary<Option,double>(),
+                                            };
                                         var vc = vcm.GetVolatilityCurve(option.HedgeUnderlying.Id, option.Maturity);
                                         if (vc != null)
                                         {
-                                            parameter.VolatilityParameter = new VolatilityParameterWrapper()
-                                            {
-                                                spot = vc.Spot,
-                                                skew = vc.Skew,
-                                                atm_vol = vc.AtmVol,
-                                                call_convex = vc.CallConvex,
-                                                put_convex = vc.PutConvex,
-                                                call_slope = vc.CallSlope,
-                                                put_slope = vc.PutSlope,
-                                                call_cutoff = vc.CallCutoff,
-                                                put_cutoff = vc.PutCutoff,
-                                                vcr = vc.Vcr,
-                                                scr = vc.Scr,
-                                                ccr = vc.Ccr,
-                                                spcr = vc.Spcr,
-                                                sccr = vc.Sccr
-                                            };
+                                            parameters.Volatility = new VolatilityParameterWrapper()
+                                                {
+                                                    spot = vc.Spot,
+                                                    skew = vc.Skew,
+                                                    atm_vol = vc.AtmVol,
+                                                    call_convex = vc.CallConvex,
+                                                    put_convex = vc.PutConvex,
+                                                    call_slope = vc.CallSlope,
+                                                    put_slope = vc.PutSlope,
+                                                    call_cutoff = vc.CallCutoff,
+                                                    put_cutoff = vc.PutCutoff,
+                                                    vcr = vc.Vcr,
+                                                    scr = vc.Scr,
+                                                    ccr = vc.Ccr,
+                                                    spcr = vc.Spcr,
+                                                    sccr = vc.Sccr
+                                                };
                                         }
-                                        pricing.Parameters[option] = parameter;
+                                        pricing.Parameters.Add(option.Maturity, parameters);
+                                    }
+                                    if (parameters.Volatilities.ContainsKey(option) == false)
+                                    {
+                                        parameters.Volatilities.Add(option, 0);
                                     }
                                 }
                             }
-                            var itemsToRemove = pricing.Parameters.Where(p => options.Contains(p.Key) == false);
+                            var itemsToRemove = new Dictionary<DateTime, List<Option>>();
+                            foreach (var kvp in pricing.Parameters)
+                            {
+                                List<Option> items = new List<Option>();
+                                foreach (var param in kvp.Value.Volatilities)
+                                {
+                                    if (options.Contains(param.Key) == false)
+                                    {
+                                        items.Add(param.Key);
+                                    }
+                                }
+                                if (items.Count > 0)
+                                {
+                                    itemsToRemove.Add(kvp.Key, items.Count < kvp.Value.Volatilities.Count ? items : null);
+                                }
+                            }
                             foreach (var kvp in itemsToRemove)
                             {
-                                pricing.Parameters.Remove(kvp.Key);
+                                if (kvp.Value != null)
+                                {
+                                    foreach (var op in kvp.Value)
+                                    {
+                                        pricing.Parameters[kvp.Key].Volatilities.Remove(op);
+                                    }
+                                }
+                                else
+                                {
+                                    pricing.Parameters.Remove(kvp.Key);
+                                }
                             }
                         }
                     }
@@ -295,24 +351,9 @@ namespace client.Models
             {
                 foreach (var pricing in this.pricings)
                 {
-                    Dictionary<DateTime, double?> time_values = new Dictionary<DateTime, double?>();
                     foreach (var kvp in pricing.Value.Parameters)
                     {
-                        double? tv = null;
-                        if (time_values.TryGetValue(kvp.Key.Maturity, out tv) == false)
-                        {
-                            tv = epm.GetTimeValue(kvp.Key.Maturity);
-                        }
-                        if (tv.HasValue)
-                        {
-                            CalculatePublishGreeks(kvp.Key, pricing.Value, kvp.Value, tv.Value);
-
-                            Proto.Price p = null;
-                            if (this.prices.TryGetValue(kvp.Key, out p))
-                            {
-                                CalculatePublishIV(kvp.Key, p, pricing.Value, kvp.Value, tv.Value);
-                            }
-                        }
+                        Calculate(pricing.Value, kvp.Key, kvp.Value);
                     }
                 }
             }
@@ -324,26 +365,10 @@ namespace client.Models
             {
                 foreach (var pricing in this.pricings)
                 {
-                    Dictionary<DateTime, double?> time_values = new Dictionary<DateTime, double?>();
                     foreach (var kvp in pricing.Value.Parameters)
                     {
-                        kvp.Value.Rate = rm.GetInterestRate(kvp.Key.Maturity);
-
-                        double? tv = null;
-                        if (time_values.TryGetValue(kvp.Key.Maturity, out tv) == false)
-                        {
-                            tv = epm.GetTimeValue(kvp.Key.Maturity);
-                        }
-                        if (tv.HasValue)
-                        {
-                            CalculatePublishGreeks(kvp.Key, pricing.Value, kvp.Value, tv.Value);
-
-                            Proto.Price p = null;
-                            if (this.prices.TryGetValue(kvp.Key, out p))
-                            {
-                                CalculatePublishIV(kvp.Key, p, pricing.Value, kvp.Value, tv.Value);
-                            }
-                        }
+                        kvp.Value.Rate = rm.GetInterestRate(kvp.Key);
+                        Calculate(pricing.Value, kvp.Key, kvp.Value);
                     }
                 }
             }
@@ -363,30 +388,12 @@ namespace client.Models
                         {
                             try
                             {
-                                Dictionary<DateTime, double?> time_values = new Dictionary<DateTime, double?>();
                                 var maturity = DateTime.ParseExact(r.Maturity, "yyyyMMdd", CultureInfo.InvariantCulture);
-                                foreach (var kvp in pricing.Parameters)
+                                PricingParameters parameters = null;
+                                if (pricing.Parameters.TryGetValue(maturity, out parameters))
                                 {
-                                    if (kvp.Key.Maturity == maturity)
-                                    {
-                                        kvp.Value.SSRate = r.Rate;
-
-                                        double? tv = null;
-                                        if (time_values.TryGetValue(kvp.Key.Maturity, out tv) == false)
-                                        {
-                                            tv = epm.GetTimeValue(kvp.Key.Maturity);
-                                        }
-                                        if (tv.HasValue)
-                                        {
-                                            CalculatePublishGreeks(kvp.Key, pricing, kvp.Value, tv.Value);
-
-                                            Proto.Price p = null;
-                                            if (this.prices.TryGetValue(kvp.Key, out p))
-                                            {
-                                                CalculatePublishIV(kvp.Key, p, pricing, kvp.Value, tv.Value);
-                                            }
-                                        }
-                                    }
+                                    parameters.Rate = r.Rate;
+                                    Calculate(pricing, maturity, parameters);
                                 }
                             }
                             catch (Exception) { }
@@ -410,66 +417,29 @@ namespace client.Models
                         {
                             try
                             {
-                                Dictionary<DateTime, double?> time_values = new Dictionary<DateTime, double?>();
                                 var maturity = DateTime.ParseExact(curve.Maturity, "yyyyMMdd", CultureInfo.InvariantCulture);
-                                foreach (var kvp in pricing.Parameters)
+                                PricingParameters parameters = null;
+                                if (pricing.Parameters.TryGetValue(maturity, out parameters))
                                 {
-                                    if (kvp.Key.Maturity == maturity)
-                                    {
-                                        if (kvp.Value.VolatilityParameter != null)
+                                    parameters.Volatility = new VolatilityParameterWrapper()
                                         {
-                                            kvp.Value.VolatilityParameter.spot = curve.Spot;
-                                            kvp.Value.VolatilityParameter.skew = curve.Skew;
-                                            kvp.Value.VolatilityParameter.atm_vol = curve.AtmVol;
-                                            kvp.Value.VolatilityParameter.call_convex = curve.CallConvex;
-                                            kvp.Value.VolatilityParameter.put_convex = curve.PutConvex;
-                                            kvp.Value.VolatilityParameter.call_slope = curve.CallSlope;
-                                            kvp.Value.VolatilityParameter.put_slope = curve.PutSlope;
-                                            kvp.Value.VolatilityParameter.call_cutoff = curve.CallCutoff;
-                                            kvp.Value.VolatilityParameter.put_cutoff = curve.PutCutoff;
-                                            kvp.Value.VolatilityParameter.vcr = curve.Vcr;
-                                            kvp.Value.VolatilityParameter.scr = curve.Scr;
-                                            kvp.Value.VolatilityParameter.ccr = curve.Ccr;
-                                            kvp.Value.VolatilityParameter.spcr = curve.Spcr;
-                                            kvp.Value.VolatilityParameter.sccr = curve.Sccr;
-                                        }
-                                        else
-                                        {
-                                            kvp.Value.VolatilityParameter = new VolatilityParameterWrapper()
-                                            {
-                                                spot = curve.Spot,
-                                                skew = curve.Skew,
-                                                atm_vol = curve.AtmVol,
-                                                call_convex = curve.CallConvex,
-                                                put_convex = curve.PutConvex,
-                                                call_slope = curve.CallSlope,
-                                                put_slope = curve.PutSlope,
-                                                call_cutoff = curve.CallCutoff,
-                                                put_cutoff = curve.PutCutoff,
-                                                vcr = curve.Vcr,
-                                                scr = curve.Scr,
-                                                ccr = curve.Ccr,
-                                                spcr = curve.Spcr,
-                                                sccr = curve.Sccr
-                                            };
-                                        }
+                                            spot = curve.Spot,
+                                            skew = curve.Skew,
+                                            atm_vol = curve.AtmVol,
+                                            call_convex = curve.CallConvex,
+                                            put_convex = curve.PutConvex,
+                                            call_slope = curve.CallSlope,
+                                            put_slope = curve.PutSlope,
+                                            call_cutoff = curve.CallCutoff,
+                                            put_cutoff = curve.PutCutoff,
+                                            vcr = curve.Vcr,
+                                            scr = curve.Scr,
+                                            ccr = curve.Ccr,
+                                            spcr = curve.Spcr,
+                                            sccr = curve.Sccr
+                                        };
 
-                                        double? tv = null;
-                                        if (time_values.TryGetValue(kvp.Key.Maturity, out tv) == false)
-                                        {
-                                            tv = epm.GetTimeValue(kvp.Key.Maturity);
-                                        }
-                                        if (tv.HasValue)
-                                        {
-                                            CalculatePublishGreeks(kvp.Key, pricing, kvp.Value, tv.Value);
-
-                                            Proto.Price p = null;
-                                            if (this.prices.TryGetValue(kvp.Key, out p))
-                                            {
-                                                CalculatePublishIV(kvp.Key, p, pricing, kvp.Value, tv.Value);
-                                            }
-                                        }
-                                    }
+                                    Calculate(pricing, maturity, parameters);
                                 }
                             }
                             catch (Exception) { }
@@ -479,50 +449,173 @@ namespace client.Models
             }
         }
 
-        private void CalculatePublishGreeks(Option option, Pricing pricing, PricingParameter param, double timeValue)
+        private void Calculate(Pricing pricing, DateTime maturity, PricingParameters parameters)
         {
-            if (!pricing.Spot.HasValue) return;
-            double s = pricing.Spot.Value;
+            double t = epm.GetTimeValue(maturity);
+            double t1 = epm.GetCharmTimeValue(maturity);
+            if (double.IsNaN(t) == false)
+            {
+                foreach (var option in parameters.Volatilities.Keys.ToList())
+                {
+                    double v = 0;
+                    if (CalculatePublishGreeks(option, pricing, parameters, ref v, t, t1))
+                    {
+                        parameters.Volatilities[option] = v;
+                        Proto.Price p = null;
+                        if (this.prices.TryGetValue(option, out p))
+                        {
+                            CalculatePublishIV(option, p, pricing, parameters, v, t);
+                        }
+                    }
+                }
+            }
+        }
 
-            if (!param.Rate.HasValue) return;
-            double r = param.Rate.Value;
+        private bool CalculatePublishGreeks(Option option, Pricing pricing, PricingParameters param, ref double vol, double timeValue, double charmTimeValue)
+        {
+            if (double.IsNaN(pricing.Spot)) return false;
+            double s = pricing.Spot;
 
-            if (!param.SSRate.HasValue) return;
-            double q = param.SSRate.Value;
+            if (double.IsNaN(param.Rate)) return false;
+            double r = param.Rate;
 
-            if (param.VolatilityParameter == null) return;
+            if (double.IsNaN(param.SSRate)) return false;
+            double q = param.SSRate;
+
+            if (param.Volatility == null) return false;
 
             bool future = option.HedgeUnderlying.Type == Proto.InstrumentType.Future;
-            double v = pricing.VolatilityModel.Calculate(param.VolatilityParameter, future, s, option.Strike, r, q, timeValue);
-            param.Volatility = v;
+
+            param.Volatility.skew += 0.005;
+            double v1 = pricing.VolatilityModel.Calculate(param.Volatility, future, s, option.Strike, r, q, timeValue);
+            param.Volatility.skew -= 0.01;
+            double v2 = pricing.VolatilityModel.Calculate(param.Volatility, future, s, option.Strike, r, q, timeValue);
+            param.Volatility.skew += 0.005;
+            vol = pricing.VolatilityModel.Calculate(param.Volatility, future, s, option.Strike, r, q, timeValue);
+
+            bool call = option.OptionType == Proto.OptionType.Call;
             GreeksDataWrapper greeks = null;
+            double delta = 0, skewSensi = 0;
+            double callConvexSensi = double.NaN, putConvexSensi = double.NaN;
             if (future)
             {
-                greeks = pricing.PricingModel.CalculateGreeks(option.OptionType == Proto.OptionType.Call, s + q, option.Strike, v, r, r, timeValue);
+                greeks = pricing.PricingModel.CalculateGreeks(call, s + q, option.Strike, vol, r, r, timeValue);
+                if (charmTimeValue != 0)
+                {
+                    delta = pricing.PricingModel.CalculateDelta(call, s + q, option.Strike, vol, r, r, charmTimeValue);
+                }
+                else if (option.SettlementType == Proto.SettlementType.PhysicalSettlement)
+                {
+                    if (call)
+                    {
+                        if (option.Strike < s + q)
+                        {
+                            delta = 1;
+                        }
+                    }
+                    else if (option.Strike > s + q)
+                    {
+                        delta = -1;
+                    }
+                }
+                skewSensi = pricing.PricingModel.Calculate(call, s + q, option.Strike, v1, r, r, timeValue) - pricing.PricingModel.Calculate(call, s + q, option.Strike, v2, r, r, timeValue);
+                if (option.Strike > s + q)
+                {
+                    param.Volatility.call_convex += 0.005;
+                    v1 = pricing.VolatilityModel.Calculate(param.Volatility, future, s, option.Strike, r, q, timeValue);
+                    param.Volatility.call_convex -= 0.01;
+                    v2 = pricing.VolatilityModel.Calculate(param.Volatility, future, s, option.Strike, r, q, timeValue);
+                    param.Volatility.call_convex += 0.005;
+                    callConvexSensi = pricing.PricingModel.Calculate(call, s + q, option.Strike, v1, r, r, timeValue) - pricing.PricingModel.Calculate(call, s + q, option.Strike, v2, r, r, timeValue);
+                }
+                else
+                {
+                    param.Volatility.put_convex += 0.005;
+                    v1 = pricing.VolatilityModel.Calculate(param.Volatility, future, s, option.Strike, r, q, timeValue);
+                    param.Volatility.put_convex -= 0.01;
+                    v2 = pricing.VolatilityModel.Calculate(param.Volatility, future, s, option.Strike, r, q, timeValue);
+                    param.Volatility.put_convex += 0.005;
+                    putConvexSensi = pricing.PricingModel.Calculate(call, s + q, option.Strike, v1, r, r, timeValue) - pricing.PricingModel.Calculate(call, s + q, option.Strike, v2, r, r, timeValue);
+                    //if (option.Strike == s + q)
+                    //{
+                    //    putConvexSensi /= 2;
+                    //    callConvexSensi = putConvexSensi;
+                    //}
+                }
             }
             else
             {
-                greeks = pricing.PricingModel.CalculateGreeks(option.OptionType == Proto.OptionType.Call, s, option.Strike, v, r, q, timeValue);
+                greeks = pricing.PricingModel.CalculateGreeks(call, s, option.Strike, vol, r, q, timeValue);
+                if (charmTimeValue != 0)
+                {
+                    delta = pricing.PricingModel.CalculateDelta(call, s, option.Strike, vol, r, q, charmTimeValue);
+                }
+                else if (option.SettlementType == Proto.SettlementType.PhysicalSettlement)
+                {
+                    if (call)
+                    {
+                        if (option.Strike < s)
+                        {
+                            delta = 1;
+                        }
+                    }
+                    else if (option.Strike > s)
+                    {
+                        delta = -1;
+                    }
+                }
+                skewSensi = pricing.PricingModel.Calculate(call, s, option.Strike, v1, r, q, timeValue) - pricing.PricingModel.Calculate(call, s, option.Strike, v2, r, q, timeValue);
+
+                double tmp = option.Strike * Math.Exp(-1 * ((option.Maturity - DateTime.Now).Days / 365.0) * (r - q));
+                if (tmp > param.Volatility.spot)
+                {
+                    param.Volatility.call_convex += 0.005;
+                    v1 = pricing.VolatilityModel.Calculate(param.Volatility, future, s, option.Strike, r, q, timeValue);
+                    param.Volatility.call_convex -= 0.01;
+                    v2 = pricing.VolatilityModel.Calculate(param.Volatility, future, s, option.Strike, r, q, timeValue);
+                    param.Volatility.call_convex += 0.005;
+                    callConvexSensi = pricing.PricingModel.Calculate(call, s, option.Strike, v1, r, q, timeValue) - pricing.PricingModel.Calculate(call, s, option.Strike, v2, r, q, timeValue);
+                }
+                else
+                {
+                    param.Volatility.put_convex += 0.005;
+                    v1 = pricing.VolatilityModel.Calculate(param.Volatility, future, s, option.Strike, r, q, timeValue);
+                    param.Volatility.put_convex -= 0.01;
+                    v2 = pricing.VolatilityModel.Calculate(param.Volatility, future, s, option.Strike, r, q, timeValue);
+                    param.Volatility.put_convex += 0.005;
+                    putConvexSensi = pricing.PricingModel.Calculate(call, s, option.Strike, v1, r, q, timeValue) - pricing.PricingModel.Calculate(call, s, option.Strike, v2, r, q, timeValue);
+                    //if (tmp == param.Volatility.spot)
+                    //{
+                    //    putConvexSensi /= 2;
+                    //    callConvexSensi = putConvexSensi;
+                    //}
+                }
             }
 
-            var data = new GreeksData() { Option = option, Greeks = greeks };
+            var data = new GreeksData()
+                {
+                    Option = option,
+                    Greeks = greeks,
+                    Charm = delta - greeks.delta,
+                    SkewSensi = skewSensi,
+                    CallConvexSensi = callConvexSensi,
+                    PutConvexSensi = putConvexSensi,
+                };
             this.greeks.AddOrUpdate(option, data, (x, y) => data);
             this.container.Resolve<EventAggregator>().GetEvent<GreeksEvent>().Publish(data);
+            return true;
         }
 
-        private void CalculatePublishIV(Option option, Proto.Price price, Pricing pricing, PricingParameter param, double timeValue)
+        private void CalculatePublishIV(Option option, Proto.Price price, Pricing pricing, PricingParameters param, double guessVol, double timeValue)
         {
-            if (!pricing.Spot.HasValue) return;
-            double s = pricing.Spot.Value;
+            if (double.IsNaN(pricing.Spot)) return;
+            double s = pricing.Spot;
 
-            if (!param.Rate.HasValue) return;
-            double r = param.Rate.Value;
+            if (double.IsNaN(param.Rate)) return;
+            double r = param.Rate;
 
-            if (!param.SSRate.HasValue) return;
-            double q = param.SSRate.Value;
-
-            //double? t = this.epm.GetTimeValue(option.Maturity);
-            //if (!t.HasValue) return;
+            if (double.IsNaN(param.SSRate)) return;
+            double q = param.SSRate;
 
             double lastIV = 0, bidIV = 0, askIV = 0;
             bool future = option.HedgeUnderlying.Type == Proto.InstrumentType.Future;
@@ -531,15 +624,15 @@ namespace client.Models
                 bool call = option.OptionType == Proto.OptionType.Call;
                 if (price.Last.Price > 0)
                 {
-                    lastIV = pricing.PricingModel.CalculateIV(call, param.Volatility, price.Last.Price, s + q, option.Strike, r, r, timeValue);
+                    lastIV = pricing.PricingModel.CalculateIV(call, guessVol, price.Last.Price, s + q, option.Strike, r, r, timeValue);
                 }
                 if (price.Bids.Count > 0 && price.Bids[0].Price > 0)
                 {
-                    bidIV = pricing.PricingModel.CalculateIV(call, param.Volatility, price.Bids[0].Price, s + q, option.Strike, r, r, timeValue);
+                    bidIV = pricing.PricingModel.CalculateIV(call, guessVol, price.Bids[0].Price, s + q, option.Strike, r, r, timeValue);
                 }
                 if (price.Asks.Count > 0 && price.Asks[0].Price > 0)
                 {
-                    askIV = pricing.PricingModel.CalculateIV(call, param.Volatility, price.Asks[0].Price, s + q, option.Strike, r, r, timeValue);
+                    askIV = pricing.PricingModel.CalculateIV(call, guessVol, price.Asks[0].Price, s + q, option.Strike, r, r, timeValue);
                 }
             }
             else
@@ -547,15 +640,15 @@ namespace client.Models
                 bool call = option.OptionType == Proto.OptionType.Call;
                 if (price.Last.Price > 0)
                 {
-                    lastIV = pricing.PricingModel.CalculateIV(call, param.Volatility, price.Last.Price, s, option.Strike, r, q, timeValue);
+                    lastIV = pricing.PricingModel.CalculateIV(call, guessVol, price.Last.Price, s, option.Strike, r, q, timeValue);
                 }
                 if (price.Bids.Count > 0 && price.Bids[0].Price > 0)
                 {
-                    bidIV = pricing.PricingModel.CalculateIV(call, param.Volatility, price.Bids[0].Price, s, option.Strike, r, q, timeValue);
+                    bidIV = pricing.PricingModel.CalculateIV(call, guessVol, price.Bids[0].Price, s, option.Strike, r, q, timeValue);
                 }
                 if (price.Asks.Count > 0 && price.Asks[0].Price > 0)
                 {
-                    askIV = pricing.PricingModel.CalculateIV(call, param.Volatility, price.Asks[0].Price, s, option.Strike, r, q, timeValue);
+                    askIV = pricing.PricingModel.CalculateIV(call, guessVol, price.Asks[0].Price, s, option.Strike, r, q, timeValue);
                 }
             }
 
@@ -567,12 +660,12 @@ namespace client.Models
         IUnityContainer container;
         Proto.Exchange exchange;
 
-        class PricingParameter
+        class PricingParameters
         {
-            public double? Rate { get; set; }
-            public double? SSRate { get; set; }
-            public double Volatility { get; set; }
-            public VolatilityParameterWrapper VolatilityParameter { get; set; }
+            public double Rate { get; set; }
+            public double SSRate { get; set; }
+            public VolatilityParameterWrapper Volatility { get; set; }
+            public Dictionary<Option, double> Volatilities { get; set; }
         }
 
         class Pricing
@@ -580,8 +673,8 @@ namespace client.Models
             public PricingModelWrapper PricingModel { get; set; }
             public VolatilityModelWrapper VolatilityModel { get; set; }
 
-            public double? Spot { get; set; }
-            public Dictionary<Option, PricingParameter> Parameters { get; set; }
+            public double Spot { get; set; }
+            public Dictionary<DateTime, PricingParameters> Parameters { get; set; }
         }
 
         ConcurrentDictionary<Instrument, Proto.Price> prices = new ConcurrentDictionary<Instrument,Proto.Price>();

@@ -64,11 +64,11 @@
                               Click="OptionsMenuItem4_Click">
                     </MenuItem>
                 </MenuItem>
-                <MenuItem Header="Portfolios"></MenuItem>
+                <MenuItem Header="Portfolios" Click="PortfoliosMenuItem_Click"></MenuItem>
                 <MenuItem Header="Orders"></MenuItem>
                 <MenuItem Header="Trades"></MenuItem>
                 <Separator></Separator>
-                <MenuItem Header="Messages"></MenuItem>
+                <MenuItem Header="Messages" Click="MessagesMenuItem_Click"></MenuItem>
                 <MenuItem Header="Layout"></MenuItem>
             </MenuItem>
             <MenuItem Header="CONFIG">

@@ -1,0 +1,46 @@
+﻿<Window x:Class="client.Views.MessageWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:client.Views"
+        Icon="/Images/bird_32x32.ico"
+        Title="Messages" Height="300" Width="400"
+        Closing="Window_Closing">
+    <Grid>
+        <ListView Margin="3" ItemsSource="{Binding Messages}">
+            <ListView.Resources>
+                <local:MessageTimeConverter x:Key="MessageTimeConverter" />
+                
+                <Style x:Key="DefaultStyle" TargetType="{x:Type ListViewItem}">
+                    <Setter Property="Foreground" Value="Black" />
+                    <EventSetter Event="MouseDoubleClick" Handler="ListViewItem_MouseDoubleClick" />
+                </Style>
+                <Style x:Key="ErrorStyle" TargetType="{x:Type ListViewItem}">
+                    <Setter Property="Foreground" Value="Red" />
+                    <EventSetter Event="MouseDoubleClick" Handler="ListViewItem_MouseDoubleClick" />
+                </Style>                       
+            </ListView.Resources>
+            <ListView.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <VirtualizingStackPanel></VirtualizingStackPanel>
+                </ItemsPanelTemplate>
+            </ListView.ItemsPanel>
+            <ListView.ItemContainerStyleSelector>
+                <local:DefaultErrorStyleSelector DefaultStyle="{StaticResource DefaultStyle}" ErrorStyle="{StaticResource ErrorStyle}" />
+            </ListView.ItemContainerStyleSelector>
+            <ListView.View>
+                <GridView>
+                    <GridView.Columns>
+                        <GridViewColumn DisplayMemberBinding="{Binding Path=Time, Converter={StaticResource MessageTimeConverter}}" >
+                            <GridViewColumnHeader HorizontalContentAlignment="Left">Time</GridViewColumnHeader>
+                        </GridViewColumn>
+                        <GridViewColumn Header="Type" DisplayMemberBinding="{Binding Path=Type}"></GridViewColumn>
+                        <GridViewColumn Header="Exchange" DisplayMemberBinding="{Binding Path=Exchange}"></GridViewColumn>
+                        <GridViewColumn DisplayMemberBinding="{Binding Path=Info}" >
+                            <GridViewColumnHeader HorizontalContentAlignment="Left">Message</GridViewColumnHeader>
+                        </GridViewColumn>
+                    </GridView.Columns>
+                </GridView>
+            </ListView.View>
+        </ListView>
+    </Grid>
+</Window>

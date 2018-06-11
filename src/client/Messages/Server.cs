@@ -24,11 +24,11 @@ namespace Proto {
     static ServerReflection() {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
-            "CgxTZXJ2ZXIucHJvdG8SBVByb3RvGg5FeGNoYW5nZS5wcm90byKUAQoKU2Vy",
+            "CgxTZXJ2ZXIucHJvdG8SBVByb3RvGg5FeGNoYW5nZS5wcm90byKYAQoKU2Vy",
             "dmVySW5mbxIhCghleGNoYW5nZRgBIAEoDjIPLlByb3RvLkV4Y2hhbmdlEgwK",
             "BGluZm8YAiABKAkSJAoEdHlwZRgDIAEoDjIWLlByb3RvLlNlcnZlckluZm8u",
-            "VHlwZRIMCgR0aW1lGAQgASgEIiEKBFR5cGUSBwoDUFVCEAASBwoDV0FOEAES",
-            "BwoDRVJSEAJiBnByb3RvMw=="));
+            "VHlwZRIMCgR0aW1lGAQgASgEIiUKBFR5cGUSCAoESU5GTxAAEggKBFdBUk4Q",
+            "ARIJCgVFUlJPUhACYgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Proto.ExchangeReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
@@ -255,9 +255,9 @@ namespace Proto {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static partial class Types {
       public enum Type {
-        [pbr::OriginalName("PUB")] Pub = 0,
-        [pbr::OriginalName("WAN")] Wan = 1,
-        [pbr::OriginalName("ERR")] Err = 2,
+        [pbr::OriginalName("INFO")] Info = 0,
+        [pbr::OriginalName("WARN")] Warn = 1,
+        [pbr::OriginalName("ERROR")] Error = 2,
       }
 
     }

@@ -41,8 +41,8 @@
                 <DataGrid.Resources>
                     <local:BoolToStringConverter x:Key="BoolToStringConverter" />
                     <local:VolatilityPercentDoubleFormatConverter x:Key="VolatilityPercentDoubleFormatConverter" />
-                    <local:DoubleFormatMultiConverter x:Key="DoubleFormatMultiConverter" />
-                    <local:PercentDoubleFormatMultiConverter x:Key="PercentDoubleFormatMultiConverter" />
+                    <local:DoubleToStringMultiConverter x:Key="DoubleFormatMultiConverter" />
+                    <local:PercentDoubleToStringMultiConverter x:Key="PercentDoubleFormatMultiConverter" />
                     <local:StringFormatConverter x:Key="StringFormatConverter" />
                     <local:PriceMultiValueConverter x:Key="PriceMultiValueConverter" />
                     
@@ -68,6 +68,31 @@
                             </TextBox.Text>
                         </TextBox>
                     </DataTemplate>
+                    
+                    <Style TargetType="{x:Type DataGridRow}">
+                        <Style.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background">
+                                    <Setter.Value>
+                                        <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
+                                            <GradientStop Color="Yellow" Offset="0.3" />
+                                            <GradientStop Color="Gold" Offset="1" />
+                                        </LinearGradientBrush>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter Property="Background">
+                                    <Setter.Value>
+                                        <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
+                                            <GradientStop Color="White" Offset="0.3" />
+                                            <GradientStop Color="LightBlue" Offset="1" />
+                                        </LinearGradientBrush>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
                 </DataGrid.Resources>
                 <DataGrid.RowHeaderTemplate>
                     <DataTemplate>
@@ -83,16 +108,7 @@
                 </DataGrid.ContextMenu>
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="Underlying" IsReadOnly="True" Binding="{Binding Underlying.Id}"></DataGridTextColumn>
-                    <DataGridTextColumn Header="Maturity" IsReadOnly="True" Binding="{Binding Maturity, StringFormat={}{0:yyyyMMdd}}"></DataGridTextColumn>
-                    <!--DataGridTextColumn Header="SSRate" x:Name="SSRateColumn">
-                        <DataGridTextColumn.Binding>
-                            <MultiBinding Converter="{StaticResource DoubleFormatMultiConverter}">
-                                <Binding Path="SSRate" Mode="TwoWay" UpdateSourceTrigger="PropertyChanged"/>
-                                <Binding Path="Column.DisplayIndex" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGridCell}}" />
-                                <Binding Path="Formats" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
-                            </MultiBinding>
-                        </DataGridTextColumn.Binding>
-                    </DataGridTextColumn-->
+                    <DataGridTextColumn Header="Maturity" IsReadOnly="True" Binding="{Binding Maturity, StringFormat={}{0:yyyyMMdd}}" />
                     <DataGridTemplateColumn Header="SSRate(%)" x:Name="SSRateColumn">
                         <DataGridTemplateColumn.CellTemplateSelector>
                             <local:SSRateBasisTemplateSelector SSRateTemplate="{StaticResource SSRateTemplate}" BasisTemplate="{StaticResource BasisTemplate}" />
@@ -108,7 +124,6 @@
                             </MultiBinding>
                         </DataGridTextColumn.Binding>
                     </DataGridTextColumn>
-                    <!--DataGridTextColumn Header="SpotRef" Binding="{Binding SpotRef, Mode=TwoWay}"></DataGridTextColumn-->
                     <DataGridTemplateColumn Header="SpotRef">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
@@ -124,7 +139,6 @@
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
-                    <!--DataGridTextColumn Header="Skew(%)" Binding="{Binding Skew, Mode=TwoWay}"></DataGridTextColumn-->
                     <DataGridTemplateColumn Header="Skew(%)">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
@@ -155,7 +169,6 @@
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
-                    <!--DataGridTextColumn Header="ConvexP(%)" Binding="{Binding PutConvex, Mode=TwoWay}"></DataGridTextColumn-->
                     <DataGridTemplateColumn Header="ConvexP(%)">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
@@ -171,7 +184,6 @@
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
-                    <!--DataGridTextColumn Header="ConvexC(%)" Binding="{Binding CallConvex, Mode=TwoWay}"></DataGridTextColumn-->
                     <DataGridTemplateColumn Header="ConvexC(%)">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
@@ -187,13 +199,12 @@
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
-                    <!--DataGridTextColumn Header="SlopeP(%)" Binding="{Binding PutSlope, Mode=TwoWay}"></DataGridTextColumn-->
-                    <DataGridTemplateColumn Header="SlopeP(%)">
+                    <DataGridTemplateColumn Header="SlopeP">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <TextBox Margin="-1">
                                     <TextBox.Text>
-                                        <MultiBinding Converter="{StaticResource PercentDoubleFormatMultiConverter}" Mode="TwoWay" UpdateSourceTrigger="LostFocus">
+                                        <MultiBinding Converter="{StaticResource DoubleFormatMultiConverter}" Mode="TwoWay" UpdateSourceTrigger="LostFocus">
                                             <Binding Path="PutSlope" />
                                             <Binding Path="Column.DisplayIndex" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGridCell}}" Mode="OneWay" />
                                             <Binding Path="Formats" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" Mode="OneWay" />
@@ -203,13 +214,12 @@
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
-                    <!--DataGridTextColumn Header="SlopeC(%)" Binding="{Binding CallSlope, Mode=TwoWay}"></DataGridTextColumn-->
-                    <DataGridTemplateColumn Header="SlopeC(%)">
+                    <DataGridTemplateColumn Header="SlopeC">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <TextBox Margin="-1">
                                     <TextBox.Text>
-                                        <MultiBinding Converter="{StaticResource PercentDoubleFormatMultiConverter}" Mode="TwoWay" UpdateSourceTrigger="LostFocus">
+                                        <MultiBinding Converter="{StaticResource DoubleFormatMultiConverter}" Mode="TwoWay" UpdateSourceTrigger="LostFocus">
                                             <Binding Path="CallSlope" />
                                             <Binding Path="Column.DisplayIndex" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGridCell}}" Mode="OneWay" />
                                             <Binding Path="Formats" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" Mode="OneWay" />
@@ -219,13 +229,12 @@
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
-                    <!--DataGridTextColumn Header="CutoffP(%)" Binding="{Binding PutCutoff, Mode=TwoWay}"></DataGridTextColumn-->
-                    <DataGridTemplateColumn Header="CutoffP(%)">
+                    <DataGridTemplateColumn Header="CutoffP">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <TextBox Margin="-1">
                                     <TextBox.Text>
-                                        <MultiBinding Converter="{StaticResource PercentDoubleFormatMultiConverter}" Mode="TwoWay" UpdateSourceTrigger="LostFocus">
+                                        <MultiBinding Converter="{StaticResource DoubleFormatMultiConverter}" Mode="TwoWay" UpdateSourceTrigger="LostFocus">
                                             <Binding Path="PutCutoff" />
                                             <Binding Path="Column.DisplayIndex" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGridCell}}" Mode="OneWay" />
                                             <Binding Path="Formats" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" Mode="OneWay" />
@@ -235,13 +244,12 @@
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
-                    <!--DataGridTextColumn Header="CutoffC(%)" Binding="{Binding CallCutoff, Mode=TwoWay}"></DataGridTextColumn-->
-                    <DataGridTemplateColumn Header="CutoffC(%)">
+                    <DataGridTemplateColumn Header="CutoffC">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <TextBox Margin="-1">
                                     <TextBox.Text>
-                                        <MultiBinding Converter="{StaticResource PercentDoubleFormatMultiConverter}" Mode="TwoWay" UpdateSourceTrigger="LostFocus">
+                                        <MultiBinding Converter="{StaticResource DoubleFormatMultiConverter}" Mode="TwoWay" UpdateSourceTrigger="LostFocus">
                                             <Binding Path="CallCutoff" />
                                             <Binding Path="Column.DisplayIndex" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGridCell}}" Mode="OneWay" />
                                             <Binding Path="Formats" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" Mode="OneWay" />
@@ -251,7 +259,6 @@
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
-                    <!--DataGridTextColumn Header="SCR" Binding="{Binding SCR, Mode=TwoWay}"></DataGridTextColumn-->
                     <DataGridTemplateColumn Header="SCR">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
@@ -267,7 +274,6 @@
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
-                    <!--DataGridTextColumn Header="VCR" Binding="{Binding VCR, Mode=TwoWay}"></DataGridTextColumn-->
                     <DataGridTemplateColumn Header="VCR">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
@@ -283,7 +289,6 @@
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
-                    <!--DataGridTextColumn Header="CCR" Binding="{Binding CCR, Mode=TwoWay}"></DataGridTextColumn-->
                     <DataGridTemplateColumn Header="CCR">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
@@ -299,7 +304,6 @@
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
-                    <!--DataGridTextColumn Header="SPCR" Binding="{Binding SPCR, Mode=TwoWay}"></DataGridTextColumn-->
                     <DataGridTemplateColumn Header="SPCR">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
@@ -315,7 +319,6 @@
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
-                    <!--DataGridTextColumn Header="SCCR" Binding="{Binding SCCR, Mode=TwoWay}"></DataGridTextColumn-->
                     <DataGridTemplateColumn Header="SCCR">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
@@ -345,7 +348,7 @@
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
-            <d3:Chart x:Name="VolatilityChart" Margin="5" BottomTitle="Strike" LeftTitle="Volatility(%)">
+            <d3:Chart x:Name="VolatilityChart" Margin="3" BottomTitle="Strike" LeftTitle="Volatility(%)">
                 <d3:Chart.Title>
                     <StackPanel Orientation="Horizontal">
                         <TextBlock x:Name="UnderlyingMaturity"/>
@@ -355,12 +358,12 @@
                 <d3:Chart.LegendContent>
                     <d3:LegendItemsPanel>
                         <d3:LegendItemsPanel.Resources>
-                            <!--DataTemplate x:Key="InteractiveDataDisplay.WPF.LineGraph">
+                            <DataTemplate x:Key="InteractiveDataDisplay.WPF.LineGraph">
                                 <StackPanel Orientation="Horizontal" Visibility="{Binding Path=Visibility}">
                                     <Line Width="15" Height="15" X1="0" Y1="0" X2="15" Y2="15" Stroke="{Binding Path=Stroke}" StrokeThickness="2"/>
                                     <TextBlock Margin="5,0,0,0" Text="{Binding Path=Description}"/>
                                 </StackPanel>
-                            </DataTemplate-->
+                            </DataTemplate>
                             <DataTemplate x:Key="InteractiveDataDisplay.WPF.DiamondMarkerGraph">
                                 <StackPanel Orientation="Horizontal" Visibility="Collapsed">
                                     <TextBlock Text="{Binding Path=Description}" />

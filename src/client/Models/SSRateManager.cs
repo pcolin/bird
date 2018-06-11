@@ -55,7 +55,7 @@ namespace client.Models
             }
         }
 
-        public double? GetSSRate(string underlying, DateTime maturity)
+        public double GetSSRate(string underlying, DateTime maturity)
         {
             lock (this.ssrates)
             {
@@ -66,7 +66,7 @@ namespace client.Models
                     return ssr;
                 }
             }
-            return null;
+            return double.NaN;
         }
 
         private Dictionary<string, SortedList<DateTime, double>> ssrates = new Dictionary<string, SortedList<DateTime, double>>();

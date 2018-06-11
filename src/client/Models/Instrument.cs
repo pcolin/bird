@@ -99,5 +99,6 @@ namespace client.Models
 
         public Instrument Underlying { get; set; }
         public Instrument HedgeUnderlying { get; set; }
+        public string Product { get; set; }
     }
 }

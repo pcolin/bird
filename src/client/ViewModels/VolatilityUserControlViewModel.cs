@@ -83,8 +83,7 @@ namespace client.ViewModels
                         double ssr = 0;
                         if (ssm != null)
                         {
-                            var tmp = ssm.GetSSRate(underlying.Id, m);
-                            if (tmp.HasValue) ssr = tmp.Value;
+                            ssr = ssm.GetSSRate(underlying.Id, m);
                         }
                         if (vcm != null)
                         {

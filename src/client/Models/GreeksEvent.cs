@@ -12,6 +12,10 @@ namespace client.Models
     {        
         public Option Option { get; set; }
         public GreeksDataWrapper Greeks { get; set; }
+        public double Charm { get; set; }
+        public double SkewSensi { get; set; }
+        public double CallConvexSensi { get; set; }
+        public double PutConvexSensi { get; set; }
     }
 
     public class GreeksEvent : PubSubEvent<GreeksData>

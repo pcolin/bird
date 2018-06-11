@@ -9,8 +9,8 @@
              Initialized="UserControl_Initialized">
     <Grid>
         <Grid.Resources>
-            <local:DoubleFormatConverter x:Key="DoubleFormatConverter" />
-            <local:PercentDoubleFormatConverter x:Key="PercentDoubleFormatConverter" />
+            <local:DoubleToStringMultiConverter DefaultFormat="N2" x:Key="DoubleFormatConverter" />
+            <local:PercentDoubleToStringMultiConverter DefaultFormat="N2" x:Key="PercentDoubleFormatConverter" />
             <!--Style TargetType="DataGridColumnHeader">
                 <Setter Property="HorizontalContentAlignment" Value="Center" />
             </Style-->
@@ -62,10 +62,9 @@
                 <DataGridTextColumn Header="B$">
                     <DataGridTextColumn.Binding>
                         <MultiBinding Converter="{StaticResource DoubleFormatConverter}">
-                            <Binding Path="Underlying.Type" />
                             <Binding Path="MarketBidPrice" />
                             <Binding Path="Column.DisplayIndex" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGridCell}}" />
-                            <Binding RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
+                            <Binding Path="UnderlyingFormats" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
                         </MultiBinding>
                     </DataGridTextColumn.Binding>
                     <DataGridTextColumn.CellStyle>
@@ -79,20 +78,18 @@
                 <DataGridTextColumn Header="Theo">
                     <DataGridTextColumn.Binding>
                         <MultiBinding Converter="{StaticResource DoubleFormatConverter}">
-                            <Binding Path="Underlying.Type" />
                             <Binding Path="Theo" />
                             <Binding Path="Column.DisplayIndex" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGridCell}}" />
-                            <Binding RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
+                            <Binding Path="UnderlyingFormats" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
                         </MultiBinding>
                     </DataGridTextColumn.Binding>
                 </DataGridTextColumn>
                 <DataGridTextColumn Header="A$">
                     <DataGridTextColumn.Binding>
                         <MultiBinding Converter="{StaticResource DoubleFormatConverter}">
-                            <Binding Path="Underlying.Type" />
                             <Binding Path="MarketAskPrice" />
                             <Binding Path="Column.DisplayIndex" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGridCell}}" />
-                            <Binding RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
+                            <Binding Path="UnderlyingFormats" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
                         </MultiBinding>
                     </DataGridTextColumn.Binding>
                     <DataGridTextColumn.CellStyle>
@@ -114,10 +111,9 @@
                 <DataGridTextColumn Header="Last">
                     <DataGridTextColumn.Binding>
                         <MultiBinding Converter="{StaticResource DoubleFormatConverter}">
-                            <Binding Path="Underlying.Type" />
                             <Binding Path="LastPrice" />
                             <Binding Path="Column.DisplayIndex" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGridCell}}" />
-                            <Binding RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
+                            <Binding Path="UnderlyingFormats" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
                         </MultiBinding>
                     </DataGridTextColumn.Binding>
                 </DataGridTextColumn>
@@ -125,20 +121,18 @@
                 <DataGridTextColumn Header="PreClose">
                     <DataGridTextColumn.Binding>
                         <MultiBinding Converter="{StaticResource DoubleFormatConverter}">
-                            <Binding Path="Underlying.Type" />
                             <Binding Path="PreClose" />
                             <Binding Path="Column.DisplayIndex" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGridCell}}" />
-                            <Binding RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
+                            <Binding Path="UnderlyingFormats" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
                         </MultiBinding>
                     </DataGridTextColumn.Binding>
                 </DataGridTextColumn>
                 <DataGridTextColumn Header="PreSettle">
                     <DataGridTextColumn.Binding>
                         <MultiBinding Converter="{StaticResource DoubleFormatConverter}">
-                            <Binding Path="Underlying.Type" />
                             <Binding Path="PreSettlement" />
                             <Binding Path="Column.DisplayIndex" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGridCell}}" />
-                            <Binding RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
+                            <Binding Path="UnderlyingFormats" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
                         </MultiBinding>
                     </DataGridTextColumn.Binding>
                 </DataGridTextColumn>
@@ -212,10 +206,9 @@
                 <DataGridTextColumn x:Name="CreditQC" Header="CreditQ">
                     <DataGridTextColumn.Binding>
                         <MultiBinding Converter="{StaticResource DoubleFormatConverter}">
-                            <Binding Path="Call.Option.Type" />
                             <Binding Path="Call.QuoterCredit" />
                             <Binding Path="Column.DisplayIndex" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGridCell}}" />
-                            <Binding RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
+                            <Binding Path="OptionFormats" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
                         </MultiBinding>
                     </DataGridTextColumn.Binding>
                     <DataGridTextColumn.CellStyle>
@@ -228,10 +221,9 @@
                 <DataGridTextColumn x:Name="CriditHC" Header="CreditH">
                     <DataGridTextColumn.Binding>
                         <MultiBinding Converter="{StaticResource DoubleFormatConverter}">
-                            <Binding Path="Call.Option.Type" />
                             <Binding Path="Call.HitterCredit" />
                             <Binding Path="Column.DisplayIndex" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGridCell}}" />
-                            <Binding RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
+                            <Binding Path="OptionFormats" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
                         </MultiBinding>
                     </DataGridTextColumn.Binding>
                     <DataGridTextColumn.CellStyle>
@@ -244,10 +236,9 @@
                 <DataGridTextColumn x:Name="CriditDC" Header="CreditD">
                     <DataGridTextColumn.Binding>
                         <MultiBinding Converter="{StaticResource DoubleFormatConverter}">
-                            <Binding Path="Call.Option.Type" />
                             <Binding Path="Call.DimerCredit" />
                             <Binding Path="Column.DisplayIndex" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGridCell}}" />
-                            <Binding RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
+                            <Binding Path="OptionFormats" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
                         </MultiBinding>
                     </DataGridTextColumn.Binding>
                     <DataGridTextColumn.CellStyle>
@@ -410,10 +401,9 @@
                 <DataGridTextColumn x:Name="BidPriceC" Header="Bid$">
                     <DataGridTextColumn.Binding>
                         <MultiBinding Converter="{StaticResource DoubleFormatConverter}">
-                            <Binding Path="Call.Option.Type" />
                             <Binding Path="Call.BidPrice" />
                             <Binding Path="Column.DisplayIndex" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGridCell}}" />
-                            <Binding RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
+                            <Binding Path="OptionFormats" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
                         </MultiBinding>
                     </DataGridTextColumn.Binding>
                     <DataGridTextColumn.CellStyle>
@@ -434,10 +424,9 @@
                 <DataGridTextColumn x:Name="MarketBidPriceC" Header="B$">
                     <DataGridTextColumn.Binding>
                         <MultiBinding Converter="{StaticResource DoubleFormatConverter}">
-                            <Binding Path="Call.Option.Type" />
                             <Binding Path="Call.MarketBidPrice" />
                             <Binding Path="Column.DisplayIndex" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGridCell}}" />
-                            <Binding RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
+                            <Binding Path="OptionFormats" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
                         </MultiBinding>
                     </DataGridTextColumn.Binding>
                     <DataGridTextColumn.CellStyle>
@@ -451,20 +440,18 @@
                 <DataGridTextColumn x:Name="TheoC" Header="Theo" >
                     <DataGridTextColumn.Binding>
                         <MultiBinding Converter="{StaticResource DoubleFormatConverter}">
-                            <Binding Path="Call.Option.Type" />
                             <Binding Path="Call.Theo" />
                             <Binding Path="Column.DisplayIndex" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGridCell}}" />
-                            <Binding RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
+                            <Binding Path="OptionFormats" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
                         </MultiBinding>
                     </DataGridTextColumn.Binding>
                 </DataGridTextColumn>
                 <DataGridTextColumn x:Name="MarketAskPriceC" Header="A$">
                     <DataGridTextColumn.Binding>
                         <MultiBinding Converter="{StaticResource DoubleFormatConverter}">
-                            <Binding Path="Call.Option.Type" />
                             <Binding Path="Call.MarketAskPrice" />
                             <Binding Path="Column.DisplayIndex" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGridCell}}" />
-                            <Binding RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
+                            <Binding Path="OptionFormats" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
                         </MultiBinding>
                     </DataGridTextColumn.Binding>
                     <DataGridTextColumn.CellStyle>
@@ -486,10 +473,9 @@
                 <DataGridTextColumn x:Name="AskPriceC" Header="Ask$">
                     <DataGridTextColumn.Binding>
                         <MultiBinding Converter="{StaticResource DoubleFormatConverter}">
-                            <Binding Path="Call.Option.Type" />
                             <Binding Path="Call.AskPrice" />
                             <Binding Path="Column.DisplayIndex" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGridCell}}" />
-                            <Binding RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
+                            <Binding Path="OptionFormats" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
                         </MultiBinding>
                     </DataGridTextColumn.Binding>
                     <DataGridTextColumn.CellStyle>
@@ -511,10 +497,9 @@
                 <DataGridTextColumn x:Name="LastC" Header="Last">
                     <DataGridTextColumn.Binding>
                         <MultiBinding Converter="{StaticResource DoubleFormatConverter}">
-                            <Binding Path="Call.Option.Type" />
                             <Binding Path="Call.LastPrice" />
                             <Binding Path="Column.DisplayIndex" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGridCell}}" />
-                            <Binding RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
+                            <Binding Path="OptionFormats" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
                         </MultiBinding>
                     </DataGridTextColumn.Binding>
                 </DataGridTextColumn>
@@ -547,30 +532,27 @@
                 <DataGridTextColumn x:Name="DeltaC" Header="Delta" ElementStyle="{StaticResource GreeksBackgroundStyle}">
                     <DataGridTextColumn.Binding>
                         <MultiBinding Converter="{StaticResource DoubleFormatConverter}">
-                            <Binding Path="Call.Option.Type" />
                             <Binding Path="Call.Delta" />
                             <Binding Path="Column.DisplayIndex" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGridCell}}" />
-                            <Binding RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
+                            <Binding Path="OptionFormats" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
                         </MultiBinding>
                     </DataGridTextColumn.Binding>
                 </DataGridTextColumn>
                 <DataGridTextColumn x:Name="GammaC" Header="Gamma" ElementStyle="{StaticResource GreeksBackgroundStyle}">
                     <DataGridTextColumn.Binding>
                         <MultiBinding Converter="{StaticResource DoubleFormatConverter}">
-                            <Binding Path="Call.Option.Type" />
                             <Binding Path="Call.Gamma" />
                             <Binding Path="Column.DisplayIndex" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGridCell}}" />
-                            <Binding RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
+                            <Binding Path="OptionFormats" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
                         </MultiBinding>
                     </DataGridTextColumn.Binding>
                 </DataGridTextColumn>
                 <DataGridTextColumn x:Name="VegaC" Header="Vega" ElementStyle="{StaticResource GreeksBackgroundStyle}">
                     <DataGridTextColumn.Binding>
                         <MultiBinding Converter="{StaticResource DoubleFormatConverter}">
-                            <Binding Path="Call.Option.Type" />
                             <Binding Path="Call.Vega" />
                             <Binding Path="Column.DisplayIndex" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGridCell}}" />
-                            <Binding RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
+                            <Binding Path="OptionFormats" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
                         </MultiBinding>
                     </DataGridTextColumn.Binding>
                 </DataGridTextColumn>
@@ -580,10 +562,9 @@
                             <TextBlock Margin="-1" Background="{Binding IsAtmOption, Converter={StaticResource AtmOptionColorConverter}, UpdateSourceTrigger=PropertyChanged}">
                                 <TextBlock.Text>
                                     <MultiBinding Converter="{StaticResource PercentDoubleFormatConverter}">
-                                        <Binding Path="Call.Option.Type" />
                                         <Binding Path="Call.ImpliedVol" />
                                         <Binding Path="Column.DisplayIndex" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGridCell}}" />
-                                        <Binding RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
+                                        <Binding Path="OptionFormats" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
                                     </MultiBinding>
                                 </TextBlock.Text>
                             </TextBlock>
@@ -596,10 +577,9 @@
                             <TextBlock Margin="-1" Background="{Binding IsAtmOption, Converter={StaticResource AtmOptionColorConverter}, UpdateSourceTrigger=PropertyChanged}">
                                 <TextBlock.Text>
                                     <MultiBinding Converter="{StaticResource PercentDoubleFormatConverter}">
-                                        <Binding Path="Call.Option.Type" />
                                         <Binding Path="Call.BidVol" />
                                         <Binding Path="Column.DisplayIndex" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGridCell}}" />
-                                        <Binding RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
+                                        <Binding Path="OptionFormats" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
                                     </MultiBinding>
                                 </TextBlock.Text>
                             </TextBlock>
@@ -612,10 +592,9 @@
                             <TextBlock Margin="-1" Background="{Binding IsAtmOption, Converter={StaticResource AtmOptionColorConverter}, UpdateSourceTrigger=PropertyChanged}">
                                 <TextBlock.Text>
                                     <MultiBinding Converter="{StaticResource PercentDoubleFormatConverter}">
-                                        <Binding Path="Call.Option.Type" />
                                         <Binding Path="Call.AskVol" />
                                         <Binding Path="Column.DisplayIndex" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGridCell}}" />
-                                        <Binding RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
+                                        <Binding Path="OptionFormats" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
                                     </MultiBinding>
                                 </TextBlock.Text>
                             </TextBlock>
@@ -625,10 +604,9 @@
                 <DataGridTextColumn x:Name="VolC" Header="Vol(%)" ElementStyle="{StaticResource VolatilityBackgroundStyle}">
                     <DataGridTextColumn.Binding>
                         <MultiBinding Converter="{StaticResource PercentDoubleFormatConverter}">
-                            <Binding Path="Call.Option.Type" />
                             <Binding Path="Call.Volatility" />
                             <Binding Path="Column.DisplayIndex" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGridCell}}" />
-                            <Binding RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
+                            <Binding Path="OptionFormats" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
                         </MultiBinding>
                     </DataGridTextColumn.Binding>
                 </DataGridTextColumn>
@@ -653,10 +631,9 @@
                 <DataGridTextColumn x:Name="VolP" Header="Vol(%)" ElementStyle="{StaticResource VolatilityBackgroundStyle}">
                     <DataGridTextColumn.Binding>
                         <MultiBinding Converter="{StaticResource PercentDoubleFormatConverter}">
-                            <Binding Path="Put.Option.Type" />
                             <Binding Path="Put.Volatility" />
                             <Binding Path="Column.DisplayIndex" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGridCell}}" />
-                            <Binding RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
+                            <Binding Path="OptionFormats" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
                         </MultiBinding>
                     </DataGridTextColumn.Binding>
                 </DataGridTextColumn>
@@ -666,10 +643,9 @@
                             <TextBlock Margin="-1" Background="{Binding IsAtmOption, Converter={StaticResource AtmOptionColorConverter}, UpdateSourceTrigger=PropertyChanged}">
                                 <TextBlock.Text>
                                     <MultiBinding Converter="{StaticResource PercentDoubleFormatConverter}">
-                                        <Binding Path="Put.Option.Type" />
                                         <Binding Path="Put.ImpliedVol" />
                                         <Binding Path="Column.DisplayIndex" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGridCell}}" />
-                                        <Binding RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
+                                        <Binding Path="OptionFormats" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
                                     </MultiBinding>
                                 </TextBlock.Text>
                             </TextBlock>
@@ -682,10 +658,9 @@
                             <TextBlock Margin="-1" Background="{Binding IsAtmOption, Converter={StaticResource AtmOptionColorConverter}, UpdateSourceTrigger=PropertyChanged}">
                                 <TextBlock.Text>
                                     <MultiBinding Converter="{StaticResource PercentDoubleFormatConverter}">
-                                        <Binding Path="Put.Option.Type" />
                                         <Binding Path="Put.BidVol" />
                                         <Binding Path="Column.DisplayIndex" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGridCell}}" />
-                                        <Binding RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
+                                        <Binding Path="OptionFormats" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
                                     </MultiBinding>
                                 </TextBlock.Text>
                             </TextBlock>
@@ -698,10 +673,9 @@
                             <TextBlock Margin="-1" Background="{Binding IsAtmOption, Converter={StaticResource AtmOptionColorConverter}, UpdateSourceTrigger=PropertyChanged}">
                                 <TextBlock.Text>
                                     <MultiBinding Converter="{StaticResource PercentDoubleFormatConverter}">
-                                        <Binding Path="Put.Option.Type" />
                                         <Binding Path="Put.AskVol" />
                                         <Binding Path="Column.DisplayIndex" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGridCell}}" />
-                                        <Binding RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
+                                        <Binding Path="OptionFormats" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
                                     </MultiBinding>
                                 </TextBlock.Text>
                             </TextBlock>
@@ -711,30 +685,27 @@
                 <DataGridTextColumn x:Name="DeltaP" Header="Delta" ElementStyle="{StaticResource GreeksBackgroundStyle}">
                     <DataGridTextColumn.Binding>
                         <MultiBinding Converter="{StaticResource DoubleFormatConverter}">
-                            <Binding Path="Put.Option.Type" />
                             <Binding Path="Put.Delta" />
                             <Binding Path="Column.DisplayIndex" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGridCell}}" />
-                            <Binding RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
+                            <Binding Path="OptionFormats" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
                         </MultiBinding>
                     </DataGridTextColumn.Binding>
                 </DataGridTextColumn>
                 <DataGridTextColumn x:Name="GammaP" Header="Gamma" ElementStyle="{StaticResource GreeksBackgroundStyle}">
                     <DataGridTextColumn.Binding>
                         <MultiBinding Converter="{StaticResource DoubleFormatConverter}">
-                            <Binding Path="Put.Option.Type" />
                             <Binding Path="Put.Gamma" />
                             <Binding Path="Column.DisplayIndex" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGridCell}}" />
-                            <Binding RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
+                            <Binding Path="OptionFormats" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
                         </MultiBinding>
                     </DataGridTextColumn.Binding>
                 </DataGridTextColumn>
                 <DataGridTextColumn x:Name="VegaP" Header="Vega" ElementStyle="{StaticResource GreeksBackgroundStyle}">
                     <DataGridTextColumn.Binding>
                         <MultiBinding Converter="{StaticResource DoubleFormatConverter}">
-                            <Binding Path="Put.Option.Type" />
                             <Binding Path="Put.Vega" />
                             <Binding Path="Column.DisplayIndex" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGridCell}}" />
-                            <Binding RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
+                            <Binding Path="OptionFormats" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
                         </MultiBinding>
                     </DataGridTextColumn.Binding>
                 </DataGridTextColumn>
@@ -766,10 +737,9 @@
                 <DataGridTextColumn x:Name="LastP" Header="Last">
                     <DataGridTextColumn.Binding>
                         <MultiBinding Converter="{StaticResource DoubleFormatConverter}">
-                            <Binding Path="Put.Option.Type" />
                             <Binding Path="Put.LastPrice" />
                             <Binding Path="Column.DisplayIndex" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGridCell}}" />
-                            <Binding RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
+                            <Binding Path="OptionFormats" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
                         </MultiBinding>
                     </DataGridTextColumn.Binding>
                 </DataGridTextColumn>
@@ -785,10 +755,9 @@
                 <DataGridTextColumn x:Name="BidPriceP" Header="Bid$">
                     <DataGridTextColumn.Binding>
                         <MultiBinding Converter="{StaticResource DoubleFormatConverter}">
-                            <Binding Path="Put.Option.Type" />
                             <Binding Path="Put.BidPrice" />
                             <Binding Path="Column.DisplayIndex" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGridCell}}" />
-                            <Binding RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
+                            <Binding Path="OptionFormats" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
                         </MultiBinding>
                     </DataGridTextColumn.Binding>
                     <DataGridTextColumn.CellStyle>
@@ -810,10 +779,9 @@
                 <DataGridTextColumn x:Name="MarketBidPriceP" Header="B$">
                     <DataGridTextColumn.Binding>
                         <MultiBinding Converter="{StaticResource DoubleFormatConverter}">
-                            <Binding Path="Put.Option.Type" />
                             <Binding Path="Put.MarketBidPrice" />
                             <Binding Path="Column.DisplayIndex" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGridCell}}" />
-                            <Binding RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
+                            <Binding Path="OptionFormats" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
                         </MultiBinding>
                     </DataGridTextColumn.Binding>
                     <DataGridTextColumn.CellStyle>
@@ -827,20 +795,18 @@
                 <DataGridTextColumn x:Name="TheoP" Header="Theo">
                     <DataGridTextColumn.Binding>
                         <MultiBinding Converter="{StaticResource DoubleFormatConverter}">
-                            <Binding Path="Put.Option.Type" />
                             <Binding Path="Put.Theo" />
                             <Binding Path="Column.DisplayIndex" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGridCell}}" />
-                            <Binding RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
+                            <Binding Path="OptionFormats" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
                         </MultiBinding>
                     </DataGridTextColumn.Binding>
                 </DataGridTextColumn>
                 <DataGridTextColumn x:Name="MarketAskPriceP" Header="A$">
                     <DataGridTextColumn.Binding>
                         <MultiBinding Converter="{StaticResource DoubleFormatConverter}">
-                            <Binding Path="Put.Option.Type" />
                             <Binding Path="Put.MarketAskPrice" />
                             <Binding Path="Column.DisplayIndex" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGridCell}}" />
-                            <Binding RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
+                            <Binding Path="OptionFormats" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
                         </MultiBinding>
                     </DataGridTextColumn.Binding>
                     <DataGridTextColumn.CellStyle>
@@ -862,10 +828,9 @@
                 <DataGridTextColumn x:Name="AskPriceP" Header="Ask$">
                     <DataGridTextColumn.Binding>
                         <MultiBinding Converter="{StaticResource DoubleFormatConverter}">
-                            <Binding Path="Put.Option.Type" />
                             <Binding Path="Put.AskPrice" />
                             <Binding Path="Column.DisplayIndex" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGridCell}}" />
-                            <Binding RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
+                            <Binding Path="OptionFormats" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
                         </MultiBinding>
                     </DataGridTextColumn.Binding>
                     <DataGridTextColumn.CellStyle>
@@ -1027,10 +992,9 @@
                 <DataGridTextColumn x:Name="CreditQP" Header="CreditQ">
                     <DataGridTextColumn.Binding>
                         <MultiBinding Converter="{StaticResource DoubleFormatConverter}">
-                            <Binding Path="Put.Option.Type" />
                             <Binding Path="Put.QuoterCredit" />
                             <Binding Path="Column.DisplayIndex" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGridCell}}" />
-                            <Binding RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
+                            <Binding Path="OptionFormats" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
                         </MultiBinding>
                     </DataGridTextColumn.Binding>
                     <DataGridTextColumn.CellStyle>
@@ -1043,10 +1007,9 @@
                 <DataGridTextColumn x:Name="CriditHP" Header="CreditH">
                     <DataGridTextColumn.Binding>
                         <MultiBinding Converter="{StaticResource DoubleFormatConverter}">
-                            <Binding Path="Put.Option.Type" />
                             <Binding Path="Put.HitterCredit" />
                             <Binding Path="Column.DisplayIndex" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGridCell}}" />
-                            <Binding RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
+                            <Binding Path="OptionFormats" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
                         </MultiBinding>
                     </DataGridTextColumn.Binding>
                     <DataGridTextColumn.CellStyle>
@@ -1059,10 +1022,9 @@
                 <DataGridTextColumn x:Name="CriditDP" Header="CreditD">
                     <DataGridTextColumn.Binding>
                         <MultiBinding Converter="{StaticResource DoubleFormatConverter}">
-                            <Binding Path="Put.Option.Type" />
                             <Binding Path="Put.DimerCredit" />
                             <Binding Path="Column.DisplayIndex" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGridCell}}" />
-                            <Binding RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
+                            <Binding Path="OptionFormats" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
                         </MultiBinding>
                     </DataGridTextColumn.Binding>
                     <DataGridTextColumn.CellStyle>
@@ -1084,30 +1046,27 @@
                 <DataGridTextColumn x:Name="SkewSense" Header="SkewS">
                     <DataGridTextColumn.Binding>
                         <MultiBinding Converter="{StaticResource DoubleFormatConverter}">
-                            <Binding Path="Call.Option.Type" />
-                            <Binding Path="SkewSense" />
+                            <Binding Path="Call.SkewSensi" />
                             <Binding Path="Column.DisplayIndex" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGridCell}}" />
-                            <Binding RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
+                            <Binding Path="OptionFormats" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
                         </MultiBinding>
                     </DataGridTextColumn.Binding>
                 </DataGridTextColumn>
                 <DataGridTextColumn x:Name="ConvexC" Header="ConvexC">
                     <DataGridTextColumn.Binding>
                         <MultiBinding Converter="{StaticResource DoubleFormatConverter}">
-                            <Binding Path="Call.Option.Type" />
-                            <Binding Path="Call.Convex" />
+                            <Binding Path="Call.ConvexSensi" />
                             <Binding Path="Column.DisplayIndex" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGridCell}}" />
-                            <Binding RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
+                            <Binding Path="OptionFormats" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
                         </MultiBinding>
                     </DataGridTextColumn.Binding>
                 </DataGridTextColumn>
                 <DataGridTextColumn x:Name="ConvexP" Header="ConvexP">
                     <DataGridTextColumn.Binding>
                         <MultiBinding Converter="{StaticResource DoubleFormatConverter}">
-                            <Binding Path="Put.Option.Type" />
-                            <Binding Path="Put.Convex" />
+                            <Binding Path="Put.ConvexSensi" />
                             <Binding Path="Column.DisplayIndex" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGridCell}}" />
-                            <Binding RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
+                            <Binding Path="OptionFormats" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
                         </MultiBinding>
                     </DataGridTextColumn.Binding>
                 </DataGridTextColumn>
