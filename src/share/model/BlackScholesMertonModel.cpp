@@ -69,6 +69,24 @@ void BlackScholesMertonModel::Calculate(bool call, double s, double k, double v,
   theo.gamma = CalculateGamma(s, v);
 }
 
+double BlackScholesMertonModel::CalculateDelta(bool call, double s, double k, double v, double r,
+    double q, double t)
+{
+  qt_ = std::exp(-q * t);
+  sqrt_t_ = std::sqrt(t);
+  double d1 = GetD1(s, k, v, r, q, t);
+  if (call)
+  {
+    N_d1_ = NormalCumDist(d1);
+    return CalculateCallDelta();
+  }
+  else
+  {
+    N_neg_d1_ = NormalCumDist(-d1);
+    return CalculatePutDelta();
+  }
+}
+
 double BlackScholesMertonModel::CalculateIV(bool call, double v, double p, double s, double k,
     double r, double q, double t)
 {

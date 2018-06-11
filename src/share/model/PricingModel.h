@@ -38,6 +38,8 @@ public:
       GreeksData &theo) = 0;
   virtual void Calculate(bool call, double s, double k, double v, double r, double q, double t,
       TheoData &theo) = 0;
+  virtual double CalculateDelta(bool call, double s, double k, double v, double r, double q,
+      double t) = 0;
   virtual double CalculateIV(bool call, double v, double p, double s, double k, double r, double q,
       double t);
 

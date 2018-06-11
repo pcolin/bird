@@ -15,6 +15,8 @@ public:
       GreeksData &theo) override;
   void Calculate(bool call, double s, double k, double v, double r, double q, double t,
       TheoData &theo) override;
+  double CalculateDelta(bool call, double s, double k, double v, double r, double q,
+      double t) override;
   double CalculateIV(bool call, double v, double p,
       double s, double k, double r, double q, double t) override;
 

@@ -23,6 +23,8 @@ public:
       GreeksData &result) override;
   void Calculate(bool call, double s, double k, double v, double r, double q, double t,
       TheoData &result) override;
+  double CalculateDelta(bool call, double s, double k, double v, double r, double q,
+      double t) override;
 
   //void Calculate(CalculateParameter &para, VolLibrary::VolCurveParam &vcp,
   //               double tick, int depth, std::vector<double> &prices,

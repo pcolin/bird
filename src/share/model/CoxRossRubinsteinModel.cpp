@@ -54,6 +54,13 @@ void CoxRossRubinsteinModel::Calculate(bool call, double s, double k, double v, 
   theo.gamma = 2 * GammaFromTree(pt2_, st2_) - GammaFromTree(pt_, st_);
 }
 
+double CoxRossRubinsteinModel::CalculateDelta(bool call, double s, double k, double v, double r,
+    double q, double t)
+{
+  InitTree(st_, pt_, depth_, call, s, k, v, r, t);
+  InitTree(st2_, pt2_, 2 * depth_, call, s, k, v, r, t);
+  return 2 * DeltaFromTree(pt2_, st2_) - DeltaFromTree(pt_, st_);
+}
 // void CoxRossRubinsteinModel::Calculate(CalculateParameter &para,
 //                                      VolLibrary::VolCurveParam &vcp,
 //                                      double tick, int depth,
