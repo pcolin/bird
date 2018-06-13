@@ -31,27 +31,27 @@ ClusterManager::~ClusterManager()
 void ClusterManager::Init()
 {
   LOG_INF << "Initialize ClusterManager...";
-  /// sync pricing spec from db.
+  /// sync pricer spec from db.
   {
-    auto req = Message::NewProto<Proto::PricingSpecReq>();
+    auto req = Message::NewProto<Proto::PricerReq>();
     req->set_type(Proto::RequestType::Get);
     req->set_user(EnvConfig::GetInstance()->GetString(EnvVar::EXCHANGE));
-    auto rep = std::dynamic_pointer_cast<Proto::PricingSpecRep>(
+    auto rep = std::dynamic_pointer_cast<Proto::PricerRep>(
         Middleware::GetInstance()->Request(req));
     if (rep && rep->result().result())
     {
-      std::lock_guard<std::mutex> lck(pricing_mtx_);
-      for (auto &p : rep->pricings())
+      std::lock_guard<std::mutex> lck(pricer_mtx_);
+      for (auto &p : rep->pricers())
       {
-        LOG_INF << "PrcingSpec: " << p.ShortDebugString();
-        auto pricing = Message::NewProto<Proto::PricingSpec>();
-        pricing->CopyFrom(p);
-        pricings_.emplace(p.name(), pricing);
+        LOG_INF << "Prcer: " << p.ShortDebugString();
+        auto pricer = Message::NewProto<Proto::Pricer>();
+        pricer->CopyFrom(p);
+        pricers_.emplace(p.name(), pricer);
       }
     }
     else
     {
-      LOG_ERR << "Failed to sync pricing specs";
+      LOG_ERR << "Failed to sync pricer specs";
     }
   }
 }
@@ -91,27 +91,27 @@ DeviceManager* ClusterManager::FindDevice(const Instrument *underlying) const
   return nullptr;
 }
 
-std::shared_ptr<Proto::PricingSpec> ClusterManager::FindPricingSpec(const std::string &name)
+std::shared_ptr<Proto::Pricer> ClusterManager::FindPricer(const std::string &name)
 {
-  std::lock_guard<std::mutex> lck(pricing_mtx_);
-  auto it = pricings_.find(name);
-  if (it != pricings_.end())
+  std::lock_guard<std::mutex> lck(pricer_mtx_);
+  auto it = pricers_.find(name);
+  if (it != pricers_.end())
   {
-    auto ret = Message::NewProto<Proto::PricingSpec>();
+    auto ret = Message::NewProto<Proto::Pricer>();
     ret->CopyFrom(*it->second);
     return ret;
   }
   return nullptr;
 }
 
-std::shared_ptr<Proto::PricingSpec> ClusterManager::FindPricingSpec(const Instrument *underlying)
+std::shared_ptr<Proto::Pricer> ClusterManager::FindPricer(const Instrument *underlying)
 {
-  std::lock_guard<std::mutex> lck(pricing_mtx_);
-  for (auto &it : pricings_)
+  std::lock_guard<std::mutex> lck(pricer_mtx_);
+  for (auto &it : pricers_)
   {
     if (underlying->Id() == it.second->underlying())
     {
-      auto ret = Message::NewProto<Proto::PricingSpec>();
+      auto ret = Message::NewProto<Proto::Pricer>();
       ret->CopyFrom(*it.second);
       return ret;
     }
@@ -169,39 +169,39 @@ ClusterManager::ProtoReplyPtr ClusterManager::OnPriceReq(const std::shared_ptr<P
   return nullptr;
 }
 
-ClusterManager::ProtoReplyPtr ClusterManager::OnPricingSpecReq(
-    const std::shared_ptr<Proto::PricingSpecReq> &req)
+ClusterManager::ProtoReplyPtr ClusterManager::OnPricerReq(
+    const std::shared_ptr<Proto::PricerReq> &req)
 {
   if (req->type() != Proto::RequestType::Get)
   {
     if (req->type() == Proto::RequestType::Set)
     {
-      for (auto &p : req->pricings())
+      for (auto &p : req->pricers())
       {
         auto *underlying = ProductManager::GetInstance()->FindId(p.underlying());
         if (underlying)
         {
-          auto copy = Message::NewProto<Proto::PricingSpec>();
+          auto copy = Message::NewProto<Proto::Pricer>();
           copy->CopyFrom(p);
           auto *dm = FindDevice(underlying);
           if (dm)
           {
             dm->Publish(copy);
           }
-          std::lock_guard<std::mutex> lck(pricing_mtx_);
-          pricings_[p.name()] = copy;
+          std::lock_guard<std::mutex> lck(pricer_mtx_);
+          pricers_[p.name()] = copy;
         }
       }
-      LOG_PUB << req->user() << " set PricingSpec";
+      LOG_PUB << req->user() << " set Pricer";
     }
     else if (req->type() == Proto::RequestType::Del)
     {
-      std::lock_guard<std::mutex> lck(pricing_mtx_);
-      for (auto &p : req->pricings())
+      std::lock_guard<std::mutex> lck(pricer_mtx_);
+      for (auto &p : req->pricers())
       {
-        pricings_.erase(p.name());
+        pricers_.erase(p.name());
       }
-      LOG_PUB << req->user() << " delete PricingSpec";
+      LOG_PUB << req->user() << " delete Pricer";
     }
     Middleware::GetInstance()->Publish(req);
   }

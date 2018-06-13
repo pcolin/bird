@@ -43,7 +43,7 @@ public:
 
   bool IsStrategiesRunning() const;
 
-  void UpdatePricingSpec(const Proto::PricingSpec &pricing);
+  void UpdatePricer(const Proto::Pricer &pricing);
 
 private:
   const Instrument *underlying_;

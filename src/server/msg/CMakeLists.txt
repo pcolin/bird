@@ -19,7 +19,7 @@ set(PROTO_FILES
   ../../share/msg/Volatility.proto
   ../../share/msg/Elastic.proto
   ../../share/msg/Destriker.proto
-  ../../share/msg/PricingSpec.proto
+  ../../share/msg/Pricer.proto
   ../../share/msg/Strategy.proto)
 
 message ("Current Dir: ${CMAKE_CURRENT_SOURCE_DIR}")

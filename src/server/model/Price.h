@@ -4,7 +4,7 @@
 #include "Message.h"
 #include "Instrument.h"
 #include "Price.pb.h"
-#include "PricingSpec.pb.h"
+#include "Pricer.pb.h"
 #include <memory>
 
 // namespace Proto

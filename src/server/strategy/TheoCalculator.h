@@ -5,7 +5,7 @@
 #include "PricingModel.h"
 #include "VolatilityModel.h"
 #include "Heartbeat.pb.h"
-#include "PricingSpec.pb.h"
+#include "Pricer.pb.h"
 #include "ExchangeParameter.pb.h"
 #include "InterestRate.pb.h"
 #include "SSRate.pb.h"
@@ -25,7 +25,7 @@ class TheoCalculator
                          std::shared_ptr<Proto::Heartbeat>,
                          std::shared_ptr<Proto::VolatilityCurve>,
                          std::shared_ptr<Proto::SSRate>,
-                         std::shared_ptr<Proto::PricingSpec>,
+                         std::shared_ptr<Proto::Pricer>,
                          std::shared_ptr<Proto::ExchangeParameterReq>,
                          std::shared_ptr<Proto::InterestRateReq>> CalculatorEvent;
 
@@ -45,12 +45,12 @@ public:
 
   template<class E> bool OnEvent(const E& e) { return running_ && events_.enqueue(e); }
 private:
-  bool Initialize(const std::shared_ptr<Proto::PricingSpec> &spec);
+  bool Initialize(const std::shared_ptr<Proto::Pricer> &spec);
 
   void OnPrice(const PricePtr &price);
   void OnTrade(const TradePtr &t);
   void OnHeartbeat(const std::shared_ptr<Proto::Heartbeat> &h);
-  void OnPricingSpec(const std::shared_ptr<Proto::PricingSpec> &spec);
+  void OnPricer(const std::shared_ptr<Proto::Pricer> &spec);
   void OnExchangeParameter(const std::shared_ptr<Proto::ExchangeParameterReq> &req);
   void OnInterestRate(const std::shared_ptr<Proto::InterestRateReq> &req);
   void OnSSRate(const std::shared_ptr<Proto::SSRate> &ssr);
@@ -89,9 +89,9 @@ private:
       calculator_->OnHeartbeat(h);
     }
 
-    void operator()(const std::shared_ptr<Proto::PricingSpec> &spec)
+    void operator()(const std::shared_ptr<Proto::Pricer> &spec)
     {
-      calculator_->OnPricingSpec(spec);
+      calculator_->OnPricer(spec);
     }
 
     void operator()(const std::shared_ptr<Proto::ExchangeParameterReq> &req)

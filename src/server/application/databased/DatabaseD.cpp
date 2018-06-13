@@ -12,7 +12,7 @@
 #include "DestrikerDB.h"
 #include "CashLimitDB.h"
 #include "PositionDB.h"
-#include "PricingSpecDB.h"
+#include "PricerDB.h"
 #include "Heartbeat.pb.h"
 #include "Server.pb.h"
 #include "Price.pb.h"
@@ -185,7 +185,7 @@ int main(int argc, char *argv[])
   PositionDB position(config_db, "Position");
   ok = ok && position.Initialize(dispatcher);
 
-  PricingSpecDB pricing(config_db, "PricingSpec", "PricingSpecRecord", instrument_db);
+  PricerDB pricing(config_db, "Pricer", "PricerRecord", instrument_db);
   ok = ok && pricing.Initialize(dispatcher);
 
   if (!ok)
@@ -205,7 +205,7 @@ int main(int argc, char *argv[])
   auto *info = new Proto::ServerInfo();
   auto *price = new Proto::Price();
   auto *cash = new Proto::Cash();
-  // auto *pricing = new Proto::PricingSpec();
+  // auto *pricing = new Proto::Pricer();
   while (true)
   {
     // nn_pollfd pfd[] = { {rep, NN_POLLIN, 0} };

@@ -27,7 +27,7 @@ DeviceManager::~DeviceManager()
 void DeviceManager::Init()
 {
   /// initialize pricing
-  auto pricing = ClusterManager::GetInstance()->FindPricingSpec(underlying_);
+  auto pricing = ClusterManager::GetInstance()->FindPricer(underlying_);
   if (pricing)
   {
     theo_.SetParameter(pricing->theo_type(), pricing->elastic(), pricing->elastic_limit());
@@ -177,7 +177,7 @@ bool DeviceManager::IsStrategiesRunning() const
   return cnt > 0;
 }
 
-void DeviceManager::UpdatePricingSpec(const Proto::PricingSpec &pricing)
+void DeviceManager::UpdatePricer(const Proto::Pricer &pricing)
 {
   theo_.SetParameter(pricing.theo_type(), pricing.elastic(), pricing.elastic_limit());
 }

@@ -15,7 +15,7 @@ TheoCalculator::TheoCalculator(const std::string &name, DeviceManager *dm)
 
 void TheoCalculator::Start()
 {
-  auto spec = ClusterManager::GetInstance()->FindPricingSpec(name_);
+  auto spec = ClusterManager::GetInstance()->FindPricer(name_);
   if (spec)
   {
     if (Initialize(spec))
@@ -51,7 +51,7 @@ void TheoCalculator::Stop()
   }
 }
 
-bool TheoCalculator::Initialize(const std::shared_ptr<Proto::PricingSpec> &spec)
+bool TheoCalculator::Initialize(const std::shared_ptr<Proto::Pricer> &spec)
 {
   Proto::PricingModel model = spec->model();
   LOG_INF << boost::format("Start running %1%: model(%2%)") % spec->name() %
@@ -218,13 +218,13 @@ void TheoCalculator::OnHeartbeat(const std::shared_ptr<Proto::Heartbeat> &h)
   }
 }
 
-void TheoCalculator::OnPricingSpec(const std::shared_ptr<Proto::PricingSpec> &spec)
+void TheoCalculator::OnPricer(const std::shared_ptr<Proto::Pricer> &spec)
 {
   assert(spec->name() == name_);
   if (Initialize(spec) && tick_)
   {
     int64_t time = RecalculateAll();
-    LOG_INF << boost::format("Update PricingSpec to recalc with matrix[%1%, %2%] finished: %3%us")
+    LOG_INF << boost::format("Update Pricer to recalc with matrix[%1%, %2%] finished: %3%us")
       % lower_ % upper_ % time;
   }
 }

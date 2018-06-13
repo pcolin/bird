@@ -195,8 +195,8 @@ void Middleware::RunResponder()
         std::placeholders::_1));
   dispatcher.RegisterCallback<Proto::PriceReq>(std::bind(
         &ClusterManager::OnPriceReq, ClusterManager::GetInstance(), std::placeholders::_1));
-  dispatcher.RegisterCallback<Proto::PricingSpecReq>(std::bind(
-        &ClusterManager::OnPricingSpecReq, ClusterManager::GetInstance(), std::placeholders::_1));
+  dispatcher.RegisterCallback<Proto::PricerReq>(std::bind(
+        &ClusterManager::OnPricerReq, ClusterManager::GetInstance(), std::placeholders::_1));
   dispatcher.RegisterCallback<Proto::StrategyStatusReq>(std::bind(
         &ClusterManager::OnStrategyStatusReq, ClusterManager::GetInstance(), std::placeholders::_1));
   size_t n = 64;
