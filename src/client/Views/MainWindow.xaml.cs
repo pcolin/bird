@@ -131,6 +131,7 @@ namespace client.Views
             NewVolatilityWindow(vm.Container);
             NewMessageWindow(vm.Container);
             NewPortfolioWindow(vm.Container);
+            NewStrategyWindow(vm.Container);
         }
 
         private void NewOptionViewWindow(IUnityContainer container, Proto.Exchange exchange)
@@ -236,6 +237,17 @@ namespace client.Views
             t.Start();
         }
 
+        private void NewStrategyWindow(IUnityContainer container)
+        {
+            StrategyWindow w = new StrategyWindow(container);
+            //w.DataContext = new StrategyWindowViewModel(container);
+            if (PlaceWindow(w, "StrategyWindow"))
+            {
+                w.Show();
+            }
+            container.RegisterInstance<StrategyWindow>(w);
+        }
+
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             MainWindowViewModel vm = this.DataContext as MainWindowViewModel;
@@ -281,6 +293,7 @@ namespace client.Views
                 vm.Container.Resolve<VolatilityWindow>().SaveAndClose(writer);
                 vm.Container.Resolve<MessageWindow>().SaveAndClose(writer);
                 vm.Container.Resolve<PortfolioWindow>().SaveAndClose(writer);
+                vm.Container.Resolve<StrategyWindow>().SaveAndClose(writer);
 
                 writer.WriteEndElement();
                 writer.WriteEndDocument();
@@ -451,6 +464,26 @@ namespace client.Views
         private void PortfoliosMenuItem_Click(object sender, RoutedEventArgs e)
         {
             ShowWindow<PortfolioWindow>();
+        }
+
+        private void StrategyMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            ShowWindow<StrategyWindow>();
+        }
+
+        private void MonitorMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void CreditMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void EmergencyMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+
         }
 
         private void ShowWindow<T>() where T : Window

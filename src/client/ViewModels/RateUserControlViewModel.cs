@@ -73,6 +73,7 @@ namespace client.ViewModels
         {
             Proto.InterestRateReq req = new Proto.InterestRateReq();
             req.Type = Proto.RequestType.Set;
+            req.Exchange = Exchange;
             
             foreach (RateItem rate in Rates)
             {

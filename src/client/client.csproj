@@ -174,7 +174,7 @@
     <Compile Include="Messages\Order.cs" />
     <Compile Include="Messages\Position.cs" />
     <Compile Include="Messages\Price.cs" />
-    <Compile Include="Messages\PricingSpec.cs" />
+    <Compile Include="Messages\Pricer.cs" />
     <Compile Include="Messages\Reply.cs" />
     <Compile Include="Messages\Request.cs" />
     <Compile Include="Messages\Server.cs" />
@@ -192,7 +192,7 @@
     <Compile Include="Models\LoggingEventSource.cs" />
     <Compile Include="Models\Option.cs" />
     <Compile Include="Models\PositionManager.cs" />
-    <Compile Include="Models\PricingSpecManager.cs" />
+    <Compile Include="Models\PricerManager.cs" />
     <Compile Include="Models\ProductManager.cs" />
     <Compile Include="Models\ProtoMessageCoder.cs" />
     <Compile Include="Models\ProtoMessageTypes.cs" />
@@ -208,6 +208,7 @@
     <Compile Include="ViewModels\OptionUserControlViewModel.cs" />
     <Compile Include="ViewModels\OptionWindowViewModel.cs" />
     <Compile Include="ViewModels\PortfolioWindowViewModel.cs" />
+    <Compile Include="ViewModels\PricerUserControlViewModel.cs" />
     <Compile Include="ViewModels\RangeObservableCollection.cs" />
     <Compile Include="ViewModels\RateUserControlViewModel.cs" />
     <Compile Include="ViewModels\RateWindowViewModel.cs" />
@@ -248,11 +249,23 @@
     <Compile Include="Views\PortfolioWindow.xaml.cs">
       <DependentUpon>PortfolioWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\PricerSettingWindow.xaml.cs">
+      <DependentUpon>PricerSettingWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\PricerUserControl.xaml.cs">
+      <DependentUpon>PricerUserControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\RateUserControl.xaml.cs">
       <DependentUpon>RateUserControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\RateWindow.xaml.cs">
       <DependentUpon>RateWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\StrategyUserControl.xaml.cs">
+      <DependentUpon>StrategyUserControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\StrategyWindow.xaml.cs">
+      <DependentUpon>StrategyWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\VolatilityUserControl.xaml.cs">
       <DependentUpon>VolatilityUserControl.xaml</DependentUpon>
@@ -345,11 +358,27 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views\PricerSettingWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\PricerUserControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\RateUserControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\RateWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\StrategyUserControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\StrategyWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
