@@ -36,14 +36,14 @@
                 <MenuItem Header="Exit"></MenuItem>
             </MenuItem>
             <MenuItem Header="STRATEGY">
-                <MenuItem Header="Information"></MenuItem>
-                <MenuItem Header="Monitor"></MenuItem>
+                <MenuItem Header="Strategy" Click="StrategyMenuItem_Click"></MenuItem>
+                <MenuItem Header="Monitor" Click="MonitorMenuItem_Click"></MenuItem>
                 <Separator></Separator>
-                <MenuItem Header="Credit"></MenuItem>
+                <MenuItem Header="Credit" Click="CreditMenuItem_Click"></MenuItem>
                 <MenuItem Header="Volatility" Click="VolatilityMenuItem_Click"></MenuItem>
                 <MenuItem Header="Rate" Click="RateMenuItem_Click"></MenuItem>
                 <Separator></Separator>
-                <MenuItem Header="Emergency"></MenuItem>
+                <MenuItem Header="Emergency" Click="EmergencyMenuItem_Click"></MenuItem>
             </MenuItem>
             <MenuItem Header="VIEW">
                 <MenuItem Header="Options">

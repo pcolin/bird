@@ -33,7 +33,7 @@ namespace client.Models
             ok = ok && QueryInterestRates();
             ok = ok && QuerySSRates();
             ok = ok && QueryVolatilityCurves();
-            ok = ok && QueryPricingSpecs();
+            ok = ok && QueryPricers();
             return ok;
         }
 
@@ -190,9 +190,9 @@ namespace client.Models
             return false;
         }
 
-        private bool QueryPricingSpecs()
+        private bool QueryPricers()
         {
-            Proto.PricingSpecReq req = new Proto.PricingSpecReq();
+            Proto.PricerReq req = new Proto.PricerReq();
             req.Type = Proto.RequestType.Get;
             req.User = user;
 
@@ -202,15 +202,15 @@ namespace client.Models
             bytes = socket.Receive();
             if (bytes != null)
             {
-                var rep = ProtoMessageCoder.Decode<Proto.PricingSpecRep>(bytes);
+                var rep = ProtoMessageCoder.Decode<Proto.PricerRep>(bytes);
                 if (rep.Result.Result)
                 {
-                    PricingSpecManager manager = new PricingSpecManager();
-                    if (rep.Pricings.Count > 0)
+                    var manager = new PricerManager();
+                    if (rep.Pricers.Count > 0)
                     {
                         manager.OnProtoMessage(rep);
                     }
-                    this.container.RegisterInstance<PricingSpecManager>(exchange.ToString(), manager);
+                    this.container.RegisterInstance<PricerManager>(exchange.ToString(), manager);
                     return true;
                 }
             }

@@ -1,0 +1,9 @@
+﻿<Window x:Class="client.Views.StrategyWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:client.Views"
+        Icon="/Images/bird_32x32.ico"
+        Title="Strategy" Height="600" Width="800"
+        Closing="Window_Closing">
+    <TabControl Name="ExchangeStrategyTabControl" />
+</Window>

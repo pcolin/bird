@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using ModelLibrary;
 using Prism.Events;
 using System.Globalization;
+using System.Diagnostics;
 
 namespace client.Models
 {
@@ -106,24 +107,29 @@ namespace client.Models
         {
             actions = new Dictionary<Type, Action<IMessage>>() {
                 { typeof(Proto.Price), msg => OnPrice(msg as Proto.Price) },
-                { typeof(Proto.PricingSpecReq), msg => OnPricingSpecReq(msg as Proto.PricingSpecReq) },
+                { typeof(Proto.PricerReq), msg => OnPricerReq(msg as Proto.PricerReq) },
                 { typeof(Proto.ExchangeParameterReq), msg => OnExchangeParameterReq(msg as Proto.ExchangeParameterReq) },
                 { typeof(Proto.InterestRateReq), msg => OnInterestRateReq(msg as Proto.InterestRateReq) },
                 { typeof(Proto.SSRateReq), msg => OnSSRateReq(msg as Proto.SSRateReq) },
                 { typeof(Proto.VolatilityCurveReq), msg => OnVolatilityCurveReq(msg as Proto.VolatilityCurveReq) },
             };
 
-            this.container.Resolve<EventAggregator>().GetEvent<PubSubEvent<Proto.Price>>().Subscribe(new Action<IMessage>(msg => messages.Add(msg)));
-            this.container.Resolve<EventAggregator>().GetEvent<PubSubEvent<Proto.PricingSpecReq>>().Subscribe(new Action<IMessage>(msg => messages.Add(msg)));
-            this.container.Resolve<EventAggregator>().GetEvent<PubSubEvent<Proto.ExchangeParameterReq>>().Subscribe(new Action<IMessage>(msg => messages.Add(msg)));
-            this.container.Resolve<EventAggregator>().GetEvent<PubSubEvent<Proto.InterestRateReq>>().Subscribe(new Action<IMessage>(msg => messages.Add(msg)));
-            this.container.Resolve<EventAggregator>().GetEvent<PubSubEvent<Proto.SSRateReq>>().Subscribe(new Action<IMessage>(msg => messages.Add(msg)));
-            this.container.Resolve<EventAggregator>().GetEvent<PubSubEvent<Proto.VolatilityCurveReq>>().Subscribe(new Action<IMessage>(msg => messages.Add(msg)));
+            container.Resolve<EventAggregator>().GetEvent<PubSubEvent<Proto.Price>>().Subscribe(new Action<IMessage>(msg => messages.Add(msg)));
+            container.Resolve<EventAggregator>().GetEvent<PubSubEvent<Proto.PricerReq>>().Subscribe(new Action<Proto.PricerReq>(
+                msg => { if (msg.Exchange == this.exchange) messages.Add(msg); }));
+            container.Resolve<EventAggregator>().GetEvent<PubSubEvent<Proto.ExchangeParameterReq>>().Subscribe(new Action<Proto.ExchangeParameterReq>(
+                msg => { if (msg.Exchange == this.exchange) messages.Add(msg); }));
+            container.Resolve<EventAggregator>().GetEvent<PubSubEvent<Proto.InterestRateReq>>().Subscribe(new Action<Proto.InterestRateReq>(
+                msg => { if (msg.Exchange == this.exchange) messages.Add(msg); }));
+            container.Resolve<EventAggregator>().GetEvent<PubSubEvent<Proto.SSRateReq>>().Subscribe(new Action<Proto.SSRateReq>(
+                msg => { if (msg.Exchange == this.exchange) messages.Add(msg); }));
+            container.Resolve<EventAggregator>().GetEvent<PubSubEvent<Proto.VolatilityCurveReq>>().Subscribe(new Action<Proto.VolatilityCurveReq>(
+                msg => { if (msg.Exchange == this.exchange) messages.Add(msg); }));
         }
 
         private void InitializeParameters()
         {
-            var psm = this.container.Resolve<PricingSpecManager>(this.exchange.ToString());
+            var psm = this.container.Resolve<PricerManager>(this.exchange.ToString());
             if (psm == null) return;
 
             rm = this.container.Resolve<InterestRateManager>(this.exchange.ToString());
@@ -139,7 +145,7 @@ namespace client.Models
             var hedgeUnderlyings = pm.GetHedgeUnderlyings();
             foreach (var underlying in hedgeUnderlyings)
             {
-                var ps = psm.GetPricingSpec(underlying.Id);
+                var ps = psm.GetPricer(underlying.Id);
                 if (ps != null)
                 {
                     var pricing = new Pricing()
@@ -251,62 +257,69 @@ namespace client.Models
             }
         }
 
-        private void OnPricingSpecReq(Proto.PricingSpecReq req)
+        private void OnPricerReq(Proto.PricerReq req)
         {
-            if (req.Exchange == this.exchange && req.Type == Proto.RequestType.Set)
+            Debug.Assert(req.Exchange == this.exchange);
+            if (req.Type == Proto.RequestType.Set)
             {
-                foreach (var ps in req.Pricings)
+                foreach (var ps in req.Pricers)
                 {
                     var underlying = pm.FindId(ps.Underlying);
                     if (underlying != null)
                     {
                         Pricing pricing = null;
-                        if (this.pricings.TryGetValue(underlying, out pricing))
+                        if (this.pricings.TryGetValue(underlying, out pricing) == false)
                         {
-                            pricing.PricingModel = new PricingModelWrapper(ps.Model == Proto.PricingModel.Bsm);
-                            var options = new SortedSet<Option>();
-                            foreach (var op in ps.Options)
-                            {
-                                var option = pm.FindId(op) as Option;
-                                if (option != null)
+                            pricing = new Pricing()
                                 {
-                                    options.Add(option);
-                                    PricingParameters parameters = null;
-                                    if (pricing.Parameters.TryGetValue(option.Maturity, out parameters) == false)
-                                    {
-                                        parameters = new PricingParameters()
-                                            {
-                                                Rate = rm.GetInterestRate(option.Maturity),
-                                                SSRate = ssm.GetSSRate(option.HedgeUnderlying.Id, option.Maturity),
-                                                Volatilities = new Dictionary<Option,double>(),
-                                            };
-                                        var vc = vcm.GetVolatilityCurve(option.HedgeUnderlying.Id, option.Maturity);
-                                        if (vc != null)
+                                    Parameters = new Dictionary<DateTime, PricingParameters>(),
+                                    VolatilityModel = new VolatilityModelWrapper(),
+                                };
+                            this.pricings.Add(underlying, pricing);
+                        }
+                        pricing.PricingModel = new PricingModelWrapper(ps.Model == Proto.PricingModel.Bsm);
+                        var options = new SortedSet<string>();
+                        foreach (var op in ps.Options)
+                        {
+                            var option = pm.FindId(op) as Option;
+                            if (option != null)
+                            {
+                                options.Add(option.Id);
+                                PricingParameters parameters = null;
+                                if (pricing.Parameters.TryGetValue(option.Maturity, out parameters) == false)
+                                {
+                                    parameters = new PricingParameters()
                                         {
-                                            parameters.Volatility = new VolatilityParameterWrapper()
-                                                {
-                                                    spot = vc.Spot,
-                                                    skew = vc.Skew,
-                                                    atm_vol = vc.AtmVol,
-                                                    call_convex = vc.CallConvex,
-                                                    put_convex = vc.PutConvex,
-                                                    call_slope = vc.CallSlope,
-                                                    put_slope = vc.PutSlope,
-                                                    call_cutoff = vc.CallCutoff,
-                                                    put_cutoff = vc.PutCutoff,
-                                                    vcr = vc.Vcr,
-                                                    scr = vc.Scr,
-                                                    ccr = vc.Ccr,
-                                                    spcr = vc.Spcr,
-                                                    sccr = vc.Sccr
-                                                };
-                                        }
-                                        pricing.Parameters.Add(option.Maturity, parameters);
-                                    }
-                                    if (parameters.Volatilities.ContainsKey(option) == false)
+                                            Rate = rm.GetInterestRate(option.Maturity),
+                                            SSRate = ssm.GetSSRate(option.HedgeUnderlying.Id, option.Maturity),
+                                            Volatilities = new Dictionary<Option, double>(),
+                                        };
+                                    var vc = vcm.GetVolatilityCurve(option.HedgeUnderlying.Id, option.Maturity);
+                                    if (vc != null)
                                     {
-                                        parameters.Volatilities.Add(option, 0);
+                                        parameters.Volatility = new VolatilityParameterWrapper()
+                                            {
+                                                spot = vc.Spot,
+                                                skew = vc.Skew,
+                                                atm_vol = vc.AtmVol,
+                                                call_convex = vc.CallConvex,
+                                                put_convex = vc.PutConvex,
+                                                call_slope = vc.CallSlope,
+                                                put_slope = vc.PutSlope,
+                                                call_cutoff = vc.CallCutoff,
+                                                put_cutoff = vc.PutCutoff,
+                                                vcr = vc.Vcr,
+                                                scr = vc.Scr,
+                                                ccr = vc.Ccr,
+                                                spcr = vc.Spcr,
+                                                sccr = vc.Sccr
+                                            };
                                     }
+                                    pricing.Parameters.Add(option.Maturity, parameters);
+                                }
+                                if (parameters.Volatilities.ContainsKey(option) == false)
+                                {
+                                    parameters.Volatilities.Add(option, 0);
                                 }
                             }
                             var itemsToRemove = new Dictionary<DateTime, List<Option>>();
@@ -315,7 +328,7 @@ namespace client.Models
                                 List<Option> items = new List<Option>();
                                 foreach (var param in kvp.Value.Volatilities)
                                 {
-                                    if (options.Contains(param.Key) == false)
+                                    if (options.Contains(param.Key.Id) == false)
                                     {
                                         items.Add(param.Key);
                                     }
@@ -329,9 +342,9 @@ namespace client.Models
                             {
                                 if (kvp.Value != null)
                                 {
-                                    foreach (var op in kvp.Value)
+                                    foreach (var opt in kvp.Value)
                                     {
-                                        pricing.Parameters[kvp.Key].Volatilities.Remove(op);
+                                        pricing.Parameters[kvp.Key].Volatilities.Remove(opt);
                                     }
                                 }
                                 else
@@ -343,11 +356,23 @@ namespace client.Models
                     }
                 }
             }
+            else if (req.Type == Proto.RequestType.Del)
+            {
+                foreach (var p in req.Pricers)
+                {
+                    var underlying = pm.FindId(p.Underlying);
+                    if (underlying != null)
+                    {
+                        this.pricings.Remove(underlying);
+                    }
+                }
+            }
         }
 
         private void OnExchangeParameterReq(Proto.ExchangeParameterReq req)
         {
-            if (req.Exchange == this.exchange && req.Type == Proto.RequestType.Set)
+            Debug.Assert(req.Exchange == this.exchange);
+            if (req.Type == Proto.RequestType.Set)
             {
                 foreach (var pricing in this.pricings)
                 {
@@ -361,7 +386,8 @@ namespace client.Models
 
         private void OnInterestRateReq(Proto.InterestRateReq req)
         {
-            if (req.Exchange == this.exchange && req.Type == Proto.RequestType.Set)
+            Debug.Assert(req.Exchange == this.exchange);
+            if (req.Type == Proto.RequestType.Set)
             {
                 foreach (var pricing in this.pricings)
                 {
@@ -376,7 +402,8 @@ namespace client.Models
 
         private void OnSSRateReq(Proto.SSRateReq req)
         {
-            if (req.Exchange == this.exchange && req.Type == Proto.RequestType.Set)
+            Debug.Assert(req.Exchange == this.exchange);
+            if (req.Type == Proto.RequestType.Set)
             {
                 foreach (var r in req.Rates)
                 {
@@ -405,7 +432,8 @@ namespace client.Models
 
         private void OnVolatilityCurveReq(Proto.VolatilityCurveReq req)
         {
-            if (req.Exchange == this.exchange && req.Type == Proto.RequestType.Set)
+            Debug.Assert(req.Exchange == this.exchange);
+            if (req.Type == Proto.RequestType.Set)
             {
                 foreach (var curve in req.Curves)
                 {

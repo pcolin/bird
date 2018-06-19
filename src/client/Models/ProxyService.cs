@@ -134,6 +134,7 @@ namespace client.Models
                 var im = this.container.Resolve<InterestRateManager>(exch);
                 var sm = this.container.Resolve<SSRateManager>(exch);
                 var vm = this.container.Resolve<VolatilityCurveManager>(exch);
+                var psm = this.container.Resolve<PricerManager>(exch);
                 if (vm == null) return;
                 while (running)
                 {
@@ -206,6 +207,15 @@ namespace client.Models
                         {
                             vm.OnProtoMessage(v);
                             this.container.Resolve<EventAggregator>().GetEvent<PubSubEvent<Proto.VolatilityCurveReq>>().Publish(v);
+                        }
+                    }
+                    else if (type == "PricerReq")
+                    {
+                        var p = Proto.PricerReq.Parser.ParseFrom(bytes, len + 5, bytes.Count() - len - 5);
+                        if (p != null)
+                        {
+                            psm.OnProtoMessage(p);
+                            this.container.Resolve<EventAggregator>().GetEvent<PubSubEvent<Proto.PricerReq>>().Publish(p);
                         }
                     }
                     else if (type == "ServerInfo")

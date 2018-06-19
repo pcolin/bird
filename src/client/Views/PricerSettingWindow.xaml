@@ -1,0 +1,79 @@
+﻿<Window x:Class="client.Views.PricerSettingWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:sys="clr-namespace:System;assembly=mscorlib"
+        xmlns:proto="clr-namespace:Proto"
+        xmlns:local="clr-namespace:client.Views"
+        Icon="/Images/bird_32x32.ico"
+        Title="Pricer Setting" Height="380" Width="330">
+    <Window.Resources>
+        <ObjectDataProvider MethodName="GetValues" ObjectType="{x:Type sys:Enum}" x:Key="GetPricingModels">
+            <ObjectDataProvider.MethodParameters>
+                <x:Type TypeName="proto:PricingModel" />
+            </ObjectDataProvider.MethodParameters>
+        </ObjectDataProvider>
+        <ObjectDataProvider MethodName="GetValues" ObjectType="{x:Type sys:Enum}" x:Key="GetTheoTypes">
+            <ObjectDataProvider.MethodParameters>
+                <x:Type TypeName="proto:UnderlyingTheoType" />
+            </ObjectDataProvider.MethodParameters>
+        </ObjectDataProvider>
+        <local:PricerItemConverter x:Key="PricerItemConverter" />
+    </Window.Resources>
+    <Grid Margin="5">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition></RowDefinition>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"></ColumnDefinition>
+            <ColumnDefinition></ColumnDefinition>
+            <ColumnDefinition></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+        <TextBlock Margin="5" VerticalAlignment="Center">Name:</TextBlock>
+        <TextBox Name="NameTextBox" Grid.Column="1" Margin="5" />
+        <TextBlock Grid.Row="1" Margin="5" VerticalAlignment="Center">Underlying:</TextBlock>
+        <ComboBox Name="UnderlyingComboBox" Grid.Row="1" Grid.Column="1" Margin="5" DisplayMemberPath="Id" />
+        <CheckBox Name="OptionsCheckBox" Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" Margin="5" IsChecked="True" VerticalAlignment="Center" >Select All Options</CheckBox>
+        <TextBlock Grid.Row="3" Margin="5" VerticalAlignment="Center">Model:</TextBlock>
+        <ComboBox Name="ModelComboBox" Grid.Row="3" Grid.Column="1" Margin="5" SelectedItem="{Binding SelectedPricer.Model, Mode=OneWay}" ItemsSource="{Binding Source={StaticResource GetPricingModels}}" />
+        <TextBlock Grid.Row="4" Margin="5" VerticalAlignment="Center">Interval(s)</TextBlock>
+        <TextBox Name="IntervalTextBox" Grid.Row="4" Grid.Column="1" Margin="5" Text="{Binding SelectedPricer.Interval, Mode=OneWay}" />
+        <TextBlock Grid.Row="5" Margin="5" VerticalAlignment="Center">SpotTheoType:</TextBlock>
+        <ComboBox Name="TheoTypeComboBox"
+                  Grid.Row="5" Grid.Column="1"
+                  Margin="5"
+                  SelectedItem="{Binding SelectedPricer.UnderlyingTheoType, Mode=OneWay}"
+                  ItemsSource="{Binding Source={StaticResource GetTheoTypes}}" />
+        <TextBlock Grid.Row="6" Margin="5" VerticalAlignment="Center">MaxTickChange:</TextBlock>
+        <TextBox Name="MaxTickChangeTextBox" Grid.Row="6" Grid.Column="1" Margin="5" Text="{Binding SelectedPricer.MaxTickChange, Mode=OneWay}" />
+        <TextBlock Grid.Row="7" Margin="5" VerticalAlignment="Center">Elastic:</TextBlock>
+        <TextBox Name="ElasticTextBox" Grid.Row="7" Grid.Column="1" Margin="5" Text="{Binding SelectedPricer.Elastic, Mode=OneWay}" />
+        <TextBlock Grid.Row="8" Margin="5" VerticalAlignment="Center">ElasticLimit</TextBlock>
+        <TextBox Name="ElasticLimitTextBox" Grid.Row="8" Grid.Column="1" Margin="5" Text="{Binding SelectedPricer.ElasticLimit, Mode=OneWay}" />
+        <Button Grid.Row="9" Grid.Column="1" Margin="5" VerticalAlignment="Center" MinHeight="30" Name="OkButton" Content="OK" Click="OkButton_Click" />
+        <!--<Button Grid.Row="9" Grid.Column="1" Margin="5" VerticalAlignment="Center" MinHeight="30" Name="OkButton" Content="OK" Click="OkButton_Click" Command="{Binding AddCommand}">
+            <Button.CommandParameter>
+                <MultiBinding Converter="{StaticResource ResourceKey=PricerItemConverter}">
+                    <Binding Path="Text" ElementName="NameTextBox" />
+                    <Binding Path="SelectedItem" ElementName="UnderlyingComboBox" />
+                    <Binding Path="IsChecked" ElementName="OptionsCheckBox" />
+                    <Binding Path="SelectedItem" ElementName="ModelComboBox" />
+                    <Binding Path="Text" ElementName="IntervalTextBox" />
+                    <Binding Path="SelectedItem" ElementName="TheoTypeComboBox" />
+                    <Binding Path="Text" ElementName="MaxTickChangeTextBox" />
+                    <Binding Path="Text" ElementName="Elastic" />
+                    <Binding Path="Text" ElementName="ElasticLimit" />
+                </MultiBinding>
+            </Button.CommandParameter>
+        </Button>-->
+        <Button Grid.Row="9" Grid.Column="2" Margin="5" VerticalAlignment="Center" MinHeight="30" Name="CancelButton" Click="CancelButton_Click">Cancel</Button>
+    </Grid>
+</Window>
