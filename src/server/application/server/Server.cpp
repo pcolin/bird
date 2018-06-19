@@ -77,7 +77,7 @@ int main(int argc, char *args[])
     auto *dm = ClusterManager::GetInstance()->FindDevice(inst);
     if (dm)
     {
-      auto s = dm->FindStrategyDevice("M1809_P");
+      auto s = dm->FindStrategyDevice("m1809_P");
       if (s)
       {
         LOG_INF << "Start pricing strategy";

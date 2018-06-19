@@ -158,6 +158,7 @@ void CtpTraderSpi::OnRspQryInstrument(CThostFtdcInstrumentField *pInstrument,
   if (inst)
   {
     inst->Symbol(pInstrument->InstrumentID);
+    inst->Product(pInstrument->ProductID);
     inst->Exchange(exchange);
     if (pInstrument->IsTrading == 0) inst->Status(Proto::InstrumentStatus::Halt);
     inst->Currency(Proto::Currency::CNY);
@@ -559,7 +560,27 @@ void CtpTraderSpi::OnRspError(CThostFtdcRspInfoField *pRspInfo, int nRequestID, 
 /// 合约交易状态通知
 void CtpTraderSpi::OnRtnInstrumentStatus(CThostFtdcInstrumentStatusField *pInstrumentStatus)
 {
-
+  LOG_INF << boost::format("OnRtnInstrumentStatus: InstrumentID(%1%), ExchangeID(%2%), "
+      "InstrumentStatus(%2%)") % pInstrumentStatus->InstrumentID % pInstrumentStatus->ExchangeID %
+      pInstrumentStatus->InstrumentStatus;
+  auto instruments = ProductManager::GetInstance()->FindInstruments
+    ([&](const Instrument *inst) { return inst->Product() == pInstrumentStatus->InstrumentID; });
+  if (instruments.size() > 0)
+  {
+    auto req = Message::NewProto<Proto::InstrumentReq>();
+    req->set_type(Proto::RequestType::Set);
+    req->set_exchange(GetExchange(pInstrumentStatus->ExchangeID));
+    auto status = GetInstrumentStatus(pInstrumentStatus->InstrumentStatus);
+    for (auto &inst : instruments)
+    {
+      LOG_INF << boost::format("Update %1% status: %2%->%3%") % inst->Id() % inst->Status() % status;
+      Instrument *instrument = const_cast<Instrument*>(inst);
+      instrument->Status(status);
+      req->add_instruments()->set_id(inst->Id());
+      req->add_instruments()->set_status(status);
+    }
+    ClusterManager::GetInstance()->OnInstrumentReq(req);
+  }
 }
 
 /// CTP认为投资者询价指令非法
@@ -627,9 +648,16 @@ Proto::Exchange CtpTraderSpi::GetExchange(const char* exchange) const
   }
 }
 
-Proto::InstrumentStatus CtpTraderSpi::GetInstrumentStatus(TThostFtdcInstrumentStatusType status) const
+Proto::InstrumentStatus CtpTraderSpi::GetInstrumentStatus(
+    TThostFtdcInstrumentStatusType status) const
 {
-
+  switch (status)
+  {
+    case THOST_FTDC_IS_BeforeTrading:
+      return Proto::InstrumentStatus::PreOpen;
+    default:
+      return Proto::InstrumentStatus::Unknown;
+  }
 }
 
 void CtpTraderSpi::UpdateOrder(const char *exchange_id, base::VolumeType volume, OrderStatus status)

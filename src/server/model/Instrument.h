@@ -19,6 +19,9 @@ class Instrument
     const std::string& Symbol() const { return symbol_; }
     void Symbol(const std::string& symbol) { symbol_ = symbol; }
 
+    const std::string& Product() const { return product_; }
+    void Product(const std::string& product) { product_ = product; }
+
     const Proto::Exchange Exchange() const { return exchange_; }
     void Exchange(Proto::Exchange exchange) { exchange_ = exchange; }
 
@@ -94,6 +97,7 @@ class Instrument
   protected:
     std::string id_;
     std::string symbol_;
+    std::string product_;
     Proto::Exchange exchange_;
     Proto::InstrumentType type_;
     std::atomic<Proto::InstrumentStatus> status_;

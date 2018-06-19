@@ -45,8 +45,11 @@ void Exchange::OnExchangeParameter(const Proto::ExchangeParameter &param)
   };
 
   std::lock_guard<std::mutex> lck(mtx_);
-  trading_day_ = boost::gregorian::from_undelimited_string(param.trading_day());
-  LOG_INF << Proto::Exchange_Name(param.exchange()) << " trading day: " << param.trading_day();
+  if (param.trading_day().empty() == false)
+  {
+    trading_day_ = boost::gregorian::from_undelimited_string(param.trading_day());
+    LOG_INF << Proto::Exchange_Name(param.exchange()) << " trading day: " << param.trading_day();
+  }
 
   holidays_.clear();
   for (auto &h : param.holidays())

@@ -94,7 +94,7 @@ base::ProtoMessagePtr InstrumentDB::OnRequest(const std::shared_ptr<Proto::Instr
         UpdateInstrument(inst,
             inst.type() == Proto::InstrumentType::Option ? options_ : underlyings_);
       }
-      else if (inst.status() != Proto::InstrumentStatus::Unkown)
+      else if (inst.status() != Proto::InstrumentStatus::Unknown)
       {
         sprintf(sql, "UPDATE %s SET status = %d WHERE id = %s", table_name_.c_str(),
             static_cast<int32_t>(inst.status()), inst.id().c_str());

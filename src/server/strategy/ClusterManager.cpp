@@ -51,7 +51,7 @@ void ClusterManager::Init()
     }
     else
     {
-      LOG_ERR << "Failed to sync pricer specs";
+      LOG_ERR << "Failed to sync pricers";
     }
   }
 }
@@ -191,8 +191,9 @@ ClusterManager::ProtoReplyPtr ClusterManager::OnPricerReq(
           std::lock_guard<std::mutex> lck(pricer_mtx_);
           pricers_[p.name()] = copy;
         }
+        LOG_PUB << req->user() << " set Pricer " << p.name();
       }
-      LOG_PUB << req->user() << " set Pricer";
+      // LOG_PUB << req->user() << " set Pricer";
     }
     else if (req->type() == Proto::RequestType::Del)
     {
@@ -200,8 +201,9 @@ ClusterManager::ProtoReplyPtr ClusterManager::OnPricerReq(
       for (auto &p : req->pricers())
       {
         pricers_.erase(p.name());
+        LOG_PUB << req->user() << " delete Pricer " << p.name();
       }
-      LOG_PUB << req->user() << " delete Pricer";
+      // LOG_PUB << req->user() << " delete Pricer";
     }
     Middleware::GetInstance()->Publish(req);
   }

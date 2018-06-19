@@ -302,6 +302,7 @@ ParameterManager::ProtoReplyPtr ParameterManager::OnExchangeParameterReq(
       exchange_->OnExchangeParameter(p);
     }
     ClusterManager::GetInstance()->Publish(req);
+    LOG_PUB << req->user() << " set exchange parameters";
   }
   return nullptr;
 }

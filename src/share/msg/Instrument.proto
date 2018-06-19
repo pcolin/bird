@@ -15,7 +15,7 @@ enum InstrumentType
 
 enum InstrumentStatus
 {
-  Unkown = 0;
+  Unknown = 0;
   Closed = 1;
   PreOpen = 2;
   OpeningAuction = 3;

@@ -14,6 +14,7 @@
 #include "SSRate.pb.h"
 #include "InterestRate.pb.h"
 #include "Volatility.pb.h"
+#include "Pricer.pb.h"
 
 #include "nn.h"
 #include "pubsub.h"
@@ -78,6 +79,7 @@ int main(int argc, char *argv[])
   auto *interest_rate = new Proto::InterestRateReq();
   auto *ssrate = new Proto::SSRateReq();
   auto *volatility = new Proto::VolatilityCurveReq();
+  auto *pricer = new Proto::PricerReq();
 
   int32_t serial_num = 0;
   while (true)
@@ -122,5 +124,6 @@ int main(int argc, char *argv[])
   delete ssrate;
   delete interest_rate;
   delete volatility;
+  delete pricer;
   return 0;
 }

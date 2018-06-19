@@ -73,13 +73,24 @@ base::ProtoMessagePtr PricerDB::OnRequest(const std::shared_ptr<Proto::PricerReq
           static_cast<int32_t>(pricer.theo_type()), pricer.warn_tick_change(),
           pricer.elastic(), pricer.elastic_limit());
       ExecSql(sql);
-      pricers_[name]->CopyFrom(pricer);
+      auto it = pricers_.find(name);
+      if (it != pricers_.end())
+      {
+        it->second->CopyFrom(pricer);
+        sprintf(sql, "DELETE FROM %s WHERE name='%s'", record_table_name_.c_str(), name.c_str());
+        ExecSql(sql);
+      }
+      else
+      {
+        auto p = Message::NewProto<Proto::Pricer>();
+        p->CopyFrom(pricer);
+        pricers_.emplace(name, p);
+      }
 
-      sprintf(sql, "DELETE FROM %s WHERE name='%s'", record_table_name_.c_str(), name.c_str());
-      ExecSql(sql);
       for (auto &op : pricer.options())
       {
-        sprintf(sql, "INSERT INTO %s VALUES('%s', '%s')", record_table_name_.c_str(), op.c_str());
+        sprintf(sql, "INSERT INTO %s VALUES('%s', '%s')", record_table_name_.c_str(), name.c_str(),
+            op.c_str());
         ExecSql(sql);
       }
     }
@@ -145,7 +156,11 @@ int PricerDB::RecordCallback(void *data, int argc, char **argv, char **col_name)
   auto inst = instrument_db->FindOption(id);
   if (inst)
   {
-    *((*pricers)[argv[0]]->add_options()) = id;
+    auto it = pricers->find(argv[0]);
+    if (it != pricers->end())
+    {
+      *(it->second->add_options()) = id;
+    }
   }
   return 0;
 }
