@@ -128,3 +128,30 @@ double Exchange::GetTimeValue(const boost::gregorian::date &maturity)
     to_iso_string(maturity) % ret % trading_days % fraction;
   return ret;
 }
+
+bool Exchange::IsTradingTime(const boost::gregorian::date &maturity)
+{
+  auto now = boost::posix_time::second_clock::local_time();
+  std::lock_guard<std::mutex> lck(mtx_);
+  if (trading_day_ < maturity)
+  {
+    for (auto &session : sessions_)
+    {
+      if (now >= session.first && now <= session.second)
+      {
+        return true;
+      }
+    }
+  }
+  else
+  {
+    for (auto &session : maturity_sessions_)
+    {
+      if (now >= session.first && now <= session.second)
+      {
+        return true;
+      }
+    }
+  }
+  return false;
+}

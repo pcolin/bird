@@ -16,9 +16,13 @@ ExchangeParameterDB::ExchangeParameterDB(ConcurrentSqliteDB &db, const std::stri
 void ExchangeParameterDB::RefreshCache()
 {
   char sql[1024];
-  const char *fmt = "%Y%m%d";
-  sprintf(sql, "DELETE FROM %s WHERE holiday<strftime(\"%s\", 'now')", holiday_table_name_.c_str(),
-      fmt);
+  auto today = boost::gregorian::day_clock::local_day();
+  today -= boost::gregorian::date_duration(30);
+  // const char *fmt = "%Y%m%d";
+  // sprintf(sql, "DELETE FROM %s WHERE holiday<strftime(\"%s\", 'now')", holiday_table_name_.c_str(),
+  //     fmt);
+  sprintf(sql, "DELETE FROM %s WHERE holiday<%s", holiday_table_name_.c_str(),
+      boost::gregorian::to_iso_string(today).c_str());
   ExecSql(sql);
 
   sprintf(sql, "SELECT * FROM %s", table_name_.c_str());

@@ -8,6 +8,7 @@
 #include "model/Future.h"
 #include "model/Option.h"
 #include "model/ProductManager.h"
+#include "model/ParameterManager.h"
 #include "model/PositionManager.h"
 #include "model/OrderManager.h"
 #include "model/TradeManager.h"
@@ -160,7 +161,31 @@ void CtpTraderSpi::OnRspQryInstrument(CThostFtdcInstrumentField *pInstrument,
     inst->Symbol(pInstrument->InstrumentID);
     inst->Product(pInstrument->ProductID);
     inst->Exchange(exchange);
-    if (pInstrument->IsTrading == 0) inst->Status(Proto::InstrumentStatus::Halt);
+    if (pInstrument->IsTrading)
+    {
+      auto exch = ParameterManager::GetInstance()->GetExchange();
+      if (exch)
+      {
+        if (exch->IsTradingTime(inst->Maturity()))
+        {
+          inst->Status(Proto::InstrumentStatus::Trading);
+        }
+        else
+        {
+          inst->Status(Proto::InstrumentStatus::PreOpen);
+        }
+      }
+      else
+      {
+        LOG_ERR << "Failed to get exchange parameter.";
+      }
+    }
+    else
+    {
+      inst->Status(Proto::InstrumentStatus::Halt);
+    }
+    LOG_DBG << boost::format("Set %1% status: %2%") % inst->Id() %
+      Proto::InstrumentStatus_Name(inst->Status());
     inst->Currency(Proto::Currency::CNY);
     inst->Tick(pInstrument->PriceTick);
     inst->Multiplier(pInstrument->VolumeMultiple);
@@ -561,7 +586,7 @@ void CtpTraderSpi::OnRspError(CThostFtdcRspInfoField *pRspInfo, int nRequestID, 
 void CtpTraderSpi::OnRtnInstrumentStatus(CThostFtdcInstrumentStatusField *pInstrumentStatus)
 {
   LOG_INF << boost::format("OnRtnInstrumentStatus: InstrumentID(%1%), ExchangeID(%2%), "
-      "InstrumentStatus(%2%)") % pInstrumentStatus->InstrumentID % pInstrumentStatus->ExchangeID %
+      "InstrumentStatus(%3%)") % pInstrumentStatus->InstrumentID % pInstrumentStatus->ExchangeID %
       pInstrumentStatus->InstrumentStatus;
   auto instruments = ProductManager::GetInstance()->FindInstruments
     ([&](const Instrument *inst) { return inst->Product() == pInstrumentStatus->InstrumentID; });
@@ -573,7 +598,8 @@ void CtpTraderSpi::OnRtnInstrumentStatus(CThostFtdcInstrumentStatusField *pInstr
     auto status = GetInstrumentStatus(pInstrumentStatus->InstrumentStatus);
     for (auto &inst : instruments)
     {
-      LOG_INF << boost::format("Update %1% status: %2%->%3%") % inst->Id() % inst->Status() % status;
+      LOG_INF << boost::format("Update %1% status: %2%->%3%") % inst->Id() %
+        Proto::InstrumentStatus_Name(inst->Status()) % Proto::InstrumentStatus_Name(status);
       Instrument *instrument = const_cast<Instrument*>(inst);
       instrument->Status(status);
       req->add_instruments()->set_id(inst->Id());
@@ -655,6 +681,16 @@ Proto::InstrumentStatus CtpTraderSpi::GetInstrumentStatus(
   {
     case THOST_FTDC_IS_BeforeTrading:
       return Proto::InstrumentStatus::PreOpen;
+    case THOST_FTDC_IS_NoTrading:
+      return Proto::InstrumentStatus::Halt;
+    case THOST_FTDC_IS_Continous:
+      return Proto::InstrumentStatus::Trading;
+    case THOST_FTDC_IS_AuctionOrdering:
+    case THOST_FTDC_IS_AuctionBalance:
+    case THOST_FTDC_IS_AuctionMatch:
+      return Proto::InstrumentStatus::OpeningAuction;
+    case THOST_FTDC_IS_Closed:
+      return Proto::InstrumentStatus::Closed;
     default:
       return Proto::InstrumentStatus::Unknown;
   }

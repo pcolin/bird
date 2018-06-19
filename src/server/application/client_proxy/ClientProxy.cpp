@@ -15,6 +15,7 @@
 #include "InterestRate.pb.h"
 #include "Volatility.pb.h"
 #include "Pricer.pb.h"
+#include "Strategy.pb.h"
 
 #include "nn.h"
 #include "pubsub.h"
@@ -80,6 +81,7 @@ int main(int argc, char *argv[])
   auto *ssrate = new Proto::SSRateReq();
   auto *volatility = new Proto::VolatilityCurveReq();
   auto *pricer = new Proto::PricerReq();
+  auto *strategy = new Proto::StrategyStatus();
 
   int32_t serial_num = 0;
   while (true)
@@ -108,7 +110,7 @@ int main(int argc, char *argv[])
     }
     else
     {
-      LOG_ERR << "Failed to decode proto message";
+      LOG_ERR << "Failed to decode proto message: " << GetString(buf, recv_bytes);
     }
     nn_freemsg(buf);
   }
@@ -125,5 +127,6 @@ int main(int argc, char *argv[])
   delete interest_rate;
   delete volatility;
   delete pricer;
+  delete strategy;
   return 0;
 }

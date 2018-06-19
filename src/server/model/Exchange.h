@@ -16,6 +16,7 @@ public:
   void OnExchangeParameter(const Proto::ExchangeParameter &param);
   const boost::gregorian::date& TradingDay() { return trading_day_; }
   double GetTimeValue(const boost::gregorian::date &maturity);
+  bool IsTradingTime(const boost::gregorian::date &maturity);
 
 private:
   boost::gregorian::date trading_day_;

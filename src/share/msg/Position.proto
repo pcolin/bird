@@ -24,9 +24,10 @@ message Position
 message PositionReq
 {
   RequestType type = 1;
-  string instrument = 2;
-  string user = 3;
-  repeated Position positions = 4;
+  Exchange exchange = 2;
+  string instrument = 3;
+  string user = 4;
+  repeated Position positions = 5;
 }
 
 message PositionRep
