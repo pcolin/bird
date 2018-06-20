@@ -14,6 +14,7 @@
 #include "SSRate.pb.h"
 #include "InterestRate.pb.h"
 #include "Volatility.pb.h"
+#include "Destriker.pb.h"
 #include "Pricer.pb.h"
 #include "Strategy.pb.h"
 
@@ -80,6 +81,7 @@ int main(int argc, char *argv[])
   auto *interest_rate = new Proto::InterestRateReq();
   auto *ssrate = new Proto::SSRateReq();
   auto *volatility = new Proto::VolatilityCurveReq();
+  auto *destriker = new Proto::DestrikerReq();
   auto *pricer = new Proto::PricerReq();
   auto *strategy = new Proto::StrategyStatus();
 
@@ -126,6 +128,7 @@ int main(int argc, char *argv[])
   delete ssrate;
   delete interest_rate;
   delete volatility;
+  delete destriker;
   delete pricer;
   delete strategy;
   return 0;

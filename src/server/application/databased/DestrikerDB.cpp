@@ -49,7 +49,8 @@ base::ProtoMessagePtr DestrikerDB::OnRequest(const std::shared_ptr<Proto::Destri
     TransactionGuard tg(this);
     for (auto &d : msg->destrikers())
     {
-      sprintf(sql, "INSERT OR REPLACE INTO %s VALUES('%s', %f)", d.instrument(), d.destriker());
+      sprintf(sql, "INSERT OR REPLACE INTO %s VALUES('%s', %f)",
+          table_name_.c_str(), d.instrument().c_str(), d.destriker());
       ExecSql(sql);
       cache_[d.instrument()] = d.destriker();
     }

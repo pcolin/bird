@@ -193,6 +193,8 @@ void Middleware::RunResponder()
   dispatcher.RegisterCallback<Proto::VolatilityCurveReq>(std::bind(
         &ParameterManager::OnVolatilityCurveReq, ParameterManager::GetInstance(),
         std::placeholders::_1));
+  dispatcher.RegisterCallback<Proto::DestrikerReq>(std::bind(
+        &ParameterManager::OnDestrikerReq, ParameterManager::GetInstance(), std::placeholders::_1));
   dispatcher.RegisterCallback<Proto::PriceReq>(std::bind(
         &ClusterManager::OnPriceReq, ClusterManager::GetInstance(), std::placeholders::_1));
   dispatcher.RegisterCallback<Proto::PricerReq>(std::bind(

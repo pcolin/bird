@@ -602,8 +602,10 @@ void CtpTraderSpi::OnRtnInstrumentStatus(CThostFtdcInstrumentStatusField *pInstr
         Proto::InstrumentStatus_Name(inst->Status()) % Proto::InstrumentStatus_Name(status);
       Instrument *instrument = const_cast<Instrument*>(inst);
       instrument->Status(status);
-      req->add_instruments()->set_id(inst->Id());
-      req->add_instruments()->set_status(status);
+      auto *tmp = req->add_instruments();
+      assert(tmp);
+      tmp->set_id(inst->Id());
+      tmp->set_status(status);
     }
     ClusterManager::GetInstance()->OnInstrumentReq(req);
   }
