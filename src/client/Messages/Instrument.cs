@@ -42,14 +42,14 @@ namespace Proto {
             "ZXIYBCABKAkiVQoNSW5zdHJ1bWVudFJlcBImCgtpbnN0cnVtZW50cxgBIAMo",
             "CzIRLlByb3RvLkluc3RydW1lbnQSHAoGcmVzdWx0GAIgASgLMgwuUHJvdG8u",
             "UmVwbHkqMwoOSW5zdHJ1bWVudFR5cGUSCQoFU3RvY2sQABIKCgZGdXR1cmUQ",
-            "ARIKCgZPcHRpb24QAiqNAQoQSW5zdHJ1bWVudFN0YXR1cxIKCgZVbmtvd24Q",
-            "ABIKCgZDbG9zZWQQARILCgdQcmVPcGVuEAISEgoOT3BlbmluZ0F1Y3Rpb24Q",
-            "AxILCgdUcmFkaW5nEAQSCAoERnVzZRAFEgsKB0F1Y3Rpb24QBhISCg5DbG9z",
-            "aW5nQXVjdGlvbhAHEggKBEhhbHQQCCofCgpPcHRpb25UeXBlEggKBENhbGwQ",
-            "ABIHCgNQdXQQASoqCgxFeGVyY2lzZVR5cGUSDAoIRXVyb3BlYW4QABIMCghB",
-            "bWVyaWNhbhABKjwKDlNldHRsZW1lbnRUeXBlEhIKDkNhc2hTZXR0bGVtZW50",
-            "EAASFgoSUGh5c2ljYWxTZXR0bGVtZW50EAEqLwoOUm91bmREaXJlY3Rpb24S",
-            "CwoHTmVhcmVzdBAAEgYKAlVwEAESCAoERG93bhACYgZwcm90bzM="));
+            "ARIKCgZPcHRpb24QAiqOAQoQSW5zdHJ1bWVudFN0YXR1cxILCgdVbmtub3du",
+            "EAASCgoGQ2xvc2VkEAESCwoHUHJlT3BlbhACEhIKDk9wZW5pbmdBdWN0aW9u",
+            "EAMSCwoHVHJhZGluZxAEEggKBEZ1c2UQBRILCgdBdWN0aW9uEAYSEgoOQ2xv",
+            "c2luZ0F1Y3Rpb24QBxIICgRIYWx0EAgqHwoKT3B0aW9uVHlwZRIICgRDYWxs",
+            "EAASBwoDUHV0EAEqKgoMRXhlcmNpc2VUeXBlEgwKCEV1cm9wZWFuEAASDAoI",
+            "QW1lcmljYW4QASo8Cg5TZXR0bGVtZW50VHlwZRISCg5DYXNoU2V0dGxlbWVu",
+            "dBAAEhYKElBoeXNpY2FsU2V0dGxlbWVudBABKi8KDlJvdW5kRGlyZWN0aW9u",
+            "EgsKB05lYXJlc3QQABIGCgJVcBABEggKBERvd24QAmIGcHJvdG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Proto.ExchangeReflection.Descriptor, global::Proto.RequestReflection.Descriptor, global::Proto.ReplyReflection.Descriptor, global::Proto.CurrencyReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Proto.InstrumentType), typeof(global::Proto.InstrumentStatus), typeof(global::Proto.OptionType), typeof(global::Proto.ExerciseType), typeof(global::Proto.SettlementType), typeof(global::Proto.RoundDirection), }, new pbr::GeneratedClrTypeInfo[] {
@@ -69,7 +69,7 @@ namespace Proto {
   }
 
   public enum InstrumentStatus {
-    [pbr::OriginalName("Unkown")] Unkown = 0,
+    [pbr::OriginalName("Unknown")] Unknown = 0,
     [pbr::OriginalName("Closed")] Closed = 1,
     [pbr::OriginalName("PreOpen")] PreOpen = 2,
     [pbr::OriginalName("OpeningAuction")] OpeningAuction = 3,

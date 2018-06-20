@@ -50,7 +50,6 @@ namespace client.Views
                     {
                         var viewModel = new OptionUserControlViewModel(vm.Exchange, underlying, manager, vm.Container);
                         OptionUserControl control = new OptionUserControl(viewModel);
-                        //control.DataContext = viewModel;
                         viewModels[underlying] = viewModel;
                         TabItem item = new TabItem() { Header = underlying.Id, Content = control };
                         this.OptionTabControl.Items.Add(item);

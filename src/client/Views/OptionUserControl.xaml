@@ -11,6 +11,7 @@
         <Grid.Resources>
             <local:DoubleToStringMultiConverter DefaultFormat="N2" x:Key="DoubleFormatConverter" />
             <local:PercentDoubleToStringMultiConverter DefaultFormat="N2" x:Key="PercentDoubleFormatConverter" />
+            <local:PermilageDoubleToStringMultiConverter DefaultFormat="N0" x:Key="PermilageDoubleFormatConverter" />
             <!--Style TargetType="DataGridColumnHeader">
                 <Setter Property="HorizontalContentAlignment" Value="Center" />
             </Style-->
@@ -161,6 +162,7 @@
                 <local:BoolToColorConverter x:Key="BidObligationColorConverter" TrueValueBrush="LightPink" FalseValueBrush="Yellow" />
                 <local:BoolToColorConverter x:Key="AskObligationColorConverter" TrueValueBrush="LightGreen" FalseValueBrush="Yellow" />
                 <local:BoolToColorConverter x:Key="AtmOptionColorConverter" TrueValueBrush="GreenYellow" FalseValueBrush="{x:Null}" />
+                <local:TheoCrossColorConverter x:Key="TheoCrossColorConverter" />
                 <local:PositionColorConverter x:Key="PositionConverter" />
                 <Style TargetType="{x:Type DataGridRow}">
                     <Setter Property="BorderThickness" Value="{Binding IsFirst, Converter={StaticResource BorderThicknessConverter}}" />
@@ -437,15 +439,28 @@
                         </Style>
                     </DataGridTextColumn.CellStyle>
                 </DataGridTextColumn>
-                <DataGridTextColumn x:Name="TheoC" Header="Theo" >
-                    <DataGridTextColumn.Binding>
-                        <MultiBinding Converter="{StaticResource DoubleFormatConverter}">
-                            <Binding Path="Call.Theo" />
-                            <Binding Path="Column.DisplayIndex" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGridCell}}" />
-                            <Binding Path="OptionFormats" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
-                        </MultiBinding>
-                    </DataGridTextColumn.Binding>
-                </DataGridTextColumn>
+                <DataGridTemplateColumn x:Name="TheoC" Header="Theo" >
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock>
+                                <TextBlock.Foreground>
+                                    <MultiBinding Converter="{StaticResource TheoCrossColorConverter}" UpdateSourceTrigger="PropertyChanged">
+                                        <Binding Path="Call.Theo" />
+                                        <Binding Path="Call.MarketBidPrice" />
+                                        <Binding Path="Call.MarketAskPrice" />
+                                    </MultiBinding>
+                                </TextBlock.Foreground>
+                                <TextBlock.Text>
+                                    <MultiBinding Converter="{StaticResource DoubleFormatConverter}">
+                                        <Binding Path="Call.Theo" />
+                                        <Binding Path="Column.DisplayIndex" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGridCell}}" />
+                                        <Binding Path="OptionFormats" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
+                                    </MultiBinding>
+                                </TextBlock.Text>
+                            </TextBlock>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
                 <DataGridTextColumn x:Name="MarketAskPriceC" Header="A$">
                     <DataGridTextColumn.Binding>
                         <MultiBinding Converter="{StaticResource DoubleFormatConverter}">
@@ -528,7 +543,15 @@
                     </DataGridTextColumn.Binding>                    
                 </DataGridTextColumn>
                 <DataGridTextColumn x:Name="ChgPosC" Header="ChgPos" Binding="{Binding Call.ChangedPosition}" />
-                <DataGridTextColumn x:Name="DestrikerC" Header="Destriker" Binding="{Binding Call.Destriker}" />
+                <DataGridTextColumn x:Name="DestrikerC" Header="Destriker(‰)">
+                    <DataGridTextColumn.Binding>
+                        <MultiBinding Converter="{StaticResource PermilageDoubleFormatConverter}">
+                            <Binding Path="Call.Destriker" />
+                            <Binding Path="Column.DisplayIndex" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGridCell}}" />
+                            <Binding Path="OptionFormats" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
+                        </MultiBinding>
+                    </DataGridTextColumn.Binding>
+                </DataGridTextColumn>
                 <DataGridTextColumn x:Name="DeltaC" Header="Delta" ElementStyle="{StaticResource GreeksBackgroundStyle}">
                     <DataGridTextColumn.Binding>
                         <MultiBinding Converter="{StaticResource DoubleFormatConverter}">
@@ -709,7 +732,15 @@
                         </MultiBinding>
                     </DataGridTextColumn.Binding>
                 </DataGridTextColumn>
-                <DataGridTextColumn x:Name="DestrikerP" Header="Destriker" Binding="{Binding Put.Destriker}" />
+                <DataGridTextColumn x:Name="DestrikerP" Header="Destriker(‰)">
+                    <DataGridTextColumn.Binding>
+                        <MultiBinding Converter="{StaticResource PermilageDoubleFormatConverter}">
+                            <Binding Path="Put.Destriker" />
+                            <Binding Path="Column.DisplayIndex" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGridCell}}" />
+                            <Binding Path="OptionFormats" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
+                        </MultiBinding>
+                    </DataGridTextColumn.Binding>
+                </DataGridTextColumn>
                 <DataGridTemplateColumn x:Name="PosP" Header="Pos">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
@@ -792,15 +823,28 @@
                         </Style>
                     </DataGridTextColumn.CellStyle>
                 </DataGridTextColumn>
-                <DataGridTextColumn x:Name="TheoP" Header="Theo">
-                    <DataGridTextColumn.Binding>
-                        <MultiBinding Converter="{StaticResource DoubleFormatConverter}">
-                            <Binding Path="Put.Theo" />
-                            <Binding Path="Column.DisplayIndex" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGridCell}}" />
-                            <Binding Path="OptionFormats" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
-                        </MultiBinding>
-                    </DataGridTextColumn.Binding>
-                </DataGridTextColumn>
+                <DataGridTemplateColumn x:Name="TheoP" Header="Theo" >
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock>
+                                <TextBlock.Foreground>
+                                    <MultiBinding Converter="{StaticResource TheoCrossColorConverter}" UpdateSourceTrigger="PropertyChanged">
+                                        <Binding Path="Put.Theo" />
+                                        <Binding Path="Put.MarketBidPrice" />
+                                        <Binding Path="Put.MarketAskPrice" />
+                                    </MultiBinding>
+                                </TextBlock.Foreground>
+                                <TextBlock.Text>
+                                    <MultiBinding Converter="{StaticResource DoubleFormatConverter}">
+                                        <Binding Path="Put.Theo" />
+                                        <Binding Path="Column.DisplayIndex" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGridCell}}" />
+                                        <Binding Path="OptionFormats" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
+                                    </MultiBinding>
+                                </TextBlock.Text>
+                            </TextBlock>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
                 <DataGridTextColumn x:Name="MarketAskPriceP" Header="A$">
                     <DataGridTextColumn.Binding>
                         <MultiBinding Converter="{StaticResource DoubleFormatConverter}">

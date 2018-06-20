@@ -33,6 +33,7 @@ namespace client.Models
             ok = ok && QueryInterestRates();
             ok = ok && QuerySSRates();
             ok = ok && QueryVolatilityCurves();
+            ok = ok && QueryDestrikers();
             ok = ok && QueryPricers();
             return ok;
         }
@@ -83,7 +84,7 @@ namespace client.Models
                 if (rep.Result.Result)
                 {
                     PositionManager positions = new PositionManager();
-                    positions.Add(rep.Positions);
+                    positions.OnProtoMessage(rep);
                     this.container.RegisterInstance<PositionManager>(exchange.ToString(), positions);
                     return true;
                 }
@@ -184,6 +185,32 @@ namespace client.Models
                         manager.OnProtoMessage(rep);
                     }
                     this.container.RegisterInstance<VolatilityCurveManager>(exchange.ToString(), manager);
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private bool QueryDestrikers()
+        {
+            Proto.DestrikerReq req = new Proto.DestrikerReq();
+            req.Type = Proto.RequestType.Get;
+            req.User = user;
+            byte[] bytes = ProtoMessageCoder.Encode(req);
+            socket.Send(bytes);
+
+            bytes = socket.Receive();
+            if (bytes != null)
+            {
+                var rep = ProtoMessageCoder.Decode<Proto.DestrikerRep>(bytes);
+                if (rep.Result.Result)
+                {
+                    DestrikerManager manager = new DestrikerManager();
+                    if (rep.Destrikers.Count > 0)
+                    {
+                        manager.OnProtoMessage(rep);
+                    }
+                    this.container.RegisterInstance<DestrikerManager>(exchange.ToString(), manager);
                     return true;
                 }
             }

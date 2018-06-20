@@ -1,12 +1,14 @@
 ﻿<Window
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d" x:Class="client.Views.InputBoxWindow"
-        Icon="/Images/bird_32x32.ico"        
-        ResizeMode="NoResize"
-        WindowStartupLocation="CenterOwner"
-        Width="280" Height="120">
-    <Grid>
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d" x:Class="client.Views.InputBoxWindow"
+    Icon="/Images/bird_32x32.ico"        
+    ResizeMode="NoResize"
+    WindowStartupLocation="CenterOwner"
+    Width="280" Height="120">
+    <Grid FocusManager.FocusedElement="{Binding ElementName=TextBoxInput}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
@@ -17,8 +19,8 @@
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
         <TextBlock x:Name="TextBlockName" Margin="5, 10, 5, 10" VerticalAlignment="Center"><Run Text="New volatility:"/></TextBlock>
-        <TextBox x:Name="TextBoxInput" Margin="5, 10, 5, 10" MaxWidth="150" Grid.Column="1" Grid.ColumnSpan="2"/>
-        <Button x:Name="ButtonOK" Margin="5, 10, 5, 10" Width="60" Grid.Row="1" Grid.Column="1" IsDefault="True" Click="ButtonOK_Click" Content="OK"/>
-        <Button x:Name="ButtonCancel" Margin="5, 10, 5, 10" Width="60" Grid.Row="1" Grid.Column="2" IsCancel="False" Click="ButtonCancel_Click" Content="Cancel"/>
+        <TextBox x:Name="TextBoxInput" TabIndex="0" Margin="5, 10, 5, 10" MaxWidth="150" Grid.Column="1" Grid.ColumnSpan="2"/>
+        <Button x:Name="ButtonOK" TabIndex="1" Margin="5, 10, 5, 10" Width="60" Grid.Row="1" Grid.Column="1" IsDefault="True" Click="ButtonOK_Click" Content="OK"/>
+        <Button x:Name="ButtonCancel" TabIndex="2" Margin="5, 10, 5, 10" Width="60" Grid.Row="1" Grid.Column="2" IsCancel="False" Click="ButtonCancel_Click" Content="Cancel"/>
     </Grid>
 </Window>

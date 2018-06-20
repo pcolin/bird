@@ -103,6 +103,8 @@
                 </DataGrid.RowHeaderTemplate>
                 <DataGrid.ContextMenu>
                     <ContextMenu>
+                        <MenuItem Header="Set SpotRef" Command="{Binding SetSpotRefCommand}" />
+                        <Separator></Separator>
                         <MenuItem Header="Setting..." Click="MenuItem_Click" />
                     </ContextMenu>
                 </DataGrid.ContextMenu>

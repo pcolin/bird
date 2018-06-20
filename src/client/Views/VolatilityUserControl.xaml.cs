@@ -94,29 +94,41 @@ namespace client.Views
             var options = pm.GetOptionsByHedgeUnderlying(item.Underlying, item.Maturity);
             var calculator = vm.Container.Resolve<TheoCalculator>(vm.Exchange.ToString());
 
-            var strikers = new List<double>();
+            var strikes = new List<double>();
             var oldIV = new List<double>();
             var newIV = new List<double>();
+            var callBidStrikes = new List<double>();
             var callBidIV = new List<double>();
+            var callAskStrikes = new List<double>();
             var callAskIV = new List<double>();
+            var putBidStrikes = new List<double>();
             var putBidIV = new List<double>();
+            var putAskStrikes = new List<double>();
             var putAskIV = new List<double>();
             foreach (var op in options)
             {
                 if (op.OptionType == Proto.OptionType.Call)
                 {
-                    strikers.Add(op.Strike);
+                    strikes.Add(op.Strike);
                     ImpliedVolatilityData iv = calculator.GetIV(op);
                     if (iv != null)
                     {
-                        callBidIV.Add(iv.BidIV * 100);
-                        callAskIV.Add(iv.AskIV * 100);
+                        if (iv.BidIV > 0.01)
+                        {
+                            callBidStrikes.Add(op.Strike);
+                            callBidIV.Add(iv.BidIV * 100);
+                        }
+                        if (iv.AskIV > 0.01)
+                        {
+                            callAskStrikes.Add(op.Strike);
+                            callAskIV.Add(iv.AskIV * 100);
+                        }
                     }
-                    else
-                    {
-                        callBidIV.Add(0);
-                        callAskIV.Add(0);
-                    }
+                    //else
+                    //{
+                    //    callBidIV.Add(0);
+                    //    callAskIV.Add(0);
+                    //}
                     
                     GreeksData greeks = calculator.GetGreeks(op);
                     oldIV.Add((greeks != null) ? greeks.Greeks.vol * 100 : 0);
@@ -131,33 +143,41 @@ namespace client.Views
                     ImpliedVolatilityData iv = calculator.GetIV(op);
                     if (iv != null)
                     {
-                        putBidIV.Add(iv.BidIV * 100);
-                        putAskIV.Add(iv.AskIV * 100);
+                        if (iv.BidIV > 0.01)
+                        {
+                            putBidStrikes.Add(op.Strike);
+                            putBidIV.Add(iv.BidIV * 100);
+                        }
+                        if (iv.AskIV > 0.01)
+                        {
+                            putAskStrikes.Add(op.Strike);
+                            putAskIV.Add(iv.AskIV * 100);
+                        }
                     }
-                    else
-                    {
-                        putBidIV.Add(0);
-                        putAskIV.Add(0);
-                    }
+                    //else
+                    //{
+                    //    putBidIV.Add(0);
+                    //    putAskIV.Add(0);
+                    //}
                 }
             }
+            
+            this.CallBidIVGraph.Plot(callBidStrikes, callBidIV);
+            this.CallAskIVGraph.Plot(callAskStrikes, callAskIV);
+            this.PutBidIVGraph.Plot(putBidStrikes, putBidIV);
+            this.PutAskIVGraph.Plot(putAskStrikes, putAskIV);
 
-            this.CallBidIVGraph.Plot(strikers, callBidIV);
-            this.CallAskIVGraph.Plot(strikers, callAskIV);
-            this.PutBidIVGraph.Plot(strikers, putBidIV);
-            this.PutAskIVGraph.Plot(strikers, putAskIV);
-
-            this.OldVolGraph.Plot(strikers, oldIV);
+            this.OldVolGraph.Plot(strikes, oldIV);
             if (item.Modified)
             {
                 this.NewVolGraph.Visibility = System.Windows.Visibility.Visible;
-                this.NewVolGraph.Plot(strikers, newIV);
-                this.VolGraph.Plot(strikers, newIV);
+                this.NewVolGraph.Plot(strikes, newIV);
+                this.VolGraph.Plot(strikes, newIV);
             }
             else
             {
                 this.NewVolGraph.Visibility = System.Windows.Visibility.Collapsed;
-                this.VolGraph.Plot(strikers, oldIV);
+                this.VolGraph.Plot(strikes, oldIV);
             }
         }
 
@@ -182,8 +202,7 @@ namespace client.Views
 
         private void MenuItem_Click(object sender, RoutedEventArgs e)
         {
-            ColumnSettingWindow setting = new ColumnSettingWindow(this.VolatilityDataGrid, this.Formats);
-            setting.Show();
+            ColumnSettingWindow.ShowColumnSettingWindow(this, this.VolatilityDataGrid, this.Formats);
             this.volDoubleUpDown.FormatString = this.Formats[this.AtmVolColumn.DisplayIndex];
         }
 
@@ -310,21 +329,28 @@ namespace client.Views
     {
         public object Convert(object[] values, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
-            double spot = (double)values[0];
-            double ssrate = (double)values[1];
-
-            Dictionary<int, string> formats = values[3] as Dictionary<int, string>;
-            if (formats != null)
+            if (values[0] is double && values[1] is double)
             {
-                int index = (int)values[2];
-                string format = null;
-                if (formats.TryGetValue(index, out format))
+                double spot = (double)values[0];
+                double ssrate = (double)values[1];
+
+                if (double.IsNaN(spot) == false && double.IsNaN(ssrate) == false)
                 {
-                    return (spot + ssrate).ToString(format);
+                    Dictionary<int, string> formats = values[3] as Dictionary<int, string>;
+                    if (formats != null)
+                    {
+                        int index = (int)values[2];
+                        string format = null;
+                        if (formats.TryGetValue(index, out format))
+                        {
+                            return (spot + ssrate).ToString(format);
+                        }
+                    }
+
+                    return (spot + ssrate).ToString("N2");
                 }
             }
-
-            return (spot + ssrate).ToString("N2");
+            return null;
         }
 
         public object[] ConvertBack(object value, Type[] targetTypes, object parameter, System.Globalization.CultureInfo culture)

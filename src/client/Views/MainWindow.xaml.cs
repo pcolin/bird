@@ -437,8 +437,7 @@ namespace client.Views
             Dictionary<int, string> formats = new Dictionary<int, string>();
             formats[0] = "F2";
 
-            ColumnSettingWindow w = new ColumnSettingWindow(dg, formats);
-            w.Show();
+            ColumnSettingWindow.ShowColumnSettingWindow(this, dg, formats);
         }
 
         private void ExchangesMenuItem_Click(object sender, RoutedEventArgs e)

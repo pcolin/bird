@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="clr-namespace:client.Views"
         Title="Setting" Height="300" Width="300"
+        WindowStartupLocation="CenterOwner"
         Icon="/Images/bird_32x32.ico"
         Loaded="Window_Loaded">
     <Window.Resources>
@@ -49,11 +50,11 @@
                     <DataGridComboBoxColumn.ItemsSource>
                         <Int32Collection>0,1,2,3,4,5</Int32Collection>
                     </DataGridComboBoxColumn.ItemsSource>
-                    <DataGridComboBoxColumn.CellStyle>
+                    <!--<DataGridComboBoxColumn.CellStyle>
                         <Style TargetType="DataGridCell">
                             <Setter Property="IsEnabled" Value="{Binding IsDecimal}" />
                         </Style>
-                    </DataGridComboBoxColumn.CellStyle>
+                    </DataGridComboBoxColumn.CellStyle>-->
                 </DataGridComboBoxColumn>
             </DataGrid.Columns>
         </DataGrid>

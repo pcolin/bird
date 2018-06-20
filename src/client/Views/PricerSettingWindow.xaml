@@ -17,7 +17,7 @@
                 <x:Type TypeName="proto:UnderlyingTheoType" />
             </ObjectDataProvider.MethodParameters>
         </ObjectDataProvider>
-        <local:PricerItemConverter x:Key="PricerItemConverter" />
+        <local:UnderlyingToPricerNameConverter x:Key="UnderlyingToPricerNameConverter" />
     </Window.Resources>
     <Grid Margin="5">
         <Grid.RowDefinitions>
@@ -38,7 +38,7 @@
             <ColumnDefinition></ColumnDefinition>
         </Grid.ColumnDefinitions>
         <TextBlock Margin="5" VerticalAlignment="Center">Name:</TextBlock>
-        <TextBox Name="NameTextBox" Grid.Column="1" Margin="5" />
+        <TextBox Name="NameTextBox" Grid.Column="1" Margin="5" Text="{Binding Path=SelectedItem, ElementName=UnderlyingComboBox, Converter={StaticResource UnderlyingToPricerNameConverter}}" />
         <TextBlock Grid.Row="1" Margin="5" VerticalAlignment="Center">Underlying:</TextBlock>
         <ComboBox Name="UnderlyingComboBox" Grid.Row="1" Grid.Column="1" Margin="5" DisplayMemberPath="Id" />
         <CheckBox Name="OptionsCheckBox" Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" Margin="5" IsChecked="True" VerticalAlignment="Center" >Select All Options</CheckBox>

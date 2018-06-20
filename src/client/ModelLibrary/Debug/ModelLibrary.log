@@ -1,12 +1,15 @@
-﻿Build started 2018/6/11 8:58:21.
-     1>Project "D:\Workspace\src\bird\src\client\ModelLibrary\ModelLibrary.vcxproj" on node 3 (Build target(s)).
+﻿Build started 2018/6/20 15:57:51.
+     1>Project "D:\Workspace\src\bird\src\client\ModelLibrary\ModelLibrary.vcxproj" on node 2 (Rebuild target(s)).
      1>ClCompile:
-         D:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /AI"C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.6.1\\" /AI"C:\Program Files (x86)\Windows Kits\8.1\References\CommonConfiguration\Neutral" /AI"C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.6.1\Facades\\" /Zi /clr /nologo /W3 /WX- /Od /Oy- /D WIN32 /D _DEBUG /D _WINDLL /D _UNICODE /D UNICODE /EHa /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc120.pdb" /TP /FU"C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.6.1\mscorlib.dll" /analyze- /errorReport:prompt /clr:nostdlib ..\..\share\model\BlackScholesMertonModel.cpp ..\..\share\model\CoxRossRubinsteinModel.cpp ..\..\share\model\PricingModel.cpp ModelLibrary.cpp
+         D:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /AI"C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.6.1\\" /AI"C:\Program Files (x86)\Windows Kits\8.1\References\CommonConfiguration\Neutral" /AI"C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.6.1\Facades\\" /Zi /clr /nologo /W3 /WX- /Od /Oy- /D WIN32 /D _DEBUG /D _WINDLL /D _UNICODE /D UNICODE /EHa /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc120.pdb" /TP /FU"C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.6.1\mscorlib.dll" /analyze- /errorReport:prompt /clr:nostdlib ..\..\share\model\BlackScholesMertonModel.cpp ..\..\share\model\CoxRossRubinsteinModel.cpp ..\..\share\model\PricingModel.cpp ..\..\share\model\VolatilityModel.cpp ModelLibrary.cpp
          BlackScholesMertonModel.cpp
          CoxRossRubinsteinModel.cpp
          PricingModel.cpp
+         VolatilityModel.cpp
          ModelLibrary.cpp
          Generating Code...
+         D:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /Zi /clr /nologo /W3 /WX- /Od /Oy- /D WIN32 /D _DEBUG /D _WINDLL /D _UNICODE /D UNICODE /EHa /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc120.pdb" /TP /analyze- /errorReport:prompt "C:\Users\omen\AppData\Local\Temp\.NETFramework,Version=v4.6.1.AssemblyAttributes.cpp"
+         .NETFramework,Version=v4.6.1.AssemblyAttributes.cpp
        Link:
          D:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"D:\Workspace\src\bird\src\client\Debug\ModelLibrary.dll" /INCREMENTAL /NOLOGO /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"D:\Workspace\src\bird\src\client\Debug\ModelLibrary.pdb" /ASSEMBLYDEBUG /TLBID:1 /DYNAMICBASE /FIXED:NO /NXCOMPAT /MACHINE:X86 /DLL Debug\BlackScholesMertonModel.obj
          Debug\CoxRossRubinsteinModel.obj
@@ -15,8 +18,8 @@
          Debug\ModelLibrary.obj
          "Debug\.NETFramework,Version=v4.6.1.AssemblyAttributes.obj"
          ModelLibrary.vcxproj -> D:\Workspace\src\bird\src\client\Debug\ModelLibrary.dll
-     1>Done Building Project "D:\Workspace\src\bird\src\client\ModelLibrary\ModelLibrary.vcxproj" (Build target(s)).
+     1>Done Building Project "D:\Workspace\src\bird\src\client\ModelLibrary\ModelLibrary.vcxproj" (Rebuild target(s)).
 
 Build succeeded.
 
-Time Elapsed 00:00:02.29
+Time Elapsed 00:00:08.82

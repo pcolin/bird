@@ -68,7 +68,6 @@ namespace client.ViewModels
             }
         }
 
-
         private Instrument hedgeUnderlying;
         public Instrument HedgeUnderlying
         {
@@ -83,7 +82,7 @@ namespace client.ViewModels
             }
         }
 
-        private Dictionary<string, UnderlyingItem> underlyingItems;
+        private Dictionary<Instrument, UnderlyingItem> underlyingItems;
         private ICollectionView underlyings;
         public ICollectionView Underlyings
         {
@@ -101,17 +100,21 @@ namespace client.ViewModels
 
         public OptionUserControlViewModel(Proto.Exchange exchange, Instrument hedgeUnderlying, ProductManager products, IUnityContainer container)
         {
-            productManager = container.Resolve<ProductManager>(exchange.ToString());
+            this.container = container;
+            this.exchange = exchange;
+            //productManager = container.Resolve<ProductManager>(exchange.ToString());
             ssrateManager = container.Resolve<SSRateManager>(exchange.ToString());
+            serverService = container.Resolve<ServerService>(exchange.ToString());
             var positions = container.Resolve<PositionManager>(exchange.ToString());
+            var dm = container.Resolve<DestrikerManager>(exchange.ToString());
 
             List<UnderlyingItem> items = new List<UnderlyingItem>();
-            underlyingItems = new Dictionary<string, UnderlyingItem>();
+            underlyingItems = new Dictionary<Instrument, UnderlyingItem>();
             var underlyings = products.GetUnderlyings(hedgeUnderlying);
             underlyings.Sort((x, y) => x.Symbol.CompareTo(y.Symbol));
             foreach (var inst in underlyings)
             {                
-                var item = new UnderlyingItem() { Underlying = inst, Position = positions.GetPosition(inst.Id)};
+                var item = new UnderlyingItem() { Underlying = inst, Status = inst.Status, Position = positions.GetPosition(inst.Id)};
                 if (inst.Underlying == hedgeUnderlying)
                 {
                     this.HedgeUnderlying = inst;
@@ -128,7 +131,7 @@ namespace client.ViewModels
                     item.Maturity = opts[0].Maturity;
                 }
 
-                underlyingItems[inst.Id] = item;
+                underlyingItems[inst] = item;
             }
             this.underlyings = new ListCollectionView(items);
 
@@ -155,7 +158,12 @@ namespace client.ViewModels
                                 ++groupNo;
                                 isFirst = true;
                             }
-                            var callItem = new OptionItem() { Option = call };
+                            var callItem = new OptionItem()
+                                {
+                                    Option = call,
+                                    Status = call.Status,
+                                    Destriker = dm.GetDestriker(call.Id),
+                                };
                             Proto.Position p = null;
                             if (positions.GetPosition(call.Id, out p))
                             {
@@ -165,7 +173,12 @@ namespace client.ViewModels
                                 callItem.AvailableLongPosition = p.LiquidLong;
                                 callItem.AvailableShortPosition = p.LiquidShort;
                             }
-                            var putItem = new OptionItem() { Option = inst };
+                            var putItem = new OptionItem()
+                                {
+                                    Option = inst,
+                                    Status = call.Status,
+                                    Destriker = dm.GetDestriker(inst.Id),
+                                };
                             if (positions.GetPosition(inst.Id, out p))
                             {
                                 putItem.Position = p.TotalLong - p.TotalShort;
@@ -237,23 +250,32 @@ namespace client.ViewModels
         //    }
         //}
 
-        public void RefreshInstrumentStatus(Instrument inst, Proto.InstrumentStatus status)
+        public void RefreshInstrumentStatus(Instrument inst)
         {
             if (inst.Type == Proto.InstrumentType.Option)
             {
                 OptionItem item = null;
                 if (this.optionItems.TryGetValue(inst as Option, out item))
                 {
-                    item.Status = status;
+                    item.Status = inst.Status;
                 }
             }
             else
             {
                 UnderlyingItem item = null;
-                if (this.underlyingItems.TryGetValue(inst.Id, out item))
+                if (this.underlyingItems.TryGetValue(inst, out item))
                 {
-                    item.Status = status;
+                    item.Status = inst.Status;
                 }
+            }
+        }
+
+        public void RefreshDestriker(Option option, double destriker)
+        {
+            OptionItem item = null;
+            if (this.optionItems.TryGetValue(option, out item))
+            {
+                item.Destriker = destriker;
             }
         }
 
@@ -329,7 +351,7 @@ namespace client.ViewModels
                     }
                 }
                 UnderlyingItem item = null;
-                if (this.underlyingItems.TryGetValue(inst.Id, out item))
+                if (this.underlyingItems.TryGetValue(inst, out item))
                 {
                     if (price.Bids.Count > 0)
                     {
@@ -350,7 +372,7 @@ namespace client.ViewModels
             else
             {
                 UnderlyingItem item = null;
-                if (this.underlyingItems.TryGetValue(inst.Id, out item))
+                if (this.underlyingItems.TryGetValue(inst, out item))
                 {
                     if (price.Bids.Count > 0)
                     {
@@ -400,6 +422,17 @@ namespace client.ViewModels
                 item.ImpliedVol = data.LastIV;
                 item.BidVol = data.BidIV;
                 item.AskVol = data.AskIV;
+            }
+        }
+
+        public void SetDestrikers(Proto.DestrikerReq req)
+        {
+            if (req.Destrikers.Count > 0)
+            {
+                req.Type = Proto.RequestType.Set;
+                req.Exchange = this.exchange;
+                req.User = serverService.User;
+                serverService.Request(req);
             }
         }
 
@@ -543,8 +576,11 @@ namespace client.ViewModels
             item.Put.EnquiryResponseOn = !item.Put.EnquiryResponseOn;
         }
 
-        private ProductManager productManager;
+        //private ProductManager productManager;
+        private IUnityContainer container;
+        private Proto.Exchange exchange;
         private SSRateManager ssrateManager;
+        private ServerService serverService;
     }
 
     class UnderlyingItem : BindableBase
@@ -601,7 +637,7 @@ namespace client.ViewModels
             set { SetProperty(ref lastPrice, value); }
         }
 
-        private int lastVolume = 123456789;
+        private int lastVolume;
         public int LastVolume
         {
             get { return lastVolume; }
@@ -662,14 +698,7 @@ namespace client.ViewModels
         {
             get { return quoterCredit; }
             set { SetProperty(ref quoterCredit, value); }
-        }
-
-        //private string quoterCreditFormat;
-        //public string QuoterCreditFormat
-        //{
-        //    get { return quoterCreditFormat; }
-        //    set { SetProperty(ref quoterCreditFormat, value); }
-        //}        
+        }        
 
         private double hitterCredit = double.NaN;
         public double HitterCredit

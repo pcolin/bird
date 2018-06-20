@@ -19,6 +19,7 @@ namespace client.ViewModels
 {
     public class VolatilityUserControlViewModel : BindableBase
     {
+        public ICommand SetSpotRefCommand { get; set; }
         public ICommand SetSsrCommand { get; set; }
         public ICommand SetVolCommand { get; set; }
         public ICommand RefreshCommand { get; set; }
@@ -62,6 +63,7 @@ namespace client.ViewModels
             if (productManager != null)
             {
                 RefreshCommand = new DelegateCommand(this.Refresh);
+                SetSpotRefCommand = new DelegateCommand(this.SetSpotRefExecute);
                 SetSsrCommand = new DelegateCommand(this.SetSsrExecute, this.CanSetSsrExecute);
                 SetVolCommand = new DelegateCommand(this.SetVolExecute, this.CanSetVolExecute);
 
@@ -182,6 +184,15 @@ namespace client.ViewModels
             }
         }
 
+        private void SetSpotRefExecute()
+        {
+            var item = this.Volatilities.ElementAt(this.SelectedVolatility);
+            if (item != null && double.IsNaN(item.Spot) == false && double.IsNaN(item.SSRate) == false)
+            {
+                item.SpotRef = item.Spot + item.SSRate;
+            }
+        }
+
         private void SetSsrExecute()
         {
             var req = new Proto.SSRateReq();
@@ -232,6 +243,8 @@ namespace client.ViewModels
                     curve.PutConvex = item.PutConvex;
                     curve.CallSlope = item.CallSlope;
                     curve.PutSlope = item.PutSlope;
+                    curve.CallCutoff = item.CallCutoff;
+                    curve.PutCutoff = item.PutCutoff;
                     curve.Vcr = item.VCR;
                     curve.Scr = item.SCR;
                     curve.Ccr = item.CCR;

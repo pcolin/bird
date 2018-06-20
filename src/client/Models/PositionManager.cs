@@ -8,13 +8,44 @@ namespace client.Models
 {
     class PositionManager
     {
-        public void Add(IList<Proto.Position> positions)
+        //public void Add(IList<Proto.Position> positions)
+        //{
+        //    lock (this.positions)
+        //    {
+        //        foreach (var p in positions)
+        //        {
+        //            this.positions[p.Instrument] = p;
+        //        }
+        //    }
+        //}
+        public void OnProtoMessage(Proto.PositionRep rep)
         {
             lock (this.positions)
             {
-                foreach (var p in positions)
+                foreach (var p in rep.Positions)
                 {
-                    this.positions[p.Instrument] = p;
+                    this.positions.Add(p.Instrument, p);
+                }
+            }
+        }
+
+        public void OnProtoMessage(Proto.PositionReq req)
+        {
+            lock (this.positions)
+            {
+                if (req.Type == Proto.RequestType.Set)
+                {
+                    foreach (var p in req.Positions)
+                    {
+                        positions[p.Instrument] = p;
+                    }
+                }
+                else if (req.Type == Proto.RequestType.Del)
+                {
+                    foreach (var p in req.Positions)
+                    {
+                        positions.Remove(p.Instrument);
+                    }
                 }
             }
         }

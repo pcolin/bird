@@ -34,6 +34,7 @@ namespace client.Views
         {
             this.Dispatcher.Invoke(() =>
             {
+                MainWindow.SaveDataGridLayout("Portfolio.xml", this.PortfolioDataGrid, Formats);
                 MainWindow.WriteWindowPlacement(writer, this, "PortfolioWindow");
 
                 this.close = true;
@@ -57,19 +58,13 @@ namespace client.Views
 
         private void SettingMenuItem_Click(object sender, RoutedEventArgs e)
         {
-            ColumnSettingWindow setting = new ColumnSettingWindow(this.PortfolioDataGrid, this.Formats);
-            setting.Show();
+            ColumnSettingWindow.ShowColumnSettingWindow(this, this.PortfolioDataGrid, this.Formats);
         }
 
         private void Window_Initialized(object sender, EventArgs e)
         {
-            var vm = this.DataContext as PortfolioWindowViewModel;
-            if (vm != null)
-            {
-                /// load layout
-                string name = "Portfolio.xml";
-                MainWindow.LoadDataGridLayout(name, this.PortfolioDataGrid, this.Formats);
-            }
+            /// load layout
+            MainWindow.LoadDataGridLayout("Portfolio.xml", this.PortfolioDataGrid, this.Formats);
         }
     }
 

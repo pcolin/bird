@@ -33,6 +33,7 @@ namespace client.Models
                     }
                     instrument.Id = inst.Id;
                     instrument.Symbol = inst.Symbol;
+                    instrument.Status = inst.Status;
                     instrument.Exchange = inst.Exchange;
                     instrument.Type = inst.Type;
                     instrument.Currency = inst.Currency;
@@ -117,7 +118,7 @@ namespace client.Models
                     var instrument = FindId(inst.Id);
                     if (instrument != null)
                     {
-                        inst.Status = inst.Status;
+                        instrument.Status = inst.Status;
                     }
                 }
             }

@@ -135,6 +135,8 @@ namespace client.Models
                 var sm = this.container.Resolve<SSRateManager>(exch);
                 var vm = this.container.Resolve<VolatilityCurveManager>(exch);
                 var psm = this.container.Resolve<PricerManager>(exch);
+                var pnm = this.container.Resolve<PositionManager>(exch);
+                var dm = this.container.Resolve<DestrikerManager>(exch);
                 if (vm == null) return;
                 while (running)
                 {
@@ -154,6 +156,15 @@ namespace client.Models
                         if (p != null)
                         {
                             this.container.Resolve<EventAggregator>().GetEvent<PubSubEvent<Proto.Price>>().Publish(p);
+                        }
+                    }
+                    else if (type == "PositionReq")
+                    {
+                        var p = Proto.PositionReq.Parser.ParseFrom(bytes, len + 5, bytes.Count() - len - 5);
+                        if (p != null)
+                        {
+                            pnm.OnProtoMessage(p);
+                            this.container.Resolve<EventAggregator>().GetEvent<PubSubEvent<Proto.PositionReq>>().Publish(p);
                         }
                     }
                     else if (type == "Cash")
@@ -207,6 +218,15 @@ namespace client.Models
                         {
                             vm.OnProtoMessage(v);
                             this.container.Resolve<EventAggregator>().GetEvent<PubSubEvent<Proto.VolatilityCurveReq>>().Publish(v);
+                        }
+                    }
+                    else if (type == "DestrikerReq")
+                    {
+                        var d = Proto.DestrikerReq.Parser.ParseFrom(bytes, len + 5, bytes.Count() - len - 5);
+                        if (d != null)
+                        {
+                            dm.OnProtoMessage(d);
+                            this.container.Resolve<EventAggregator>().GetEvent<PubSubEvent<Proto.DestrikerReq>>().Publish(d);
                         }
                     }
                     else if (type == "PricerReq")

@@ -20,7 +20,15 @@ namespace client.Views
     /// </summary>
     public partial class ColumnSettingWindow : Window
     {
-        public ColumnSettingWindow(DataGrid dg, Dictionary<int, string> formats)
+        static public void ShowColumnSettingWindow(DependencyObject owner, DataGrid dg, Dictionary<int, string> formats)
+        {
+            var w = new ColumnSettingWindow(dg, formats);
+            w.Owner = Window.GetWindow(owner);
+            w.ShowInTaskbar = false;
+            w.ShowDialog();
+        }
+
+        private ColumnSettingWindow(DataGrid dg, Dictionary<int, string> formats)
         {
             InitializeComponent();
 
@@ -102,7 +110,7 @@ namespace client.Views
                 column.Visibility = items[i].Visible ? Visibility.Visible : Visibility.Hidden;
                 if (items[i].DecimalPlace >= 0)
                 {
-                    formats[i] = "F" + items[i].DecimalPlace;
+                    formats[i] = "N" + items[i].DecimalPlace;
                 }
             }
             this.Close();

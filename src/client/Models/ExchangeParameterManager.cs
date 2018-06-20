@@ -49,7 +49,7 @@ namespace client.Models
                     }
                     var begin = new DateTime(d.Year, d.Month, d.Day, begin_time.Hour, begin_time.Minute, begin_time.Second);
 
-                    var end_time = DateTime.ParseExact(s.Begin, "HH:mm:ss", CultureInfo.InvariantCulture);
+                    var end_time = DateTime.ParseExact(s.End, "HH:mm:ss", CultureInfo.InvariantCulture);
                     if (begin_time > end_time)
                     {
                         d = d.AddDays(1);

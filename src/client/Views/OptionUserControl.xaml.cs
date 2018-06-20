@@ -28,7 +28,6 @@ namespace client.Views
             OptionFormats = new Dictionary<int, string>();
             this.DataContext = vm;
             InitializeComponent();
-
         }
 
         public void SaveLayout()
@@ -261,29 +260,44 @@ namespace client.Views
             else if (e.Key == Key.D)
             {
                 double? value = null;
+                Proto.DestrikerReq req = new Proto.DestrikerReq();
                 foreach (var cell in this.OptionDataGrid.SelectedCells)
                 {
                     if (cell.Column == this.DestrikerC)
                     {
-                        if (value == null)
+                        if (!value.HasValue)
                         {
                             value = ShowInputBox("destriker");
-                            if (value == null) break;
+                            if (!value.HasValue) break;
                         }
                         OptionPairItem item = cell.Item as OptionPairItem;
-                        item.Call.Destriker = value.Value;
+                        item.Call.Destriker = value.Value / 1000.0;
+                        req.Destrikers.Add(new Proto.Destriker()
+                            {
+                                Instrument = item.Call.Option.Id,
+                                Destriker_ = item.Call.Destriker,
+                            });
                     }
                     else if (cell.Column == this.DestrikerP)
                     {
-                        if (value == null)
+                        if (!value.HasValue)
                         {
                             value = ShowInputBox("destriker");
-                            if (value == null) break;
+                            if (!value.HasValue) break;
                         }
-
                         OptionPairItem item = cell.Item as OptionPairItem;
-                        item.Put.Destriker = value.Value;
+                        item.Put.Destriker = value.Value / 1000.0;
+                        req.Destrikers.Add(new Proto.Destriker()
+                        {
+                            Instrument = item.Put.Option.Id,
+                            Destriker_ = item.Call.Destriker,
+                        });
                     }
+                }
+                if (value.HasValue)
+                {
+                    var vm = this.DataContext as OptionUserControlViewModel;
+                    vm.SetDestrikers(req);
                 }
             }
             else if (e.Key == Key.V)
@@ -318,19 +332,17 @@ namespace client.Views
 
         private void UnderlyingMenuItem_Click(object sender, RoutedEventArgs e)
         {
-            ColumnSettingWindow setting = new ColumnSettingWindow(this.UnderlyingDataGrid, this.UnderlyingFormats);
-            setting.Show();
+            ColumnSettingWindow.ShowColumnSettingWindow(this, this.UnderlyingDataGrid, this.UnderlyingFormats);
         }
 
         private void OptionMenuItem_Click(object sender, RoutedEventArgs e)
         {
-            ColumnSettingWindow setting = new ColumnSettingWindow(this.OptionDataGrid, this.OptionFormats);
-            setting.Show();
+            ColumnSettingWindow.ShowColumnSettingWindow(this, this.OptionDataGrid, this.OptionFormats);
         }
 
         private double? ShowInputBox(string name)
         {
-            InputBoxWindow w = new InputBoxWindow("destriker");
+            InputBoxWindow w = new InputBoxWindow(name);
             w.Owner = Window.GetWindow(this);
             w.ShowInTaskbar = false;
             var ret = w.ShowDialog();
@@ -531,6 +543,37 @@ namespace client.Views
         {
             string on = value.ToString();
             return on == "√";
+        }
+    }
+
+    public class TheoCrossColorConverter : IMultiValueConverter
+    {
+        public object Convert(object[] values, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            if (values[0] is double && values[1] is double && values[2] is double)
+            {
+                double theo = (double)values[0];
+                double bid = (double)values[1];
+                double ask = (double)values[2];
+
+                if (bid > 0 && ask > 0)
+                {
+                    if (theo < bid)
+                    {
+                        return Brushes.Red;
+                    }
+                    else if (theo > ask)
+                    {
+                        return Brushes.Green;
+                    }
+                }
+            }
+            return Brushes.Black;
+        }
+
+        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, System.Globalization.CultureInfo culture)
+        {
+            throw new NotImplementedException();
         }
     }
 

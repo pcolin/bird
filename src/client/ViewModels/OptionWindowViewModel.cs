@@ -147,6 +147,10 @@ namespace client.ViewModels
             this.container.Resolve<EventAggregator>().GetEvent<PubSubEvent<Proto.InstrumentReq>>().Subscribe(this.ReceiveInstrumentReq, ThreadOption.BackgroundThread);
             this.container.Resolve<EventAggregator>().GetEvent<PubSubEvent<Proto.Price>>().Subscribe(this.ReceivePrice, ThreadOption.BackgroundThread);
             this.container.Resolve<EventAggregator>().GetEvent<PubSubEvent<Proto.Cash>>().Subscribe(this.ReceiveCash, ThreadOption.BackgroundThread);
+            this.container.Resolve<EventAggregator>().GetEvent<PubSubEvent<Proto.DestrikerReq>>().Subscribe(this.ReceiveDestrikerReq, ThreadOption.BackgroundThread);
+
+            var ss = this.container.Resolve<ServerService>(this.exchange.ToString());
+            this.user = ss.User;
         }
 
         //private void StartWindow()
@@ -182,9 +186,9 @@ namespace client.ViewModels
             {
                 var instrument = manager.FindId(inst.Id);
                 OptionUserControlViewModel vm = null;
-                if (inst != null && this.viewModels.TryGetValue(instrument.HedgeUnderlying, out vm))
+                if (instrument != null && this.viewModels.TryGetValue(instrument.HedgeUnderlying, out vm))
                 {
-                    this.dispatcher.BeginInvoke((MethodInvoker)delegate { vm.RefreshInstrumentStatus(instrument, inst.Status); });
+                    this.dispatcher.Invoke((MethodInvoker)delegate { vm.RefreshInstrumentStatus(instrument); });
                 }
             }
         }
@@ -199,7 +203,7 @@ namespace client.ViewModels
                 if (inst != null && this.viewModels.TryGetValue(inst.HedgeUnderlying, out vm))
                 {
                     //this.dispatcher.BeginInvoke(new OptionUserControlViewModel.ReceivePriceDelegate(vm.ReceivePrice), inst, p);
-                    this.dispatcher.BeginInvoke((MethodInvoker)delegate { vm.ReceivePrice(inst, p); });
+                    this.dispatcher.Invoke((MethodInvoker)delegate { vm.ReceivePrice(inst, p); });
                 }
             }
         }
@@ -222,7 +226,7 @@ namespace client.ViewModels
             OptionUserControlViewModel vm = null;
             if (this.viewModels.TryGetValue(greeks.Option.HedgeUnderlying, out vm))
             {
-                this.dispatcher.BeginInvoke((MethodInvoker)delegate { vm.ReceiveGreeks(greeks); });
+                this.dispatcher.Invoke((MethodInvoker)delegate { vm.ReceiveGreeks(greeks); });
             }
         }
 
@@ -235,9 +239,28 @@ namespace client.ViewModels
             }
         }
 
+        private void ReceiveDestrikerReq(Proto.DestrikerReq req)
+        {
+            if (req.User != this.user)
+            {
+                ProductManager manager = this.container.Resolve<ProductManager>(this.Exchange.ToString());
+                foreach (var d in req.Destrikers)
+                {
+                    var option = manager.FindId(d.Instrument) as Option;
+                    OptionUserControlViewModel vm = null;
+                    if (option != null && this.viewModels.TryGetValue(option.HedgeUnderlying, out vm))
+                    {
+                        //this.dispatcher.BeginInvoke((MethodInvoker)delegate { vm.RefreshDestriker(instrument, d.Destriker_); });
+                        this.dispatcher.Invoke((MethodInvoker)delegate { vm.RefreshDestriker(option, d.Destriker_); });
+                    }
+                }
+            }
+        }
+
         private IUnityContainer container;
         private Dispatcher dispatcher;
         private Proto.Exchange exchange;
+        private string user;
         private Dictionary<Instrument, OptionUserControlViewModel> viewModels;
     }
 }

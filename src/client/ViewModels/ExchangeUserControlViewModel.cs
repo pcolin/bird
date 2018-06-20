@@ -169,6 +169,7 @@ namespace client.ViewModels
         {
             Proto.ExchangeParameterReq req = new Proto.ExchangeParameterReq();
             req.Type = Proto.RequestType.Set;
+            req.Exchange = this.exchange;
 
             Proto.ExchangeParameter p = new Proto.ExchangeParameter();
             p.Exchange = this.Exchange;

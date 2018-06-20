@@ -98,31 +98,24 @@ namespace client.Views
         }
     }
 
-    public class PricerItemConverter : IMultiValueConverter
-    {
-        public object Convert(object[] values, Type targetType, object parameter, System.Globalization.CultureInfo culture)
-        {
-            //PricerItem item = new PricerItem()
-            //{
-            //    Name = (string)values[0],
-            //    Underlying = (Instrument)values[1],
-            //    Model = (Proto.PricingModel)values[3],
-            //    Interval = (int)values[4],
-            //    UnderlyingTheoType = (Proto.UnderlyingTheoType)values[5],
-            //    MaxTickChange = (int)values[6],
-            //    Elastic = (double)values[7],
-            //    ElasticLimit = (double)values[8],
-            //};
-            //bool selectAllOptions = (bool)values[2];
-            //if (selectAllOptions)
-            //{
 
-            //}
-            //return item;
-            return values.Clone();
+
+    public class UnderlyingToPricerNameConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            if (value is Instrument)
+            {
+                var underlying = value as Instrument;
+                if (underlying != null)
+                {
+                    return underlying.Id + "_P";
+                }
+            }
+            return null;
         }
 
-        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, System.Globalization.CultureInfo culture)
+        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
             throw new NotImplementedException();
         }

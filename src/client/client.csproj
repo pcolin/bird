@@ -165,6 +165,7 @@
     <Compile Include="Messages\Cash.cs" />
     <Compile Include="Messages\CashLimit.cs" />
     <Compile Include="Messages\Currency.cs" />
+    <Compile Include="Messages\Destriker.cs" />
     <Compile Include="Messages\Exchange.cs" />
     <Compile Include="Messages\ExchangeParameter.cs" />
     <Compile Include="Messages\Heartbeat.cs" />
@@ -183,6 +184,7 @@
     <Compile Include="Messages\Trade.cs" />
     <Compile Include="Messages\Volatility.cs" />
     <Compile Include="Models\DatabaseService.cs" />
+    <Compile Include="Models\DestrikerManager.cs" />
     <Compile Include="Models\ExchangeParameterManager.cs" />
     <Compile Include="Models\GreeksEvent.cs" />
     <Compile Include="Models\ImpliedVolatilityEvent.cs" />
@@ -246,6 +248,7 @@
       <DependentUpon>OptionWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\PercentDoubleToStringMultiConverter.cs" />
+    <Compile Include="Views\PermilageDoubleToStringMultiConverter.cs" />
     <Compile Include="Views\PortfolioWindow.xaml.cs">
       <DependentUpon>PortfolioWindow.xaml</DependentUpon>
     </Compile>

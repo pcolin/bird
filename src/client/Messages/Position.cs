@@ -30,16 +30,17 @@ namespace Proto {
             "EhIKCnRvdGFsX2xvbmcYAyABKAUSEwoLbGlxdWlkX2xvbmcYBCABKAUSFgoO",
             "eWVzdGVyZGF5X2xvbmcYBSABKAUSEwoLdG90YWxfc2hvcnQYBiABKAUSFAoM",
             "bGlxdWlkX3Nob3J0GAcgASgFEhcKD3llc3RlcmRheV9zaG9ydBgIIAEoBRIM",
-            "CgR0aW1lGAkgASgEInUKC1Bvc2l0aW9uUmVxEiAKBHR5cGUYASABKA4yEi5Q",
-            "cm90by5SZXF1ZXN0VHlwZRISCgppbnN0cnVtZW50GAIgASgJEgwKBHVzZXIY",
-            "AyABKAkSIgoJcG9zaXRpb25zGAQgAygLMg8uUHJvdG8uUG9zaXRpb24iTwoL",
-            "UG9zaXRpb25SZXASHAoGcmVzdWx0GAEgASgLMgwuUHJvdG8uUmVwbHkSIgoJ",
-            "cG9zaXRpb25zGAIgAygLMg8uUHJvdG8uUG9zaXRpb25iBnByb3RvMw=="));
+            "CgR0aW1lGAkgASgEIpgBCgtQb3NpdGlvblJlcRIgCgR0eXBlGAEgASgOMhIu",
+            "UHJvdG8uUmVxdWVzdFR5cGUSIQoIZXhjaGFuZ2UYAiABKA4yDy5Qcm90by5F",
+            "eGNoYW5nZRISCgppbnN0cnVtZW50GAMgASgJEgwKBHVzZXIYBCABKAkSIgoJ",
+            "cG9zaXRpb25zGAUgAygLMg8uUHJvdG8uUG9zaXRpb24iTwoLUG9zaXRpb25S",
+            "ZXASHAoGcmVzdWx0GAEgASgLMgwuUHJvdG8uUmVwbHkSIgoJcG9zaXRpb25z",
+            "GAIgAygLMg8uUHJvdG8uUG9zaXRpb25iBnByb3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Proto.ExchangeReflection.Descriptor, global::Proto.RequestReflection.Descriptor, global::Proto.ReplyReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
             new pbr::GeneratedClrTypeInfo(typeof(global::Proto.Position), global::Proto.Position.Parser, new[]{ "Instrument", "Exchange", "TotalLong", "LiquidLong", "YesterdayLong", "TotalShort", "LiquidShort", "YesterdayShort", "Time" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Proto.PositionReq), global::Proto.PositionReq.Parser, new[]{ "Type", "Instrument", "User", "Positions" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Proto.PositionReq), global::Proto.PositionReq.Parser, new[]{ "Type", "Exchange", "Instrument", "User", "Positions" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Proto.PositionRep), global::Proto.PositionRep.Parser, new[]{ "Result", "Positions" }, null, null, null)
           }));
     }
@@ -426,6 +427,7 @@ namespace Proto {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public PositionReq(PositionReq other) : this() {
       type_ = other.type_;
+      exchange_ = other.exchange_;
       instrument_ = other.instrument_;
       user_ = other.user_;
       positions_ = other.positions_.Clone();
@@ -448,8 +450,19 @@ namespace Proto {
       }
     }
 
+    /// <summary>Field number for the "exchange" field.</summary>
+    public const int ExchangeFieldNumber = 2;
+    private global::Proto.Exchange exchange_ = 0;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::Proto.Exchange Exchange {
+      get { return exchange_; }
+      set {
+        exchange_ = value;
+      }
+    }
+
     /// <summary>Field number for the "instrument" field.</summary>
-    public const int InstrumentFieldNumber = 2;
+    public const int InstrumentFieldNumber = 3;
     private string instrument_ = "";
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string Instrument {
@@ -460,7 +473,7 @@ namespace Proto {
     }
 
     /// <summary>Field number for the "user" field.</summary>
-    public const int UserFieldNumber = 3;
+    public const int UserFieldNumber = 4;
     private string user_ = "";
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string User {
@@ -471,9 +484,9 @@ namespace Proto {
     }
 
     /// <summary>Field number for the "positions" field.</summary>
-    public const int PositionsFieldNumber = 4;
+    public const int PositionsFieldNumber = 5;
     private static readonly pb::FieldCodec<global::Proto.Position> _repeated_positions_codec
-        = pb::FieldCodec.ForMessage(34, global::Proto.Position.Parser);
+        = pb::FieldCodec.ForMessage(42, global::Proto.Position.Parser);
     private readonly pbc::RepeatedField<global::Proto.Position> positions_ = new pbc::RepeatedField<global::Proto.Position>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<global::Proto.Position> Positions {
@@ -494,6 +507,7 @@ namespace Proto {
         return true;
       }
       if (Type != other.Type) return false;
+      if (Exchange != other.Exchange) return false;
       if (Instrument != other.Instrument) return false;
       if (User != other.User) return false;
       if(!positions_.Equals(other.positions_)) return false;
@@ -504,6 +518,7 @@ namespace Proto {
     public override int GetHashCode() {
       int hash = 1;
       if (Type != 0) hash ^= Type.GetHashCode();
+      if (Exchange != 0) hash ^= Exchange.GetHashCode();
       if (Instrument.Length != 0) hash ^= Instrument.GetHashCode();
       if (User.Length != 0) hash ^= User.GetHashCode();
       hash ^= positions_.GetHashCode();
@@ -524,12 +539,16 @@ namespace Proto {
         output.WriteRawTag(8);
         output.WriteEnum((int) Type);
       }
+      if (Exchange != 0) {
+        output.WriteRawTag(16);
+        output.WriteEnum((int) Exchange);
+      }
       if (Instrument.Length != 0) {
-        output.WriteRawTag(18);
+        output.WriteRawTag(26);
         output.WriteString(Instrument);
       }
       if (User.Length != 0) {
-        output.WriteRawTag(26);
+        output.WriteRawTag(34);
         output.WriteString(User);
       }
       positions_.WriteTo(output, _repeated_positions_codec);
@@ -543,6 +562,9 @@ namespace Proto {
       int size = 0;
       if (Type != 0) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Type);
+      }
+      if (Exchange != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Exchange);
       }
       if (Instrument.Length != 0) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(Instrument);
@@ -564,6 +586,9 @@ namespace Proto {
       }
       if (other.Type != 0) {
         Type = other.Type;
+      }
+      if (other.Exchange != 0) {
+        Exchange = other.Exchange;
       }
       if (other.Instrument.Length != 0) {
         Instrument = other.Instrument;
@@ -587,15 +612,19 @@ namespace Proto {
             type_ = (global::Proto.RequestType) input.ReadEnum();
             break;
           }
-          case 18: {
-            Instrument = input.ReadString();
+          case 16: {
+            exchange_ = (global::Proto.Exchange) input.ReadEnum();
             break;
           }
           case 26: {
-            User = input.ReadString();
+            Instrument = input.ReadString();
             break;
           }
           case 34: {
+            User = input.ReadString();
+            break;
+          }
+          case 42: {
             positions_.AddEntriesFrom(input, _repeated_positions_codec);
             break;
           }
