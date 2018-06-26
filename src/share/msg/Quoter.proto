@@ -1,0 +1,51 @@
+syntax = "proto3";
+package Proto;
+
+import "Exchange.proto";
+import "Request.proto";
+import "Reply.proto";
+
+message QuoterRecord
+{
+  string instrument = 1;
+  double credit = 2;
+  double multiplier = 3;
+  int32 depth = 4;
+  int32 refill_times = 5;
+  int32 bid_volume = 6;
+  int32 ask_volume = 7;
+  bool is_bid = 8;
+  bool is_ask = 9;
+  bool is_qr = 10;
+  bool is_wide_spread = 11;
+  bool is_protection = 12;
+}
+
+message Quoter
+{
+  string name = 1;
+  string pricer = 2;
+  double delta_limit = 3;
+  int32 order_limit = 4;
+  int32 trade_limit = 5;
+  int32 depth = 6;
+  int32 refill_times = 7;
+  bool is_wide_spread = 8;
+  bool is_protection = 9;
+  repeated QuoterRecord records = 10;
+}
+
+message QuoterReq
+{
+  RequestType type = 1;
+  Exchange exchange = 2;
+  repeated Quoter quoters = 3;
+  string name = 4;
+  string user = 5;
+}
+
+message QuoterRep
+{
+  repeated Quoter quoters = 1;
+  Reply result = 2;
+}

@@ -305,7 +305,7 @@ void CtpTraderApi::QueryPositions()
   while (int ret = api_->ReqQryInvestorPosition(&field, req_id_++))
   {
     LOG_ERR << boost::format("Failed to send query position request(%1%), retry after 1s") % ret;
-    std::this_thread::sleep_for(std::chrono::seconds(1));
+    std::this_thread::sleep_for(std::chrono::seconds(2));
   }
   LOG_INF << "Success to send query positions request";
 }

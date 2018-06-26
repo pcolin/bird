@@ -9,6 +9,7 @@
 #include "InterestRateDB.h"
 #include "SSRateDB.h"
 #include "VolatilityCurveDB.h"
+#include "CreditDB.h"
 #include "DestrikerDB.h"
 #include "CashLimitDB.h"
 #include "PositionDB.h"
@@ -178,6 +179,9 @@ int main(int argc, char *argv[])
 
   VolatilityCurveDB vol_curve_db(config_db, "VolatilityCurve", instrument_db, exchange_db);
   ok = ok && vol_curve_db.Initialize(dispatcher);
+
+  CreditDB credit_db(config_db, "Credit", instrument_db, exchange_db);
+  ok = ok && credit_db.Initialize(dispatcher);
 
   DestrikerDB destriker_db(config_db, "Destriker", instrument_db);
   ok = ok && destriker_db.Initialize(dispatcher);

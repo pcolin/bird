@@ -1,0 +1,35 @@
+syntax = "proto3";
+package Proto;
+
+import "Exchange.proto";
+import "Request.proto";
+import "Reply.proto";
+import "Strategy.proto";
+
+message Credit
+{
+  StrategyType strategy = 1;
+  string underlying = 2;
+  string maturity = 3;
+  double delta = 4;
+  double vega = 5;
+  double skew = 6;
+  double convex = 7;
+  double cash = 8;
+  double price = 9;
+  double multiplier = 10;
+}
+
+message CreditReq
+{
+  RequestType type = 1;
+  Exchange exchange = 2;
+  repeated Credit credits = 3;
+  string user = 4;
+}
+
+message CreditRep
+{
+  repeated Credit credits = 1;
+  Reply result = 2;
+}

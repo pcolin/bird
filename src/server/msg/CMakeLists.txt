@@ -20,7 +20,11 @@ set(PROTO_FILES
   ../../share/msg/Elastic.proto
   ../../share/msg/Destriker.proto
   ../../share/msg/Pricer.proto
-  ../../share/msg/Strategy.proto)
+  ../../share/msg/Quoter.proto
+  ../../share/msg/Hitter.proto
+  ../../share/msg/Dimer.proto
+  ../../share/msg/Strategy.proto
+  ../../share/msg/Credit.proto)
 
 message ("Current Dir: ${CMAKE_CURRENT_SOURCE_DIR}")
 set(CC_FILES)

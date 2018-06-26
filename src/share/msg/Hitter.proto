@@ -1,0 +1,32 @@
+syntax = "proto3";
+package Proto;
+
+import "Exchange.proto";
+import "Request.proto";
+import "Reply.proto";
+
+message HitterRecord
+{
+  string instrument = 1;
+}
+
+message Hitter
+{
+  string name = 1;
+  string pricer = 2;
+}
+
+message HitterReq
+{
+  RequestType type = 1;
+  Exchange exchange = 2;
+  repeated Hitter hitters = 3;
+  string name = 4;
+  string user = 5;
+}
+
+message HitterRep
+{
+  repeated Hitter hitters = 1;
+  Reply result = 2;
+}

@@ -3,6 +3,13 @@ package Proto;
 
 import "Request.proto";
 
+enum StrategyType
+{
+  Quoter = 0;
+  Hitter = 1;
+  Dimer = 2;
+}
+
 message StrategyStatusReq
 {
   RequestType type = 1;

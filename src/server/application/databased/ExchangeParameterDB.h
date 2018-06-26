@@ -19,6 +19,7 @@ private:
   virtual void RegisterCallback(base::ProtoMessageDispatcher<base::ProtoMessagePtr> &dispatcher);
 
   base::ProtoMessagePtr OnRequest(const std::shared_ptr<Proto::ExchangeParameterReq> &msg);
+  void SetTradingDay();
 
   static int ParameterCallback(void *data, int argc, char **argv, char **col_name);
   static int HolidayCallback(void *data, int argc, char **argv, char **col_name);
