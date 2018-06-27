@@ -5,7 +5,8 @@
 #include "InstrumentDB.h"
 #include "Credit.pb.h"
 
-#include <unordered_map>
+#include <vector>
+#include <map>
 
 class CreditDB : public DbBase
 {
@@ -21,9 +22,9 @@ private:
 
   static int Callback(void *data, int argc, char **argv, char **col_name);
 
-  typedef std::unordered_map<std::string,
+  typedef std::map<std::string,
           std::map<std::string, std::shared_ptr<Proto::Credit>>> CreditMap;
-  CreditMap caches_[Proto::StrategyType::Dimer + 1];
+  std::vector<CreditMap> caches_;
   InstrumentDB &instrument_db_;
   std::string trading_day_;
 };

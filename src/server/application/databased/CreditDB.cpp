@@ -5,7 +5,8 @@
 
 CreditDB::CreditDB(ConcurrentSqliteDB &db, const std::string &table_name,
     InstrumentDB &instrument_db, ExchangeParameterDB &exchange_db)
-  : DbBase(db, table_name), instrument_db_(instrument_db), trading_day_(exchange_db.TradingDay())
+  : DbBase(db, table_name), caches_(Proto::StrategyType::Dimer + 1),
+  instrument_db_(instrument_db), trading_day_(exchange_db.TradingDay())
 {}
 
 void CreditDB::RefreshCache()
@@ -53,7 +54,7 @@ base::ProtoMessagePtr CreditDB::OnRequest(const std::shared_ptr<Proto::CreditReq
     for (auto &c : msg->credits())
     {
       const std::string &m = c.maturity();
-      sprintf(sql,"INSERT OR REPLACE INTO %s VALUES('%s', '%d', %s, %s, %f, %f, %f, %f, %f, %f, %f)",
+      sprintf(sql, "INSERT OR REPLACE INTO %s VALUES(%d, '%s', '%s', %f, %f, %f, %f, %f, %f, %f)",
           table_name_.c_str(), static_cast<int>(c.strategy()), c.underlying().c_str(), m.c_str(),
           c.delta(), c.vega(), c.skew(), c.convex(), c.cash(), c.price(), c.multiplier());
       ExecSql(sql);
@@ -74,21 +75,20 @@ base::ProtoMessagePtr CreditDB::OnRequest(const std::shared_ptr<Proto::CreditReq
 int CreditDB::Callback(void *data, int argc, char **argv, char **col_name)
 {
   assert(argc == 10);
-  auto *tmp = static_cast<std::tuple<CreditMap**, InstrumentDB*>*>(data);
+  auto *tmp = static_cast<std::tuple<std::vector<CreditMap>*, InstrumentDB*>*>(data);
   auto *caches = std::get<0>(*tmp);
   auto *instrument_db = std::get<1>(*tmp);
 
-  auto strategy = static_cast<Proto::StrategyType>(atoi(argv[0]));
-  auto &cache = (*caches)[strategy];
-
-  const std::string underlying = argv[1];
+  std::string underlying = argv[1];
   auto inst = instrument_db->FindUnderlying(underlying);
   if (inst)
   {
     auto c = Message::NewProto<Proto::Credit>();
+    auto strategy = static_cast<Proto::StrategyType>(atoi(argv[0]));
     c->set_strategy(strategy);
     c->set_underlying(underlying);
-    c->set_maturity(argv[2]);
+    const std::string maturity = argv[2];
+    c->set_maturity(maturity);
     c->set_delta(atof(argv[3]));
     c->set_vega(atof(argv[4]));
     c->set_skew(atof(argv[5]));
@@ -96,7 +96,8 @@ int CreditDB::Callback(void *data, int argc, char **argv, char **col_name)
     c->set_cash(atof(argv[7]));
     c->set_price(atof(argv[8]));
     c->set_multiplier(atof(argv[9]));
-    cache[underlying][argv[2]] = c;
+    // LOG_INF << strategy << " " << underlying << " " << maturity << " " << sizeof(*caches) / sizeof(CreditMap);
+    (*caches)[strategy][underlying][maturity] = c;
   }
   else
   {

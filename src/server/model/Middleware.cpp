@@ -4,6 +4,7 @@
 #include "ProductManager.h"
 #include "ParameterManager.h"
 #include "Instrument.pb.h"
+#include "Credit.pb.h"
 #include "strategy/DeviceManager.h"
 #include "strategy/ClusterManager.h"
 #include "config/EnvConfig.h"
@@ -175,6 +176,7 @@ void Middleware::RunResponder()
     nn_close(sock);
     return;
   }
+  auto *credit = new Proto::CreditReq();
   base::ProtoMessageDispatcher<std::shared_ptr<Proto::Reply>> dispatcher;
   dispatcher.RegisterCallback<Proto::Heartbeat>(std::bind(
         &ClientManager::OnHeartbeat, ClientManager::GetInstance(), std::placeholders::_1));
@@ -254,5 +256,6 @@ void Middleware::RunResponder()
     // LOG_INF << reply->ShortDebugString();
   }
   delete[] send_buf;
+  delete credit;
   nn_close(sock);
 }
