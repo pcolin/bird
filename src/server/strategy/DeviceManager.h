@@ -4,6 +4,7 @@
 #include "StrategyTypes.h"
 #include "Strategy.pb.h"
 #include "Price.pb.h"
+#include "Quoter.pb.h"
 #include "base/disruptor/BusySpinWaitStrategy.h"
 #include "base/disruptor/MultiProducerSequencer.h"
 
@@ -40,6 +41,8 @@ public:
   std::shared_ptr<StrategyDevice> FindStrategyDevice(const std::string &name) const;
 
   void OnStrategyStatusReq(const std::shared_ptr<Proto::StrategyStatusReq> &msg);
+  void OnQuoterSpec(const std::string &user, Proto::RequestType type,
+      const std::shared_ptr<Proto::QuoterSpec> &quoter);
 
   bool IsStrategiesRunning() const;
 
@@ -60,6 +63,12 @@ private:
   StrategyRingBuffer rb_;
   std::vector<base::Sequence*> sequences_;
   base::SequenceBarrier *barrier_;
+
+  typedef std::unordered_map<std::string, std::shared_ptr<Proto::QuoterSpec>> QuoterSpecMap;
+  QuoterSpecMap quoters_;
+  typedef std::unordered_map<std::string,
+          std::unordered_map<std::string, std::shared_ptr<Proto::QuoterRecord>>> QuoterRecordMap;
+  QuoterRecordMap quoter_records_;
 };
 
 #endif

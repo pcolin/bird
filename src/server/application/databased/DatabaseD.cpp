@@ -14,6 +14,7 @@
 #include "CashLimitDB.h"
 #include "PositionDB.h"
 #include "PricerDB.h"
+#include "QuoterDB.h"
 #include "Heartbeat.pb.h"
 #include "Server.pb.h"
 #include "Price.pb.h"
@@ -191,6 +192,9 @@ int main(int argc, char *argv[])
 
   PricerDB pricing(config_db, "Pricer", "PricerRecord", instrument_db);
   ok = ok && pricing.Initialize(dispatcher);
+
+  QuoterDB quoter(config_db, "Quoter", "QuoterRecord", instrument_db);
+  ok = ok && quoter.Initialize(dispatcher);
 
   if (!ok)
   {

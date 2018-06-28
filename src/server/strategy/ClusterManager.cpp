@@ -31,13 +31,13 @@ ClusterManager::~ClusterManager()
 void ClusterManager::Init()
 {
   LOG_INF << "Initialize ClusterManager...";
-  /// sync pricer spec from db.
+  const std::string user = EnvConfig::GetInstance()->GetString(EnvVar::EXCHANGE);
+  /// sync pricer from db.
   {
     auto req = Message::NewProto<Proto::PricerReq>();
     req->set_type(Proto::RequestType::Get);
-    req->set_user(EnvConfig::GetInstance()->GetString(EnvVar::EXCHANGE));
-    auto rep = std::dynamic_pointer_cast<Proto::PricerRep>(
-        Middleware::GetInstance()->Request(req));
+    req->set_user(user);
+    auto rep = std::dynamic_pointer_cast<Proto::PricerRep>(Middleware::GetInstance()->Request(req));
     if (rep && rep->result().result())
     {
       std::lock_guard<std::mutex> lck(pricer_mtx_);
@@ -52,6 +52,28 @@ void ClusterManager::Init()
     else
     {
       LOG_ERR << "Failed to sync pricers";
+    }
+  }
+  /// sync quoter from db.
+  {
+    auto req = Message::NewProto<Proto::QuoterReq>();
+    req->set_type(Proto::RequestType::Get);
+    req->set_user(user);
+    auto rep = std::dynamic_pointer_cast<Proto::QuoterRep>(Middleware::GetInstance()->Request(req));
+    if (rep && rep->result().result())
+    {
+      std::lock_guard<std::mutex> lck(quoter_mtx_);
+      for (auto &q : rep->quoters())
+      {
+        LOG_INF << "Quoter: " << q.ShortDebugString();
+        auto quoter = Message::NewProto<Proto::QuoterSpec>();
+        quoter->CopyFrom(q);
+        quoters_.emplace(q.name(), quoter);
+      }
+    }
+    else
+    {
+      LOG_ERR << "Failed to sync quoters";
     }
   }
 }
@@ -117,6 +139,33 @@ std::shared_ptr<Proto::Pricer> ClusterManager::FindPricer(const Instrument *unde
     }
   }
   return nullptr;
+}
+
+std::shared_ptr<Proto::QuoterSpec> ClusterManager::FindQuoter(const std::string &name)
+{
+  std::lock_guard<std::mutex> lck(quoter_mtx_);
+  auto it = quoters_.find(name);
+  if (it != quoters_.end())
+  {
+    auto ret = Message::NewProto<Proto::QuoterSpec>();
+    ret->CopyFrom(*it->second);
+    return ret;
+  }
+  return nullptr;
+}
+
+std::vector<std::shared_ptr<Proto::QuoterSpec>> ClusterManager::FindQuoters(
+    const Instrument *underlying)
+{
+  std::vector<std::shared_ptr<Proto::QuoterSpec>> quoters;
+  for (auto &it : quoters_)
+  {
+    if (it.second->underlying() == underlying->Id())
+    {
+      quoters.push_back(it.second);
+    }
+  }
+  return quoters;
 }
 
 void ClusterManager::OnHeartbeat(const std::shared_ptr<Proto::Heartbeat> &heartbeat)
@@ -193,7 +242,6 @@ ClusterManager::ProtoReplyPtr ClusterManager::OnPricerReq(
         }
         LOG_PUB << req->user() << " set Pricer " << p.name();
       }
-      // LOG_PUB << req->user() << " set Pricer";
     }
     else if (req->type() == Proto::RequestType::Del)
     {
@@ -203,9 +251,45 @@ ClusterManager::ProtoReplyPtr ClusterManager::OnPricerReq(
         pricers_.erase(p.name());
         LOG_PUB << req->user() << " delete Pricer " << p.name();
       }
-      // LOG_PUB << req->user() << " delete Pricer";
     }
-    Middleware::GetInstance()->Publish(req);
+    // Middleware::GetInstance()->Publish(req);
+  }
+  return nullptr;
+}
+
+ClusterManager::ProtoReplyPtr ClusterManager::OnQuoterReq(
+    const std::shared_ptr<Proto::QuoterReq> &req)
+{
+  if (req->type() != Proto::RequestType::Get)
+  {
+    // if (req->type() == Proto::RequestType::Set)
+    // {
+      for (auto &q : req->quoters())
+      {
+        auto *underlying = ProductManager::GetInstance()->FindId(q.underlying());
+        if (underlying)
+        {
+          auto copy = Message::NewProto<Proto::QuoterSpec>();
+          copy->CopyFrom(q);
+          auto *dm = FindDevice(underlying);
+          if (dm)
+          {
+            dm->OnQuoterSpec(req->user(), req->type(), copy);
+          }
+        }
+        // LOG_PUB << req->user() << " set Quoter " << p.name();
+      }
+    // }
+    // else if (req->type() == Proto::RequestType::Del)
+    // {
+    //   std::lock_guard<std::mutex> lck(quoter_mtx_);
+    //   for (auto &p : req->quoters())
+    //   {
+    //     quoters_.erase(p.name());
+    //     LOG_PUB << req->user() << " delete Quoter " << p.name();
+    //   }
+    // }
+    // Middleware::GetInstance()->Publish(req);
   }
   return nullptr;
 }

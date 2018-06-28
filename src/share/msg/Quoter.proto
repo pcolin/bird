@@ -10,18 +10,12 @@ message QuoterRecord
   string instrument = 1;
   double credit = 2;
   double multiplier = 3;
-  int32 depth = 4;
-  int32 refill_times = 5;
-  int32 bid_volume = 6;
-  int32 ask_volume = 7;
-  bool is_bid = 8;
-  bool is_ask = 9;
-  bool is_qr = 10;
-  bool is_wide_spread = 11;
-  bool is_protection = 12;
+  bool is_bid = 4;
+  bool is_ask = 5;
+  bool is_qr = 6;
 }
 
-message Quoter
+message QuoterSpec
 {
   string name = 1;
   string pricer = 2;
@@ -29,24 +23,26 @@ message Quoter
   double delta_limit = 4;
   int32 order_limit = 5;
   int32 trade_limit = 6;
-  int32 depth = 7;
-  int32 refill_times = 8;
-  bool is_wide_spread = 9;
-  bool is_protection = 10;
-  repeated QuoterRecord records = 11;
+  int32 bid_volume = 7;
+  int32 ask_volume = 8;
+  int32 response_volume = 9;
+  int32 depth = 10;
+  int32 refill_times = 11;
+  bool wide_spread = 12;
+  bool protection = 13;
+  repeated QuoterRecord records = 14;
 }
 
 message QuoterReq
 {
   RequestType type = 1;
   Exchange exchange = 2;
-  repeated Quoter quoters = 3;
-  string name = 4;
-  string user = 5;
+  string user = 3;
+  repeated QuoterSpec quoters = 4;
 }
 
 message QuoterRep
 {
-  repeated Quoter quoters = 1;
+  repeated QuoterSpec quoters = 1;
   Reply result = 2;
 }

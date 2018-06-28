@@ -26,16 +26,29 @@ DeviceManager::~DeviceManager()
 
 void DeviceManager::Init()
 {
-  /// initialize pricing
-  auto pricing = ClusterManager::GetInstance()->FindPricer(underlying_);
-  if (pricing)
+  /// initialize pricer
+  auto pricer = ClusterManager::GetInstance()->FindPricer(underlying_);
+  if (pricer)
   {
-    theo_.SetParameter(pricing->theo_type(), pricing->elastic(), pricing->elastic_limit());
+    theo_.SetParameter(pricer->theo_type(), pricer->elastic(), pricer->elastic_limit());
 
-    std::unique_ptr<Strategy> strategy(new Pricer(pricing->name(), this));
+    std::unique_ptr<Strategy> strategy(new Pricer(pricer->name(), this));
     auto d = std::make_shared<StrategyDevice>(strategy, rb_, barrier_);
-    devices_.emplace(pricing->name(), std::move(d));
-    LOG_INF << "Add pricer " << pricing->name();
+    devices_.emplace(pricer->name(), std::move(d));
+    LOG_INF << "Add pricer " << pricer->name();
+  }
+
+  /// initialize quoter
+  auto quoters = ClusterManager::GetInstance()->FindQuoters(underlying_);
+  for (auto &quoter : quoters)
+  {
+    quoters_.emplace(quoter->name(), quoter);
+    for (auto &r : quoter->records())
+    {
+      auto record = Message::NewProto<Proto::QuoterRecord>();
+      record->CopyFrom(r);
+      quoter_records_[quoter->name()][r.instrument()] = record;
+    }
   }
 
   /// Sync config from db to be done...
@@ -162,6 +175,57 @@ void DeviceManager::OnStrategyStatusReq(const std::shared_ptr<Proto::StrategySta
   if (publish) Publish(msg);
 }
 
+void DeviceManager::OnQuoterSpec(const std::string &user, Proto::RequestType type,
+    const std::shared_ptr<Proto::QuoterSpec> &quoter)
+{
+  LOG_INF << "On QuoterSpec: " << quoter->ShortDebugString();
+  const std::string &name = quoter->name();
+  if (type == Proto::RequestType::Set)
+  {
+    if (quoter->records().empty())
+    {
+      quoters_[name] = quoter;
+    }
+    else
+    {
+      auto it = quoter_records_.find(name);
+      if (it == quoter_records_.end())
+      {
+        it = quoter_records_.emplace(name,
+            std::unordered_map<std::string, std::shared_ptr<Proto::QuoterRecord>>()).first;
+      }
+      for (auto &r : quoter->records())
+      {
+        auto itr = it->second.find(r.instrument());
+        if (itr == it->second.end())
+        {
+          itr = it->second.emplace(r.instrument(), Message::NewProto<Proto::QuoterRecord>()).first;
+        }
+        if (r.multiplier() > 0)
+        {
+          itr->second->set_credit(r.credit());
+          itr->second->set_multiplier(r.multiplier());
+        }
+        else
+        {
+          itr->second->set_is_bid(r.is_bid());
+          itr->second->set_is_ask(r.is_ask());
+          itr->second->set_is_qr(r.is_qr());
+        }
+      }
+    }
+    Publish(quoter);
+    LOG_PUB << user << " set quoter " << quoter->name();
+  }
+  else if (type == Proto::RequestType::Del)
+  {
+    Stop(name);
+    quoters_.erase(name);
+    quoter_records_.erase(name);
+    LOG_PUB << user << " delete quoter " << name;
+  }
+}
+
 bool DeviceManager::IsStrategiesRunning() const
 {
   int cnt = 0;
@@ -177,7 +241,7 @@ bool DeviceManager::IsStrategiesRunning() const
   return cnt > 0;
 }
 
-void DeviceManager::UpdatePricer(const Proto::Pricer &pricing)
+void DeviceManager::UpdatePricer(const Proto::Pricer &pricer)
 {
-  theo_.SetParameter(pricing.theo_type(), pricing.elastic(), pricing.elastic_limit());
+  theo_.SetParameter(pricer.theo_type(), pricer.elastic(), pricer.elastic_limit());
 }
