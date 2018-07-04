@@ -10,6 +10,7 @@ enum StrategyType
   Quoter = 0;
   Hitter = 1;
   Dimer = 2;
+  DummyQuoter = 3;
 }
 
 message StrategyStatusReq
@@ -46,7 +47,7 @@ message StrategySwitch
   string option = 2;
   bool is_bid = 3;
   bool is_ask = 4;
-  bool is_qr = 5;
+  bool is_qr_cover = 5;
 }
 
 message StrategySwitchReq

@@ -17,6 +17,7 @@ ClusterManager* ClusterManager::GetInstance()
 }
 
 ClusterManager::ClusterManager()
+  : credits_(Proto::StrategyType::DummyQuoter), switches_(Proto::StrategyType::DummyQuoter + 1)
 {}
 
 ClusterManager::~ClusterManager()
@@ -79,6 +80,33 @@ void ClusterManager::Init()
     else
     {
       LOG_ERR << "Failed to sync strategy switches";
+    }
+  }
+
+  /// sync strategy switch from db.
+  {
+    Proto::CreditReq req;
+    req.set_type(Proto::RequestType::Get);
+    req.set_user(user);
+    auto rep = std::dynamic_pointer_cast<Proto::CreditRep>(Middleware::GetInstance()->Request(req));
+    if (rep && rep->result().result())
+    {
+      std::lock_guard<std::mutex> lck(credit_mtx_);
+      for (auto &c : rep->credits())
+      {
+        auto *underlying = ProductManager::GetInstance()->FindId(c.underlying());
+        if (underlying)
+        {
+          auto credit = Message::NewProto<Proto::Credit>();
+          credit->CopyFrom(c);
+          auto date = boost::gregorian::from_undelimited_string(credit->maturity());
+          credits_[c.strategy()][underlying][date] = credit;
+        }
+      }
+    }
+    else
+    {
+      LOG_ERR << "Failed to sync credits";
     }
   }
 
@@ -312,7 +340,7 @@ ClusterManager::ProtoReplyPtr ClusterManager::OnCreditReq(
         }
         auto date = boost::gregorian::from_undelimited_string(credit->maturity());
         std::lock_guard<std::mutex> lck(credit_mtx_);
-        credits_[underlying][date] = credit;
+        credits_[c.strategy()][underlying][date] = credit;
       }
       LOG_PUB << boost::format("%1% set credit of %2%@%3%") %
         req->user() % c.underlying() % c.maturity();

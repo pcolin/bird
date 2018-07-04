@@ -63,7 +63,7 @@ private:
 
   typedef std::unordered_map<const Instrument*,
           std::map<boost::gregorian::date, std::shared_ptr<Proto::Credit>>> CreditMap;
-  CreditMap credits_;
+  std::vector<CreditMap> credits_;
   std::mutex credit_mtx_;
 
   typedef std::unordered_map<const Option*, std::shared_ptr<Proto::StrategySwitch>> SwitchMap;

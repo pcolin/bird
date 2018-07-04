@@ -6,7 +6,7 @@
 CreditDB::CreditDB(ConcurrentSqliteDB &db, const std::string &table_name,
     const std::string &record_table_name, InstrumentDB &instrument_db,
     ExchangeParameterDB &exchange_db)
-  : DbBase(db, table_name), caches_(Proto::StrategyType::Dimer + 1),
+  : DbBase(db, table_name), caches_(Proto::StrategyType::DummyQuoter),
   record_table_name_(record_table_name), instrument_db_(instrument_db),
   trading_day_(exchange_db.TradingDay())
 {}

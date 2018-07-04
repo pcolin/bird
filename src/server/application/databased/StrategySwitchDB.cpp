@@ -7,7 +7,7 @@
 
 StrategySwitchDB::StrategySwitchDB(ConcurrentSqliteDB &db, const std::string &table_name,
     InstrumentDB &instrument_db)
-  : DbBase(db, table_name), instrument_db_(instrument_db), switches_(3)
+  : DbBase(db, table_name), instrument_db_(instrument_db), switches_(4)
 {}
 
 void StrategySwitchDB::RefreshCache()
@@ -64,8 +64,8 @@ base::ProtoMessagePtr StrategySwitchDB::OnRequest(
         sw->CopyFrom(s);
         cache.emplace(option, sw);
       }
-      sprintf(sql, "INSERT OR REPLACE INTO %s VALUES(%d, '%s', %d, %d, %d", table_name_.c_str(),
-          option.c_str(), s.is_bid(), s.is_ask(), s.is_qr());
+      sprintf(sql, "INSERT OR REPLACE INTO %s VALUES(%d, '%s', %d, %d, %d)", table_name_.c_str(),
+          s.strategy(), option.c_str(), s.is_bid(), s.is_ask(), s.is_qr_cover());
       ExecSql(sql);
     }
   }
@@ -90,7 +90,7 @@ int StrategySwitchDB::Callback(void *data, int argc, char **argv, char **col_nam
     sw->set_option(option);
     sw->set_is_bid(atoi(argv[2]) == 1);
     sw->set_is_ask(atoi(argv[3]) == 1);
-    sw->set_is_qr(atoi(argv[4]) == 1);
+    sw->set_is_qr_cover(atoi(argv[4]) == 1);
     (*caches)[strategy][option] = sw;
   }
   return 0;
