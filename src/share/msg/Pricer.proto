@@ -23,22 +23,22 @@ message Pricer
   string name = 1;
   string underlying = 2;
   PricingModel model = 3;
-  repeated string options = 4;
-  int32 depth = 5;
-  int32 interval = 6;
-  UnderlyingTheoType theo_type = 7;
-  int32 warn_tick_change = 8;
-  double elastic = 9;
-  double elastic_limit = 10;
+  //repeated string options = 4;
+  int32 depth = 4;
+  int32 interval = 5;
+  UnderlyingTheoType theo_type = 6;
+  int32 warn_tick_change = 7;
+  double elastic = 8;
+  double elastic_limit = 9;
 }
 
 message PricerReq
 {
   RequestType type = 1;
   Exchange exchange = 2;
-  repeated Pricer pricers = 3;
+  string user = 3;
   string name = 4;
-  string user = 5;
+  repeated Pricer pricers = 5;
 }
 
 message PricerRep

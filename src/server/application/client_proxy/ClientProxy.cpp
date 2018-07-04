@@ -17,6 +17,7 @@
 #include "Credit.pb.h"
 #include "Destriker.pb.h"
 #include "Pricer.pb.h"
+#include "Quoter.pb.h"
 #include "Strategy.pb.h"
 
 #include "nn.h"
@@ -85,7 +86,9 @@ int main(int argc, char *argv[])
   auto *credit = new Proto::CreditReq();
   auto *destriker = new Proto::DestrikerReq();
   auto *pricer = new Proto::PricerReq();
-  auto *strategy = new Proto::StrategyStatus();
+  auto *quoter = new Proto::QuoterReq();
+  auto *sw = new Proto::StrategySwitchReq();
+  auto *status = new Proto::StrategyStatus();
 
   int32_t serial_num = 0;
   while (true)
@@ -133,6 +136,8 @@ int main(int argc, char *argv[])
   delete credit;
   delete destriker;
   delete pricer;
-  delete strategy;
+  delete quoter;
+  delete sw;
+  delete status;
   return 0;
 }

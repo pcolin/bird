@@ -11,7 +11,8 @@
 class CreditDB : public DbBase
 {
 public:
-  CreditDB(ConcurrentSqliteDB &db, const std::string &table_name, InstrumentDB &instrument_db,
+  CreditDB(ConcurrentSqliteDB &db, const std::string &table_name,
+      const std::string &record_table_name, InstrumentDB &instrument_db,
       ExchangeParameterDB &exchange_db);
 
 private:
@@ -21,10 +22,12 @@ private:
   base::ProtoMessagePtr OnRequest(const std::shared_ptr<Proto::CreditReq> &msg);
 
   static int Callback(void *data, int argc, char **argv, char **col_name);
+  static int RecordCallback(void *data, int argc, char **argv, char **col_name);
 
   typedef std::map<std::string,
           std::map<std::string, std::shared_ptr<Proto::Credit>>> CreditMap;
   std::vector<CreditMap> caches_;
+  std::string record_table_name_;
   InstrumentDB &instrument_db_;
   std::string trading_day_;
 };

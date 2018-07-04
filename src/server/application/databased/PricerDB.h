@@ -11,8 +11,7 @@ class PricerDB : public DbBase
 {
   typedef std::unordered_map<std::string, std::shared_ptr<Proto::Pricer>> PricerMap;
 public:
-  PricerDB(ConcurrentSqliteDB &db, const std::string &table_name,
-      const std::string &record_table_name, InstrumentDB &instrument_db);
+  PricerDB(ConcurrentSqliteDB &db, const std::string &table_name, InstrumentDB &instrument_db);
 
 private:
   virtual void RefreshCache() override;
@@ -21,7 +20,7 @@ private:
   base::ProtoMessagePtr OnRequest(const std::shared_ptr<Proto::PricerReq> &msg);
 
   static int Callback(void *data, int argc, char **argv, char **col_name);
-  static int RecordCallback(void *data, int argc, char **argv, char **col_name);
+  // static int RecordCallback(void *data, int argc, char **argv, char **col_name);
 
   std::string record_table_name_;
   InstrumentDB &instrument_db_;

@@ -6,6 +6,12 @@ import "Request.proto";
 import "Reply.proto";
 import "Strategy.proto";
 
+message CreditRecord
+{
+  string option = 1;
+  double credit = 2;
+}
+
 message Credit
 {
   StrategyType strategy = 1;
@@ -18,6 +24,7 @@ message Credit
   double cash = 8;
   double price = 9;
   double multiplier = 10;
+  repeated CreditRecord records = 11;
 }
 
 message CreditReq

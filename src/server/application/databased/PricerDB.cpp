@@ -4,8 +4,8 @@
 #include <boost/format.hpp>
 
 PricerDB::PricerDB(ConcurrentSqliteDB &db, const std::string &table_name,
-    const std::string &record_table_name, InstrumentDB &instrument_db)
-  : DbBase(db, table_name), record_table_name_(record_table_name), instrument_db_(instrument_db)
+    InstrumentDB &instrument_db)
+  : DbBase(db, table_name), instrument_db_(instrument_db)
 {}
 
 void PricerDB::RefreshCache()
@@ -14,16 +14,16 @@ void PricerDB::RefreshCache()
   sprintf(sql, "DELETE FROM %s WHERE NOT EXISTS(SELECT id FROM %s WHERE id = %s.underlying)",
       table_name_.c_str(), instrument_db_.TableName().c_str(), table_name_.c_str());
   ExecSql(sql);
-  sprintf(sql, "DELETE FROM %s WHERE NOT EXISTS(SELECT id FROM %s WHERE id = %s.instrument)",
-      record_table_name_.c_str(), instrument_db_.TableName().c_str(), record_table_name_.c_str());
-  ExecSql(sql);
+  // sprintf(sql, "DELETE FROM %s WHERE NOT EXISTS(SELECT id FROM %s WHERE id = %s.instrument)",
+  //     record_table_name_.c_str(), instrument_db_.TableName().c_str(), record_table_name_.c_str());
+  // ExecSql(sql);
 
   sprintf(sql, "SELECT * FROM %s", table_name_.c_str());
   auto data = std::make_tuple(&pricers_, &instrument_db_);
   ExecSql(sql, &data, &PricerDB::Callback);
 
-  sprintf(sql, "SELECT * FROM %s", record_table_name_.c_str());
-  ExecSql(sql, &data, &PricerDB::RecordCallback);
+  // sprintf(sql, "SELECT * FROM %s", record_table_name_.c_str());
+  // ExecSql(sql, &data, &PricerDB::RecordCallback);
 }
 
 void PricerDB::RegisterCallback(base::ProtoMessageDispatcher<base::ProtoMessagePtr> &dispatcher)
@@ -87,12 +87,12 @@ base::ProtoMessagePtr PricerDB::OnRequest(const std::shared_ptr<Proto::PricerReq
         pricers_.emplace(name, p);
       }
 
-      for (auto &op : pricer.options())
-      {
-        sprintf(sql, "INSERT INTO %s VALUES('%s', '%s')", record_table_name_.c_str(), name.c_str(),
-            op.c_str());
-        ExecSql(sql);
-      }
+      // for (auto &op : pricer.options())
+      // {
+      //   sprintf(sql, "INSERT INTO %s VALUES('%s', '%s')", record_table_name_.c_str(), name.c_str(),
+      //       op.c_str());
+      //   ExecSql(sql);
+      // }
     }
   }
   else if (msg->type() == Proto::RequestType::Del)
@@ -106,8 +106,8 @@ base::ProtoMessagePtr PricerDB::OnRequest(const std::shared_ptr<Proto::PricerReq
       {
         sprintf(sql, "DELETE FROM %s WHERE name='%s'", table_name_.c_str(), name.c_str());
         ExecSql(sql);
-        sprintf(sql, "DELETE FROM %s WHERE name='%s'", record_table_name_.c_str(), name.c_str());
-        ExecSql(sql);
+        // sprintf(sql, "DELETE FROM %s WHERE name='%s'", record_table_name_.c_str(), name.c_str());
+        // ExecSql(sql);
       }
     }
   }
@@ -146,21 +146,21 @@ int PricerDB::Callback(void *data, int argc, char **argv, char **col_name)
   return 0;
 }
 
-int PricerDB::RecordCallback(void *data, int argc, char **argv, char **col_name)
-{
-  auto *tmp = static_cast<std::tuple<PricerMap*, InstrumentDB*>*>(data);
-  auto *pricers = std::get<0>(*tmp);
-  auto *instrument_db = std::get<1>(*tmp);
+// int PricerDB::RecordCallback(void *data, int argc, char **argv, char **col_name)
+// {
+//   auto *tmp = static_cast<std::tuple<PricerMap*, InstrumentDB*>*>(data);
+//   auto *pricers = std::get<0>(*tmp);
+//   auto *instrument_db = std::get<1>(*tmp);
 
-  const std::string id = argv[1];
-  auto inst = instrument_db->FindOption(id);
-  if (inst)
-  {
-    auto it = pricers->find(argv[0]);
-    if (it != pricers->end())
-    {
-      *(it->second->add_options()) = id;
-    }
-  }
-  return 0;
-}
+//   const std::string id = argv[1];
+//   auto inst = instrument_db->FindOption(id);
+//   if (inst)
+//   {
+//     auto it = pricers->find(argv[0]);
+//     if (it != pricers->end())
+//     {
+//       *(it->second->add_options()) = id;
+//     }
+//   }
+//   return 0;
+// }

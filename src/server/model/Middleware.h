@@ -24,7 +24,7 @@ public:
     proto_messages_.enqueue(msg);
   }
 
-  base::ProtoMessagePtr Request(const base::ProtoMessagePtr &req);
+  base::ProtoMessagePtr Request(const google::protobuf::Message &request);
 
   // template<class RequestType, class ReplyType>
   // std::shared_ptr<ReplyType> Request(const std::shared_ptr<RequestType> &request)

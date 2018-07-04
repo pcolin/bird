@@ -73,9 +73,13 @@ bool TheoCalculator::Initialize(const std::shared_ptr<Proto::Pricer> &spec)
   interval_ = spec->interval() * base::MILLION;
   // spot_ = base::PRICE_UNDEFINED;
   parameters_.clear();
-  for (auto &op : spec->options())
+  auto *underlying = dm_->GetUnderlying();
+  auto options = ProductManager::GetInstance()->FindInstruments([&](const Instrument *inst)
+      { return inst->Type() == Proto::InstrumentType::Option &&
+               inst->HedgeUnderlying() == underlying; });
+  for (auto *op : options)
   {
-    auto *option = base::down_cast<const Option*>(ProductManager::GetInstance()->FindId(op));
+    auto *option = base::down_cast<const Option*>(op);
     if (option)
     {
       assert (option->HedgeUnderlying() == dm_->GetUnderlying());
@@ -92,7 +96,7 @@ bool TheoCalculator::Initialize(const std::shared_ptr<Proto::Pricer> &spec)
         param->rate.reset();
       }
 
-      if (pm->GetSSRate(option->HedgeUnderlying(), maturity, tmp))
+      if (pm->GetSSRate(underlying, maturity, tmp))
       {
         param->basis = std::make_shared<double>(tmp);
       }
@@ -101,7 +105,7 @@ bool TheoCalculator::Initialize(const std::shared_ptr<Proto::Pricer> &spec)
         param->basis.reset();
       }
 
-      auto vc = pm->GetVolatilityCurve(option->HedgeUnderlying(), maturity);
+      auto vc = pm->GetVolatilityCurve(underlying, maturity);
       if (vc)
       {
         param->volatility = std::make_shared<Model::VolatilityModel::Parameter>();

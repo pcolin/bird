@@ -22,9 +22,9 @@ void StrategyDevice::Start()
   }
 }
 
-void StrategyDevice::Stop()
+void StrategyDevice::Stop(const std::string &reason)
 {
-  LOG_INF << "Stopping device " << strategy_->Name();
+  LOG_INF << boost::format("Stopping device %1%(%2%)") % strategy_->Name() % reason;
   bool expected = true;
   if (running_.compare_exchange_strong(expected, false))
   {

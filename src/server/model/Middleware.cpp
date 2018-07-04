@@ -32,7 +32,7 @@ void Middleware::Init()
 }
 
 
-base::ProtoMessagePtr Middleware::Request(const base::ProtoMessagePtr &request)
+base::ProtoMessagePtr Middleware::Request(const google::protobuf::Message &request)
 {
   int req = nn_socket(AF_SP, NN_REQ);
   if (req < 0)
@@ -50,12 +50,12 @@ base::ProtoMessagePtr Middleware::Request(const base::ProtoMessagePtr &request)
 
   base::ProtoMessagePtr reply = nullptr;
   size_t n;
-  char *buffer = base::EncodeProtoMessage(*request, n);
+  char *buffer = base::EncodeProtoMessage(request, n);
   if (buffer)
   {
     if (nn_send(req, buffer, n, 0) > 0)
     {
-      LOG_INF << "Success to send: " << request->ShortDebugString();
+      LOG_INF << "Success to send: " << request.ShortDebugString();
       void *msg = NULL;
       int rc = nn_recv(req, &msg, NN_MSG, 0);
       if (rc > 0)
@@ -176,7 +176,7 @@ void Middleware::RunResponder()
     nn_close(sock);
     return;
   }
-  auto *credit = new Proto::CreditReq();
+
   base::ProtoMessageDispatcher<std::shared_ptr<Proto::Reply>> dispatcher;
   dispatcher.RegisterCallback<Proto::Heartbeat>(std::bind(
         &ClientManager::OnHeartbeat, ClientManager::GetInstance(), std::placeholders::_1));
@@ -201,6 +201,12 @@ void Middleware::RunResponder()
         &ClusterManager::OnPriceReq, ClusterManager::GetInstance(), std::placeholders::_1));
   dispatcher.RegisterCallback<Proto::PricerReq>(std::bind(
         &ClusterManager::OnPricerReq, ClusterManager::GetInstance(), std::placeholders::_1));
+  dispatcher.RegisterCallback<Proto::CreditReq>(std::bind(
+        &ClusterManager::OnCreditReq, ClusterManager::GetInstance(), std::placeholders::_1));
+  dispatcher.RegisterCallback<Proto::QuoterReq>(std::bind(
+        &ClusterManager::OnQuoterReq, ClusterManager::GetInstance(), std::placeholders::_1));
+  dispatcher.RegisterCallback<Proto::StrategySwitchReq>(std::bind(
+        &ClusterManager::OnStrategySwitchReq, ClusterManager::GetInstance(), std::placeholders::_1));
   dispatcher.RegisterCallback<Proto::StrategyStatusReq>(std::bind(
         &ClusterManager::OnStrategyStatusReq, ClusterManager::GetInstance(), std::placeholders::_1));
   size_t n = 64;
@@ -256,6 +262,5 @@ void Middleware::RunResponder()
     // LOG_INF << reply->ShortDebugString();
   }
   delete[] send_buf;
-  delete credit;
   nn_close(sock);
 }

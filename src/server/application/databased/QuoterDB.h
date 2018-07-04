@@ -10,8 +10,8 @@
 class QuoterDB : public DbBase
 {
   typedef std::unordered_map<std::string, std::shared_ptr<Proto::QuoterSpec>> QuoterMap;
-  typedef std::map<std::string,
-          std::unordered_map<std::string, std::shared_ptr<Proto::QuoterRecord>>> QuoterRecordMap;
+  // typedef std::map<std::string,
+  //         std::unordered_map<std::string, std::shared_ptr<Proto::QuoterRecord>>> QuoterRecordMap;
 public:
   QuoterDB(ConcurrentSqliteDB &db, const std::string &table_name,
       const std::string &record_table_name, InstrumentDB &instrument_db);
@@ -29,7 +29,7 @@ private:
   InstrumentDB &instrument_db_;
 
   QuoterMap quoters_;
-  QuoterRecordMap records_;
+  // QuoterRecordMap records_;
 };
 
 #endif

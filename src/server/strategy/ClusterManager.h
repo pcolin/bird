@@ -5,12 +5,14 @@
 #include "Reply.pb.h"
 #include "Cash.pb.h"
 #include "Pricer.pb.h"
+#include "Credit.pb.h"
 #include "Quoter.pb.h"
 #include "DeviceManager.h"
 #include "model/Instrument.h"
 
 #include <unordered_map>
 #include <memory>
+// #include <boost/gre
 
 class ClusterManager
 {
@@ -35,7 +37,9 @@ public:
 
   ProtoReplyPtr OnPriceReq(const std::shared_ptr<Proto::PriceReq> &req);
   ProtoReplyPtr OnPricerReq(const std::shared_ptr<Proto::PricerReq> &req);
+  ProtoReplyPtr OnCreditReq(const std::shared_ptr<Proto::CreditReq> &req);
   ProtoReplyPtr OnQuoterReq(const std::shared_ptr<Proto::QuoterReq> &req);
+  ProtoReplyPtr OnStrategySwitchReq(const std::shared_ptr<Proto::StrategySwitchReq> &req);
   ProtoReplyPtr OnStrategyStatusReq(const std::shared_ptr<Proto::StrategyStatusReq> &req);
 
   template<class Type> void Publish(const Type &msg)
@@ -47,19 +51,27 @@ public:
   }
 
   bool IsStrategiesRunning() const;
-  void StopAll();
+  void StopAll(const std::string &reason);
 
 private:
   ClusterManager();
 
-  // void SyncPricer();
-  // void SyncStrategySpec();
-
   std::unordered_map<const Instrument*, DeviceManager*> devices_;
-  std::mutex pricer_mtx_;
+
   std::unordered_map<std::string, std::shared_ptr<Proto::Pricer>> pricers_;
-  std::mutex quoter_mtx_;
+  std::mutex pricer_mtx_;
+
+  typedef std::unordered_map<const Instrument*,
+          std::map<boost::gregorian::date, std::shared_ptr<Proto::Credit>>> CreditMap;
+  CreditMap credits_;
+  std::mutex credit_mtx_;
+
+  typedef std::unordered_map<const Option*, std::shared_ptr<Proto::StrategySwitch>> SwitchMap;
+  std::vector<SwitchMap> switches_;
+  std::mutex switch_mtx_;
+
   std::unordered_map<std::string, std::shared_ptr<Proto::QuoterSpec>> quoters_;
+  std::mutex quoter_mtx_;
 };
 
 #endif

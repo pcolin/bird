@@ -16,9 +16,9 @@ void ParameterManager::InitGlobal()
   auto user = EnvConfig::GetInstance()->GetString(EnvVar::EXCHANGE);
   /// Sync Exchange
   {
-    auto req = Message::NewProto<Proto::ExchangeParameterReq>();
-    req->set_type(Proto::RequestType::Get);
-    req->set_user(user);
+    Proto::ExchangeParameterReq req;
+    req.set_type(Proto::RequestType::Get);
+    req.set_user(user);
     auto rep = std::dynamic_pointer_cast<Proto::ExchangeParameterRep>(
         Middleware::GetInstance()->Request(req));
     if (rep && rep->result().result())
@@ -61,9 +61,9 @@ void ParameterManager::Init()
   // }
   /// Sync InterestRate
   {
-    auto req = Message::NewProto<Proto::InterestRateReq>();
-    req->set_type(Proto::RequestType::Get);
-    req->set_user(user);
+    Proto::InterestRateReq req;
+    req.set_type(Proto::RequestType::Get);
+    req.set_user(user);
     auto rep = std::dynamic_pointer_cast<Proto::InterestRateRep>(
         Middleware::GetInstance()->Request(req));
     if (rep && rep->result().result())
@@ -83,9 +83,9 @@ void ParameterManager::Init()
 
   /// Sync SSRate
   {
-    auto req = Message::NewProto<Proto::SSRateReq>();
-    req->set_type(Proto::RequestType::Get);
-    req->set_user(user);
+    Proto::SSRateReq req;
+    req.set_type(Proto::RequestType::Get);
+    req.set_user(user);
     auto rep = std::dynamic_pointer_cast<Proto::SSRateRep>(
         Middleware::GetInstance()->Request(req));
     if (rep && rep->result().result())
@@ -114,9 +114,9 @@ void ParameterManager::Init()
 
   /// Sync VolatilityCurve
   {
-    auto req = Message::NewProto<Proto::VolatilityCurveReq>();
-    req->set_type(Proto::RequestType::Get);
-    req->set_user(user);
+    Proto::VolatilityCurveReq req;
+    req.set_type(Proto::RequestType::Get);
+    req.set_user(user);
     auto rep = std::dynamic_pointer_cast<Proto::VolatilityCurveRep>(
         Middleware::GetInstance()->Request(req));
     if (rep && rep->result().result())
@@ -147,9 +147,9 @@ void ParameterManager::Init()
 
   /// Sync Destriker
   {
-    auto req = Message::NewProto<Proto::DestrikerReq>();
-    req->set_type(Proto::RequestType::Get);
-    req->set_user(user);
+    Proto::DestrikerReq req;
+    req.set_type(Proto::RequestType::Get);
+    req.set_user(user);
     auto rep = std::dynamic_pointer_cast<Proto::DestrikerRep>(
         Middleware::GetInstance()->Request(req));
     if (rep && rep->result().result())

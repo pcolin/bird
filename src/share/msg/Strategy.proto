@@ -2,6 +2,8 @@ syntax = "proto3";
 package Proto;
 
 import "Request.proto";
+import "Reply.proto";
+import "Exchange.proto";
 
 enum StrategyType
 {
@@ -36,4 +38,28 @@ message StrategyStatus
     Lost = 5; /// heartbeat lost
   }
   Status status = 3;
+}
+
+message StrategySwitch
+{
+  StrategyType strategy = 1;
+  string option = 2;
+  bool is_bid = 3;
+  bool is_ask = 4;
+  bool is_qr = 5;
+}
+
+message StrategySwitchReq
+{
+  RequestType type = 1;
+  Exchange exchange = 2;
+  string user = 3;
+  StrategyType strategy = 4;
+  repeated StrategySwitch switches = 5;
+}
+
+message StrategySwitchRep
+{
+  repeated StrategySwitch switches = 1;
+  Reply result = 2;
 }

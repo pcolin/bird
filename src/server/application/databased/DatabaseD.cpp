@@ -14,6 +14,7 @@
 #include "CashLimitDB.h"
 #include "PositionDB.h"
 #include "PricerDB.h"
+#include "StrategySwitchDB.h"
 #include "QuoterDB.h"
 #include "Heartbeat.pb.h"
 #include "Server.pb.h"
@@ -181,7 +182,7 @@ int main(int argc, char *argv[])
   VolatilityCurveDB vol_curve_db(config_db, "VolatilityCurve", instrument_db, exchange_db);
   ok = ok && vol_curve_db.Initialize(dispatcher);
 
-  CreditDB credit_db(config_db, "Credit", instrument_db, exchange_db);
+  CreditDB credit_db(config_db, "Credit", "CreditRecord", instrument_db, exchange_db);
   ok = ok && credit_db.Initialize(dispatcher);
 
   DestrikerDB destriker_db(config_db, "Destriker", instrument_db);
@@ -190,8 +191,11 @@ int main(int argc, char *argv[])
   PositionDB position(config_db, "Position");
   ok = ok && position.Initialize(dispatcher);
 
-  PricerDB pricing(config_db, "Pricer", "PricerRecord", instrument_db);
+  PricerDB pricing(config_db, "Pricer", instrument_db);
   ok = ok && pricing.Initialize(dispatcher);
+
+  StrategySwitchDB switches(config_db, "StrategySwitch", instrument_db);
+  ok = ok && switches.Initialize(dispatcher);
 
   QuoterDB quoter(config_db, "Quoter", "QuoterRecord", instrument_db);
   ok = ok && quoter.Initialize(dispatcher);

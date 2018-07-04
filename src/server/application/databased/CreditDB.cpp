@@ -4,9 +4,11 @@
 #include "boost/format.hpp"
 
 CreditDB::CreditDB(ConcurrentSqliteDB &db, const std::string &table_name,
-    InstrumentDB &instrument_db, ExchangeParameterDB &exchange_db)
+    const std::string &record_table_name, InstrumentDB &instrument_db,
+    ExchangeParameterDB &exchange_db)
   : DbBase(db, table_name), caches_(Proto::StrategyType::Dimer + 1),
-  instrument_db_(instrument_db), trading_day_(exchange_db.TradingDay())
+  record_table_name_(record_table_name), instrument_db_(instrument_db),
+  trading_day_(exchange_db.TradingDay())
 {}
 
 void CreditDB::RefreshCache()
@@ -14,10 +16,15 @@ void CreditDB::RefreshCache()
   char sql[1024];
   sprintf(sql, "DELETE FROM %s WHERE maturity<'%s'", table_name_.c_str(), trading_day_.c_str());
   ExecSql(sql);
+  sprintf(sql, "DELETE FROM %s WHERE NOT EXISTS(SELECT id FROM %s WHERE id = %s.instrument)",
+      record_table_name_.c_str(), instrument_db_.TableName().c_str(), record_table_name_.c_str());
+  ExecSql(sql);
 
   sprintf(sql, "SELECT * FROM %s", table_name_.c_str());
   auto data = std::make_tuple(&caches_, &instrument_db_);
   ExecSql(sql, &data, &CreditDB::Callback);
+  sprintf(sql, "SELECT * FROM %s", record_table_name_.c_str());
+  ExecSql(sql, &data, &CreditDB::RecordCallback);
 }
 
 void CreditDB::RegisterCallback(
@@ -40,8 +47,7 @@ base::ProtoMessagePtr CreditDB::OnRequest(const std::shared_ptr<Proto::CreditReq
       {
         for (auto &c : credit.second)
         {
-          auto *tmp = reply->add_credits();
-          tmp->CopyFrom(*c.second);
+          reply->add_credits()->CopyFrom(*c.second);
         }
       }
     }
@@ -102,6 +108,33 @@ int CreditDB::Callback(void *data, int argc, char **argv, char **col_name)
   else
   {
     LOG_ERR << "Failed to find underlying " << underlying;
+  }
+  return 0;
+}
+
+int CreditDB::RecordCallback(void *data, int argc, char **argv, char **col_name)
+{
+  auto *tmp = static_cast<std::tuple<std::vector<CreditMap>*, InstrumentDB*>*>(data);
+  auto *caches = std::get<0>(*tmp);
+  auto *instrument_db = std::get<1>(*tmp);
+
+  const std::string instrument = argv[1];
+  auto option = instrument_db->FindOption(instrument);
+  if (option)
+  {
+    auto strategy = static_cast<Proto::StrategyType>(atoi(argv[0]));
+    auto &cache = (*caches)[strategy];
+    auto it = cache.find(option->hedge_underlying());
+    if (it != cache.end())
+    {
+      auto itr = it->second.find(option->maturity());
+      if (itr != it->second.end())
+      {
+        auto *record = itr->second->add_records();
+        record->set_option(instrument);
+        record->set_credit(atof(argv[2]));
+      }
+    }
   }
   return 0;
 }

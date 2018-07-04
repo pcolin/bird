@@ -15,7 +15,7 @@ public:
   ~StrategyDevice();
 
   void Start();
-  void Stop();
+  void Stop(const std::string &reason);
   bool IsRunning() const;
   const std::string& Name() const;
 

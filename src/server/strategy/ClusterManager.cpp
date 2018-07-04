@@ -34,9 +34,9 @@ void ClusterManager::Init()
   const std::string user = EnvConfig::GetInstance()->GetString(EnvVar::EXCHANGE);
   /// sync pricer from db.
   {
-    auto req = Message::NewProto<Proto::PricerReq>();
-    req->set_type(Proto::RequestType::Get);
-    req->set_user(user);
+    Proto::PricerReq req;
+    req.set_type(Proto::RequestType::Get);
+    req.set_user(user);
     auto rep = std::dynamic_pointer_cast<Proto::PricerRep>(Middleware::GetInstance()->Request(req));
     if (rep && rep->result().result())
     {
@@ -54,11 +54,39 @@ void ClusterManager::Init()
       LOG_ERR << "Failed to sync pricers";
     }
   }
+
+  /// sync strategy switch from db.
+  {
+    Proto::StrategySwitchReq req;
+    req.set_type(Proto::RequestType::Get);
+    req.set_user(user);
+    auto rep = std::dynamic_pointer_cast<Proto::StrategySwitchRep>(
+        Middleware::GetInstance()->Request(req));
+    if (rep && rep->result().result())
+    {
+      std::lock_guard<std::mutex> lck(switch_mtx_);
+      for (auto &s : rep->switches())
+      {
+        auto *op = base::down_cast<const Option*>(ProductManager::GetInstance()->FindId(s.option()));
+        if (op)
+        {
+          auto sw = Message::NewProto<Proto::StrategySwitch>();
+          sw->CopyFrom(s);
+          switches_[s.strategy()][op] = sw;
+        }
+      }
+    }
+    else
+    {
+      LOG_ERR << "Failed to sync strategy switches";
+    }
+  }
+
   /// sync quoter from db.
   {
-    auto req = Message::NewProto<Proto::QuoterReq>();
-    req->set_type(Proto::RequestType::Get);
-    req->set_user(user);
+    Proto::QuoterReq req;
+    req.set_type(Proto::RequestType::Get);
+    req.set_user(user);
     auto rep = std::dynamic_pointer_cast<Proto::QuoterRep>(Middleware::GetInstance()->Request(req));
     if (rep && rep->result().result())
     {
@@ -187,7 +215,7 @@ void ClusterManager::OnCash(const std::shared_ptr<Proto::Cash> &cash)
   if (!cash->is_enough())
   {
     LOG_ERR << "Cash isn't enough, stop all strategies...";
-    StopAll();
+    StopAll("cash limit broken");
   }
   CashManager::GetInstance()->OnCash(cash);
   Middleware::GetInstance()->Publish(cash);
@@ -245,14 +273,50 @@ ClusterManager::ProtoReplyPtr ClusterManager::OnPricerReq(
     }
     else if (req->type() == Proto::RequestType::Del)
     {
-      std::lock_guard<std::mutex> lck(pricer_mtx_);
       for (auto &p : req->pricers())
       {
-        pricers_.erase(p.name());
+        auto *underlying = ProductManager::GetInstance()->FindId(p.underlying());
+        if (underlying)
+        {
+          auto *dm = FindDevice(underlying);
+          if (dm)
+          {
+            dm->StopAll(req->user() + " delete pricer");
+          }
+          std::lock_guard<std::mutex> lck(pricer_mtx_);
+          pricers_.erase(p.name());
+        }
         LOG_PUB << req->user() << " delete Pricer " << p.name();
       }
     }
-    // Middleware::GetInstance()->Publish(req);
+  }
+  return nullptr;
+}
+
+ClusterManager::ProtoReplyPtr ClusterManager::OnCreditReq(
+    const std::shared_ptr<Proto::CreditReq> &req)
+{
+  if (req->type() == Proto::RequestType::Set)
+  {
+    for (auto &c : req->credits())
+    {
+      auto *underlying = ProductManager::GetInstance()->FindId(c.underlying());
+      if (underlying)
+      {
+        auto credit = Message::NewProto<Proto::Credit>();
+        credit->CopyFrom(c);
+        auto *dm = FindDevice(underlying);
+        if (dm && dm->IsStrategiesRunning())
+        {
+          dm->Publish(credit);
+        }
+        auto date = boost::gregorian::from_undelimited_string(credit->maturity());
+        std::lock_guard<std::mutex> lck(credit_mtx_);
+        credits_[underlying][date] = credit;
+      }
+      LOG_PUB << boost::format("%1% set credit of %2%@%3%") %
+        req->user() % c.underlying() % c.maturity();
+    }
   }
   return nullptr;
 }
@@ -262,34 +326,74 @@ ClusterManager::ProtoReplyPtr ClusterManager::OnQuoterReq(
 {
   if (req->type() != Proto::RequestType::Get)
   {
-    // if (req->type() == Proto::RequestType::Set)
-    // {
+    if (req->type() == Proto::RequestType::Set)
+    {
       for (auto &q : req->quoters())
       {
         auto *underlying = ProductManager::GetInstance()->FindId(q.underlying());
         if (underlying)
         {
-          auto copy = Message::NewProto<Proto::QuoterSpec>();
-          copy->CopyFrom(q);
+          auto quoter = Message::NewProto<Proto::QuoterSpec>();
+          quoter->CopyFrom(q);
+          auto *dm = FindDevice(underlying);
+          if (dm && dm->IsStrategyRunning(q.name()))
+          {
+            dm->Publish(quoter);
+          }
+          std::lock_guard<std::mutex> lck(quoter_mtx_);
+          quoters_[q.name()] = quoter;
+        }
+        LOG_PUB << req->user() << " set Quoter " << q.name();
+      }
+    }
+    else if (req->type() == Proto::RequestType::Del)
+    {
+      for (auto &q : req->quoters())
+      {
+        auto *underlying = ProductManager::GetInstance()->FindId(q.underlying());
+        if (underlying)
+        {
           auto *dm = FindDevice(underlying);
           if (dm)
           {
-            dm->OnQuoterSpec(req->user(), req->type(), copy);
+            dm->Stop(q.name(), req->user() + " delete quoter");
           }
+          std::lock_guard<std::mutex> lck(quoter_mtx_);
+          quoters_.erase(q.name());
         }
-        // LOG_PUB << req->user() << " set Quoter " << p.name();
+        LOG_PUB << req->user() << " delete Quoter " << q.name();
       }
-    // }
-    // else if (req->type() == Proto::RequestType::Del)
-    // {
-    //   std::lock_guard<std::mutex> lck(quoter_mtx_);
-    //   for (auto &p : req->quoters())
-    //   {
-    //     quoters_.erase(p.name());
-    //     LOG_PUB << req->user() << " delete Quoter " << p.name();
-    //   }
-    // }
-    // Middleware::GetInstance()->Publish(req);
+    }
+  }
+  return nullptr;
+}
+
+ClusterManager::ProtoReplyPtr ClusterManager::OnStrategySwitchReq(
+    const std::shared_ptr<Proto::StrategySwitchReq> &req)
+{
+  if (req->type() == Proto::RequestType::Set)
+  {
+    for (auto &s : req->switches())
+    {
+      auto *op = base::down_cast<const Option*>(ProductManager::GetInstance()->FindId(s.option()));
+      if (op)
+      {
+        auto sw = Message::NewProto<Proto::StrategySwitch>();
+        sw->CopyFrom(s);
+        auto *dm = FindDevice(op->HedgeUnderlying());
+        if (dm && dm->IsStrategiesRunning())
+        {
+          dm->Publish(sw);
+        }
+        std::lock_guard<std::mutex> lck(switch_mtx_);
+        switches_[s.strategy()][op] = sw;
+      }
+      else
+      {
+        LOG_ERR << "Can't find option " << s.option();
+      }
+    }
+    LOG_PUB << req->user() << " set StrategySwitch";
   }
   return nullptr;
 }
@@ -323,21 +427,20 @@ ClusterManager::ProtoReplyPtr ClusterManager::OnStrategyStatusReq(
 
 bool ClusterManager::IsStrategiesRunning() const
 {
-  bool ret = false;
   for (auto &it : devices_)
   {
     if (it.second->IsStrategiesRunning())
     {
-      ret = true;
+      return true;
     }
   }
-  return ret;
+  return false;
 }
 
-void ClusterManager::StopAll()
+void ClusterManager::StopAll(const std::string &reason)
 {
   for (auto &it : devices_)
   {
-    it.second->StopAll();
+    it.second->StopAll(reason);
   }
 }

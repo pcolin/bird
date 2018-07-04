@@ -32,7 +32,7 @@ std::shared_ptr<Proto::Reply> ClientManager::Login(const std::shared_ptr<Proto::
       return reply;
     }
   }
-  auto r = std::dynamic_pointer_cast<Proto::Reply>(Middleware::GetInstance()->Request(login));
+  auto r = std::dynamic_pointer_cast<Proto::Reply>(Middleware::GetInstance()->Request(*login));
   if (r)
   {
     reply->set_result(r->result());
@@ -125,7 +125,7 @@ ClientManager::ProtoReplyPtr ClientManager::OnHeartbeat(
     if (erased && clients_.size() == 0)
     {
       LOG_ERR << "All clients are disconnected, stopping all strategies...";
-      ClusterManager::GetInstance()->StopAll();
+      ClusterManager::GetInstance()->StopAll("all clients disconnected");
     }
   }
   else if (heartbeat->type() == Proto::ProcessorType::GUI)

@@ -5,15 +5,15 @@ import "Exchange.proto";
 import "Request.proto";
 import "Reply.proto";
 
-message QuoterRecord
-{
-  string instrument = 1;
-  double credit = 2;
-  double multiplier = 3;
-  bool is_bid = 4;
-  bool is_ask = 5;
-  bool is_qr = 6;
-}
+//message QuoterRecord
+//{
+//  string instrument = 1;
+//  double credit = 2;
+//  double multiplier = 3;
+//  bool is_bid = 4;
+//  bool is_ask = 5;
+//  bool is_qr = 6;
+//}
 
 message QuoterSpec
 {
@@ -30,7 +30,8 @@ message QuoterSpec
   int32 refill_times = 11;
   bool wide_spread = 12;
   bool protection = 13;
-  repeated QuoterRecord records = 14;
+  //repeated QuoterRecord records = 14;
+  repeated string options = 14;
 }
 
 message QuoterReq

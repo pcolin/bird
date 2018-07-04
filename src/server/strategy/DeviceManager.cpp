@@ -3,6 +3,7 @@
 #include "TestStrategy.h"
 #include "StrategyDevice.h"
 #include "Pricer.h"
+#include "Quoter.h"
 #include "ClusterManager.h"
 #include "config/EnvConfig.h"
 #include "base/logger/Logging.h"
@@ -33,8 +34,8 @@ void DeviceManager::Init()
     theo_.SetParameter(pricer->theo_type(), pricer->elastic(), pricer->elastic_limit());
 
     std::unique_ptr<Strategy> strategy(new Pricer(pricer->name(), this));
-    auto d = std::make_shared<StrategyDevice>(strategy, rb_, barrier_);
-    devices_.emplace(pricer->name(), std::move(d));
+    pricer_ = std::make_unique<StrategyDevice>(strategy, rb_, barrier_);
+    // devices_.emplace(pricer->name(), std::move(d));
     LOG_INF << "Add pricer " << pricer->name();
   }
 
@@ -42,19 +43,16 @@ void DeviceManager::Init()
   auto quoters = ClusterManager::GetInstance()->FindQuoters(underlying_);
   for (auto &quoter : quoters)
   {
-    quoters_.emplace(quoter->name(), quoter);
-    for (auto &r : quoter->records())
-    {
-      auto record = Message::NewProto<Proto::QuoterRecord>();
-      record->CopyFrom(r);
-      quoter_records_[quoter->name()][r.instrument()] = record;
-    }
+    std::unique_ptr<Strategy> strategy(new Quoter(quoter->name(), this));
+    auto d = std::make_shared<StrategyDevice>(strategy, rb_, barrier_);
+    devices_.emplace(quoter->name(), std::move(d));
+    LOG_INF << "Add quoter " << quoter->name();
   }
 
   /// Sync config from db to be done...
-  std::unique_ptr<Strategy> strategy(new TestStrategy("test", this));
-  auto d = std::make_shared<StrategyDevice>(strategy, rb_, barrier_);
-  devices_.emplace("test", std::move(d));
+  // std::unique_ptr<Strategy> strategy(new TestStrategy("test", this));
+  // auto d = std::make_shared<StrategyDevice>(strategy, rb_, barrier_);
+  // devices_.emplace("test", std::move(d));
 
   /// initialize market monitor
   const std::string name = (boost::format("%1%_monitor") % underlying_->Id()).str();
@@ -121,20 +119,20 @@ void DeviceManager::StartAll()
   }
 }
 
-void DeviceManager::Stop(const std::string& name)
+void DeviceManager::Stop(const std::string& name, const std::string &reason)
 {
   auto it = devices_.find(name);
   if (it != devices_.end())
   {
-    it->second->Stop();
+    it->second->Stop(reason);
   }
 }
 
-void DeviceManager::StopAll()
+void DeviceManager::StopAll(const std::string &reason)
 {
   for (auto &it : devices_)
   {
-    it.second->Stop();
+    it.second->Stop(reason);
   }
 }
 
@@ -156,7 +154,7 @@ void DeviceManager::OnStrategyStatusReq(const std::shared_ptr<Proto::StrategySta
       {
         if (s.status() == Proto::StrategyStatus::Stop)
         {
-          sd->Stop();
+          sd->Stop(msg->user() + " stop");
         }
         else if (s.status() == Proto::StrategyStatus::Play)
         {
@@ -165,6 +163,10 @@ void DeviceManager::OnStrategyStatusReq(const std::shared_ptr<Proto::StrategySta
       }
       else if (s.status() == Proto::StrategyStatus::Play)
       {
+        if (!pricer_->IsRunning())
+        {
+          pricer_->Start();
+        }
         sd->Start();
         publish = true;
       }
@@ -175,73 +177,108 @@ void DeviceManager::OnStrategyStatusReq(const std::shared_ptr<Proto::StrategySta
   if (publish) Publish(msg);
 }
 
-void DeviceManager::OnQuoterSpec(const std::string &user, Proto::RequestType type,
-    const std::shared_ptr<Proto::QuoterSpec> &quoter)
+// void DeviceManager::OnQuoterSpec(const std::string &user, Proto::RequestType type,
+//     const std::shared_ptr<Proto::QuoterSpec> &quoter)
+// {
+//   LOG_INF << "On QuoterSpec: " << quoter->ShortDebugString();
+//   const std::string &name = quoter->name();
+//   if (type == Proto::RequestType::Set)
+//   {
+//     Publish(quoter);
+//     // if (quoter->records().empty())
+//     // {
+//     //   std::lock_guard<std::mutex> lck(quoter_mtx_);
+//     //   quoters_[name] = quoter;
+//     // }
+//     // else
+//     // {
+//     //   std::lock_guard<std::mutex> lck(quoter_mtx_);
+//     //   auto it = quoter_records_.find(name);
+//     //   if (it == quoter_records_.end())
+//     //   {
+//     //     it = quoter_records_.emplace(name,
+//     //         std::unordered_map<std::string, std::shared_ptr<Proto::QuoterRecord>>()).first;
+//     //   }
+//     //   for (auto &r : quoter->records())
+//     //   {
+//     //     auto itr = it->second.find(r.instrument());
+//     //     if (itr == it->second.end())
+//     //     {
+//     //       itr = it->second.emplace(r.instrument(), Message::NewProto<Proto::QuoterRecord>()).first;
+//     //     }
+//     //     if (r.credit() > 0 || r.multiplier() > 0)
+//     //     {
+//     //       itr->second->set_credit(r.credit());
+//     //       itr->second->set_multiplier(r.multiplier());
+//     //     }
+//     //     else
+//     //     {
+//     //       itr->second->set_is_bid(r.is_bid());
+//     //       itr->second->set_is_ask(r.is_ask());
+//     //       itr->second->set_is_qr(r.is_qr());
+//     //     }
+//     //   }
+//     // }
+//     LOG_PUB << user << " set quoter " << quoter->name();
+//   }
+//   else if (type == Proto::RequestType::Del)
+//   {
+//     Stop(name, user + " delete quoter");
+//     // {
+//     //   std::lock_guard<std::mutex> lck(quoter_mtx_);
+//     //   quoters_.erase(name);
+//     //   quoter_records_.erase(name);
+//     // }
+//     LOG_PUB << user << " delete quoter " << name;
+//   }
+// }
+
+bool DeviceManager::IsStrategyRunning(const std::string &name) const
 {
-  LOG_INF << "On QuoterSpec: " << quoter->ShortDebugString();
-  const std::string &name = quoter->name();
-  if (type == Proto::RequestType::Set)
-  {
-    if (quoter->records().empty())
-    {
-      quoters_[name] = quoter;
-    }
-    else
-    {
-      auto it = quoter_records_.find(name);
-      if (it == quoter_records_.end())
-      {
-        it = quoter_records_.emplace(name,
-            std::unordered_map<std::string, std::shared_ptr<Proto::QuoterRecord>>()).first;
-      }
-      for (auto &r : quoter->records())
-      {
-        auto itr = it->second.find(r.instrument());
-        if (itr == it->second.end())
-        {
-          itr = it->second.emplace(r.instrument(), Message::NewProto<Proto::QuoterRecord>()).first;
-        }
-        if (r.multiplier() > 0)
-        {
-          itr->second->set_credit(r.credit());
-          itr->second->set_multiplier(r.multiplier());
-        }
-        else
-        {
-          itr->second->set_is_bid(r.is_bid());
-          itr->second->set_is_ask(r.is_ask());
-          itr->second->set_is_qr(r.is_qr());
-        }
-      }
-    }
-    Publish(quoter);
-    LOG_PUB << user << " set quoter " << quoter->name();
-  }
-  else if (type == Proto::RequestType::Del)
-  {
-    Stop(name);
-    quoters_.erase(name);
-    quoter_records_.erase(name);
-    LOG_PUB << user << " delete quoter " << name;
-  }
+  auto it = devices_.find(name);
+  return it != devices_.end() && it->second->IsRunning();
 }
 
 bool DeviceManager::IsStrategiesRunning() const
 {
-  int cnt = 0;
+  // int cnt = 0;
   for (auto &it : devices_)
   {
     if (it.second->IsRunning())
     {
-      ++cnt;
-      LOG_INF << it.second->Name() << " is running...";
+      return true;
+      // ++cnt;
+      // LOG_INF << it.second->Name() << " is running...";
     }
   }
-  LOG_INF << boost::format("%1% has %2% strategies running") % underlying_->Id() % cnt;
-  return cnt > 0;
+  return false;
+  // LOG_INF << boost::format("%1% has %2% strategies running") % underlying_->Id() % cnt;
+  // return cnt > 0;
 }
 
 void DeviceManager::UpdatePricer(const Proto::Pricer &pricer)
 {
   theo_.SetParameter(pricer.theo_type(), pricer.elastic(), pricer.elastic_limit());
 }
+
+// std::shared_ptr<Proto::QuoterSpec> DeviceManager::GetQuoter(const std::string &name)
+// {
+//   std::lock_guard<std::mutex> lck(quoter_mtx_);
+//   auto it = quoters_.find(name);
+//   if (it != quoters_.end())
+//   {
+//     auto quoter = Message::NewProto<Proto::QuoterSpec>();
+//     quoter->CopyFrom(*it->second);
+//     auto itr = quoter_records_.find(name);
+//     if (itr != quoter_records_.end())
+//     {
+//       for (auto &r : itr->second)
+//       {
+//         auto *record = quoter->add_records();
+//         record->CopyFrom(*r.second);
+//       }
+//     }
+//     return quoter;
+//   }
+//   return nullptr;
+// }

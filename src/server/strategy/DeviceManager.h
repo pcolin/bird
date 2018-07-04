@@ -35,15 +35,16 @@ public:
 
   void Start(const std::string& name);
   void StartAll();
-  void Stop(const std::string& name);
-  void StopAll();
+  void Stop(const std::string& name, const std::string &reason);
+  void StopAll(const std::string &reason);
   void Publish(std::shared_ptr<Price> &price);
   std::shared_ptr<StrategyDevice> FindStrategyDevice(const std::string &name) const;
 
   void OnStrategyStatusReq(const std::shared_ptr<Proto::StrategyStatusReq> &msg);
-  void OnQuoterSpec(const std::string &user, Proto::RequestType type,
-      const std::shared_ptr<Proto::QuoterSpec> &quoter);
+  // void OnQuoterSpec(const std::string &user, Proto::RequestType type,
+  //     const std::shared_ptr<Proto::QuoterSpec> &quoter);
 
+  bool IsStrategyRunning(const std::string &name) const;
   bool IsStrategiesRunning() const;
 
   void UpdatePricer(const Proto::Pricer &pricing);
@@ -56,6 +57,7 @@ private:
   bool normal_ = false;
 
   std::unordered_map<std::string, std::shared_ptr<StrategyDevice>> devices_;
+  std::unique_ptr<StrategyDevice> pricer_;
   std::unique_ptr<StrategyDevice> monitor_;
 
   base::BusySpinWaitStrategy strategy_;
@@ -63,12 +65,6 @@ private:
   StrategyRingBuffer rb_;
   std::vector<base::Sequence*> sequences_;
   base::SequenceBarrier *barrier_;
-
-  typedef std::unordered_map<std::string, std::shared_ptr<Proto::QuoterSpec>> QuoterSpecMap;
-  QuoterSpecMap quoters_;
-  typedef std::unordered_map<std::string,
-          std::unordered_map<std::string, std::shared_ptr<Proto::QuoterRecord>>> QuoterRecordMap;
-  QuoterRecordMap quoter_records_;
 };
 
 #endif

@@ -11,10 +11,10 @@
 
 void SimulationTraderApi::Init()
 {
-  auto req = Message::NewProto<Proto::InstrumentReq>();
-  req->set_type(Proto::RequestType::Get);
-  req->set_exchange(Proto::Exchange::DCE);
-  req->set_user(EnvConfig::GetInstance()->GetString(EnvVar::EXCHANGE));
+  Proto::InstrumentReq req;
+  req.set_type(Proto::RequestType::Get);
+  req.set_exchange(Proto::Exchange::DCE);
+  req.set_user(EnvConfig::GetInstance()->GetString(EnvVar::EXCHANGE));
   auto r = std::dynamic_pointer_cast<Proto::InstrumentRep>(Middleware::GetInstance()->Request(req));
   if (unlikely(!r))
   {

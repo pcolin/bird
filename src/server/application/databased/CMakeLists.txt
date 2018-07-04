@@ -12,6 +12,7 @@ ADD_EXECUTABLE(databased
   VolatilityCurveDB.cpp
   CreditDB.cpp
   PricerDB.cpp
+  StrategySwitchDB.cpp
   QuoterDB.cpp
   DestrikerDB.cpp)
 TARGET_LINK_LIBRARIES(databased dl nanomsg protomsg logger config boost_date_time)
