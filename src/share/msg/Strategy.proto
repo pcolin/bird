@@ -87,10 +87,11 @@ message StrategySwitchRep
 message StrategyStatistic
 {
   string name = 1;
-  Exchange exchange = 2;
-  string underlying = 3;
-  StrategyStatus status = 4;
-  double delta = 5;
-  int32 orders = 6;
-  int32 trades = 7;
+  StrategyType type = 2;
+  Exchange exchange = 3;
+  string underlying = 4;
+  StrategyStatus status = 5;
+  double delta = 6;
+  int32 orders = 7;
+  int32 trades = 8;
 }
