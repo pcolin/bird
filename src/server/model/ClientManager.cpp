@@ -70,32 +70,30 @@ std::shared_ptr<Proto::Reply> ClientManager::Login(const std::shared_ptr<Proto::
 
 std::shared_ptr<Proto::Reply> ClientManager::Logout(const std::shared_ptr<Proto::Logout> &logout)
 {
-  bool success = false;
   auto reply = Message::NewProto<Proto::Reply>();
   const std::string &user = logout->user();
+  std::lock_guard<std::mutex> lck(mtx_);
+  if (clients_.size() == 1 && clients_.find(user) != clients_.end())
   {
-    std::lock_guard<std::mutex> lck(mtx_);
-    if (clients_.size() == 1 && clients_.find(user) != clients_.end())
+    LOG_INF << "Last user want to logout...";
+    if (ClusterManager::GetInstance()->IsStrategiesRunning())
     {
-      LOG_INF << "Last user want to logout...";
-      if (ClusterManager::GetInstance()->IsStrategiesRunning())
-      {
-        reply->set_result(false);
-        reply->set_error("Last user logout and strategies are running.");
-        return reply;
-      }
+      reply->set_result(false);
+      reply->set_error("Last user logout and strategies are running.");
+      return reply;
     }
-    success = clients_.erase(logout->user()) == 1;
   }
-  if (success)
+  if (clients_.erase(user))
   {
-    LOG_PUB << boost::format("%1% logout") % logout->user();
+    LOG_PUB << user << " logout";
+    reply->set_result(true);
   }
   else
   {
-    LOG_ERR << logout->user() << " logout failed";
+    LOG_ERR << user << " logout failed, this user isn't logined or is disconnected";
+    reply->set_result(false);
+    reply->set_error(user + " isn't logined or is disconnected");
   }
-  reply->set_result(success);
   return reply;
 }
 

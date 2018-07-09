@@ -38,6 +38,11 @@ class FixedBuffer : boost::noncopyable
       memcpy(cur_, buf, len);
       cur_ += len;
     }
+    else
+    {
+      memcpy(cur_, "......", 6);
+      cur_ += 6;
+    }
   }
 
   const char* data() const { return data_; }

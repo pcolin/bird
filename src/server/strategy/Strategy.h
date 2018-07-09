@@ -15,6 +15,7 @@ public:
   virtual void OnStop() = 0;
 
   const std::string& Name() const { return name_; }
+  const Instrument* Underlying() const { return dm_->GetUnderlying(); }
   const std::string& UnderlyingId() const { return dm_->GetUnderlying()->Id(); }
 
   void OnEvent(const Event &e, int64_t seq, bool last)

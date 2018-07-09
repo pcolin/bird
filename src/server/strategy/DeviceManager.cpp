@@ -142,39 +142,37 @@ std::shared_ptr<StrategyDevice> DeviceManager::FindStrategyDevice(const std::str
   return it != devices_.end() ? it->second : nullptr;
 }
 
-void DeviceManager::OnStrategyStatusReq(const std::shared_ptr<Proto::StrategyStatusReq> &msg)
+void DeviceManager::OnStrategyOperate(const std::string &user, const Proto::StrategyOperate &op)
 {
   bool publish = false;
-  for (auto &s : msg->statuses())
+  auto sd = FindStrategyDevice(op.name());
+  if (sd)
   {
-    auto sd = FindStrategyDevice(s.name());
-    if (sd)
+    if (sd->IsRunning())
     {
-      if (sd->IsRunning())
+      if (op.operate() == Proto::StrategyOperation::Stop)
       {
-        if (s.status() == Proto::StrategyStatus::Stop)
-        {
-          sd->Stop(msg->user() + " stop");
-        }
-        else if (s.status() == Proto::StrategyStatus::Play)
-        {
-          publish = true;
-        }
+        sd->Stop(user + " stop");
       }
-      else if (s.status() == Proto::StrategyStatus::Play)
+      else if (op.operate() == Proto::StrategyOperation::Start)
       {
-        if (!pricer_->IsRunning())
-        {
-          pricer_->Start();
-        }
-        sd->Start();
-        publish = true;
+        auto copy = Message::NewProto<Proto::StrategyOperate>();
+        copy->CopyFrom(op);
+        Publish(copy);
       }
     }
-    LOG_PUB << boost::format("%1% set %2% : %3%") % msg->user() % s.name() %
-      Proto::StrategyStatus::Status_Name(s.status());
+    else if (op.operate() == Proto::StrategyOperation::Start)
+    {
+      if (!pricer_->IsRunning())
+      {
+        pricer_->Start();
+      }
+      sd->Start();
+    }
   }
-  if (publish) Publish(msg);
+  LOG_PUB << boost::format("%1% set %2% : %3%") % user % op.name() %
+    Proto::StrategyOperation_Name(op.operate());
+  // if (publish) Publish(msg);
 }
 
 // void DeviceManager::OnQuoterSpec(const std::string &user, Proto::RequestType type,

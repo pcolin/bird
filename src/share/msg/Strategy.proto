@@ -13,33 +13,52 @@ enum StrategyType
   DummyQuoter = 3;
 }
 
-message StrategyStatusReq
+//enum StrategyStatusEnum
+//{
+//  Play = 0;
+//  Stop = 1;
+//  Running = 2;
+//  Pause = 3;
+//  Error = 4;
+//  Lost = 5; /// heartbeat lost
+//}
+
+enum StrategyOperation
 {
-  RequestType type = 1;
-  repeated StrategyStatus statuses = 2;
-  string user = 3;
+  Start = 0;
+  Pause = 1;
+  Stop = 2;
 }
 
-message StrategyStatusRep
+enum StrategyStatus
 {
-  string error = 1;
+  Running = 0;
+  Started = 2;
+  Stopped = 3;
+  Paused = 4;
+  Error = 5;
+  Lost = 6; /// heartbeat lost
 }
 
-message StrategyStatus
+message StrategyOperate
 {
   string name = 1;
   string underlying = 2;
-  enum Status
-  {
-    Play = 0;
-    Stop = 1;
-    Running = 2;
-    Pause = 3;
-    Error = 4;
-    Lost = 5; /// heartbeat lost
-  }
-  Status status = 3;
+  StrategyOperation operate = 3;
 }
+
+message StrategyOperateReq
+{
+  RequestType type = 1;
+  Exchange exchange = 2;
+  string user = 3;
+  repeated StrategyOperate operates = 4;
+}
+
+//message StrategyStatusRep
+//{
+//  string error = 1;
+//}
 
 message StrategySwitch
 {
@@ -63,4 +82,15 @@ message StrategySwitchRep
 {
   repeated StrategySwitch switches = 1;
   Reply result = 2;
+}
+
+message StrategyStatistic
+{
+  string name = 1;
+  Exchange exchange = 2;
+  string underlying = 3;
+  StrategyStatus status = 4;
+  double delta = 5;
+  int32 orders = 6;
+  int32 trades = 7;
 }

@@ -24,7 +24,7 @@ void Send(const std::shared_ptr<google::protobuf::Message> &msg)
     {
       cout << "Failed to send message(" << bytes << " != " << size << endl;
       return;
-    }   
+    }
     char *recv_buf = NULL;
     size_t recv_bytes = nn_recv(sock, &recv_buf, NN_MSG, 0);
     if (recv_bytes > 0)
@@ -67,24 +67,24 @@ void Logout()
 
 void Play()
 {
-  auto m = Message::NewProto<Proto::StrategyStatusReq>();
+  auto m = Message::NewProto<Proto::StrategyOperateReq>();
   m->set_type(Proto::Set);
-  auto *s = m->add_statuses();
-  s->set_name("test");
-  s->set_underlying("m1809");
-  s->set_status(Proto::StrategyStatus::Play);
+  auto *op = m->add_operates();
+  op->set_name("test");
+  op->set_underlying("m1809");
+  op->set_operate(Proto::StrategyOperation::Start);
   m->set_user("pengchong");
   Send(m);
 }
 
 void Stop()
 {
-  auto m = Message::NewProto<Proto::StrategyStatusReq>();
+  auto m = Message::NewProto<Proto::StrategyOperateReq>();
   m->set_type(Proto::Set);
-  auto *s = m->add_statuses();
-  s->set_name("test");
-  s->set_underlying("m1809");
-  s->set_status(Proto::StrategyStatus::Stop);
+  auto *op = m->add_operates();
+  op->set_name("test");
+  op->set_underlying("m1809");
+  op->set_operate(Proto::StrategyOperation::Stop);
   m->set_user("pengchong");
   Send(m);
 }

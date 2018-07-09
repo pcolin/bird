@@ -36,7 +36,7 @@ private:
   bool OnCredit(const std::shared_ptr<Proto::Credit> &msg);
   bool OnQuoterSpec(const std::shared_ptr<Proto::QuoterSpec> &msg);
   bool OnStrategySwitch(const std::shared_ptr<Proto::StrategySwitch> &msg);
-  bool OnStrategyStatusReq(const std::shared_ptr<Proto::StrategyStatusReq> &msg);
+  bool OnStrategyOperate(const std::shared_ptr<Proto::StrategyOperate> &msg);
 
   OrderPtr NewOrder(const Instrument *inst, Side side, base::PriceType price);
   TraderApi *api_ = nullptr;

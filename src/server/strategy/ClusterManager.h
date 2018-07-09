@@ -40,7 +40,7 @@ public:
   ProtoReplyPtr OnCreditReq(const std::shared_ptr<Proto::CreditReq> &req);
   ProtoReplyPtr OnQuoterReq(const std::shared_ptr<Proto::QuoterReq> &req);
   ProtoReplyPtr OnStrategySwitchReq(const std::shared_ptr<Proto::StrategySwitchReq> &req);
-  ProtoReplyPtr OnStrategyStatusReq(const std::shared_ptr<Proto::StrategyStatusReq> &req);
+  ProtoReplyPtr OnStrategyOperateReq(const std::shared_ptr<Proto::StrategyOperateReq> &req);
 
   template<class Type> void Publish(const Type &msg)
   {

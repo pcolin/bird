@@ -40,7 +40,7 @@ public:
   void Publish(std::shared_ptr<Price> &price);
   std::shared_ptr<StrategyDevice> FindStrategyDevice(const std::string &name) const;
 
-  void OnStrategyStatusReq(const std::shared_ptr<Proto::StrategyStatusReq> &msg);
+  void OnStrategyOperate(const std::string &user, const Proto::StrategyOperate &op);
   // void OnQuoterSpec(const std::string &user, Proto::RequestType type,
   //     const std::shared_ptr<Proto::QuoterSpec> &quoter);
 

@@ -146,8 +146,10 @@ void Middleware::RunPublisher()
         }
         else
         {
-          LOG_INF << boost::format("Success to publish %1%: %2%") % messages[i]->GetTypeName() %
-            messages[i]->ShortDebugString();
+          // LOG_INF << boost::format("Success to publish %1%: %2%") % messages[i]->GetTypeName() %
+          //   messages[i]->ShortDebugString();
+          LOG_INF << "Publish " << messages[i]->GetTypeName() << ":"
+            << messages[i]->ShortDebugString();
         }
       }
       else
@@ -207,8 +209,8 @@ void Middleware::RunResponder()
         &ClusterManager::OnQuoterReq, ClusterManager::GetInstance(), std::placeholders::_1));
   dispatcher.RegisterCallback<Proto::StrategySwitchReq>(std::bind(
         &ClusterManager::OnStrategySwitchReq, ClusterManager::GetInstance(), std::placeholders::_1));
-  dispatcher.RegisterCallback<Proto::StrategyStatusReq>(std::bind(
-        &ClusterManager::OnStrategyStatusReq, ClusterManager::GetInstance(), std::placeholders::_1));
+  dispatcher.RegisterCallback<Proto::StrategyOperateReq>(std::bind(
+        &ClusterManager::OnStrategyOperateReq, ClusterManager::GetInstance(),std::placeholders::_1));
   size_t n = 64;
   char *send_buf = new char[n];
   auto reply = Message::NewProto<Proto::Reply>();
@@ -221,7 +223,8 @@ void Middleware::RunResponder()
       std::shared_ptr<google::protobuf::Message> msg(base::DecodeProtoMessage(recv_buf, recv_bytes));
       if (msg)
       {
-        LOG_INF << boost::format("type: %1% %2%") % msg->GetTypeName() % msg->ShortDebugString();
+        // LOG_INF << boost::format("type: %1% %2%") % msg->GetTypeName() % msg->ShortDebugString();
+        LOG_INF << msg->GetTypeName() << " " << msg->ShortDebugString();
         auto r = dispatcher.OnProtoMessage(msg);
         if (r != nullptr)
         {

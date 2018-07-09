@@ -2,13 +2,15 @@
 #include "base/logger/Logging.h"
 #include "exchange/manager/ExchangeManager.h"
 
+// #include "strategy.pb.h"
+
 #include <boost/format.hpp>
 
 TestStrategy::TestStrategy(const std::string &name, DeviceManager *dm)
   : Strategy(name, dm)
 {
-  dispatcher_.RegisterCallback<Proto::StrategyStatusReq>(
-      std::bind(&TestStrategy::OnStrategyStatusReq, this, std::placeholders::_1));
+  dispatcher_.RegisterCallback<Proto::StrategyOperate>(
+      std::bind(&TestStrategy::OnStrategyOperate, this, std::placeholders::_1));
 }
 
 void TestStrategy::OnStart()
@@ -81,14 +83,11 @@ void TestStrategy::OnTrade(const TradePtr &trade)
   LOG_INF << "OnTrade: " << trade->Dump();
 }
 
-bool TestStrategy::OnStrategyStatusReq(const std::shared_ptr<Proto::StrategyStatusReq> &msg)
+bool TestStrategy::OnStrategyOperate(const std::shared_ptr<Proto::StrategyOperate> &msg)
 {
-  for (auto &s : msg->statuses())
+  if (msg->name() == Name() && msg->operate() == Proto::StrategyOperation::Start)
   {
-    if (s.name() == Name() && s.status() == Proto::StrategyStatus::Play)
-    {
-      // LOG_PUB << boost::format("%1% played %2%") % msg->user() % s.name();
-    }
+    // LOG_PUB << boost::format("%1% played %2%") % msg->user() % s.name();
   }
 }
 

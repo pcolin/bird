@@ -16,8 +16,8 @@ Quoter::Quoter(const std::string &name, DeviceManager *dm)
       std::bind(&Quoter::OnQuoterSpec, this, std::placeholders::_1));
   dispatcher_.RegisterCallback<Proto::StrategySwitch>(
       std::bind(&Quoter::OnStrategySwitch, this, std::placeholders::_1));
-  dispatcher_.RegisterCallback<Proto::StrategyStatusReq>(
-      std::bind(&Quoter::OnStrategyStatusReq, this, std::placeholders::_1));
+  dispatcher_.RegisterCallback<Proto::StrategyOperate>(
+      std::bind(&Quoter::OnStrategyOperate, this, std::placeholders::_1));
 }
 
 void Quoter::OnStart()
@@ -220,14 +220,11 @@ bool Quoter::OnStrategySwitch(const std::shared_ptr<Proto::StrategySwitch> &msg)
   }
 }
 
-bool Quoter::OnStrategyStatusReq(const std::shared_ptr<Proto::StrategyStatusReq> &msg)
+bool Quoter::OnStrategyOperate(const std::shared_ptr<Proto::StrategyOperate> &msg)
 {
-  for (auto &s : msg->statuses())
+  if (msg->name() == Name() && msg->operate() == Proto::StrategyOperation::Start)
   {
-    if (s.name() == Name() && s.status() == Proto::StrategyStatus::Play)
-    {
-      // LOG_PUB << boost::format("%1% played %2%") % msg->user() % s.name();
-    }
+    // LOG_PUB << boost::format("%1% played %2%") % msg->user() % s.name();
   }
 }
 

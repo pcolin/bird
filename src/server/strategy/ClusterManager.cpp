@@ -426,29 +426,29 @@ ClusterManager::ProtoReplyPtr ClusterManager::OnStrategySwitchReq(
   return nullptr;
 }
 
-ClusterManager::ProtoReplyPtr ClusterManager::OnStrategyStatusReq(
-    const std::shared_ptr<Proto::StrategyStatusReq> &req)
+ClusterManager::ProtoReplyPtr ClusterManager::OnStrategyOperateReq(
+    const std::shared_ptr<Proto::StrategyOperateReq> &req)
 {
   if (req->type() == Proto::RequestType::Set)
   {
-    for (auto &status : req->statuses())
+    for (auto &op : req->operates())
     {
-      const Instrument *underlying = ProductManager::GetInstance()->FindId(status.underlying());
+      const Instrument *underlying = ProductManager::GetInstance()->FindId(op.underlying());
       if (underlying)
       {
         auto *dm = FindDevice(underlying);
         if (dm)
         {
-          dm->OnStrategyStatusReq(req);
+          dm->OnStrategyOperate(req->user(), op);
         }
       }
       else
       {
-        LOG_ERR << "Can't find underlying " << status.underlying();
+        LOG_ERR << "Can't find underlying " << op.underlying();
       }
     }
-    Publish(req);
-    LOG_PUB << req->user() << " set StrategyStatus";
+    // Publish(req);
+    // LOG_PUB << req->user() << " set StrategyStatus";
   }
   return nullptr;
 }

@@ -54,10 +54,11 @@ void StrategyDevice::Run()
   LOG_INF << boost::format("Device %1% start running") % name;
   barrier_->ClearAlert();
   strategy_->OnStart();
-  auto start = Message::NewProto<Proto::StrategyStatus>();
+  auto start = Message::NewProto<Proto::StrategyStatistic>();
   start->set_name(name);
+  start->set_exchange(strategy_->Underlying()->Exchange());
   start->set_underlying(strategy_->UnderlyingId());
-  start->set_status(Proto::StrategyStatus::Running);
+  start->set_status(Proto::StrategyStatus::Started);
   Middleware::GetInstance()->Publish(start);
   rb_.AddGatingSequence(&sequence_);
 
@@ -76,10 +77,11 @@ void StrategyDevice::Run()
   }
 
   strategy_->OnStop();
-  auto stop = Message::NewProto<Proto::StrategyStatus>();
+  auto stop = Message::NewProto<Proto::StrategyStatistic>();
   stop->set_name(name);
+  start->set_exchange(strategy_->Underlying()->Exchange());
   stop->set_underlying(strategy_->UnderlyingId());
-  stop->set_status(Proto::StrategyStatus::Stop);
+  stop->set_status(Proto::StrategyStatus::Stopped);
   Middleware::GetInstance()->Publish(stop);
   rb_.RemoveGatingSequence(&sequence_);
   LOG_INF << boost::format("Device %1% was stopped(seq:%2%->%3%)") % name % begin % next;

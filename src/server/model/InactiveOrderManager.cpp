@@ -11,7 +11,7 @@ InactiveOrderManager::InactiveOrderManager()
   generations_[0] = std::make_shared<Generation>();
   generations_[1] = std::make_shared<Generation>();
 }
-  
+
 void InactiveOrderManager::Insert(const OrderPtr &order)
 {
   assert(generations_.front());
@@ -27,7 +27,7 @@ void InactiveOrderManager::Insert(const OrderPtr &order)
     }
     generations_.front() = std::make_shared<Generation>();
   }
-} 
+}
 
 void InactiveOrderManager::Remove(const OrderPtr &order)
 {

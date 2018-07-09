@@ -318,12 +318,20 @@ void CtpTraderApi::QueryCash()
   strcpy(field.BrokerID, broker_.c_str());
   strcpy(field.InvestorID, investor_.c_str());
 
-  while (int ret = api_->ReqQryTradingAccount(&field, req_id_++))
+  // while (int ret = api_->ReqQryTradingAccount(&field, req_id_++))
+  // {
+  //   LOG_ERR << boost::format("Failed to send query cash request(%1%), retry after 1s") % ret;
+  //   std::this_thread::sleep_for(std::chrono::seconds(1));
+  // }
+  int ret = api_->ReqQryTradingAccount(&field, req_id_++);
+  if (ret)
   {
-    LOG_ERR << boost::format("Failed to send query cash request(%1%), retry after 1s") % ret;
-    std::this_thread::sleep_for(std::chrono::seconds(1));
+    LOG_ERR << boost::format("Failed to send query cash request(return code = %1%)") % ret;
   }
-  LOG_INF << "Success to send query cash request";
+  else
+  {
+    LOG_INF << "Success to send query cash request";
+  }
 }
 
 void CtpTraderApi::NotifyInstrumentReady()
