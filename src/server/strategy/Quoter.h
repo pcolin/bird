@@ -31,6 +31,7 @@ protected:
   virtual void OnTheoMatrix(const TheoMatrixPtr &theo) override;
   virtual void OnOrder(const OrderPtr &order) override;
   virtual void OnTrade(const TradePtr &trade) override;
+  virtual bool OnHeartbeat(const std::shared_ptr<Proto::Heartbeat> &heartbeat) override;
 
 private:
   bool OnCredit(const std::shared_ptr<Proto::Credit> &msg);

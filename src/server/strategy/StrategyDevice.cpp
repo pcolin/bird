@@ -79,7 +79,7 @@ void StrategyDevice::Run()
   strategy_->OnStop();
   auto stop = Message::NewProto<Proto::StrategyStatistic>();
   stop->set_name(name);
-  start->set_exchange(strategy_->Underlying()->Exchange());
+  stop->set_exchange(strategy_->Underlying()->Exchange());
   stop->set_underlying(strategy_->UnderlyingId());
   stop->set_status(Proto::StrategyStatus::Stopped);
   Middleware::GetInstance()->Publish(stop);

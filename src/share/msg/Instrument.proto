@@ -60,16 +60,17 @@ message Instrument
   Currency currency = 5;
   string underlying = 6;
   string hedge_underlying = 7;
-  double tick = 8;
-  double multiplier = 9;
-  double highest = 10;
-  double lowest = 11;
-  OptionType call_put = 12;
-  string maturity = 13;
-  ExerciseType exercise = 14;
-  SettlementType settlement = 15;
-  double strike = 16;
-  InstrumentStatus status = 17;
+  int32 lot = 8;
+  double tick = 9;
+  double multiplier = 10;
+  double highest = 11;
+  double lowest = 12;
+  OptionType call_put = 13;
+  string maturity = 14;
+  ExerciseType exercise = 15;
+  SettlementType settlement = 16;
+  double strike = 17;
+  InstrumentStatus status = 18;
 }
 
 message InstrumentReq

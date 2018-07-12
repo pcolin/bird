@@ -134,7 +134,7 @@ bool TheoCalculator::Initialize(const std::shared_ptr<Proto::Pricer> &spec)
         it = parameters_.emplace(option->Maturity(), ParameterMap()).first;
       }
       it->second.emplace(option, param);
-      LOG_DBG << boost::format("%1%: Add %2%") % spec->name() % op;
+      LOG_DBG << boost::format("%1%: Add %2%") % spec->name() % op->Id();
     }
     else
     {

@@ -9,6 +9,7 @@ void Instrument::Serialize(Proto::Instrument *inst) const
   inst->set_exchange(exchange_);
   inst->set_type(type_);
   inst->set_currency(currency_);
+  inst->set_lot(lot_);
   inst->set_tick(tick_);
   inst->set_multiplier(multiplier_);
   if (underlying_)

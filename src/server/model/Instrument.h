@@ -34,6 +34,9 @@ class Instrument
     const Proto::Currency Currency() const { return currency_; }
     void Currency(Proto::Currency currency) { currency_ = currency; }
 
+    const base::VolumeType Lot() const { return lot_; }
+    void Lot(base::VolumeType lot) { lot_ = lot; }
+
     const base::PriceType Tick() const { return tick_; }
     void Tick(base::PriceType tick) { tick_ = tick; }
 
@@ -94,6 +97,19 @@ class Instrument
       }
     }
 
+    base::VolumeType RoundToLot(base::VolumeType volume, Proto::RoundDirection direction) const
+    {
+      switch (direction)
+      {
+        case Proto::RoundDirection::Up:
+          return lot_ * std::ceil(volume / lot_);
+        case Proto::RoundDirection::Down:
+          return lot_ * std::floor(volume / lot_);
+        default:
+          return lot_ * std::floor((volume + lot_ * 0.5) / lot_);
+      }
+    }
+
   protected:
     std::string id_;
     std::string symbol_;
@@ -102,6 +118,7 @@ class Instrument
     Proto::InstrumentType type_;
     std::atomic<Proto::InstrumentStatus> status_;
     Proto::Currency currency_;
+    base::VolumeType lot_ = 1;
     base::PriceType tick_ = base::PRICE_UNDEFINED;
     base::PriceType multiplier_ = base::PRICE_UNDEFINED;
     base::PriceType highest_ = base::PRICE_UNDEFINED;

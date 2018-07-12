@@ -3,6 +3,7 @@
 #include "base/logger/Logging.h"
 #include "exchange/manager/ExchangeManager.h"
 #include "model/ProductManager.h"
+#include "model/Middleware.h"
 
 #include <future>
 #include <boost/format.hpp>
@@ -166,6 +167,21 @@ void Quoter::OnTrade(const TradePtr &trade)
       std::async(std::launch::async, &DeviceManager::Stop, dm_, name_, "trade limit broken");
     }
   }
+}
+
+bool Quoter::OnHeartbeat(const std::shared_ptr<Proto::Heartbeat> &heartbeat)
+{
+  auto s = Message::NewProto<Proto::StrategyStatistic>();
+  s->set_name(name_);
+  s->set_type(Proto::StrategyType::Quoter);
+  auto *underlying = Underlying();
+  s->set_exchange(underlying->Exchange());
+  s->set_underlying(underlying->Id());
+  s->set_status(Proto::StrategyStatus::Running);
+  s->set_delta(0); /// to be done...
+  s->set_orders(order_ids_.size());
+  s->set_trades(trades_);
+  Middleware::GetInstance()->Publish(s);
 }
 
 bool Quoter::OnCredit(const std::shared_ptr<Proto::Credit> &msg)

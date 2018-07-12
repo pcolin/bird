@@ -49,7 +49,7 @@ bool TheoMatrix::FindTheo(base::PriceType spot, TheoData &theo) const
 std::string TheoMatrix::Dump() const
 {
   std::ostringstream oss;
-  oss << boost::format("%1% lower(%1%) upper(%2%)") % option->Id() % lower % upper;
+  oss << boost::format("%1% lower(%2%) upper(%3%)") % option->Id() % lower % upper;
   for (int i = 0; (i < 2 * DEPTH + 1) && theos[i]; ++i)
   {
     oss << " [" << i << '-' << theos[i].spot << '-' << theos[i].volatility << '-' << theos[i].ss_rate

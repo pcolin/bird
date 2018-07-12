@@ -3,9 +3,6 @@
 #include "config/EnvConfig.h"
 #include "model/Message.h"
 
-// #include <chrono>
-// #include <ctime>
-// #include <iomanip>
 #include <sstream>
 #include <boost/format.hpp>
 
@@ -81,15 +78,16 @@ base::ProtoMessagePtr InstrumentDB::OnRequest(const std::shared_ptr<Proto::Instr
     {
       if (!inst.symbol().empty())
       {
-        sprintf(sql, "INSERT OR REPLACE INTO %s VALUES('%s', '%s', %d, %d, %d, '%s', '%s', %f, "
+        sprintf(sql, "INSERT OR REPLACE INTO %s VALUES('%s', '%s', %d, %d, %d, '%s', '%s', %d, %f, "
                      "%f, %f, %f, %d, '%s', %d, %d, %f, %d)",
                 table_name_.c_str(), inst.id().c_str(), inst.symbol().c_str(),
                 static_cast<int32_t>(inst.exchange()), static_cast<int32_t>(inst.type()),
                 static_cast<int32_t>(inst.currency()), inst.underlying().c_str(),
-                inst.hedge_underlying().c_str(), inst.tick(), inst.multiplier(), inst.highest(),
-                inst.lowest(), static_cast<int32_t>(inst.call_put()), inst.maturity().c_str(),
-                static_cast<int32_t>(inst.exercise()), static_cast<int32_t>(inst.settlement()),
-                inst.strike(), static_cast<int32_t>(inst.status()));
+                inst.hedge_underlying().c_str(), inst.lot(), inst.tick(), inst.multiplier(),
+                inst.highest(), inst.lowest(), static_cast<int32_t>(inst.call_put()),
+                inst.maturity().c_str(), static_cast<int32_t>(inst.exercise()),
+                static_cast<int32_t>(inst.settlement()), inst.strike(),
+                static_cast<int32_t>(inst.status()));
         ExecSql(sql);
         UpdateInstrument(inst,
             inst.type() == Proto::InstrumentType::Option ? options_ : underlyings_);
@@ -149,12 +147,13 @@ int InstrumentDB::UnderlyingCallback(void *data, int argc, char **argv, char **c
     inst->set_currency(static_cast<Proto::Currency>(atoi(argv[4])));
     inst->set_underlying(argv[5]);
     inst->set_hedge_underlying(argv[6]);
-    inst->set_tick(atof(argv[7]));
-    inst->set_multiplier(atof(argv[8]));
-    inst->set_highest(atof(argv[9]));
-    inst->set_lowest(atof(argv[10]));
-    inst->set_maturity(argv[12]);
-    inst->set_status(static_cast<Proto::InstrumentStatus>(atoi(argv[16])));
+    inst->set_lot(atoi(argv[7]));
+    inst->set_tick(atof(argv[8]));
+    inst->set_multiplier(atof(argv[9]));
+    inst->set_highest(atof(argv[10]));
+    inst->set_lowest(atof(argv[11]));
+    inst->set_maturity(argv[13]);
+    inst->set_status(static_cast<Proto::InstrumentStatus>(atoi(argv[17])));
     cache[id] = inst;
   }
   return 0;
@@ -176,16 +175,17 @@ int InstrumentDB::OptionCallback(void *data, int argc, char **argv, char **col_n
     inst->set_currency(static_cast<Proto::Currency>(atoi(argv[4])));
     inst->set_underlying(argv[5]);
     inst->set_hedge_underlying(argv[6]);
-    inst->set_tick(atof(argv[7]));
-    inst->set_multiplier(atof(argv[8]));
-    inst->set_highest(atof(argv[9]));
-    inst->set_lowest(atof(argv[10]));
-    inst->set_call_put(static_cast<Proto::OptionType>(atoi(argv[11])));
-    inst->set_maturity(argv[12]);
-    inst->set_exercise(static_cast<Proto::ExerciseType>(atoi(argv[13])));
-    inst->set_settlement(static_cast<Proto::SettlementType>(atoi(argv[14])));
-    inst->set_strike(atof(argv[15]));
-    inst->set_status(static_cast<Proto::InstrumentStatus>(atoi(argv[16])));
+    inst->set_lot(atoi(argv[7]));
+    inst->set_tick(atof(argv[8]));
+    inst->set_multiplier(atof(argv[9]));
+    inst->set_highest(atof(argv[10]));
+    inst->set_lowest(atof(argv[11]));
+    inst->set_call_put(static_cast<Proto::OptionType>(atoi(argv[12])));
+    inst->set_maturity(argv[13]);
+    inst->set_exercise(static_cast<Proto::ExerciseType>(atoi(argv[14])));
+    inst->set_settlement(static_cast<Proto::SettlementType>(atoi(argv[15])));
+    inst->set_strike(atof(argv[16]));
+    inst->set_status(static_cast<Proto::InstrumentStatus>(atoi(argv[17])));
     cache[id] = inst;
   }
   return 0;

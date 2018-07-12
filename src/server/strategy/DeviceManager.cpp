@@ -170,8 +170,8 @@ void DeviceManager::OnStrategyOperate(const std::string &user, const Proto::Stra
       sd->Start();
     }
   }
-  LOG_PUB << boost::format("%1% set %2% : %3%") % user % op.name() %
-    Proto::StrategyOperation_Name(op.operate());
+  LOG_PUB << boost::format("%1% %2% %3%") % user % Proto::StrategyOperation_Name(op.operate()) %
+    op.name() ;
   // if (publish) Publish(msg);
 }
 
