@@ -15,13 +15,13 @@ public:
   virtual void Login() = 0;
   virtual void Logout() = 0;
 
-  void New(const OrderPtr &order);
-  void New(const OrderPtr &bid, const OrderPtr &ask);
+  void Submit(const OrderPtr &order);
+  void Submit(const OrderPtr &bid, const OrderPtr &ask);
   void Amend(const OrderPtr &order);
   void Amend(const OrderPtr &bid, const OrderPtr &ask);
-  void Pull(const OrderPtr &order);
-  void Pull(const OrderPtr &bid, const OrderPtr &ask);
-  void PullAll();
+  void Cancel(const OrderPtr &order);
+  void Cancel(const OrderPtr &bid, const OrderPtr &ask);
+  void CancelAll();
 
   void OnOrderResponse(const OrderPtr &order);
   void RejectOrder(const OrderPtr &order);
@@ -29,12 +29,12 @@ public:
 protected:
   // void StartRequestWork();
 
-  virtual void NewOrder(const OrderPtr &order) = 0;
-  virtual void NewQuote(const OrderPtr &bid, const OrderPtr &ask) = 0;
+  virtual void SubmitOrder(const OrderPtr &order) = 0;
+  virtual void SubmitQuote(const OrderPtr &bid, const OrderPtr &ask) = 0;
   virtual void AmendOrder(const OrderPtr &order) = 0;
   virtual void AmendQuote(const OrderPtr &bid, const OrderPtr &ask) = 0;
-  virtual void PullOrder(const OrderPtr &order) = 0;
-  virtual void PullQuote(const OrderPtr &bid, const OrderPtr &ask) = 0;
+  virtual void CancelOrder(const OrderPtr &order) = 0;
+  virtual void CancelQuote(const OrderPtr &bid, const OrderPtr &ask) = 0;
 
   virtual void QueryCash() = 0;
 

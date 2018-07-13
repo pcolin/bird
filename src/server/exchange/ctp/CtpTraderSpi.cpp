@@ -193,7 +193,7 @@ void CtpTraderSpi::OnRspQryInstrument(CThostFtdcInstrumentField *pInstrument,
 
   if (bIsLast)
   {
-    auto req = Message::NewProto<Proto::InstrumentReq>();
+    // auto req = Message::NewProto<Proto::InstrumentReq>();
     for (auto &it : futures)
     {
       if (it.first->HedgeUnderlying() != nullptr)
@@ -209,7 +209,7 @@ void CtpTraderSpi::OnRspQryInstrument(CThostFtdcInstrumentField *pInstrument,
         ProductManager::GetInstance()->Add(it.first);
         LOG_INF << "Add Future " << it.first->Id();
       }
-      it.first->Serialize(req->add_instruments());
+      // it.first->Serialize(req->add_instruments());
     }
     for (auto &it : options)
     {
@@ -223,11 +223,62 @@ void CtpTraderSpi::OnRspQryInstrument(CThostFtdcInstrumentField *pInstrument,
       ProductManager::GetInstance()->Add(it.first);
       LOG_INF << boost::format("Add Option %1%, Hedge Underlying %2%") %
         it.first->Id() % hedge_undl->Id();
-      it.first->Serialize(req->add_instruments());
+      // it.first->Serialize(req->add_instruments());
     }
-    req->set_exchange(exchange);
-    req->set_type(Proto::RequestType::Set);
-    Middleware::GetInstance()->Publish(req);
+    // req->set_exchange(exchange);
+    // req->set_type(Proto::RequestType::Set);
+    // Middleware::GetInstance()->Publish(req);
+    // api_->NotifyInstrumentReady();
+    // api_->QueryPositions();
+    api_->QueryMarketData();
+  }
+}
+
+void CtpTraderSpi::OnRspQryDepthMarketData(CThostFtdcDepthMarketDataField *pDepthMarketData,
+    CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
+{
+  if (pRspInfo && pRspInfo->ErrorID != 0)
+  {
+    LOG_ERR << boost::format("Failed to query market data: %1%(%2%).") %
+      pRspInfo->ErrorID % base::GB2312ToUtf8(pRspInfo->ErrorMsg);
+    return;
+  }
+  LOG_INF << boost::format("OnRspQryDepthMarketData: InstrumentID(%1%), UpperLimitPrice(%2%), "
+      "LowerLimitPrice(%3%), PreSettlementPrice(%4%)")
+    % pDepthMarketData->InstrumentID % pDepthMarketData->UpperLimitPrice
+    % pDepthMarketData->LowerLimitPrice % pDepthMarketData->PreSettlementPrice;
+  auto *inst = const_cast<Instrument*>(
+      ProductManager::GetInstance()->FindId(pDepthMarketData->InstrumentID));
+  if (inst)
+  {
+    inst->Highest(pDepthMarketData->UpperLimitPrice);
+    inst->Lowest(pDepthMarketData->LowerLimitPrice);
+    LOG_INF << boost::format("Lowest/Highest price update: %1% - %2%/%3%") %
+      inst->Id() % inst->Lowest() % inst->Highest();
+  }
+  if (bIsLast)
+  {
+    auto &instruments = ProductManager::GetInstance()->FindInstruments(
+        [](const Instrument*) { return true; });
+    if (instruments.size() > 0)
+    {
+      auto req = Message::NewProto<Proto::InstrumentReq>();
+      req->set_type(Proto::RequestType::Set);
+      req->set_exchange(instruments[0]->Exchange());
+      for (const Instrument *inst : instruments)
+      {
+        if (inst->Type() == Proto::InstrumentType::Option)
+        {
+          auto *op = base::down_cast<const Option*>(inst);
+          op->Serialize(req->add_instruments());
+        }
+        else
+        {
+          inst->Serialize(req->add_instruments());
+        }
+      }
+      Middleware::GetInstance()->Publish(req);
+    }
     api_->NotifyInstrumentReady();
     api_->QueryPositions();
   }
@@ -343,7 +394,7 @@ void CtpTraderSpi::OnRspOrderInsert(CThostFtdcInputOrderField *pInputOrder,
   if (ord)
   {
     auto update = Message::NewOrder(ord);
-    update->status = OrderStatus::Rejected;
+    update->status = Proto::OrderStatus::Rejected;
     update->note = std::move(err);
     api_->OnOrderResponse(update);
   }
@@ -366,7 +417,7 @@ void CtpTraderSpi::OnErrRtnOrderInsert(CThostFtdcInputOrderField *pInputOrder,
   if (ord)
   {
     auto update = Message::NewOrder(ord);
-    update->status = OrderStatus::Rejected;
+    update->status = Proto::OrderStatus::Rejected;
     update->note = err;
     api_->OnOrderResponse(update);
   }
@@ -394,7 +445,7 @@ void CtpTraderSpi::OnRtnOrder(CThostFtdcOrderField *pOrder)
     {
       auto update = Message::NewOrder(ord);
       update->counter_id = pOrder->OrderRef;
-      update->status = OrderStatus::Submitted;
+      update->status = Proto::OrderStatus::Submitted;
       update->header.SetInterval(1);
       api_->OnOrderResponse(update);
     }
@@ -411,7 +462,7 @@ void CtpTraderSpi::OnRtnOrder(CThostFtdcOrderField *pOrder)
       auto update = Message::NewOrder(ord);
       update->counter_id = pOrder->OrderRef;
       update->exchange_id = pOrder->OrderSysID;
-      update->status = OrderStatus::New;
+      update->status = Proto::OrderStatus::New;
       update->header.SetInterval(2);
       api_->OnOrderResponse(update);
     }
@@ -425,9 +476,10 @@ void CtpTraderSpi::OnRtnOrder(CThostFtdcOrderField *pOrder)
     if (strlen(pOrder->OrderSysID) > 0)
     {
       if (pOrder->VolumeTraded == 0)
-        UpdateOrder(pOrder->OrderSysID, 0, OrderStatus::Canceled);
+        UpdateOrder(pOrder->OrderSysID, 0, Proto::OrderStatus::Canceled);
       else
-        UpdateOrder(pOrder->OrderSysID, pOrder->VolumeTraded, OrderStatus::PartialFilledCanceled);
+        UpdateOrder(pOrder->OrderSysID, pOrder->VolumeTraded,
+            Proto::OrderStatus::PartialFilledCanceled);
     }
     else
     {
@@ -436,7 +488,7 @@ void CtpTraderSpi::OnRtnOrder(CThostFtdcOrderField *pOrder)
       {
         auto update = Message::NewOrder(ord);
         update->counter_id = pOrder->OrderRef;
-        update->status = OrderStatus::Rejected;
+        update->status = Proto::OrderStatus::Rejected;
         update->note = base::GB2312ToUtf8(pOrder->StatusMsg);
         api_->OnOrderResponse(update);
       }
@@ -448,11 +500,11 @@ void CtpTraderSpi::OnRtnOrder(CThostFtdcOrderField *pOrder)
   }
   else if (pOrder->OrderStatus == THOST_FTDC_OST_AllTraded)
   {
-    UpdateOrder(pOrder->OrderSysID, pOrder->VolumeTraded, OrderStatus::Filled);
+    UpdateOrder(pOrder->OrderSysID, pOrder->VolumeTraded, Proto::OrderStatus::Filled);
   }
   else if (pOrder->OrderStatus == THOST_FTDC_OST_PartTradedQueueing)
   {
-    UpdateOrder(pOrder->OrderSysID, pOrder->VolumeTraded, OrderStatus::PartialFilled);
+    UpdateOrder(pOrder->OrderSysID, pOrder->VolumeTraded, Proto::OrderStatus::PartialFilled);
   }
   else
   {
@@ -698,7 +750,8 @@ Proto::InstrumentStatus CtpTraderSpi::GetInstrumentStatus(
   }
 }
 
-void CtpTraderSpi::UpdateOrder(const char *exchange_id, base::VolumeType volume, OrderStatus status)
+void CtpTraderSpi::UpdateOrder(const char *exchange_id, base::VolumeType volume,
+    Proto::OrderStatus status)
 {
   auto ord = OrderManager::GetInstance()->FindOrder(exchange_id);
   if (ord)

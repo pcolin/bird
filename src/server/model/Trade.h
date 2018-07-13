@@ -2,12 +2,9 @@
 #define MODEL_TRADE_H
 
 #include "Order.h"
+#include "Trade.pb.h"
 #include <memory>
 
-namespace Proto
-{
-  class Trade;
-}
 struct Trade
 {
   Trade() : header(MsgType::Trade) {}
@@ -17,7 +14,7 @@ struct Trade
   MsgHeader header;
   const Instrument *instrument;
   std::string id;
-  Side side;
+  Proto::Side side;
   base::PriceType price;
   base::VolumeType volume;
   int64_t time;

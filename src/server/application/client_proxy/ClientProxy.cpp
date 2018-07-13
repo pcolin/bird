@@ -103,8 +103,7 @@ int main(int argc, char *argv[])
     auto *msg = DecodeProtoMessage(buf, recv_bytes);
     if (msg)
     {
-      LOG_INF << boost::format("%1% %2% %3%") % serial_num % msg->GetTypeName() %
-        msg->ShortDebugString();
+      LOG_INF << serial_num << " " << msg->GetTypeName() << " " << msg->ShortDebugString();
       delete msg;
       int32_t tmp = htonl(serial_num++);
       memcpy(buf, reinterpret_cast<char*>(&tmp), sizeof(tmp));

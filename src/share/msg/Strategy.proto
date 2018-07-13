@@ -11,6 +11,7 @@ enum StrategyType
   Hitter = 1;
   Dimer = 2;
   DummyQuoter = 3;
+  Manual = 4;
 }
 
 //enum StrategyStatusEnum

@@ -99,27 +99,27 @@ void PositionManager::OnTrade(const TradePtr &trade)
   std::lock_guard<std::mutex> lck(mtx_);
   auto &pos = positions_[trade->instrument];
   assert(pos);
-  if (trade->side == Side::Buy)
+  if (trade->side == Proto::Side::Buy)
   {
     pos->set_total_long(pos->total_long() + trade->volume);
     LOG_INF << boost::format("%1% long pos update: %2%(%3%)/%4%") % trade->instrument->Id() %
       pos->liquid_long() % (pos->total_long() - pos->liquid_long()) % pos->total_long();
   }
-  else if (trade->side == Side::Sell)
+  else if (trade->side == Proto::Side::Sell)
   {
     pos->set_total_short(pos->total_short() + trade->volume);
     LOG_INF << boost::format("%1% short pos update: %2%(%3%)/%4%") % trade->instrument->Id() %
       pos->liquid_short() % (pos->total_short() - pos->liquid_short()) % pos->total_short();
   }
-  else if (trade->side == Side::BuyCover || trade->side == Side::BuyCoverToday ||
-      trade->side == Side::BuyCoverYesterday)
+  else if (trade->side == Proto::Side::BuyCover || trade->side == Proto::Side::BuyCoverToday ||
+      trade->side == Proto::Side::BuyCoverYesterday)
   {
     pos->set_total_short(pos->total_short() - trade->volume);
     LOG_INF << boost::format("%1% short pos update: %2%(%3%)/%4%") % trade->instrument->Id() %
       pos->liquid_short() % (pos->total_short() - pos->liquid_short()) % pos->total_short();
   }
-  else if (trade->side == Side::SellCover || trade->side == Side::SellCoverToday ||
-      trade->side == Side::SellCoverYesterday)
+  else if (trade->side == Proto::Side::SellCover || trade->side == Proto::Side::SellCoverToday ||
+      trade->side == Proto::Side::SellCoverYesterday)
   {
     pos->set_total_long(pos->total_long() - trade->volume);
     LOG_INF << boost::format("%1% long pos update: %2%(%3%)/%4%") % trade->instrument->Id() %

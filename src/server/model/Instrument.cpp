@@ -20,6 +20,8 @@ void Instrument::Serialize(Proto::Instrument *inst) const
   {
     inst->set_hedge_underlying(hedge_underlying_->Id());
   }
+  inst->set_highest(highest_);
+  inst->set_lowest(lowest_);
 
   char tmp[9];
   base::convert(tmp, (int)maturity_.year());

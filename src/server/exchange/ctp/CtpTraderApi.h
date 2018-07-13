@@ -18,9 +18,10 @@ public:
   void Login() override;
   void Logout() override;
 
-  // virtual void PullAll();
+  // virtual void CancelAll();
 
   void QueryInstruments();
+  void QueryMarketData();
   void QueryOrders();
   void QueryTrades();
   void QueryPositions();
@@ -34,12 +35,12 @@ public:
   OrderPtr RemoveOrder(int order_ref);
 
 protected:
-  void NewOrder(const OrderPtr &order) override;
-  void NewQuote(const OrderPtr &bid, const OrderPtr &ask) override;
+  void SubmitOrder(const OrderPtr &order) override;
+  void SubmitQuote(const OrderPtr &bid, const OrderPtr &ask) override;
   void AmendOrder(const OrderPtr &order) override;
   void AmendQuote(const OrderPtr &bid, const OrderPtr &ask) override;
-  void PullOrder(const OrderPtr &order) override;
-  void PullQuote(const OrderPtr &bid, const OrderPtr &ask) override;
+  void CancelOrder(const OrderPtr &order) override;
+  void CancelQuote(const OrderPtr &bid, const OrderPtr &ask) override;
 
   virtual void QueryCash() override;
 

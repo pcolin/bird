@@ -57,7 +57,7 @@ void CtpTraderApi::Init()
           if (ord)
           {
             if (!ord->counter_id.empty())
-              PullOrder(ord);
+              CancelOrder(ord);
             else
               pulling_ids_.enqueue(ids[i]);
           }
@@ -101,7 +101,7 @@ void CtpTraderApi::Logout()
   LOG_INF << "Success to send logout request.";
 }
 
-void CtpTraderApi::NewOrder(const OrderPtr &order)
+void CtpTraderApi::SubmitOrder(const OrderPtr &order)
 {
   if (unlikely(!order)) return;
 
@@ -125,7 +125,7 @@ void CtpTraderApi::NewOrder(const OrderPtr &order)
   {
     if (PositionManager::GetInstance()->TryFreeze(order))
     {
-      order->side = order->IsBid() ? Side::BuyCover : Side::SellCover;
+      order->side = order->IsBid() ? Proto::Side::BuyCover : Proto::Side::SellCover;
       field.CombOffsetFlag[0] = THOST_FTDC_OF_Close;
     }
     else
@@ -138,7 +138,7 @@ void CtpTraderApi::NewOrder(const OrderPtr &order)
     field.CombOffsetFlag[0] = THOST_FTDC_OF_Close;
   }
 
-  if (order->time_condition == TimeCondition::IOC)
+  if (order->time_condition == Proto::TimeCondition::IOC)
     field.TimeCondition = THOST_FTDC_TC_IOC;
 
   field.LimitPrice = order->price;
@@ -171,7 +171,7 @@ void CtpTraderApi::NewOrder(const OrderPtr &order)
   }
 }
 
-void CtpTraderApi::NewQuote(const OrderPtr &bid, const OrderPtr &ask)
+void CtpTraderApi::SubmitQuote(const OrderPtr &bid, const OrderPtr &ask)
 {
 }
 
@@ -183,7 +183,7 @@ void CtpTraderApi::AmendQuote(const OrderPtr &bid, const OrderPtr &ask)
 {
 }
 
-void CtpTraderApi::PullOrder(const OrderPtr &order)
+void CtpTraderApi::CancelOrder(const OrderPtr &order)
 {
   if (unlikely(!order)) return;
 
@@ -236,11 +236,11 @@ void CtpTraderApi::PullOrder(const OrderPtr &order)
   }
 }
 
-void CtpTraderApi::PullQuote(const OrderPtr &bid, const OrderPtr &ask)
+void CtpTraderApi::CancelQuote(const OrderPtr &bid, const OrderPtr &ask)
 {
 }
 
-// void CtpTraderApi::PullAll()
+// void CtpTraderApi::CancelAll()
 // {
 // }
 
@@ -258,6 +258,20 @@ void CtpTraderApi::QueryInstruments()
     std::this_thread::sleep_for(std::chrono::seconds(1));
   }
   LOG_INF << "Success to send query instrument request";
+}
+
+void CtpTraderApi::QueryMarketData()
+{
+  LOG_INF << "Query market data of " << exchange_;
+  CThostFtdcQryDepthMarketDataField field;
+  memset(&field, 0, sizeof(field));
+
+  while (int ret = api_->ReqQryDepthMarketData(&field, req_id_++))
+  {
+    LOG_ERR << boost::format("Failed to send query market data(%1%), retry after 1s") % ret;
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+  }
+  LOG_INF << "Success to send query market data request";
 }
 
 void CtpTraderApi::QueryOrders()

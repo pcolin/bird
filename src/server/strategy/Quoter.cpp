@@ -56,8 +56,8 @@ void Quoter::OnStop()
   {
     for (auto &p : r.second->orders)
     {
-      // LOG_INF << boost::format("Pull order(stop): %1%") % it.second->Dump();
-      api_->Pull(p.first, p.second);
+      // LOG_INF << boost::format("Cancel order(stop): %1%") % it.second->Dump();
+      api_->Cancel(p.first, p.second);
     }
   }
 }
@@ -72,8 +72,8 @@ void Quoter::OnPrice(const PricePtr &price)
   //   {
   //     if (it->second && std::abs(price->last - it->second->price) >= 5)
   //     {
-  //       api_->Pull(it->second);
-  //       LOG_INF << boost::format("Pull order(pull to resubmit): %1%") % it->second->Dump();
+  //       api_->Cancel(it->second);
+  //       LOG_INF << boost::format("Cancel order(pull to resubmit): %1%") % it->second->Dump();
   //     }
   //   }
   //   else
@@ -212,14 +212,14 @@ bool Quoter::OnStrategySwitch(const std::shared_ptr<Proto::StrategySwitch> &msg)
           {
             for (auto &p : it->second->orders)
             {
-              api_->Pull(p.first, p.second);
+              api_->Cancel(p.first, p.second);
             }
           }
           else if (!bid)
           {
             for (auto &p : it->second->orders)
             {
-              api_->Pull(p.first);
+              api_->Cancel(p.first);
             }
           }
         }
@@ -244,7 +244,7 @@ bool Quoter::OnStrategyOperate(const std::shared_ptr<Proto::StrategyOperate> &ms
   }
 }
 
-OrderPtr Quoter::NewOrder(const Instrument *inst, Side side, base::PriceType price)
+OrderPtr Quoter::NewOrder(const Instrument *inst, Proto::Side side, base::PriceType price)
 {
   auto ord = Message::NewOrder();
   ord->instrument = inst;
@@ -252,8 +252,8 @@ OrderPtr Quoter::NewOrder(const Instrument *inst, Side side, base::PriceType pri
   ord->price = price;
   ord->volume = 10;
   ord->side = side;
-  ord->time_condition = TimeCondition::GTD;
-  ord->type = OrderType::Limit;
-  ord->status = OrderStatus::Local;
+  ord->time_condition = Proto::TimeCondition::GTD;
+  ord->type = Proto::OrderType::Limit;
+  ord->status = Proto::OrderStatus::Local;
   return ord;
 }

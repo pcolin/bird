@@ -33,43 +33,43 @@ void TraderApi::Init()
     });
 }
 
-void TraderApi::New(const OrderPtr &order)
+void TraderApi::Submit(const OrderPtr &order)
 {
-  auto r = std::make_shared<OrderRequest>(order, OrderAction::New);
+  auto r = std::make_shared<OrderRequest>(order, Proto::OrderAction::Submit);
   request_queue_.enqueue(r);
 }
 
-void TraderApi::New(const OrderPtr &bid, const OrderPtr &ask)
+void TraderApi::Submit(const OrderPtr &bid, const OrderPtr &ask)
 {
-  auto r = std::make_shared<QuoteRequest>(bid, ask, OrderAction::New);
+  auto r = std::make_shared<QuoteRequest>(bid, ask, Proto::OrderAction::Submit);
   request_queue_.enqueue(r);
 }
 
 void TraderApi::Amend(const OrderPtr &order)
 {
-  auto r = std::make_shared<OrderRequest>(order, OrderAction::Amend);
+  auto r = std::make_shared<OrderRequest>(order, Proto::OrderAction::Amend);
   request_queue_.enqueue(r);
 }
 
 void TraderApi::Amend(const OrderPtr &bid, const OrderPtr &ask)
 {
-  auto r = std::make_shared<QuoteRequest>(bid, ask, OrderAction::Amend);
+  auto r = std::make_shared<QuoteRequest>(bid, ask, Proto::OrderAction::Amend);
   request_queue_.enqueue(r);
 }
 
-void TraderApi::Pull(const OrderPtr &order)
+void TraderApi::Cancel(const OrderPtr &order)
 {
-  auto r = std::make_shared<OrderRequest>(order, OrderAction::Pull);
+  auto r = std::make_shared<OrderRequest>(order, Proto::OrderAction::Cancel);
   request_queue_.enqueue(r);
 }
 
-void TraderApi::Pull(const OrderPtr &bid, const OrderPtr &ask)
+void TraderApi::Cancel(const OrderPtr &bid, const OrderPtr &ask)
 {
-  auto r = std::make_shared<QuoteRequest>(bid, ask, OrderAction::Pull);
+  auto r = std::make_shared<QuoteRequest>(bid, ask, Proto::OrderAction::Cancel);
   request_queue_.enqueue(r);
 }
 
-void TraderApi::PullAll()
+void TraderApi::CancelAll()
 {
   /// to be done...
 }
@@ -91,7 +91,7 @@ void TraderApi::OnOrderResponse(const OrderPtr &order)
 void TraderApi::RejectOrder(const OrderPtr &order)
 {
   auto ord = Message::NewOrder(order);
-  ord->status = OrderStatus::Rejected;
+  ord->status = Proto::OrderStatus::Rejected;
   OnOrderResponse(ord);
 }
 
@@ -106,13 +106,13 @@ void TraderApi::OnOrderRequest(const OrderRequestPtr &r)
   assert(r);
   switch (r->action)
   {
-    case OrderAction::New:
-      NewOrder(r->order);
+    case Proto::OrderAction::Submit:
+      SubmitOrder(r->order);
       break;
-    case OrderAction::Pull:
-      PullOrder(r->order);
+    case Proto::OrderAction::Cancel:
+      CancelOrder(r->order);
       break;
-    case OrderAction::Amend:
+    case Proto::OrderAction::Amend:
       AmendOrder(r->order);
       break;
     default:
@@ -126,11 +126,11 @@ void TraderApi::OnQuoteRequest(const QuoteRequestPtr &r)
   assert(r);
   switch (r->action)
   {
-    case OrderAction::New:
-      NewQuote(r->bid, r->ask);
-    case OrderAction::Pull:
-      PullQuote(r->bid, r->ask);
-    case OrderAction::Amend:
+    case Proto::OrderAction::Submit:
+      SubmitQuote(r->bid, r->ask);
+    case Proto::OrderAction::Cancel:
+      CancelQuote(r->bid, r->ask);
+    case Proto::OrderAction::Amend:
       AmendQuote(r->bid, r->ask);
     default:
       assert(false);

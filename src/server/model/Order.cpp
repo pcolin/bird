@@ -20,30 +20,30 @@ Order::Order()
 
 std::string Order::Dump() const
 {
-  static std::map<Side, const char*> sides = {
-    {Side::Buy, "Buy"}, {Side::Sell, "Sell"}, {Side::BuyCover, "BuyCover"},
-    {Side::BuyCoverToday, "BuyCoverToday"}, {Side::BuyCoverYesterday, "BuyCoverYesterDay"},
-    {Side::SellCover, "SellCover"}, {Side::SellCoverToday, "SellCoverToday"},
-    {Side::SellCoverYesterday, "SellCoverYesterday"} };
+  // static std::map<Side, const char*> sides = {
+  //   {Side::Buy, "Buy"}, {Side::Sell, "Sell"}, {Side::BuyCover, "BuyCover"},
+  //   {Side::BuyCoverToday, "BuyCoverToday"}, {Side::BuyCoverYesterday, "BuyCoverYesterDay"},
+  //   {Side::SellCover, "SellCover"}, {Side::SellCoverToday, "SellCoverToday"},
+  //   {Side::SellCoverYesterday, "SellCoverYesterday"} };
   // static std::map<TimeCondition, const char*> time_conditions = {
   //   {TimeCondition::GTD, "GTD"}, {TimeCondition::IOC, "IOC"} };
-  static const char* time_conditions[] = { "GTD", "IOC" };
-  static std::map<OrderStatus, const char*> statuses = {
-    {OrderStatus::Undefined, "Undefined"}, {OrderStatus::Local, "Local"},
-    {OrderStatus::Submitted, "Submitted"}, {OrderStatus::New, "New"},
-    {OrderStatus::PartialFilled, "PartialFilled"}, {OrderStatus::Filled, "Filled"},
-    {OrderStatus::PartialFilledCanceled, "PartialFilledCanceled"},
-    {OrderStatus::Canceled, "Canceled"}, {OrderStatus::Rejected, "Rejected"} };
+  // static const char* time_conditions[] = { "GTD", "IOC" };
+  // static std::map<OrderStatus, const char*> statuses = {
+  //   {OrderStatus::Undefined, "Undefined"}, {OrderStatus::Local, "Local"},
+  //   {OrderStatus::Submitted, "Submitted"}, {OrderStatus::New, "New"},
+  //   {OrderStatus::PartialFilled, "PartialFilled"}, {OrderStatus::Filled, "Filled"},
+  //   {OrderStatus::PartialFilledCanceled, "PartialFilledCanceled"},
+  //   {OrderStatus::Canceled, "Canceled"}, {OrderStatus::Rejected, "Rejected"} };
   std::stringstream ss;
-  ss << boost::format("%1% %2% %3% %4%@%5% %6% %7%") % id % instrument->Id() % sides[side] % volume %
-    price % time_conditions[static_cast<int>(time_condition)] % statuses[status];
+  ss << boost::format("%1% %2% %3% %4%@%5% %6% %7%") % id % instrument->Id() % Proto::Side_Name(side)
+    % volume % price % Proto::TimeCondition_Name(time_condition) % Proto::OrderStatus_Name(status);
 
   if (!counter_id.empty())
     ss << boost::format(" CounterID(%1%)") % counter_id;
   if (!exchange_id.empty())
     ss << boost::format(" ExchangeID(%1%)") % exchange_id;
   if (!strategy.empty())
-    ss << boost::format(" Strategy(%1%)") % strategy;
+    ss << boost::format(" Strategy(%1%:%2%)") % Proto::StrategyType_Name(strategy_type) % strategy;
   if (avg_executed_price > 0)
     ss << boost::format(" Executed(%1%@%2%)") % executed_volume % avg_executed_price;
   if (header.interval[2] > 0)
@@ -59,7 +59,6 @@ std::shared_ptr<Proto::Order> Order::Serialize() const
   std::shared_ptr<Proto::Order> ord = Message::NewProto<Proto::Order>();
   ord->set_id(id);
   ord->set_instrument(instrument->Id());
-  ord->set_exchange(instrument->Exchange());
   ord->set_counter_id(counter_id);
   ord->set_exchange_id(exchange_id);
   ord->set_note(note);
@@ -67,12 +66,12 @@ std::shared_ptr<Proto::Order> Order::Serialize() const
   ord->set_avg_executed_price(avg_executed_price);
   ord->set_volume(volume);
   ord->set_executed_volume(executed_volume);
-  // static Proto::Side sides[] = { Proto::Buy, Proto::Sell, Proto::BuyCover };
-  // ord->set_side(sides[static_cast<int>(side)]);
-  ord->set_side(static_cast<Proto::Side>(side));
-  ord->set_time_condition(static_cast<Proto::TimeCondition>(time_condition));
-  ord->set_type(static_cast<Proto::OrderType>(type));
-  ord->set_status(static_cast<Proto::OrderStatus>(status));
+  ord->set_exchange(instrument->Exchange());
+  ord->set_strategy_type(strategy_type);
+  ord->set_side(side);
+  ord->set_time_condition(time_condition);
+  ord->set_type(type);
+  ord->set_status(status);
   // google::protobuf::Timestamp *t = new google::protobuf::Timestamp;
   // t->set_seconds(header.time / 1000000);
   // t->set_nanos(header.time % 1000000 * 1000);

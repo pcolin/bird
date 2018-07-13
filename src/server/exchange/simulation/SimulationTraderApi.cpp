@@ -74,12 +74,12 @@ void SimulationTraderApi::Init()
   td_ = std::make_unique<std::thread>(std::bind(&SimulationTraderApi::MatchingProcess, this));
 }
 
-void SimulationTraderApi::NewOrder(const OrderPtr &order)
+void SimulationTraderApi::SubmitOrder(const OrderPtr &order)
 {
 
 }
 
-void SimulationTraderApi::NewQuote(const OrderPtr &bid, const OrderPtr &ask)
+void SimulationTraderApi::SubmitQuote(const OrderPtr &bid, const OrderPtr &ask)
 {
 
 }
@@ -94,12 +94,12 @@ void SimulationTraderApi::AmendQuote(const OrderPtr &bid, const OrderPtr &ask)
 
 }
 
-void SimulationTraderApi::PullOrder(const OrderPtr &order)
+void SimulationTraderApi::CancelOrder(const OrderPtr &order)
 {
 
 }
 
-void SimulationTraderApi::PullQuote(const OrderPtr &bid, const OrderPtr &ask)
+void SimulationTraderApi::CancelQuote(const OrderPtr &bid, const OrderPtr &ask)
 {
 
 }

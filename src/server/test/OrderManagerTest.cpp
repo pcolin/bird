@@ -11,11 +11,11 @@ BOOST_AUTO_TEST_CASE(testOrderManager)
 {
   vector<OrderPtr> orders;
   auto ord1 = Message::NewOrder();
-  ord1->status = OrderStatus::New;
+  ord1->status = Proto::OrderStatus::New;
   BOOST_CHECK(ord1);
   orders.push_back(ord1);
   auto ord2 = Message::NewOrder();
-  ord2->status = OrderStatus::Filled;
+  ord2->status = Proto::OrderStatus::Filled;
   BOOST_CHECK(ord2);
   orders.push_back(ord2);
   OrderManager::GetInstance()->OnOrder(orders);

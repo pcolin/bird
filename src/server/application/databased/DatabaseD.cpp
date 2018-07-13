@@ -263,7 +263,7 @@ int main(int argc, char *argv[])
       auto *msg = DecodeProtoMessage(buf, bytes);
       if (msg)
       {
-        LOG_INF << boost::format("type: %1% %2%") % msg->GetTypeName() % msg->ShortDebugString();
+        LOG_INF << msg->GetTypeName() << " " << msg->ShortDebugString();
         subscribes.enqueue(ProtoMessagePtr(msg));
       }
       else

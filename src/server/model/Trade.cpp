@@ -5,13 +5,13 @@
 
 std::string Trade::Dump() const
 {
-  static std::map<Side, const char*> sides = {
-    {Side::Buy, "Buy"}, {Side::Sell, "Sell"}, {Side::BuyCover, "BuyCover"},
-    {Side::BuyCoverToday, "BuyCoverToday"}, {Side::BuyCoverYesterday, "BuyCoverYesterDay"},
-    {Side::SellCover, "SellCover"}, {Side::SellCoverToday, "SellCoverToday"},
-    {Side::SellCoverYesterday, "SellCoverYesterday"} };
-  return (boost::format("%1% %2% %3% %4% %5%@%6%") % id % instrument->Id() % order_id % sides[side] %
-      volume % price).str();
+  // static std::map<Side, const char*> sides = {
+  //   {Side::Buy, "Buy"}, {Side::Sell, "Sell"}, {Side::BuyCover, "BuyCover"},
+  //   {Side::BuyCoverToday, "BuyCoverToday"}, {Side::BuyCoverYesterday, "BuyCoverYesterDay"},
+  //   {Side::SellCover, "SellCover"}, {Side::SellCoverToday, "SellCoverToday"},
+  //   {Side::SellCoverYesterday, "SellCoverYesterday"} };
+  return (boost::format("%1% %2% %3% %4% %5%@%6%") % id % instrument->Id() % order_id %
+      Proto::Side_Name(side) % volume % price).str();
 }
 
 std::shared_ptr<Proto::Trade> Trade::Serialize() const
@@ -20,7 +20,7 @@ std::shared_ptr<Proto::Trade> Trade::Serialize() const
   t->set_id(id);
   t->set_instrument(instrument->Id());
   t->set_exchange(instrument->Exchange());
-  t->set_side(static_cast<Proto::Side>(side));
+  t->set_side(side);
   t->set_price(price);
   t->set_volume(volume);
   // google::protobuf::Timestamp *tm = new google::protobuf::Timestamp;

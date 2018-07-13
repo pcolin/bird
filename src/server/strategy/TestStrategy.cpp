@@ -28,8 +28,8 @@ void TestStrategy::OnStop()
   {
     if (!it.second->IsInactive())
     {
-      LOG_INF << boost::format("Pull order(stop): %1%") % it.second->Dump();
-      api_->Pull(it.second);
+      LOG_INF << boost::format("Cancel order(stop): %1%") % it.second->Dump();
+      api_->Cancel(it.second);
     }
   }
 }
@@ -44,14 +44,14 @@ void TestStrategy::OnPrice(const PricePtr &price)
     {
       if (it->second && std::abs(price->last - it->second->price) >= 5)
       {
-        api_->Pull(it->second);
-        LOG_INF << boost::format("Pull order(pull to resubmit): %1%") % it->second->Dump();
+        api_->Cancel(it->second);
+        LOG_INF << boost::format("Cancel order(pull to resubmit): %1%") % it->second->Dump();
       }
     }
     else
     {
-      auto ord = NewOrder(price->instrument, Side::Buy, price->last);
-      api_->New(ord);
+      auto ord = NewOrder(price->instrument, Proto::Side::Buy, price->last);
+      api_->Submit(ord);
       orders_[price->instrument] = ord;
     }
   }
@@ -67,7 +67,7 @@ void TestStrategy::OnOrder(const OrderPtr &order)
     {
       /// new order
       // auto ord = NewOrder(order->instrument, Side::Buy, prices_[order->instrument]);
-      // api_->New(ord);
+      // api_->Submit(ord);
       // orders_[order->instrument] = ord;
       orders_[order->instrument] = order;
     }
@@ -91,7 +91,7 @@ bool TestStrategy::OnStrategyOperate(const std::shared_ptr<Proto::StrategyOperat
   }
 }
 
-OrderPtr TestStrategy::NewOrder(const Instrument *inst, Side side, base::PriceType price)
+OrderPtr TestStrategy::NewOrder(const Instrument *inst, Proto::Side side, base::PriceType price)
 {
   auto ord = Message::NewOrder();
   ord->instrument = inst;
@@ -99,8 +99,8 @@ OrderPtr TestStrategy::NewOrder(const Instrument *inst, Side side, base::PriceTy
   ord->price = price;
   ord->volume = 10;
   ord->side = side;
-  ord->time_condition = TimeCondition::GTD;
-  ord->type = OrderType::Limit;
-  ord->status = OrderStatus::Local;
+  ord->time_condition = Proto::TimeCondition::GTD;
+  ord->type = Proto::OrderType::Limit;
+  ord->status = Proto::OrderStatus::Local;
   return ord;
 }

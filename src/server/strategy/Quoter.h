@@ -39,7 +39,7 @@ private:
   bool OnStrategySwitch(const std::shared_ptr<Proto::StrategySwitch> &msg);
   bool OnStrategyOperate(const std::shared_ptr<Proto::StrategyOperate> &msg);
 
-  OrderPtr NewOrder(const Instrument *inst, Side side, base::PriceType price);
+  OrderPtr NewOrder(const Instrument *inst, Proto::Side side, base::PriceType price);
   TraderApi *api_ = nullptr;
 
   TheoMatrixPtr theo_;

@@ -19,7 +19,7 @@ protected:
 
 private:
   bool OnStrategyOperate(const std::shared_ptr<Proto::StrategyOperate> &msg);
-  OrderPtr NewOrder(const Instrument *inst, Side side, base::PriceType price);
+  OrderPtr NewOrder(const Instrument *inst, Proto::Side side, base::PriceType price);
   TraderApi *api_ = nullptr;
 
   std::unordered_map<const Instrument*, OrderPtr> orders_;

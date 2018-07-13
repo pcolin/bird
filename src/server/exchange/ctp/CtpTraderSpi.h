@@ -40,6 +40,8 @@ class CtpTraderSpi : public CThostFtdcTraderSpi
 
     virtual void OnRspQryInstrument(CThostFtdcInstrumentField *pInstrument,
         CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) override;
+    virtual void OnRspQryDepthMarketData(CThostFtdcDepthMarketDataField *pDepthMarketData,
+        CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) override;
     virtual void OnRspQryOrder(CThostFtdcOrderField *pOrder,
         CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) override;
     virtual void OnRspQryTrade(CThostFtdcTradeField *pTrade,
@@ -106,7 +108,7 @@ class CtpTraderSpi : public CThostFtdcTraderSpi
     Proto::Exchange GetExchange(const char *exchange) const;
     // std::string GetInstrumentId(char* id, Exchanges exchange) const;
     Proto::InstrumentStatus GetInstrumentStatus(TThostFtdcInstrumentStatusType status) const;
-    void UpdateOrder(const char *exchange_id, base::VolumeType volume, OrderStatus status);
+    void UpdateOrder(const char *exchange_id, base::VolumeType volume, Proto::OrderStatus status);
 
     CtpTraderApi *api_ = nullptr;
     bool login = false;

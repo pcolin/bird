@@ -3,66 +3,26 @@
 
 #include "Message.h"
 #include "Instrument.h"
+#include "Order.pb.h"
 #include <memory>
 
-enum class Side : int8_t
-{
-  Buy = 0,
-  Sell = 1,
-  BuyCover,
-  BuyCoverToday,
-  BuyCoverYesterday,
-  SellCover,
-  SellCoverToday,
-  SellCoverYesterday,
-};
-
-enum class TimeCondition : int8_t
-{
-  GTD = 0,
-  IOC,
-};
-
-enum class OrderType : int8_t
-{
-  Limit = 0,
-  Market,
-};
-
-enum class OrderStatus : int8_t
-{
-  Undefined = 0,
-  Local,
-  Submitted,
-  New,
-  PartialFilled,
-  Filled,
-  PartialFilledCanceled,
-  Canceled,
-  Rejected,
-};
-
-namespace Proto
-{
-  class Order;
-}
 struct Order
 {
   Order();
   bool IsBid() const
   {
-    return side == Side::Buy || side == Side::BuyCover ||
-      side == Side::BuyCoverToday || side == Side::BuyCoverYesterday;
+    return side == Proto::Side::Buy || side == Proto::Side::BuyCover ||
+      side == Proto::Side::BuyCoverToday || side == Proto::Side::BuyCoverYesterday;
   }
 
   bool IsOpen() const
   {
-    return side == Side::Buy || side == Side::Sell;
+    return side == Proto::Side::Buy || side == Proto::Side::Sell;
   }
 
   bool IsInactive() const
   {
-    return status >= OrderStatus::Filled;
+    return status >= Proto::OrderStatus::Filled;
   }
 
   std::string Dump() const;
@@ -80,42 +40,36 @@ struct Order
   base::PriceType avg_executed_price;
   base::VolumeType volume;
   base::VolumeType executed_volume;
-  Side side;
-  TimeCondition time_condition;
-  OrderType type;
-  OrderStatus status;
+  Proto::StrategyType strategy_type;
+  Proto::Side side;
+  Proto::TimeCondition time_condition;
+  Proto::OrderType type;
+  Proto::OrderStatus status;
 };
 
 typedef std::shared_ptr<Order> OrderPtr;
 
-enum class OrderAction : int8_t
-{
-  New = 0,
-  Pull,
-  Amend,
-};
-
 struct OrderRequest
 {
-  OrderRequest(const OrderPtr &ord, OrderAction act)
+  OrderRequest(const OrderPtr &ord, Proto::OrderAction act)
     : order(ord), action(act)
   {}
 
   OrderPtr order;
-  OrderAction action;
+  Proto::OrderAction action;
 };
 
 typedef std::shared_ptr<OrderRequest> OrderRequestPtr;
 
 struct QuoteRequest
 {
-  QuoteRequest(const OrderPtr &b, const OrderPtr &a, OrderAction act)
+  QuoteRequest(const OrderPtr &b, const OrderPtr &a, Proto::OrderAction act)
     : bid(b), ask(a), action(act)
   {}
 
   OrderPtr bid;
   OrderPtr ask;
-  OrderAction action;
+  Proto::OrderAction action;
 };
 
 typedef std::shared_ptr<QuoteRequest> QuoteRequestPtr;

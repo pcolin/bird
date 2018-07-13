@@ -191,17 +191,17 @@ void CtpMdSpi::OnRtnDepthMarketData(CThostFtdcDepthMarketDataField *pDepthMarket
       price->volume = pDepthMarketData->Volume;
     }
 
-    if (unlikely(inst->Highest() == PRICE_UNDEFINED || inst->Lowest() == PRICE_UNDEFINED))
-    {
-      Instrument *p = const_cast<Instrument*>(inst);
-      if (pDepthMarketData->UpperLimitPrice < DBL_MAX)
-        p->Highest(pDepthMarketData->UpperLimitPrice);
-      if (pDepthMarketData->LowerLimitPrice < DBL_MAX)
-        p->Lowest(pDepthMarketData->LowerLimitPrice);
-      LOG_INF << boost::format("Lowest/Highest price update: %1% - %2%/%3%") %
-        p->Id() % p->Lowest() % p->Highest();
-      /// to be done... publish InstrumentReq
-    }
+    // if (unlikely(inst->Highest() == PRICE_UNDEFINED || inst->Lowest() == PRICE_UNDEFINED))
+    // {
+    //   Instrument *p = const_cast<Instrument*>(inst);
+    //   if (pDepthMarketData->UpperLimitPrice < DBL_MAX)
+    //     p->Highest(pDepthMarketData->UpperLimitPrice);
+    //   if (pDepthMarketData->LowerLimitPrice < DBL_MAX)
+    //     p->Lowest(pDepthMarketData->LowerLimitPrice);
+    //   LOG_INF << boost::format("Lowest/Highest price update: %1% - %2%/%3%") %
+    //     p->Id() % p->Lowest() % p->Highest();
+    //   /// to be done... publish InstrumentReq
+    // }
     dm->Publish(price);
   }
 }

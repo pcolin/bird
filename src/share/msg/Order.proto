@@ -3,6 +3,9 @@ package Proto;
 
 // import "google/protobuf/timestamp.proto";
 import "Exchange.proto";
+import "Strategy.proto";
+import "Request.proto";
+import "Reply.proto";
 
 enum Side
 {
@@ -41,23 +44,51 @@ enum OrderStatus
   Rejected = 8;
 }
 
+enum OrderAction
+{
+  Submit = 0;
+  Cancel = 1;
+  Amend = 2;
+}
+
 message Order
 {
   uint64 id = 1;
   string instrument = 2;
-  Exchange exchange = 3;
-  string counter_id = 4;
-  string exchange_id = 5;
+  string counter_id = 3;
+  string exchange_id = 4;
+  string strategy = 5;
   string note = 6;
   double price = 7;
   double avg_executed_price = 8;
   int32 volume = 9;
   int32 executed_volume = 10;
-  Side side = 11;
-  TimeCondition time_condition = 12;
-  OrderType type = 13;
-  OrderStatus status = 14;
-  //google.protobuf.Timestamp time = 14;
-  uint64 time = 15;
-  int32 latency = 16;
+  Exchange exchange = 11;
+  StrategyType strategy_type = 12;
+  Side side = 13;
+  TimeCondition time_condition = 14;
+  OrderType type = 15;
+  OrderStatus status = 16;
+  uint64 time = 17;
+  int32 latency = 18;
+}
+
+message OrderRequest
+{
+  OrderAction action = 1;
+  repeated Order orders = 2;
+}
+
+message OrderReq
+{
+  RequestType type = 1;
+  Exchange exchange = 2;
+  string user = 3;
+  repeated Order orders = 4;
+}
+
+message OrderRep
+{
+  repeated Order orders = 1;
+  Reply result = 2;
 }
