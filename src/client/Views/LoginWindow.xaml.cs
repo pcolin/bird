@@ -1,4 +1,5 @@
-﻿using System;
+﻿using client.ViewModels;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -28,6 +29,13 @@ namespace client.Views
         {
             this.Close();
         }
+
+        //private void LoginButton_Click(object sender, RoutedEventArgs e)
+        //{
+        //    MainWindowViewModel vm = this.DataContext as MainWindowViewModel;
+        //    vm.Login(this.PasswordBox.SecurePassword);
+        //    this.Close();
+        //}
     }
 
     public class BooleanToCollapsedVisibilityConverter : IValueConverter

@@ -164,11 +164,14 @@
     <Compile Include="Bootstrapper.cs" />
     <Compile Include="Messages\Cash.cs" />
     <Compile Include="Messages\CashLimit.cs" />
+    <Compile Include="Messages\Credit.cs" />
     <Compile Include="Messages\Currency.cs" />
     <Compile Include="Messages\Destriker.cs" />
+    <Compile Include="Messages\Dimer.cs" />
     <Compile Include="Messages\Exchange.cs" />
     <Compile Include="Messages\ExchangeParameter.cs" />
     <Compile Include="Messages\Heartbeat.cs" />
+    <Compile Include="Messages\Hitter.cs" />
     <Compile Include="Messages\Instrument.cs" />
     <Compile Include="Messages\InterestRate.cs" />
     <Compile Include="Messages\Login.cs" />
@@ -176,6 +179,7 @@
     <Compile Include="Messages\Position.cs" />
     <Compile Include="Messages\Price.cs" />
     <Compile Include="Messages\Pricer.cs" />
+    <Compile Include="Messages\Quoter.cs" />
     <Compile Include="Messages\Reply.cs" />
     <Compile Include="Messages\Request.cs" />
     <Compile Include="Messages\Server.cs" />
@@ -183,6 +187,7 @@
     <Compile Include="Messages\Strategy.cs" />
     <Compile Include="Messages\Trade.cs" />
     <Compile Include="Messages\Volatility.cs" />
+    <Compile Include="Models\CreditManager.cs" />
     <Compile Include="Models\DatabaseService.cs" />
     <Compile Include="Models\DestrikerManager.cs" />
     <Compile Include="Models\ExchangeParameterManager.cs" />
@@ -193,31 +198,50 @@
     <Compile Include="Models\ISocket.cs" />
     <Compile Include="Models\LoggingEventSource.cs" />
     <Compile Include="Models\Option.cs" />
+    <Compile Include="Models\OrderManager.cs" />
     <Compile Include="Models\PositionManager.cs" />
     <Compile Include="Models\PricerManager.cs" />
     <Compile Include="Models\ProductManager.cs" />
     <Compile Include="Models\ProtoMessageCoder.cs" />
     <Compile Include="Models\ProtoMessageTypes.cs" />
     <Compile Include="Models\ProxyService.cs" />
+    <Compile Include="Models\QuoterManager.cs" />
     <Compile Include="Models\ServerService.cs" />
     <Compile Include="Models\SSRateManager.cs" />
+    <Compile Include="Models\StrategySwitchManager.cs" />
     <Compile Include="Models\TheoCalculator.cs" />
     <Compile Include="Models\VolatilityCurveManager.cs" />
+    <Compile Include="ViewModels\DimerUserControlViewModel.cs" />
     <Compile Include="ViewModels\ExchangeUserControlViewModel.cs" />
     <Compile Include="ViewModels\ExchangeWindowViewModel.cs" />
+    <Compile Include="ViewModels\HitterUserControlViewModel.cs" />
     <Compile Include="ViewModels\MainWindowViewModel.cs" />
     <Compile Include="ViewModels\MessageWindowViewModel.cs" />
+    <Compile Include="ViewModels\MonitorUserControlViewModel.cs" />
+    <Compile Include="ViewModels\MonitorWindowViewModel.cs" />
     <Compile Include="ViewModels\OptionUserControlViewModel.cs" />
     <Compile Include="ViewModels\OptionWindowViewModel.cs" />
     <Compile Include="ViewModels\PortfolioWindowViewModel.cs" />
     <Compile Include="ViewModels\PricerUserControlViewModel.cs" />
+    <Compile Include="ViewModels\QuoterUserControlViewModel.cs" />
     <Compile Include="ViewModels\RangeObservableCollection.cs" />
     <Compile Include="ViewModels\RateUserControlViewModel.cs" />
     <Compile Include="ViewModels\RateWindowViewModel.cs" />
+    <Compile Include="ViewModels\StrategyCreditUserControlViewModel.cs" />
+    <Compile Include="ViewModels\TradingWindowViewModel.cs" />
     <Compile Include="ViewModels\VolatilityUserControlViewModel.cs" />
     <Compile Include="ViewModels\VolatilityWindowViewModel.cs" />
     <Compile Include="Views\ColumnSettingWindow.xaml.cs">
       <DependentUpon>ColumnSettingWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\CreditUserControl.xaml.cs">
+      <DependentUpon>CreditUserControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\CreditWindow.xaml.cs">
+      <DependentUpon>CreditWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\DimerUserControl.xaml.cs">
+      <DependentUpon>DimerUserControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\DoubleToStringMultiConverter.cs" />
     <Compile Include="Views\ExchangeUserControl.xaml.cs">
@@ -225,6 +249,9 @@
     </Compile>
     <Compile Include="Views\ExchangeWindow.xaml.cs">
       <DependentUpon>ExchangeWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\HitterUserControl.xaml.cs">
+      <DependentUpon>HitterUserControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\InputBoxUserControl.xaml.cs">
       <DependentUpon>InputBoxUserControl.xaml</DependentUpon>
@@ -241,11 +268,20 @@
     <Compile Include="Views\MessageWindow.xaml.cs">
       <DependentUpon>MessageWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\MonitorUserControl.xaml.cs">
+      <DependentUpon>MonitorUserControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\MonitorWindow.xaml.cs">
+      <DependentUpon>MonitorWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\OptionUserControl.xaml.cs">
       <DependentUpon>OptionUserControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\OptionWindow.xaml.cs">
       <DependentUpon>OptionWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\OrderWindow.xaml.cs">
+      <DependentUpon>OrderWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\PercentDoubleToStringMultiConverter.cs" />
     <Compile Include="Views\PermilageDoubleToStringMultiConverter.cs" />
@@ -258,6 +294,15 @@
     <Compile Include="Views\PricerUserControl.xaml.cs">
       <DependentUpon>PricerUserControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\QuoterSettingWindow.xaml.cs">
+      <DependentUpon>QuoterSettingWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\StrategyCreditUserControl.xaml.cs">
+      <DependentUpon>StrategyCreditUserControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\QuoterUserControl.xaml.cs">
+      <DependentUpon>QuoterUserControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\RateUserControl.xaml.cs">
       <DependentUpon>RateUserControl.xaml</DependentUpon>
     </Compile>
@@ -269,6 +314,9 @@
     </Compile>
     <Compile Include="Views\StrategyWindow.xaml.cs">
       <DependentUpon>StrategyWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\TradingWindow.xaml.cs">
+      <DependentUpon>TradingWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\VolatilityUserControl.xaml.cs">
       <DependentUpon>VolatilityUserControl.xaml</DependentUpon>
@@ -321,11 +369,27 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views\CreditUserControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\CreditWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\DimerUserControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\ExchangeUserControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\ExchangeWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\HitterUserControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -349,11 +413,23 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views\MonitorUserControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\MonitorWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\OptionUserControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\OptionWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\OrderWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -366,6 +442,18 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\PricerUserControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\QuoterSettingWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\StrategyCreditUserControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\QuoterUserControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -382,6 +470,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\StrategyWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\TradingWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

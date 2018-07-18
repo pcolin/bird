@@ -148,7 +148,10 @@ namespace client.ViewModels
             this.container.Resolve<EventAggregator>().GetEvent<PubSubEvent<Proto.Price>>().Subscribe(this.ReceivePrice, ThreadOption.BackgroundThread);
             this.container.Resolve<EventAggregator>().GetEvent<PubSubEvent<Proto.Cash>>().Subscribe(this.ReceiveCash, ThreadOption.BackgroundThread);
             this.container.Resolve<EventAggregator>().GetEvent<PubSubEvent<Proto.DestrikerReq>>().Subscribe(this.ReceiveDestrikerReq, ThreadOption.BackgroundThread);
+            this.container.Resolve<EventAggregator>().GetEvent<PubSubEvent<Proto.CreditReq>>().Subscribe(this.ReceiveCreditReq, ThreadOption.BackgroundThread);
+            this.container.Resolve<EventAggregator>().GetEvent<PubSubEvent<Proto.StrategySwitchReq>>().Subscribe(this.ReceiveStrategySwitchReq, ThreadOption.BackgroundThread);
 
+            this.pm = this.container.Resolve<ProductManager>(this.exchange.ToString());
             var ss = this.container.Resolve<ServerService>(this.exchange.ToString());
             this.user = ss.User;
         }
@@ -181,10 +184,9 @@ namespace client.ViewModels
 
         private void ReceiveInstrumentReq(Proto.InstrumentReq req)
         {
-            ProductManager manager = this.container.Resolve<ProductManager>(this.Exchange.ToString());
             foreach (var inst in req.Instruments)
             {
-                var instrument = manager.FindId(inst.Id);
+                var instrument = pm.FindId(inst.Id);
                 OptionUserControlViewModel vm = null;
                 if (instrument != null && this.viewModels.TryGetValue(instrument.HedgeUnderlying, out vm))
                 {
@@ -197,8 +199,7 @@ namespace client.ViewModels
         {
             if (p != null)
             {
-                ProductManager manager = this.container.Resolve<ProductManager>(this.Exchange.ToString());
-                var inst = manager.FindId(p.Instrument);
+                var inst = pm.FindId(p.Instrument);
                 OptionUserControlViewModel vm = null;
                 if (inst != null && this.viewModels.TryGetValue(inst.HedgeUnderlying, out vm))
                 {
@@ -243,10 +244,9 @@ namespace client.ViewModels
         {
             if (req.User != this.user)
             {
-                ProductManager manager = this.container.Resolve<ProductManager>(this.Exchange.ToString());
                 foreach (var d in req.Destrikers)
                 {
-                    var option = manager.FindId(d.Instrument) as Option;
+                    var option = pm.FindId(d.Instrument) as Option;
                     OptionUserControlViewModel vm = null;
                     if (option != null && this.viewModels.TryGetValue(option.HedgeUnderlying, out vm))
                     {
@@ -257,9 +257,55 @@ namespace client.ViewModels
             }
         }
 
+        private void ReceiveCreditReq(Proto.CreditReq req)
+        {
+            foreach (var c in req.Credits)
+            {
+                var underlying = pm.FindId(c.Underlying);
+                OptionUserControlViewModel vm = null;
+                if (underlying != null && this.viewModels.TryGetValue(underlying, out vm))
+                {
+                    this.dispatcher.Invoke((MethodInvoker)delegate { vm.RefreshCredit(c); });
+                }
+            }
+        }
+
+        private void ReceiveStrategySwitchReq(Proto.StrategySwitchReq req)
+        {
+            if (req.User != this.user)
+            {
+                foreach (var s in req.Switches)
+                {
+                    var option = pm.FindId(s.Option) as Option;
+                    OptionUserControlViewModel vm = null;
+                    if (option != null && this.viewModels.TryGetValue(option.HedgeUnderlying, out vm))
+                    {
+                        this.dispatcher.Invoke((MethodInvoker)delegate { vm.RefreshStrategySwitch(option, s); });
+                    }
+                }
+            }
+        }
+
+        //private void ReceiveQuoterReq(Proto.QuoterReq req)
+        //{
+        //    foreach (var q in req.Quoters)
+        //    {
+        //        if (q.Records.Count > 0)
+        //        {
+        //            var instrument = pm.FindId(q.Underlying);
+        //            OptionUserControlViewModel vm = null;
+        //            if (instrument != null && this.viewModels.TryGetValue(instrument, out vm))
+        //            {
+        //                this.dispatcher.Invoke((MethodInvoker)delegate { vm.RefreshQuoterRecord(q.Records); });
+        //            }                    
+        //        }
+        //    }
+        //}
+
         private IUnityContainer container;
         private Dispatcher dispatcher;
         private Proto.Exchange exchange;
+        private ProductManager pm;
         private string user;
         private Dictionary<Instrument, OptionUserControlViewModel> viewModels;
     }

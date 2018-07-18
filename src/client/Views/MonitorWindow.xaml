@@ -1,0 +1,9 @@
+﻿<Window x:Class="client.Views.MonitorWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Monitor" Height="300" Width="300"
+        Icon="/Images/bird_32x32.ico"
+        MinWidth="915"
+        Closing="Window_Closing">
+    <TabControl Name="MonitorTabControl" />
+</Window>

@@ -25,25 +25,24 @@ namespace Proto {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
             "CgxQcmljZXIucHJvdG8SBVByb3RvGg5FeGNoYW5nZS5wcm90bxoNUmVxdWVz",
-            "dC5wcm90bxoLUmVwbHkucHJvdG8i8AEKBlByaWNlchIMCgRuYW1lGAEgASgJ",
+            "dC5wcm90bxoLUmVwbHkucHJvdG8i3wEKBlByaWNlchIMCgRuYW1lGAEgASgJ",
             "EhIKCnVuZGVybHlpbmcYAiABKAkSIgoFbW9kZWwYAyABKA4yEy5Qcm90by5Q",
-            "cmljaW5nTW9kZWwSDwoHb3B0aW9ucxgEIAMoCRINCgVkZXB0aBgFIAEoBRIQ",
-            "CghpbnRlcnZhbBgGIAEoBRIsCgl0aGVvX3R5cGUYByABKA4yGS5Qcm90by5V",
-            "bmRlcmx5aW5nVGhlb1R5cGUSGAoQd2Fybl90aWNrX2NoYW5nZRgIIAEoBRIP",
-            "CgdlbGFzdGljGAkgASgBEhUKDWVsYXN0aWNfbGltaXQYCiABKAEijAEKCVBy",
-            "aWNlclJlcRIgCgR0eXBlGAEgASgOMhIuUHJvdG8uUmVxdWVzdFR5cGUSIQoI",
-            "ZXhjaGFuZ2UYAiABKA4yDy5Qcm90by5FeGNoYW5nZRIeCgdwcmljZXJzGAMg",
-            "AygLMg0uUHJvdG8uUHJpY2VyEgwKBG5hbWUYBCABKAkSDAoEdXNlchgFIAEo",
-            "CSJJCglQcmljZXJSZXASHgoHcHJpY2VycxgBIAMoCzINLlByb3RvLlByaWNl",
-            "chIcCgZyZXN1bHQYAiABKAsyDC5Qcm90by5SZXBseSogCgxQcmljaW5nTW9k",
-            "ZWwSBwoDQlNNEAASBwoDQ1JSEAEqQQoSVW5kZXJseWluZ1RoZW9UeXBlEgwK",
-            "CE1pZHBvaW50EAASDgoKQmFyeUNlbnRyZRABEg0KCURlcHRoQmFyeRACYgZw",
-            "cm90bzM="));
+            "cmljaW5nTW9kZWwSDQoFZGVwdGgYBCABKAUSEAoIaW50ZXJ2YWwYBSABKAUS",
+            "LAoJdGhlb190eXBlGAYgASgOMhkuUHJvdG8uVW5kZXJseWluZ1RoZW9UeXBl",
+            "EhgKEHdhcm5fdGlja19jaGFuZ2UYByABKAUSDwoHZWxhc3RpYxgIIAEoARIV",
+            "Cg1lbGFzdGljX2xpbWl0GAkgASgBIowBCglQcmljZXJSZXESIAoEdHlwZRgB",
+            "IAEoDjISLlByb3RvLlJlcXVlc3RUeXBlEiEKCGV4Y2hhbmdlGAIgASgOMg8u",
+            "UHJvdG8uRXhjaGFuZ2USDAoEdXNlchgDIAEoCRIMCgRuYW1lGAQgASgJEh4K",
+            "B3ByaWNlcnMYBSADKAsyDS5Qcm90by5QcmljZXIiSQoJUHJpY2VyUmVwEh4K",
+            "B3ByaWNlcnMYASADKAsyDS5Qcm90by5QcmljZXISHAoGcmVzdWx0GAIgASgL",
+            "MgwuUHJvdG8uUmVwbHkqIAoMUHJpY2luZ01vZGVsEgcKA0JTTRAAEgcKA0NS",
+            "UhABKkEKElVuZGVybHlpbmdUaGVvVHlwZRIMCghNaWRwb2ludBAAEg4KCkJh",
+            "cnlDZW50cmUQARINCglEZXB0aEJhcnkQAmIGcHJvdG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Proto.ExchangeReflection.Descriptor, global::Proto.RequestReflection.Descriptor, global::Proto.ReplyReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Proto.PricingModel), typeof(global::Proto.UnderlyingTheoType), }, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::Proto.Pricer), global::Proto.Pricer.Parser, new[]{ "Name", "Underlying", "Model", "Options", "Depth", "Interval", "TheoType", "WarnTickChange", "Elastic", "ElasticLimit" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Proto.PricerReq), global::Proto.PricerReq.Parser, new[]{ "Type", "Exchange", "Pricers", "Name", "User" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Proto.Pricer), global::Proto.Pricer.Parser, new[]{ "Name", "Underlying", "Model", "Depth", "Interval", "TheoType", "WarnTickChange", "Elastic", "ElasticLimit" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Proto.PricerReq), global::Proto.PricerReq.Parser, new[]{ "Type", "Exchange", "User", "Name", "Pricers" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Proto.PricerRep), global::Proto.PricerRep.Parser, new[]{ "Pricers", "Result" }, null, null, null)
           }));
     }
@@ -93,7 +92,6 @@ namespace Proto {
       name_ = other.name_;
       underlying_ = other.underlying_;
       model_ = other.model_;
-      options_ = other.options_.Clone();
       depth_ = other.depth_;
       interval_ = other.interval_;
       theoType_ = other.theoType_;
@@ -141,19 +139,12 @@ namespace Proto {
       }
     }
 
-    /// <summary>Field number for the "options" field.</summary>
-    public const int OptionsFieldNumber = 4;
-    private static readonly pb::FieldCodec<string> _repeated_options_codec
-        = pb::FieldCodec.ForString(34);
-    private readonly pbc::RepeatedField<string> options_ = new pbc::RepeatedField<string>();
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public pbc::RepeatedField<string> Options {
-      get { return options_; }
-    }
-
     /// <summary>Field number for the "depth" field.</summary>
-    public const int DepthFieldNumber = 5;
+    public const int DepthFieldNumber = 4;
     private int depth_;
+    /// <summary>
+    ///repeated string options = 4;
+    /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int Depth {
       get { return depth_; }
@@ -163,7 +154,7 @@ namespace Proto {
     }
 
     /// <summary>Field number for the "interval" field.</summary>
-    public const int IntervalFieldNumber = 6;
+    public const int IntervalFieldNumber = 5;
     private int interval_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int Interval {
@@ -174,7 +165,7 @@ namespace Proto {
     }
 
     /// <summary>Field number for the "theo_type" field.</summary>
-    public const int TheoTypeFieldNumber = 7;
+    public const int TheoTypeFieldNumber = 6;
     private global::Proto.UnderlyingTheoType theoType_ = 0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Proto.UnderlyingTheoType TheoType {
@@ -185,7 +176,7 @@ namespace Proto {
     }
 
     /// <summary>Field number for the "warn_tick_change" field.</summary>
-    public const int WarnTickChangeFieldNumber = 8;
+    public const int WarnTickChangeFieldNumber = 7;
     private int warnTickChange_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int WarnTickChange {
@@ -196,7 +187,7 @@ namespace Proto {
     }
 
     /// <summary>Field number for the "elastic" field.</summary>
-    public const int ElasticFieldNumber = 9;
+    public const int ElasticFieldNumber = 8;
     private double elastic_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public double Elastic {
@@ -207,7 +198,7 @@ namespace Proto {
     }
 
     /// <summary>Field number for the "elastic_limit" field.</summary>
-    public const int ElasticLimitFieldNumber = 10;
+    public const int ElasticLimitFieldNumber = 9;
     private double elasticLimit_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public double ElasticLimit {
@@ -233,7 +224,6 @@ namespace Proto {
       if (Name != other.Name) return false;
       if (Underlying != other.Underlying) return false;
       if (Model != other.Model) return false;
-      if(!options_.Equals(other.options_)) return false;
       if (Depth != other.Depth) return false;
       if (Interval != other.Interval) return false;
       if (TheoType != other.TheoType) return false;
@@ -249,7 +239,6 @@ namespace Proto {
       if (Name.Length != 0) hash ^= Name.GetHashCode();
       if (Underlying.Length != 0) hash ^= Underlying.GetHashCode();
       if (Model != 0) hash ^= Model.GetHashCode();
-      hash ^= options_.GetHashCode();
       if (Depth != 0) hash ^= Depth.GetHashCode();
       if (Interval != 0) hash ^= Interval.GetHashCode();
       if (TheoType != 0) hash ^= TheoType.GetHashCode();
@@ -281,29 +270,28 @@ namespace Proto {
         output.WriteRawTag(24);
         output.WriteEnum((int) Model);
       }
-      options_.WriteTo(output, _repeated_options_codec);
       if (Depth != 0) {
-        output.WriteRawTag(40);
+        output.WriteRawTag(32);
         output.WriteInt32(Depth);
       }
       if (Interval != 0) {
-        output.WriteRawTag(48);
+        output.WriteRawTag(40);
         output.WriteInt32(Interval);
       }
       if (TheoType != 0) {
-        output.WriteRawTag(56);
+        output.WriteRawTag(48);
         output.WriteEnum((int) TheoType);
       }
       if (WarnTickChange != 0) {
-        output.WriteRawTag(64);
+        output.WriteRawTag(56);
         output.WriteInt32(WarnTickChange);
       }
       if (Elastic != 0D) {
-        output.WriteRawTag(73);
+        output.WriteRawTag(65);
         output.WriteDouble(Elastic);
       }
       if (ElasticLimit != 0D) {
-        output.WriteRawTag(81);
+        output.WriteRawTag(73);
         output.WriteDouble(ElasticLimit);
       }
       if (_unknownFields != null) {
@@ -323,7 +311,6 @@ namespace Proto {
       if (Model != 0) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Model);
       }
-      size += options_.CalculateSize(_repeated_options_codec);
       if (Depth != 0) {
         size += 1 + pb::CodedOutputStream.ComputeInt32Size(Depth);
       }
@@ -362,7 +349,6 @@ namespace Proto {
       if (other.Model != 0) {
         Model = other.Model;
       }
-      options_.Add(other.options_);
       if (other.Depth != 0) {
         Depth = other.Depth;
       }
@@ -404,31 +390,27 @@ namespace Proto {
             model_ = (global::Proto.PricingModel) input.ReadEnum();
             break;
           }
-          case 34: {
-            options_.AddEntriesFrom(input, _repeated_options_codec);
-            break;
-          }
-          case 40: {
+          case 32: {
             Depth = input.ReadInt32();
             break;
           }
-          case 48: {
+          case 40: {
             Interval = input.ReadInt32();
             break;
           }
-          case 56: {
+          case 48: {
             theoType_ = (global::Proto.UnderlyingTheoType) input.ReadEnum();
             break;
           }
-          case 64: {
+          case 56: {
             WarnTickChange = input.ReadInt32();
             break;
           }
-          case 73: {
+          case 65: {
             Elastic = input.ReadDouble();
             break;
           }
-          case 81: {
+          case 73: {
             ElasticLimit = input.ReadDouble();
             break;
           }
@@ -465,9 +447,9 @@ namespace Proto {
     public PricerReq(PricerReq other) : this() {
       type_ = other.type_;
       exchange_ = other.exchange_;
-      pricers_ = other.pricers_.Clone();
-      name_ = other.name_;
       user_ = other.user_;
+      name_ = other.name_;
+      pricers_ = other.pricers_.Clone();
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -498,14 +480,15 @@ namespace Proto {
       }
     }
 
-    /// <summary>Field number for the "pricers" field.</summary>
-    public const int PricersFieldNumber = 3;
-    private static readonly pb::FieldCodec<global::Proto.Pricer> _repeated_pricers_codec
-        = pb::FieldCodec.ForMessage(26, global::Proto.Pricer.Parser);
-    private readonly pbc::RepeatedField<global::Proto.Pricer> pricers_ = new pbc::RepeatedField<global::Proto.Pricer>();
+    /// <summary>Field number for the "user" field.</summary>
+    public const int UserFieldNumber = 3;
+    private string user_ = "";
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public pbc::RepeatedField<global::Proto.Pricer> Pricers {
-      get { return pricers_; }
+    public string User {
+      get { return user_; }
+      set {
+        user_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
     }
 
     /// <summary>Field number for the "name" field.</summary>
@@ -519,15 +502,14 @@ namespace Proto {
       }
     }
 
-    /// <summary>Field number for the "user" field.</summary>
-    public const int UserFieldNumber = 5;
-    private string user_ = "";
+    /// <summary>Field number for the "pricers" field.</summary>
+    public const int PricersFieldNumber = 5;
+    private static readonly pb::FieldCodec<global::Proto.Pricer> _repeated_pricers_codec
+        = pb::FieldCodec.ForMessage(42, global::Proto.Pricer.Parser);
+    private readonly pbc::RepeatedField<global::Proto.Pricer> pricers_ = new pbc::RepeatedField<global::Proto.Pricer>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public string User {
-      get { return user_; }
-      set {
-        user_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
-      }
+    public pbc::RepeatedField<global::Proto.Pricer> Pricers {
+      get { return pricers_; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -545,9 +527,9 @@ namespace Proto {
       }
       if (Type != other.Type) return false;
       if (Exchange != other.Exchange) return false;
-      if(!pricers_.Equals(other.pricers_)) return false;
-      if (Name != other.Name) return false;
       if (User != other.User) return false;
+      if (Name != other.Name) return false;
+      if(!pricers_.Equals(other.pricers_)) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -556,9 +538,9 @@ namespace Proto {
       int hash = 1;
       if (Type != 0) hash ^= Type.GetHashCode();
       if (Exchange != 0) hash ^= Exchange.GetHashCode();
-      hash ^= pricers_.GetHashCode();
-      if (Name.Length != 0) hash ^= Name.GetHashCode();
       if (User.Length != 0) hash ^= User.GetHashCode();
+      if (Name.Length != 0) hash ^= Name.GetHashCode();
+      hash ^= pricers_.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -580,15 +562,15 @@ namespace Proto {
         output.WriteRawTag(16);
         output.WriteEnum((int) Exchange);
       }
-      pricers_.WriteTo(output, _repeated_pricers_codec);
+      if (User.Length != 0) {
+        output.WriteRawTag(26);
+        output.WriteString(User);
+      }
       if (Name.Length != 0) {
         output.WriteRawTag(34);
         output.WriteString(Name);
       }
-      if (User.Length != 0) {
-        output.WriteRawTag(42);
-        output.WriteString(User);
-      }
+      pricers_.WriteTo(output, _repeated_pricers_codec);
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -603,13 +585,13 @@ namespace Proto {
       if (Exchange != 0) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Exchange);
       }
-      size += pricers_.CalculateSize(_repeated_pricers_codec);
-      if (Name.Length != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeStringSize(Name);
-      }
       if (User.Length != 0) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(User);
       }
+      if (Name.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(Name);
+      }
+      size += pricers_.CalculateSize(_repeated_pricers_codec);
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
       }
@@ -627,13 +609,13 @@ namespace Proto {
       if (other.Exchange != 0) {
         Exchange = other.Exchange;
       }
-      pricers_.Add(other.pricers_);
-      if (other.Name.Length != 0) {
-        Name = other.Name;
-      }
       if (other.User.Length != 0) {
         User = other.User;
       }
+      if (other.Name.Length != 0) {
+        Name = other.Name;
+      }
+      pricers_.Add(other.pricers_);
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
 
@@ -654,7 +636,7 @@ namespace Proto {
             break;
           }
           case 26: {
-            pricers_.AddEntriesFrom(input, _repeated_pricers_codec);
+            User = input.ReadString();
             break;
           }
           case 34: {
@@ -662,7 +644,7 @@ namespace Proto {
             break;
           }
           case 42: {
-            User = input.ReadString();
+            pricers_.AddEntriesFrom(input, _repeated_pricers_codec);
             break;
           }
         }

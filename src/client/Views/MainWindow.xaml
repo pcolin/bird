@@ -7,6 +7,7 @@
         prism:ViewModelLocator.AutoWireViewModel="True"
         Icon="/Images/bird_32x32.ico"        
         Title="{Binding Title}" Height="300" Width="300"
+        Topmost="True"
         Initialized="Window_Initialized"
         Closing="Window_Closing">
     <Window.Resources>
@@ -19,6 +20,9 @@
             <i:InvokeCommandAction Command="{Binding InitializeCommand}" />
         </i:EventTrigger-->
         <prism:InteractionRequestTrigger SourceObject="{Binding NotificationRequest}">
+            <prism:PopupWindowAction IsModal="True" CenterOverAssociatedObject="True" />
+        </prism:InteractionRequestTrigger>
+        <prism:InteractionRequestTrigger SourceObject="{Binding ConfirmationRequest}">
             <prism:PopupWindowAction IsModal="True" CenterOverAssociatedObject="True" />
         </prism:InteractionRequestTrigger>
     </i:Interaction.Triggers>
@@ -48,19 +52,19 @@
             <MenuItem Header="VIEW">
                 <MenuItem Header="Options">
                     <MenuItem Header="{Binding Exchange1}"
-                              Visibility="{Binding Exchange1Visible, Converter={StaticResource CollapsedVisibilityConverter}}"
+                              Visibility="{Binding IsExchange1Logined, Converter={StaticResource CollapsedVisibilityConverter}}"
                               Click="OptionsMenuItem1_Click">
                     </MenuItem>
                     <MenuItem Header="{Binding Exchange2}"
-                              Visibility="{Binding Exchange2Visible, Converter={StaticResource CollapsedVisibilityConverter}}"
+                              Visibility="{Binding IsExchange2Logined, Converter={StaticResource CollapsedVisibilityConverter}}"
                               Click="OptionsMenuItem2_Click">
                     </MenuItem>
                     <MenuItem Header="{Binding Exchange3}"
-                              Visibility="{Binding Exchange3Visible, Converter={StaticResource CollapsedVisibilityConverter}}"
+                              Visibility="{Binding IsExchange3Logined, Converter={StaticResource CollapsedVisibilityConverter}}"
                               Click="OptionsMenuItem3_Click">
                     </MenuItem>
                     <MenuItem Header="{Binding Exchange4}"
-                              Visibility="{Binding Exchange4Visible, Converter={StaticResource CollapsedVisibilityConverter}}"
+                              Visibility="{Binding IsExchange4Logined, Converter={StaticResource CollapsedVisibilityConverter}}"
                               Click="OptionsMenuItem4_Click">
                     </MenuItem>
                 </MenuItem>
@@ -68,8 +72,22 @@
                 <MenuItem Header="Orders"></MenuItem>
                 <MenuItem Header="Trades"></MenuItem>
                 <Separator></Separator>
+                <MenuItem Header="Trading">
+                    <MenuItem Header="{Binding Exchange1}"
+                              Visibility="{Binding IsExchange1Logined, Converter={StaticResource CollapsedVisibilityConverter}}"
+                              Click="TradingMenuItem1_Click" />
+                    <MenuItem Header="{Binding Exchange2}"
+                              Visibility="{Binding IsExchange2Logined, Converter={StaticResource CollapsedVisibilityConverter}}"
+                              Click="TradingMenuItem2_Click" />
+                    <MenuItem Header="{Binding Exchange3}"
+                              Visibility="{Binding IsExchange3Logined, Converter={StaticResource CollapsedVisibilityConverter}}"
+                              Click="TradingMenuItem3_Click" />
+                    <MenuItem Header="{Binding Exchange4}"
+                              Visibility="{Binding IsExchange4Logined, Converter={StaticResource CollapsedVisibilityConverter}}"
+                              Click="TradingMenuItem4_Click" />
+                </MenuItem>
+                <Separator></Separator>
                 <MenuItem Header="Messages" Click="MessagesMenuItem_Click"></MenuItem>
-                <MenuItem Header="Layout"></MenuItem>
             </MenuItem>
             <MenuItem Header="CONFIG">
                 <MenuItem Header="Exchanges" Click="ExchangesMenuItem_Click" />

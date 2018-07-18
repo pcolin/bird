@@ -43,31 +43,44 @@ namespace client.Views
         {
             MainWindowViewModel vm = this.DataContext as MainWindowViewModel;
             OptionWindow w = vm.Container.Resolve<OptionWindow>(vm.Exchange1.ToString());
-            ShowOptionWindow(w);
+            ShowWindow(w);
         }
 
         private void OptionsMenuItem2_Click(object sender, RoutedEventArgs e)
         {
             MainWindowViewModel vm = this.DataContext as MainWindowViewModel;
             OptionWindow w = vm.Container.Resolve<OptionWindow>(vm.Exchange2.ToString());
-            ShowOptionWindow(w);
+            ShowWindow(w);
         }
 
         private void OptionsMenuItem3_Click(object sender, RoutedEventArgs e)
         {
             MainWindowViewModel vm = this.DataContext as MainWindowViewModel;
             OptionWindow w = vm.Container.Resolve<OptionWindow>(vm.Exchange3.ToString());
-            ShowOptionWindow(w);
+            ShowWindow(w);
         }
 
         private void OptionsMenuItem4_Click(object sender, RoutedEventArgs e)
         {
             MainWindowViewModel vm = this.DataContext as MainWindowViewModel;
             OptionWindow w = vm.Container.Resolve<OptionWindow>(vm.Exchange4.ToString());
-            ShowOptionWindow(w);
+            ShowWindow(w);
         }
 
-        private void ShowOptionWindow(OptionWindow w)
+        //private void ShowOptionWindow(OptionWindow w)
+        //{
+        //    w.Dispatcher.Invoke(() =>
+        //    {
+        //        if (w.IsVisible == false)
+        //        {
+        //            w.Show();
+        //        }
+        //        w.Topmost = true;
+        //        w.Topmost = false;
+        //    });
+        //}
+
+        private void ShowWindow(Window w)
         {
             w.Dispatcher.Invoke(() =>
             {
@@ -78,6 +91,29 @@ namespace client.Views
                 w.Topmost = true;
                 w.Topmost = false;
             });
+        }
+
+        private void ShowWindow<T>() where T : Window
+        {
+            MainWindowViewModel vm = this.DataContext as MainWindowViewModel;
+            T w = vm.Container.Resolve<T>();
+            Action action = () =>
+            {
+                if (w.IsVisible == false)
+                {
+                    w.Show();
+                }
+                w.Topmost = true;
+                w.Topmost = false;
+            };
+            if (w.Dispatcher.CheckAccess())
+            {
+                action();
+            }
+            else
+            {
+                w.Dispatcher.Invoke(action);
+            }
         }
 
         private void Window_Initialized(object sender, EventArgs e)
@@ -112,18 +148,22 @@ namespace client.Views
             if (vm.Exchange1Visible)
             {
                 NewOptionViewWindow(vm.Container, vm.Exchange1);
+                NewTradingWindow(vm.Container, vm.Exchange1);
             }
             if (vm.Exchange2Visible)
             {
                 NewOptionViewWindow(vm.Container, vm.Exchange2);
+                NewTradingWindow(vm.Container, vm.Exchange2);
             }
             if (vm.Exchange3Visible)
             {
                 NewOptionViewWindow(vm.Container, vm.Exchange3);
+                NewTradingWindow(vm.Container, vm.Exchange3);
             }
             if (vm.Exchange4Visible)
             {
                 NewOptionViewWindow(vm.Container, vm.Exchange4);
+                NewTradingWindow(vm.Container, vm.Exchange4);
             }
 
             NewExchangeWindow(vm.Container);
@@ -132,6 +172,8 @@ namespace client.Views
             NewMessageWindow(vm.Container);
             NewPortfolioWindow(vm.Container);
             NewStrategyWindow(vm.Container);
+            NewCreditWindow(vm.Container);
+            NewMonitorWindow(vm.Container);
         }
 
         private void NewOptionViewWindow(IUnityContainer container, Proto.Exchange exchange)
@@ -145,6 +187,26 @@ namespace client.Views
                 }
 
                 container.RegisterInstance<OptionWindow>(exchange.ToString(), w);
+                w.Closed += (sender2, e2) => w.Dispatcher.InvokeShutdown();
+
+                System.Windows.Threading.Dispatcher.Run();
+            });
+            t.SetApartmentState(ApartmentState.STA);
+            //t.IsBackground = true;
+            t.Start();
+        }
+
+        private void NewTradingWindow(IUnityContainer container, Proto.Exchange exchange)
+        {
+            Thread t = new Thread(() =>
+            {
+                TradingWindow w = new TradingWindow(exchange, container);
+                if (PlaceWindow(w, "TradingWindow_" + exchange))
+                {
+                    w.Show();
+                }
+
+                container.RegisterInstance<TradingWindow>(exchange.ToString(), w);
                 w.Closed += (sender2, e2) => w.Dispatcher.InvokeShutdown();
 
                 System.Windows.Threading.Dispatcher.Run();
@@ -248,10 +310,54 @@ namespace client.Views
             container.RegisterInstance<StrategyWindow>(w);
         }
 
+        private void NewCreditWindow(IUnityContainer container)
+        {
+            Thread t = new Thread(() =>
+            {
+                CreditWindow w = new CreditWindow(container);
+                if (PlaceWindow(w, "CreditWindow"))
+                {
+                    w.Show();
+                }
+
+                container.RegisterInstance<CreditWindow>(w);
+                w.Closed += (sender2, e2) => w.Dispatcher.InvokeShutdown();
+
+                System.Windows.Threading.Dispatcher.Run();
+            });
+            t.SetApartmentState(ApartmentState.STA);
+            //t.IsBackground = true;
+            t.Start();
+        }
+
+        private void NewMonitorWindow(IUnityContainer container)
+        {
+            Thread t = new Thread(() =>
+            {
+                MonitorWindow w = new MonitorWindow(container);
+                if (PlaceWindow(w, "MonitorWindow"))
+                {
+                    w.Show();
+                }
+
+                container.RegisterInstance<MonitorWindow>(w);
+                w.Closed += (sender2, e2) => w.Dispatcher.InvokeShutdown();
+
+                System.Windows.Threading.Dispatcher.Run();
+            });
+            t.SetApartmentState(ApartmentState.STA);
+            //t.IsBackground = true;
+            t.Start();
+        }
+
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             MainWindowViewModel vm = this.DataContext as MainWindowViewModel;
-            vm.Stop();
+            if (vm.Stop() == false)
+            {
+                e.Cancel = true;
+                return;
+            }
 
             ///vm.Container.Resolve<EventAggregator>().GetEvent<CloseWindowEvent>().Publish();
             XmlWriter writer = null;
@@ -268,38 +374,58 @@ namespace client.Views
                 /// Close OptionWindow
                 if (vm.Exchange1Visible)
                 {
-                    var w = vm.Container.Resolve<OptionWindow>(vm.Exchange1.ToString());
+                    string exch = vm.Exchange1.ToString();
+                    var w = vm.Container.Resolve<OptionWindow>(exch);
                     w.SaveAndClose(writer);
+
+                    var w1 = vm.Container.Resolve<TradingWindow>(exch);
+                    w1.SaveAndClose(writer);
                 }
                 if (vm.Exchange2Visible)
                 {
+                    string exch = vm.Exchange2.ToString();
                     var w = vm.Container.Resolve<OptionWindow>(vm.Exchange2.ToString());
                     w.SaveAndClose(writer);
+
+                    var w1 = vm.Container.Resolve<TradingWindow>(exch);
+                    w1.SaveAndClose(writer);
                 }
                 if (vm.Exchange3Visible)
                 {
+                    string exch = vm.Exchange3.ToString();
                     var w = vm.Container.Resolve<OptionWindow>(vm.Exchange3.ToString());
                     w.SaveAndClose(writer);
+
+                    var w1 = vm.Container.Resolve<TradingWindow>(exch);
+                    w1.SaveAndClose(writer);
                 }
                 if (vm.Exchange4Visible)
                 {
+                    string exch = vm.Exchange4.ToString();
                     var w = vm.Container.Resolve<OptionWindow>(vm.Exchange4.ToString());
                     w.SaveAndClose(writer);
+
+                    var w1 = vm.Container.Resolve<TradingWindow>(exch);
+                    w1.SaveAndClose(writer);
                 }
 
-                /// Close ExchangeWindow
                 vm.Container.Resolve<ExchangeWindow>().SaveAndClose(writer);
                 vm.Container.Resolve<RateWindow>().SaveAndClose(writer);
                 vm.Container.Resolve<VolatilityWindow>().SaveAndClose(writer);
                 vm.Container.Resolve<MessageWindow>().SaveAndClose(writer);
                 vm.Container.Resolve<PortfolioWindow>().SaveAndClose(writer);
                 vm.Container.Resolve<StrategyWindow>().SaveAndClose(writer);
+                vm.Container.Resolve<CreditWindow>().SaveAndClose(writer);
+                vm.Container.Resolve<MonitorWindow>().SaveAndClose(writer);
 
                 writer.WriteEndElement();
                 writer.WriteEndDocument();
                 writer.Flush();
             }
-            catch (Exception) { }
+            catch (Exception)
+            {
+                MessageBox.Show("Exception when close windows");
+            }
             finally
             {
                 if (writer != null) writer.Close();
@@ -313,8 +439,8 @@ namespace client.Views
             writer.WriteAttributeString("Visible", (window.Visibility == Visibility.Visible).ToString());
             writer.WriteAttributeString("Left", window.Left.ToString());
             writer.WriteAttributeString("Top", window.Top.ToString());
-            writer.WriteAttributeString("Width", window.ActualWidth.ToString());
-            writer.WriteAttributeString("Height", window.ActualHeight.ToString());
+            writer.WriteAttributeString("Width", window.Width.ToString());
+            writer.WriteAttributeString("Height", window.Height.ToString());
             writer.WriteEndElement();
             writer.Flush();
         }
@@ -472,40 +598,45 @@ namespace client.Views
 
         private void MonitorMenuItem_Click(object sender, RoutedEventArgs e)
         {
-
+            ShowWindow<MonitorWindow>();
         }
 
         private void CreditMenuItem_Click(object sender, RoutedEventArgs e)
         {
-
+            ShowWindow<CreditWindow>();
         }
 
         private void EmergencyMenuItem_Click(object sender, RoutedEventArgs e)
         {
 
         }
-
-        private void ShowWindow<T>() where T : Window
+        
+        private void TradingMenuItem1_Click(object sender, RoutedEventArgs e)
         {
             MainWindowViewModel vm = this.DataContext as MainWindowViewModel;
-            T w = vm.Container.Resolve<T>();
-            Action action = () =>
-            {
-                if (w.IsVisible == false)
-                {
-                    w.Show();
-                }
-                w.Topmost = true;
-                w.Topmost = false;
-            };
-            if (w.Dispatcher.CheckAccess())
-            {
-                action();
-            }
-            else
-            {
-                w.Dispatcher.Invoke(action);
-            }
+            TradingWindow w = vm.Container.Resolve<TradingWindow>(vm.Exchange1.ToString());
+            ShowWindow(w);
+        }
+
+        private void TradingMenuItem2_Click(object sender, RoutedEventArgs e)
+        {
+            MainWindowViewModel vm = this.DataContext as MainWindowViewModel;
+            TradingWindow w = vm.Container.Resolve<TradingWindow>(vm.Exchange2.ToString());
+            ShowWindow(w);
+        }
+
+        private void TradingMenuItem3_Click(object sender, RoutedEventArgs e)
+        {
+            MainWindowViewModel vm = this.DataContext as MainWindowViewModel;
+            TradingWindow w = vm.Container.Resolve<TradingWindow>(vm.Exchange3.ToString());
+            ShowWindow(w);
+        }
+
+        private void TradingMenuItem4_Click(object sender, RoutedEventArgs e)
+        {
+            MainWindowViewModel vm = this.DataContext as MainWindowViewModel;
+            TradingWindow w = vm.Container.Resolve<TradingWindow>(vm.Exchange4.ToString());
+            ShowWindow(w);
         }
     }
 

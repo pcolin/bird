@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
+using System.Runtime.InteropServices;
+using System.Security;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -52,6 +54,15 @@ namespace client.Models
         {
             Proto.Login login = new Proto.Login();
             login.User = user;
+            //try
+            //{
+            //    IntPtr pwd = Marshal.SecureStringToBSTR(password);
+            //    login.Password = Marshal.PtrToStringBSTR(pwd);
+            //}
+            //catch
+            //{
+            //    return null;
+            //}
             login.Password = password;
             login.Role = Proto.Role.Trader;
             login.Ip = GetLocalIP();

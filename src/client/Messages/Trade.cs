@@ -24,15 +24,22 @@ namespace Proto {
     static TradeReflection() {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
-            "CgtUcmFkZS5wcm90bxIFUHJvdG8aDkV4Y2hhbmdlLnByb3RvGgtPcmRlci5w",
-            "cm90byKkAQoFVHJhZGUSCgoCaWQYASABKAkSEgoKaW5zdHJ1bWVudBgCIAEo",
-            "CRIhCghleGNoYW5nZRgDIAEoDjIPLlByb3RvLkV4Y2hhbmdlEhkKBHNpZGUY",
-            "BCABKA4yCy5Qcm90by5TaWRlEg0KBXByaWNlGAUgASgBEg4KBnZvbHVtZRgG",
-            "IAEoBRIMCgR0aW1lGAcgASgEEhAKCG9yZGVyX2lkGAggASgEYgZwcm90bzM="));
+            "CgtUcmFkZS5wcm90bxIFUHJvdG8aDVJlcXVlc3QucHJvdG8aC1JlcGx5LnBy",
+            "b3RvGg5FeGNoYW5nZS5wcm90bxoLT3JkZXIucHJvdG8ipAEKBVRyYWRlEgoK",
+            "AmlkGAEgASgJEhIKCmluc3RydW1lbnQYAiABKAkSIQoIZXhjaGFuZ2UYAyAB",
+            "KA4yDy5Qcm90by5FeGNoYW5nZRIZCgRzaWRlGAQgASgOMgsuUHJvdG8uU2lk",
+            "ZRINCgVwcmljZRgFIAEoARIOCgZ2b2x1bWUYBiABKAUSDAoEdGltZRgHIAEo",
+            "BBIQCghvcmRlcl9pZBgIIAEoBCJ7CghUcmFkZVJlcRIgCgR0eXBlGAEgASgO",
+            "MhIuUHJvdG8uUmVxdWVzdFR5cGUSIQoIZXhjaGFuZ2UYAiABKA4yDy5Qcm90",
+            "by5FeGNoYW5nZRIMCgR1c2VyGAMgASgJEhwKBnRyYWRlcxgEIAMoCzIMLlBy",
+            "b3RvLlRyYWRlIkYKCFRyYWRlUmVwEhwKBnRyYWRlcxgBIAMoCzIMLlByb3Rv",
+            "LlRyYWRlEhwKBnJlc3VsdBgCIAEoCzIMLlByb3RvLlJlcGx5YgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
-          new pbr::FileDescriptor[] { global::Proto.ExchangeReflection.Descriptor, global::Proto.OrderReflection.Descriptor, },
+          new pbr::FileDescriptor[] { global::Proto.RequestReflection.Descriptor, global::Proto.ReplyReflection.Descriptor, global::Proto.ExchangeReflection.Descriptor, global::Proto.OrderReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::Proto.Trade), global::Proto.Trade.Parser, new[]{ "Id", "Instrument", "Exchange", "Side", "Price", "Volume", "Time", "OrderId" }, null, null, null)
+            new pbr::GeneratedClrTypeInfo(typeof(global::Proto.Trade), global::Proto.Trade.Parser, new[]{ "Id", "Instrument", "Exchange", "Side", "Price", "Volume", "Time", "OrderId" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Proto.TradeReq), global::Proto.TradeReq.Parser, new[]{ "Type", "Exchange", "User", "Trades" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Proto.TradeRep), global::Proto.TradeRep.Parser, new[]{ "Trades", "Result" }, null, null, null)
           }));
     }
     #endregion
@@ -359,6 +366,366 @@ namespace Proto {
           }
           case 64: {
             OrderId = input.ReadUInt64();
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class TradeReq : pb::IMessage<TradeReq> {
+    private static readonly pb::MessageParser<TradeReq> _parser = new pb::MessageParser<TradeReq>(() => new TradeReq());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<TradeReq> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::Proto.TradeReflection.Descriptor.MessageTypes[1]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public TradeReq() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public TradeReq(TradeReq other) : this() {
+      type_ = other.type_;
+      exchange_ = other.exchange_;
+      user_ = other.user_;
+      trades_ = other.trades_.Clone();
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public TradeReq Clone() {
+      return new TradeReq(this);
+    }
+
+    /// <summary>Field number for the "type" field.</summary>
+    public const int TypeFieldNumber = 1;
+    private global::Proto.RequestType type_ = 0;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::Proto.RequestType Type {
+      get { return type_; }
+      set {
+        type_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "exchange" field.</summary>
+    public const int ExchangeFieldNumber = 2;
+    private global::Proto.Exchange exchange_ = 0;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::Proto.Exchange Exchange {
+      get { return exchange_; }
+      set {
+        exchange_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "user" field.</summary>
+    public const int UserFieldNumber = 3;
+    private string user_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string User {
+      get { return user_; }
+      set {
+        user_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "trades" field.</summary>
+    public const int TradesFieldNumber = 4;
+    private static readonly pb::FieldCodec<global::Proto.Trade> _repeated_trades_codec
+        = pb::FieldCodec.ForMessage(34, global::Proto.Trade.Parser);
+    private readonly pbc::RepeatedField<global::Proto.Trade> trades_ = new pbc::RepeatedField<global::Proto.Trade>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<global::Proto.Trade> Trades {
+      get { return trades_; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as TradeReq);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(TradeReq other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (Type != other.Type) return false;
+      if (Exchange != other.Exchange) return false;
+      if (User != other.User) return false;
+      if(!trades_.Equals(other.trades_)) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (Type != 0) hash ^= Type.GetHashCode();
+      if (Exchange != 0) hash ^= Exchange.GetHashCode();
+      if (User.Length != 0) hash ^= User.GetHashCode();
+      hash ^= trades_.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (Type != 0) {
+        output.WriteRawTag(8);
+        output.WriteEnum((int) Type);
+      }
+      if (Exchange != 0) {
+        output.WriteRawTag(16);
+        output.WriteEnum((int) Exchange);
+      }
+      if (User.Length != 0) {
+        output.WriteRawTag(26);
+        output.WriteString(User);
+      }
+      trades_.WriteTo(output, _repeated_trades_codec);
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (Type != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Type);
+      }
+      if (Exchange != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Exchange);
+      }
+      if (User.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(User);
+      }
+      size += trades_.CalculateSize(_repeated_trades_codec);
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(TradeReq other) {
+      if (other == null) {
+        return;
+      }
+      if (other.Type != 0) {
+        Type = other.Type;
+      }
+      if (other.Exchange != 0) {
+        Exchange = other.Exchange;
+      }
+      if (other.User.Length != 0) {
+        User = other.User;
+      }
+      trades_.Add(other.trades_);
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 8: {
+            type_ = (global::Proto.RequestType) input.ReadEnum();
+            break;
+          }
+          case 16: {
+            exchange_ = (global::Proto.Exchange) input.ReadEnum();
+            break;
+          }
+          case 26: {
+            User = input.ReadString();
+            break;
+          }
+          case 34: {
+            trades_.AddEntriesFrom(input, _repeated_trades_codec);
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class TradeRep : pb::IMessage<TradeRep> {
+    private static readonly pb::MessageParser<TradeRep> _parser = new pb::MessageParser<TradeRep>(() => new TradeRep());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<TradeRep> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::Proto.TradeReflection.Descriptor.MessageTypes[2]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public TradeRep() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public TradeRep(TradeRep other) : this() {
+      trades_ = other.trades_.Clone();
+      Result = other.result_ != null ? other.Result.Clone() : null;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public TradeRep Clone() {
+      return new TradeRep(this);
+    }
+
+    /// <summary>Field number for the "trades" field.</summary>
+    public const int TradesFieldNumber = 1;
+    private static readonly pb::FieldCodec<global::Proto.Trade> _repeated_trades_codec
+        = pb::FieldCodec.ForMessage(10, global::Proto.Trade.Parser);
+    private readonly pbc::RepeatedField<global::Proto.Trade> trades_ = new pbc::RepeatedField<global::Proto.Trade>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<global::Proto.Trade> Trades {
+      get { return trades_; }
+    }
+
+    /// <summary>Field number for the "result" field.</summary>
+    public const int ResultFieldNumber = 2;
+    private global::Proto.Reply result_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::Proto.Reply Result {
+      get { return result_; }
+      set {
+        result_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as TradeRep);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(TradeRep other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if(!trades_.Equals(other.trades_)) return false;
+      if (!object.Equals(Result, other.Result)) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      hash ^= trades_.GetHashCode();
+      if (result_ != null) hash ^= Result.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      trades_.WriteTo(output, _repeated_trades_codec);
+      if (result_ != null) {
+        output.WriteRawTag(18);
+        output.WriteMessage(Result);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      size += trades_.CalculateSize(_repeated_trades_codec);
+      if (result_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(Result);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(TradeRep other) {
+      if (other == null) {
+        return;
+      }
+      trades_.Add(other.trades_);
+      if (other.result_ != null) {
+        if (result_ == null) {
+          result_ = new global::Proto.Reply();
+        }
+        Result.MergeFrom(other.Result);
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10: {
+            trades_.AddEntriesFrom(input, _repeated_trades_codec);
+            break;
+          }
+          case 18: {
+            if (result_ == null) {
+              result_ = new global::Proto.Reply();
+            }
+            input.ReadMessage(result_);
             break;
           }
         }

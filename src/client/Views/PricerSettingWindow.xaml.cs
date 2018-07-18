@@ -31,10 +31,17 @@ namespace client.Views
 
         private void OkButton_Click(object sender, RoutedEventArgs e)
         {
+            var vm = this.DataContext as PricerUserControlViewModel;
+
             string name = this.NameTextBox.Text;
             if (string.IsNullOrEmpty(name))
             {
                 MessageBox.Show("Name is empty", "Error");
+                return;
+            }
+            else if (vm.IsPricerNameExisted(name))
+            {
+                MessageBox.Show("Name is existed", "Error");
                 return;
             }
 
@@ -87,7 +94,6 @@ namespace client.Views
                 return;
             }
 
-            var vm = this.DataContext as PricerUserControlViewModel;
             vm.AddPricer(name, underlying, model, interval, theoType, maxTickChange, elastic, elasticLimit, this.OptionsCheckBox.IsChecked.Value);
             this.Close();
         }

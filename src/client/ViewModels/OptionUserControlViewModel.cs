@@ -102,6 +102,7 @@ namespace client.ViewModels
         {
             this.container = container;
             this.exchange = exchange;
+            this.productManager = products;
             //productManager = container.Resolve<ProductManager>(exchange.ToString());
             ssrateManager = container.Resolve<SSRateManager>(exchange.ToString());
             serverService = container.Resolve<ServerService>(exchange.ToString());
@@ -135,6 +136,9 @@ namespace client.ViewModels
             }
             this.underlyings = new ListCollectionView(items);
 
+            //var qm = this.container.Resolve<QuoterManager>(exchange.ToString());
+            var cm = this.container.Resolve<CreditManager>(exchange.ToString());
+            var sm = this.container.Resolve<StrategySwitchManager>(exchange.ToString());
             List<OptionPairItem> optionPairItems = new List<OptionPairItem>();
             List<OptionPairItem> dominantOptionPairItems = new List<OptionPairItem>();
             this.optionItems = new Dictionary<Option, OptionItem>();
@@ -145,6 +149,9 @@ namespace client.ViewModels
                 var ret = options.OrderBy(x => x.Underlying.Id).ThenBy(x => x.Strike).ThenBy(x => x.OptionType);
                 Option call = null;
                 DateTime maturity = DateTime.MinValue;
+                Dictionary<string, double> quoterCredits = null;
+                Dictionary<string, double> hitterCredits = null;
+                Dictionary<string, double> dimerCredits = null;
                 int groupNo = 0;
                 foreach (var inst in ret)
                 {
@@ -153,10 +160,16 @@ namespace client.ViewModels
                         if (call != null && call.Underlying == inst.Underlying && call.Strike == inst.Strike)
                         {
                             bool isFirst = false;
-                            if (inst.Maturity != maturity && inst.Underlying != hedgeUnderlying)
+                            if (inst.Maturity != maturity)
                             {
-                                ++groupNo;
-                                isFirst = true;
+                                if (inst.Underlying != hedgeUnderlying)
+                                {
+                                    ++groupNo;
+                                    isFirst = true;
+                                }
+                                quoterCredits = GetCredits(cm, Proto.StrategyType.Quoter, inst.HedgeUnderlying.Id, inst.Maturity);
+                                hitterCredits = GetCredits(cm, Proto.StrategyType.Hitter, inst.HedgeUnderlying.Id, inst.Maturity);
+                                dimerCredits = GetCredits(cm, Proto.StrategyType.Dimer, inst.HedgeUnderlying.Id, inst.Maturity);
                             }
                             var callItem = new OptionItem()
                                 {
@@ -173,6 +186,50 @@ namespace client.ViewModels
                                 callItem.AvailableLongPosition = p.LiquidLong;
                                 callItem.AvailableShortPosition = p.LiquidShort;
                             }
+                            double credit = 0;
+                            if (quoterCredits.TryGetValue(call.Id, out credit))
+                            {
+                                callItem.QuoterCredit = credit;
+                            }
+                            if (hitterCredits.TryGetValue(call.Id, out credit))
+                            {
+                                callItem.HitterCredit = credit;
+                            }
+                            if (dimerCredits.TryGetValue(call.Id, out credit))
+                            {
+                                callItem.DimerCredit = credit;
+                            }
+                            var switches = sm.GetStrategySwitch(call.Id);
+                            if (switches != null)
+                            {
+                                int idx = (int)Proto.StrategyType.Quoter;
+                                if (switches[idx] != null)
+                                {
+                                    callItem.QuoterBidOn = switches[idx].IsBid;
+                                    callItem.QuoterAskOn = switches[idx].IsAsk;
+                                    callItem.EnquiryResponseOn = switches[idx].IsQrCover;
+                                }
+                                idx = (int)Proto.StrategyType.Hitter;
+                                if (switches[idx] != null)
+                                {
+                                    callItem.HitterBidOn = switches[idx].IsBid;
+                                    callItem.HitterAskOn = switches[idx].IsAsk;
+                                    callItem.CoverOn = switches[idx].IsQrCover;
+                                }
+                                idx = (int)Proto.StrategyType.Dimer;
+                                if (switches[idx] != null)
+                                {
+                                    callItem.DimerBidOn = switches[idx].IsBid;
+                                    callItem.DimerAskOn = switches[idx].IsAsk;
+                                    callItem.CoverOn = switches[idx].IsQrCover;
+                                }
+                                idx = (int)Proto.StrategyType.DummyQuoter;
+                                if (switches[idx] != null)
+                                {
+                                    callItem.DummyQuoterBidOn = switches[idx].IsBid;
+                                    callItem.DummyQuoterAskOn = switches[idx].IsAsk;
+                                }
+                            }
                             var putItem = new OptionItem()
                                 {
                                     Option = inst,
@@ -188,6 +245,50 @@ namespace client.ViewModels
                                 putItem.AvailableShortPosition = p.LiquidShort;
                                 putItem.ChangedPosition = putItem.Position - (p.YesterdayLong - p.YesterdayShort);
                             }
+                            if (quoterCredits.TryGetValue(call.Id, out credit))
+                            {
+                                putItem.QuoterCredit = credit;
+                            }
+                            if (hitterCredits.TryGetValue(call.Id, out credit))
+                            {
+                                putItem.HitterCredit = credit;
+                            }
+                            if (dimerCredits.TryGetValue(call.Id, out credit))
+                            {
+                                putItem.DimerCredit = credit;
+                            }
+                            switches = sm.GetStrategySwitch(inst.Id);
+                            if (switches != null)
+                            {
+                                int idx = (int)Proto.StrategyType.Quoter;
+                                if (switches[idx] != null)
+                                {
+                                    putItem.QuoterBidOn = switches[idx].IsBid;
+                                    putItem.QuoterAskOn = switches[idx].IsAsk;
+                                    putItem.EnquiryResponseOn = switches[idx].IsQrCover;
+                                }
+                                idx = (int)Proto.StrategyType.Hitter;
+                                if (switches[idx] != null)
+                                {
+                                    putItem.HitterBidOn = switches[idx].IsBid;
+                                    putItem.HitterAskOn = switches[idx].IsAsk;
+                                    putItem.CoverOn = switches[idx].IsQrCover;
+                                }
+                                idx = (int)Proto.StrategyType.Dimer;
+                                if (switches[idx] != null)
+                                {
+                                    putItem.DimerBidOn = switches[idx].IsBid;
+                                    putItem.DimerAskOn = switches[idx].IsAsk;
+                                    putItem.CoverOn = switches[idx].IsQrCover;
+                                }
+                                idx = (int)Proto.StrategyType.DummyQuoter;
+                                if (switches[idx] != null)
+                                {
+                                    putItem.DummyQuoterBidOn = switches[idx].IsBid;
+                                    putItem.DummyQuoterAskOn = switches[idx].IsAsk;
+                                }
+                            }
+
                             if (inst.Underlying == hedgeUnderlying)
                             {
                                 dominantOptionPairItems.Add(new OptionPairItem() { Call = callItem, Put = putItem, IsFirst = isFirst, GroupNo = 0 });
@@ -279,6 +380,102 @@ namespace client.ViewModels
             }
         }
 
+        public void RefreshCredit(Proto.Credit credit)
+        {
+            switch (credit.Strategy)
+            {
+                case Proto.StrategyType.Quoter:
+                    foreach (var c in credit.Records)
+                    {
+                        var option = productManager.FindId(c.Option) as Option;
+                        OptionItem item = null;
+                        if (option != null && this.optionItems.TryGetValue(option, out item))
+                        {
+                            item.QuoterCredit = c.Credit;
+                        }
+                    }
+                    break;
+                case Proto.StrategyType.Hitter:
+                    foreach (var c in credit.Records)
+                    {
+                        var option = productManager.FindId(c.Option) as Option;
+                        OptionItem item = null;
+                        if (option != null && this.optionItems.TryGetValue(option, out item))
+                        {
+                            item.HitterCredit = c.Credit;
+                        }
+                    }
+                    break;
+                case Proto.StrategyType.Dimer:
+                    foreach (var c in credit.Records)
+                    {
+                        var option = productManager.FindId(c.Option) as Option;
+                        OptionItem item = null;
+                        if (option != null && this.optionItems.TryGetValue(option, out item))
+                        {
+                            item.DimerCredit = c.Credit;
+                        }
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        public void RefreshStrategySwitch(Option option, Proto.StrategySwitch sw)
+        {
+            OptionItem item = null;
+            if (this.optionItems.TryGetValue(option, out item))
+            {
+                switch (sw.Strategy)
+                {
+                    case Proto.StrategyType.Quoter:
+                        item.QuoterBidOn = sw.IsBid;
+                        item.QuoterAskOn = sw.IsAsk;
+                        item.EnquiryResponseOn = sw.IsQrCover;
+                        break;
+                    case Proto.StrategyType.DummyQuoter:
+                        item.DummyQuoterBidOn = sw.IsBid;
+                        item.DummyQuoterAskOn = sw.IsAsk;
+                        break;
+                    case Proto.StrategyType.Hitter:
+                        item.HitterBidOn = sw.IsBid;
+                        item.HitterAskOn = sw.IsAsk;
+                        item.CoverOn = sw.IsQrCover;
+                        break;
+                    case Proto.StrategyType.Dimer:
+                        item.DimerBidOn = sw.IsBid;
+                        item.DimerAskOn = sw.IsAsk;
+                        item.CoverOn = sw.IsQrCover;
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+
+        //public void RefreshQuoterRecord(IEnumerable<Proto.QuoterRecord> records)
+        //{
+        //    foreach(var r in records)
+        //    {
+        //        OptionItem item = null;
+        //        Option option = this.productManager.FindId(r.Instrument) as Option;
+        //        if (option != null && this.optionItems.TryGetValue(option, out item))
+        //        {
+        //            if (r.Credit > 0 || r.Multiplier > 0)
+        //            {
+        //                item.QuoterCredit = r.Credit;
+        //            }
+        //            else
+        //            {
+        //                item.QuoterBidOn = r.IsBid;
+        //                item.QuoterAskOn = r.IsAsk;
+        //                item.EnquiryResponseOn = r.IsQr;
+        //            }
+        //        }
+        //    }
+        //}
+
         //public delegate void ReceivePriceDelegate(Proto.Instrument inst, Proto.Price price);
         public void ReceivePrice(Instrument inst, Proto.Price price)
         {
@@ -292,10 +489,20 @@ namespace client.ViewModels
                         item.MarketBidPrice = price.Bids[0].Price;
                         item.MarketBidVolume = price.Bids[0].Volume;
                     }
+                    else
+                    {
+                        item.MarketBidPrice = 0;
+                        item.MarketBidVolume = 0;
+                    }
                     if (price.Asks.Count > 0)
                     {
                         item.MarketAskPrice = price.Asks[0].Price;
                         item.MarketAskVolume = price.Asks[0].Volume;
+                    }
+                    else
+                    {
+                        item.MarketAskPrice = 0;
+                        item.MarketAskVolume = 0;
                     }
                     item.LastPrice = price.Last.Price;
                     item.LastVolume = price.Last.Volume;
@@ -312,10 +519,20 @@ namespace client.ViewModels
                             kvp.Value.MarketBidPrice = price.Bids[0].Price;
                             kvp.Value.MarketBidVolume = price.Bids[0].Volume;
                         }
+                        else
+                        {
+                            kvp.Value.MarketBidPrice = 0;
+                            kvp.Value.MarketBidVolume = 0;
+                        }
                         if (price.Asks.Count > 0)
                         {
                             kvp.Value.MarketAskPrice = price.Asks[0].Price;
                             kvp.Value.MarketAskVolume = price.Asks[0].Volume;
+                        }
+                        else
+                        {
+                            kvp.Value.MarketAskPrice = 0;
+                            kvp.Value.MarketAskVolume = 0;
                         }
                         kvp.Value.LastPrice = price.Last.Price;
                         kvp.Value.LastVolume = price.Last.Volume;
@@ -358,10 +575,20 @@ namespace client.ViewModels
                         item.MarketBidPrice = price.Bids[0].Price;
                         item.MarketBidVolume = price.Bids[0].Volume;
                     }
+                    else
+                    {
+                        item.MarketBidPrice = 0;
+                        item.MarketBidVolume = 0;
+                    }
                     if (price.Asks.Count > 0)
                     {
                         item.MarketAskPrice = price.Asks[0].Price;
                         item.MarketAskVolume = price.Asks[0].Volume;
+                    }
+                    else
+                    {
+                        item.MarketAskPrice = 0;
+                        item.MarketAskVolume = 0;
                     }
                     item.LastPrice = price.Last.Price;
                     item.LastVolume = price.Last.Volume;
@@ -425,6 +652,61 @@ namespace client.ViewModels
             }
         }
 
+        public void SetStrategySwitch(HashSet<OptionItem>[] items)
+        {
+            Proto.StrategySwitchReq req = new Proto.StrategySwitchReq();
+            foreach (var item in items[(int)Proto.StrategyType.Quoter])
+            {
+                req.Switches.Add(new Proto.StrategySwitch()
+                    {
+                        Strategy = Proto.StrategyType.Quoter,
+                        Option = item.Option.Id,
+                        IsBid = item.QuoterBidOn,
+                        IsAsk = item.QuoterAskOn,
+                        IsQrCover = item.EnquiryResponseOn,
+                    });
+            }
+            foreach (var item in items[(int)Proto.StrategyType.Hitter])
+            {
+                req.Switches.Add(new Proto.StrategySwitch()
+                {
+                    Strategy = Proto.StrategyType.Hitter,
+                    Option = item.Option.Id,
+                    IsBid = item.HitterBidOn,
+                    IsAsk = item.HitterAskOn,
+                    IsQrCover = item.CoverOn,
+                });
+            }
+            foreach (var item in items[(int)Proto.StrategyType.Dimer])
+            {
+                req.Switches.Add(new Proto.StrategySwitch()
+                {
+                    Strategy = Proto.StrategyType.Dimer,
+                    Option = item.Option.Id,
+                    IsBid = item.DimerBidOn,
+                    IsAsk = item.DimerAskOn,
+                    IsQrCover = item.CoverOn,
+                });
+            }
+            foreach (var item in items[(int)Proto.StrategyType.DummyQuoter])
+            {
+                req.Switches.Add(new Proto.StrategySwitch()
+                {
+                    Strategy = Proto.StrategyType.DummyQuoter,
+                    Option = item.Option.Id,
+                    IsBid = item.DummyQuoterBidOn,
+                    IsAsk = item.DummyQuoterAskOn,
+                });
+            }
+            if (req.Switches.Count > 0)
+            {
+                req.Type = Proto.RequestType.Set;
+                req.Exchange = this.exchange;
+                req.User = serverService.User;
+                serverService.Request(req);
+            }
+        }
+
         public void SetDestrikers(Proto.DestrikerReq req)
         {
             if (req.Destrikers.Count > 0)
@@ -436,11 +718,56 @@ namespace client.ViewModels
             }
         }
 
+        private void RequestStrategySwitch(Proto.StrategyType strategy, string option, bool isBid, bool isAsk, bool isQrCover)
+        {
+            Proto.StrategySwitchReq req = new Proto.StrategySwitchReq();
+            req.Type = Proto.RequestType.Set;
+            req.Exchange = this.exchange;
+            req.User = serverService.User;
+
+            req.Switches.Add(new Proto.StrategySwitch()
+                {
+                    Strategy = strategy,
+                    Option = option,
+                    IsBid = isBid,
+                    IsAsk = isAsk,
+                    IsQrCover = isQrCover,
+                });
+            serverService.Request(req);
+        }
+
+        private void RequestCoverStrategySwitch(OptionItem item)
+        {
+            Proto.StrategySwitchReq req = new Proto.StrategySwitchReq();
+            req.Type = Proto.RequestType.Set;
+            req.Exchange = this.exchange;
+            req.User = serverService.User;
+
+            req.Switches.Add(new Proto.StrategySwitch()
+                {
+                    Strategy = Proto.StrategyType.Hitter,
+                    Option = item.Option.Id,
+                    IsBid = item.HitterBidOn,
+                    IsAsk = item.HitterAskOn,
+                    IsQrCover = item.CoverOn,
+                });
+            req.Switches.Add(new Proto.StrategySwitch()
+                {
+                    Strategy = Proto.StrategyType.Dimer,
+                    Option = item.Option.Id,
+                    IsBid = item.DimerBidOn,
+                    IsAsk = item.DimerAskOn,
+                    IsQrCover = item.CoverOn,
+                });
+            serverService.Request(req);
+        }
+
         private void QuoterCallBidSwitchExecute(object obj)
         {
             DataGridCellInfo cell = (DataGridCellInfo)obj;
             OptionPairItem item = cell.Item as OptionPairItem;
             item.Call.QuoterBidOn = !item.Call.QuoterBidOn;
+            RequestStrategySwitch(Proto.StrategyType.Quoter, item.Call.Option.Id, item.Call.QuoterBidOn, item.Call.QuoterAskOn, item.Call.EnquiryResponseOn);
         }
 
         private void QuoterCallAskSwitchExecute(object obj)
@@ -448,6 +775,7 @@ namespace client.ViewModels
             DataGridCellInfo cell = (DataGridCellInfo)obj;
             OptionPairItem item = cell.Item as OptionPairItem;
             item.Call.QuoterAskOn = !item.Call.QuoterAskOn;
+            RequestStrategySwitch(Proto.StrategyType.Quoter, item.Call.Option.Id, item.Call.QuoterBidOn, item.Call.QuoterAskOn, item.Call.EnquiryResponseOn);
         }
 
         private void QuoterPutBidSwitchExecute(object obj)
@@ -455,6 +783,7 @@ namespace client.ViewModels
             DataGridCellInfo cell = (DataGridCellInfo)obj;
             OptionPairItem item = cell.Item as OptionPairItem;
             item.Put.QuoterBidOn = !item.Put.QuoterBidOn;
+            RequestStrategySwitch(Proto.StrategyType.Quoter, item.Put.Option.Id, item.Put.QuoterBidOn, item.Put.QuoterAskOn, item.Put.EnquiryResponseOn);
         }
 
         private void QuoterPutAskSwitchExecute(object obj)
@@ -462,6 +791,7 @@ namespace client.ViewModels
             DataGridCellInfo cell = (DataGridCellInfo)obj;
             OptionPairItem item = cell.Item as OptionPairItem;
             item.Put.QuoterAskOn = !item.Put.QuoterAskOn;
+            RequestStrategySwitch(Proto.StrategyType.Quoter, item.Put.Option.Id, item.Put.QuoterBidOn, item.Put.QuoterAskOn, item.Put.EnquiryResponseOn);
         }
 
         private void DummyQuoterCallBidSwitchExecute(object obj)
@@ -497,6 +827,7 @@ namespace client.ViewModels
             DataGridCellInfo cell = (DataGridCellInfo)obj;
             OptionPairItem item = cell.Item as OptionPairItem;
             item.Call.HitterBidOn = !item.Call.HitterBidOn;
+            RequestStrategySwitch(Proto.StrategyType.Hitter, item.Call.Option.Id, item.Call.HitterBidOn, item.Call.HitterAskOn, item.Call.CoverOn);
         }
 
         private void HitterCallAskSwitchExecute(object obj)
@@ -504,6 +835,7 @@ namespace client.ViewModels
             DataGridCellInfo cell = (DataGridCellInfo)obj;
             OptionPairItem item = cell.Item as OptionPairItem;
             item.Call.HitterAskOn = !item.Call.HitterAskOn;
+            RequestStrategySwitch(Proto.StrategyType.Hitter, item.Call.Option.Id, item.Call.HitterBidOn, item.Call.HitterAskOn, item.Call.CoverOn);
         }
 
         private void HitterPutBidSwitchExecute(object obj)
@@ -511,6 +843,7 @@ namespace client.ViewModels
             DataGridCellInfo cell = (DataGridCellInfo)obj;
             OptionPairItem item = cell.Item as OptionPairItem;
             item.Put.HitterBidOn = !item.Put.HitterBidOn;
+            RequestStrategySwitch(Proto.StrategyType.Hitter, item.Put.Option.Id, item.Put.HitterBidOn, item.Put.HitterAskOn, item.Put.CoverOn);
         }
 
         private void HitterPutAskSwitchExecute(object obj)
@@ -518,6 +851,7 @@ namespace client.ViewModels
             DataGridCellInfo cell = (DataGridCellInfo)obj;
             OptionPairItem item = cell.Item as OptionPairItem;
             item.Put.HitterAskOn = !item.Put.HitterAskOn;
+            RequestStrategySwitch(Proto.StrategyType.Hitter, item.Put.Option.Id, item.Put.HitterBidOn, item.Put.HitterAskOn, item.Put.CoverOn);
         }
 
         private void DimerCallBidSwitchExecute(object obj)
@@ -525,6 +859,7 @@ namespace client.ViewModels
             DataGridCellInfo cell = (DataGridCellInfo)obj;
             OptionPairItem item = cell.Item as OptionPairItem;
             item.Call.DimerBidOn = !item.Call.DimerBidOn;
+            RequestStrategySwitch(Proto.StrategyType.Dimer, item.Call.Option.Id, item.Call.DimerBidOn, item.Call.DimerAskOn, item.Call.CoverOn);
         }
 
         private void DimerCallAskSwitchExecute(object obj)
@@ -532,6 +867,7 @@ namespace client.ViewModels
             DataGridCellInfo cell = (DataGridCellInfo)obj;
             OptionPairItem item = cell.Item as OptionPairItem;
             item.Call.DimerAskOn = !item.Call.DimerAskOn;
+            RequestStrategySwitch(Proto.StrategyType.Dimer, item.Call.Option.Id, item.Call.DimerBidOn, item.Call.DimerAskOn, item.Call.CoverOn);
         }
 
         private void DimerPutBidSwitchExecute(object obj)
@@ -539,6 +875,7 @@ namespace client.ViewModels
             DataGridCellInfo cell = (DataGridCellInfo)obj;
             OptionPairItem item = cell.Item as OptionPairItem;
             item.Put.DimerBidOn = !item.Put.DimerBidOn;
+            RequestStrategySwitch(Proto.StrategyType.Dimer, item.Put.Option.Id, item.Put.DimerBidOn, item.Put.DimerAskOn, item.Put.CoverOn);
         }
 
         private void DimerPutAskSwitchExecute(object obj)
@@ -546,6 +883,7 @@ namespace client.ViewModels
             DataGridCellInfo cell = (DataGridCellInfo)obj;
             OptionPairItem item = cell.Item as OptionPairItem;
             item.Put.DimerAskOn = !item.Put.DimerAskOn;
+            RequestStrategySwitch(Proto.StrategyType.Dimer, item.Put.Option.Id, item.Put.DimerBidOn, item.Put.DimerAskOn, item.Put.CoverOn);
         }
 
         private void CoverCallSwitchExecute(object obj)
@@ -553,6 +891,7 @@ namespace client.ViewModels
             DataGridCellInfo cell = (DataGridCellInfo)obj;
             OptionPairItem item = cell.Item as OptionPairItem;
             item.Call.CoverOn = !item.Call.CoverOn;
+            RequestCoverStrategySwitch(item.Call);
         }
 
         private void CoverPutSwitchExecute(object obj)
@@ -560,6 +899,7 @@ namespace client.ViewModels
             DataGridCellInfo cell = (DataGridCellInfo)obj;
             OptionPairItem item = cell.Item as OptionPairItem;
             item.Put.CoverOn = !item.Put.CoverOn;
+            RequestCoverStrategySwitch(item.Put);
         }
 
         private void EnquiryResponseCallSwitchExecute(object obj)
@@ -567,6 +907,7 @@ namespace client.ViewModels
             DataGridCellInfo cell = (DataGridCellInfo)obj;
             OptionPairItem item = cell.Item as OptionPairItem;
             item.Call.EnquiryResponseOn = !item.Call.EnquiryResponseOn;
+            RequestStrategySwitch(Proto.StrategyType.Quoter, item.Call.Option.Id, item.Call.QuoterBidOn, item.Call.QuoterAskOn, item.Call.EnquiryResponseOn);
         }
 
         private void EnquiryResponsePutSwitchExecute(object obj)
@@ -574,9 +915,24 @@ namespace client.ViewModels
             DataGridCellInfo cell = (DataGridCellInfo)obj;
             OptionPairItem item = cell.Item as OptionPairItem;
             item.Put.EnquiryResponseOn = !item.Put.EnquiryResponseOn;
+            RequestStrategySwitch(Proto.StrategyType.Quoter, item.Put.Option.Id, item.Put.QuoterBidOn, item.Put.QuoterAskOn, item.Put.EnquiryResponseOn);
         }
 
-        //private ProductManager productManager;
+        private Dictionary<string, double> GetCredits(CreditManager cm, Proto.StrategyType strategy, string underlying, DateTime maturity)
+        {
+            var credits = new Dictionary<string, double>();
+            var credit = cm.GetCredit(strategy, underlying, maturity);
+            if (credit != null)
+            {
+                foreach (var c in credit.Records)
+                {
+                    credits[c.Option] = c.Credit;
+                }
+            }
+            return credits;
+        }
+
+        private ProductManager productManager;
         private IUnityContainer container;
         private Proto.Exchange exchange;
         private SSRateManager ssrateManager;

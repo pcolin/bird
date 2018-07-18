@@ -47,215 +47,395 @@ namespace client.Views
         {
             if (e.Key == Key.OemPlus)
             {
+                HashSet<OptionItem>[] items = new HashSet<OptionItem>[(int)Proto.StrategyType.DummyQuoter + 1]
+                    {
+                        new HashSet<OptionItem>(),
+                        new HashSet<OptionItem>(),
+                        new HashSet<OptionItem>(),
+                        new HashSet<OptionItem>(),
+                    };
                 foreach (var cell in this.OptionDataGrid.SelectedCells)
                 {
                     if (cell.Column == this.QBC)
                     {
                         OptionPairItem item = cell.Item as OptionPairItem;
-                        item.Call.QuoterBidOn = true;
+                        if (!item.Call.QuoterBidOn)
+                        {
+                            item.Call.QuoterBidOn = true;
+                            items[(int)Proto.StrategyType.Quoter].Add(item.Call);
+                        }
                     }
                     else if (cell.Column == this.QSC)
                     {
                         OptionPairItem item = cell.Item as OptionPairItem;
-                        item.Call.QuoterAskOn = true;
+                        if (!item.Call.QuoterAskOn)
+                        {
+                            item.Call.QuoterAskOn = true;
+                            items[(int)Proto.StrategyType.Quoter].Add(item.Call);
+                        }
                     }
                     else if (cell.Column == this.MBC)
                     {
                         OptionPairItem item = cell.Item as OptionPairItem;
-                        item.Call.DummyQuoterBidOn = true;
+                        if (!item.Call.DummyQuoterBidOn)
+                        {
+                            item.Call.DummyQuoterBidOn = true;
+                            items[(int)Proto.StrategyType.DummyQuoter].Add(item.Call);
+                        }
                     }
                     else if (cell.Column == this.MSC)
                     {
                         OptionPairItem item = cell.Item as OptionPairItem;
-                        item.Call.DummyQuoterAskOn = true;
+                        if (!item.Call.DummyQuoterAskOn)
+                        {
+                            item.Call.DummyQuoterAskOn = true;
+                            items[(int)Proto.StrategyType.DummyQuoter].Add(item.Call);
+                        }
                     }
                     else if (cell.Column == this.HBC)
                     {
                         OptionPairItem item = cell.Item as OptionPairItem;
-                        item.Call.HitterBidOn = true;                        
+                        if (!item.Call.HitterBidOn)
+                        {
+                            item.Call.HitterBidOn = true;
+                            items[(int)Proto.StrategyType.Hitter].Add(item.Call);
+                        }
                     }
                     else if (cell.Column == this.HSC)
                     {
                         OptionPairItem item = cell.Item as OptionPairItem;
-                        item.Call.HitterAskOn = true;
+                        if (!item.Call.HitterAskOn)
+                        {
+                            item.Call.HitterAskOn = true;
+                            items[(int)Proto.StrategyType.Hitter].Add(item.Call);
+                        }
                     }
                     else if (cell.Column == this.DBC)
                     {
                         OptionPairItem item = cell.Item as OptionPairItem;
-                        item.Call.DimerBidOn = true;                        
+                        if (!item.Call.DimerBidOn)
+                        {
+                            item.Call.DimerBidOn = true;
+                            items[(int)Proto.StrategyType.Dimer].Add(item.Call);
+                        }
                     }
                     else if (cell.Column == this.DSC)
                     {
                         OptionPairItem item = cell.Item as OptionPairItem;
-                        item.Call.DimerAskOn = true;
+                        if (!item.Call.DimerAskOn)
+                        {
+                            item.Call.DimerAskOn = true;
+                            items[(int)Proto.StrategyType.Dimer].Add(item.Call);
+                        }
                     }
                     else if (cell.Column == this.CoverC)
                     {
                         OptionPairItem item = cell.Item as OptionPairItem;
-                        item.Call.CoverOn = true;
+                        if (!item.Call.CoverOn)
+                        {
+                            item.Call.CoverOn = true;
+                            items[(int)Proto.StrategyType.Hitter].Add(item.Call);
+                            items[(int)Proto.StrategyType.Dimer].Add(item.Call);
+                        }
                     }
                     else if (cell.Column == this.QRC)
                     {
                         OptionPairItem item = cell.Item as OptionPairItem;
-                        item.Call.EnquiryResponseOn = true;
+                        if (!item.Call.EnquiryResponseOn)
+                        {
+                            item.Call.EnquiryResponseOn = true;
+                            items[(int)Proto.StrategyType.Quoter].Add(item.Call);
+                        }
                     }
                     else if (cell.Column == this.CoverP)
                     {
                         OptionPairItem item = cell.Item as OptionPairItem;
-                        item.Put.CoverOn = true;
+                        if (!item.Put.CoverOn)
+                        {
+                            item.Put.CoverOn = true;
+                            items[(int)Proto.StrategyType.Hitter].Add(item.Put);
+                            items[(int)Proto.StrategyType.Dimer].Add(item.Put);
+                        }
                     }
                     else if (cell.Column == this.QBP)
                     {
                         OptionPairItem item = cell.Item as OptionPairItem;
-                        item.Put.QuoterBidOn = true;
+                        if (!item.Put.QuoterBidOn)
+                        {
+                            item.Put.QuoterBidOn = true;
+                            items[(int)Proto.StrategyType.Quoter].Add(item.Put);
+                        }
                     }
                     else if (cell.Column == this.QSP)
                     {
                         OptionPairItem item = cell.Item as OptionPairItem;
-                        item.Put.QuoterAskOn = true;
+                        if (!item.Put.QuoterAskOn)
+                        {
+                            item.Put.QuoterAskOn = true;
+                            items[(int)Proto.StrategyType.Quoter].Add(item.Put);
+                        }
                     }
                     else if (cell.Column == this.MBP)
                     {
                         OptionPairItem item = cell.Item as OptionPairItem;
-                        item.Put.DummyQuoterBidOn = true;
+                        if (!item.Put.DummyQuoterBidOn)
+                        {
+                            item.Put.DummyQuoterBidOn = true;
+                            items[(int)Proto.StrategyType.DummyQuoter].Add(item.Put);
+                        }
                     }
                     else if (cell.Column == this.MSP)
                     {
                         OptionPairItem item = cell.Item as OptionPairItem;
-                        item.Put.DummyQuoterAskOn = true;
+                        if (!item.Put.DummyQuoterAskOn)
+                        {
+                            item.Put.DummyQuoterAskOn = true;
+                            items[(int)Proto.StrategyType.DummyQuoter].Add(item.Put);
+                        }
                     }
                     else if (cell.Column == this.HBP)
                     {
                         OptionPairItem item = cell.Item as OptionPairItem;
-                        item.Put.HitterBidOn = true;
+                        if (!item.Put.HitterBidOn)
+                        {
+                            item.Put.HitterBidOn = true;
+                            items[(int)Proto.StrategyType.Hitter].Add(item.Put);
+                        }
                     }
                     else if (cell.Column == this.HSP)
                     {
                         OptionPairItem item = cell.Item as OptionPairItem;
-                        item.Put.HitterAskOn = true;
+                        if (!item.Put.HitterAskOn)
+                        {
+                            item.Put.HitterAskOn = true;
+                            items[(int)Proto.StrategyType.Hitter].Add(item.Put);
+                        }
                     }
                     else if (cell.Column == this.DBP)
                     {
                         OptionPairItem item = cell.Item as OptionPairItem;
-                        item.Put.DimerBidOn = true;
+                        if (!item.Put.DimerBidOn)
+                        {
+                            item.Put.DimerBidOn = true;
+                            items[(int)Proto.StrategyType.Dimer].Add(item.Put);
+                        }
                     }
                     else if (cell.Column == this.DSP)
                     {
                         OptionPairItem item = cell.Item as OptionPairItem;
-                        item.Put.DimerAskOn = true;
+                        if (!item.Put.DimerAskOn)
+                        {
+                            item.Put.DimerAskOn = true;
+                            items[(int)Proto.StrategyType.Dimer].Add(item.Put);
+                        }
                     }
                     else if (cell.Column == this.QRP)
                     {
                         OptionPairItem item = cell.Item as OptionPairItem;
-                        item.Put.EnquiryResponseOn = true;
+                        if (!item.Put.EnquiryResponseOn)
+                        {
+                            item.Put.EnquiryResponseOn = true;
+                            items[(int)Proto.StrategyType.Quoter].Add(item.Put);
+                        }
                     }
                 }
+                (this.DataContext as OptionUserControlViewModel).SetStrategySwitch(items);
             }
             else if (e.Key == Key.OemMinus)
             {
+                HashSet<OptionItem>[] items = new HashSet<OptionItem>[(int)Proto.StrategyType.DummyQuoter + 1]
+                    {
+                        new HashSet<OptionItem>(),
+                        new HashSet<OptionItem>(),
+                        new HashSet<OptionItem>(),
+                        new HashSet<OptionItem>(),
+                    };
                 foreach (var cell in this.OptionDataGrid.SelectedCells)
                 {
                     if (cell.Column == this.QBC)
                     {
                         OptionPairItem item = cell.Item as OptionPairItem;
-                        item.Call.QuoterBidOn = false;
+                        if (item.Call.QuoterBidOn)
+                        {
+                            item.Call.QuoterBidOn = false;
+                            items[(int)Proto.StrategyType.Quoter].Add(item.Call);
+                        }
                     }
                     else if (cell.Column == this.QSC)
                     {
                         OptionPairItem item = cell.Item as OptionPairItem;
-                        item.Call.QuoterAskOn = false;
+                        if (item.Call.QuoterAskOn)
+                        {
+                            item.Call.QuoterAskOn = false;
+                            items[(int)Proto.StrategyType.Quoter].Add(item.Call);
+                        }
                     }
                     else if (cell.Column == this.MBC)
                     {
                         OptionPairItem item = cell.Item as OptionPairItem;
-                        item.Call.DummyQuoterBidOn = false;
+                        if (item.Call.DummyQuoterBidOn)
+                        {
+                            item.Call.DummyQuoterBidOn = false;
+                            items[(int)Proto.StrategyType.DummyQuoter].Add(item.Call);
+                        }
                     }
                     else if (cell.Column == this.MSC)
                     {
                         OptionPairItem item = cell.Item as OptionPairItem;
-                        item.Call.DummyQuoterAskOn = false;
+                        if (item.Call.DummyQuoterAskOn)
+                        {
+                            item.Call.DummyQuoterAskOn = false;
+                            items[(int)Proto.StrategyType.DummyQuoter].Add(item.Call);
+                        }
                     }
                     else if (cell.Column == this.HBC)
                     {
                         OptionPairItem item = cell.Item as OptionPairItem;
-                        item.Call.HitterBidOn = false;
+                        if (item.Call.HitterBidOn)
+                        {
+                            item.Call.HitterBidOn = false;
+                            items[(int)Proto.StrategyType.Hitter].Add(item.Call);
+                        }
                     }
                     else if (cell.Column == this.HSC)
                     {
                         OptionPairItem item = cell.Item as OptionPairItem;
-                        item.Call.HitterAskOn = false;
+                        if (item.Call.HitterAskOn)
+                        {
+                            item.Call.HitterAskOn = false;
+                            items[(int)Proto.StrategyType.Hitter].Add(item.Call);
+                        }
                     }
                     else if (cell.Column == this.DBC)
                     {
                         OptionPairItem item = cell.Item as OptionPairItem;
-                        item.Call.DimerBidOn = false;
+                        if (item.Call.DimerBidOn)
+                        {
+                            item.Call.DimerBidOn = false;
+                            items[(int)Proto.StrategyType.Dimer].Add(item.Call);
+                        }
                     }
                     else if (cell.Column == this.DSC)
                     {
                         OptionPairItem item = cell.Item as OptionPairItem;
-                        item.Call.DimerAskOn = false;
+                        if (item.Call.DimerAskOn)
+                        {
+                            item.Call.DimerAskOn = false;
+                            items[(int)Proto.StrategyType.Dimer].Add(item.Call);
+                        }
                     }
                     else if (cell.Column == this.CoverC)
                     {
                         OptionPairItem item = cell.Item as OptionPairItem;
-                        item.Call.CoverOn = false;
+                        if (item.Call.CoverOn)
+                        {
+                            item.Call.CoverOn = false;
+                            items[(int)Proto.StrategyType.Hitter].Add(item.Call);
+                            items[(int)Proto.StrategyType.Dimer].Add(item.Call);
+                        }
                     }
                     else if (cell.Column == this.QRC)
                     {
                         OptionPairItem item = cell.Item as OptionPairItem;
-                        item.Call.EnquiryResponseOn = false;
+                        if (item.Call.EnquiryResponseOn)
+                        {
+                            item.Call.EnquiryResponseOn = false;
+                            items[(int)Proto.StrategyType.Quoter].Add(item.Call);
+                        }
                     }
                     else if (cell.Column == this.CoverP)
                     {
                         OptionPairItem item = cell.Item as OptionPairItem;
-                        item.Put.CoverOn = false;
+                        if (item.Put.CoverOn)
+                        {
+                            item.Put.CoverOn = false;
+                            items[(int)Proto.StrategyType.Hitter].Add(item.Put);
+                            items[(int)Proto.StrategyType.Dimer].Add(item.Put);
+                        }
                     }
                     else if (cell.Column == this.QBP)
                     {
                         OptionPairItem item = cell.Item as OptionPairItem;
-                        item.Put.QuoterBidOn = false;
+                        if (item.Put.QuoterBidOn)
+                        {
+                            item.Put.QuoterBidOn = false;
+                            items[(int)Proto.StrategyType.Quoter].Add(item.Put);
+                        }
                     }
                     else if (cell.Column == this.QSP)
                     {
                         OptionPairItem item = cell.Item as OptionPairItem;
-                        item.Put.QuoterAskOn = false;
+                        if (item.Put.QuoterAskOn)
+                        {
+                            item.Put.QuoterAskOn = false;
+                            items[(int)Proto.StrategyType.Quoter].Add(item.Put);
+                        }
                     }
                     else if (cell.Column == this.MBP)
                     {
                         OptionPairItem item = cell.Item as OptionPairItem;
-                        item.Put.DummyQuoterBidOn = false;
+                        if (item.Put.DummyQuoterBidOn)
+                        {
+                            item.Put.DummyQuoterBidOn = false;
+                            items[(int)Proto.StrategyType.DummyQuoter].Add(item.Put);
+                        }
                     }
                     else if (cell.Column == this.MSP)
                     {
                         OptionPairItem item = cell.Item as OptionPairItem;
-                        item.Put.DummyQuoterAskOn = false;
+                        if (item.Put.DummyQuoterAskOn)
+                        {
+                            item.Put.DummyQuoterAskOn = false;
+                            items[(int)Proto.StrategyType.DummyQuoter].Add(item.Put);
+                        }
                     }
                     else if (cell.Column == this.HBP)
                     {
                         OptionPairItem item = cell.Item as OptionPairItem;
-                        item.Put.HitterBidOn = false;
+                        if (item.Put.HitterBidOn)
+                        {
+                            item.Put.HitterBidOn = false;
+                            items[(int)Proto.StrategyType.Hitter].Add(item.Put);
+                        }
                     }
                     else if (cell.Column == this.HSP)
                     {
                         OptionPairItem item = cell.Item as OptionPairItem;
-                        item.Put.HitterAskOn = false;
+                        if (item.Put.HitterAskOn)
+                        {
+                            item.Put.HitterAskOn = false;
+                            items[(int)Proto.StrategyType.Hitter].Add(item.Put);
+                        }
                     }
                     else if (cell.Column == this.DBP)
                     {
                         OptionPairItem item = cell.Item as OptionPairItem;
-                        item.Put.DimerBidOn = false;
+                        if (item.Put.DimerBidOn)
+                        {
+                            item.Put.DimerBidOn = false;
+                            items[(int)Proto.StrategyType.Dimer].Add(item.Put);
+                        }
                     }
                     else if (cell.Column == this.DSP)
                     {
                         OptionPairItem item = cell.Item as OptionPairItem;
-                        item.Put.DimerAskOn = false;
+                        if (item.Put.DimerAskOn)
+                        {
+                            item.Put.DimerAskOn = false;
+                            items[(int)Proto.StrategyType.Dimer].Add(item.Put);
+                        }
                     }
                     else if (cell.Column == this.QRP)
                     {
                         OptionPairItem item = cell.Item as OptionPairItem;
-                        item.Put.EnquiryResponseOn = false;
+                        if (item.Put.EnquiryResponseOn)
+                        {
+                            item.Put.EnquiryResponseOn = false;
+                            items[(int)Proto.StrategyType.Quoter].Add(item.Put);
+                        }
                     }
                 }
+                (this.DataContext as OptionUserControlViewModel).SetStrategySwitch(items);
             }
             else if (e.Key == Key.D)
             {
@@ -576,6 +756,69 @@ namespace client.Views
             throw new NotImplementedException();
         }
     }
+
+    public class NetToColorMultiConverter : IMultiValueConverter
+    {
+        public object Convert(object[] values, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            if (values[0] is double && values[1] is double)
+            {
+                double value1 = (double)values[0];
+                double value2 = (double)values[1];
+
+                if (value1 > value2)
+                {
+                    return Brushes.Red;
+                }
+                else if (value1 < value2)
+                {
+                    return Brushes.Green;
+                }
+            }
+            return null;
+        }
+
+        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, System.Globalization.CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+    
+    public class NetPercentFormatToStringMultiConverter : IMultiValueConverter
+    {
+        public string DefaultFormat { get; set; }
+
+        public object Convert(object[] values, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            if (values[0] is double && values[1] is double)
+            {
+                double value1 = (double)values[0];
+                double value2 = (double)values[1];
+                if (double.IsNaN(value1) == false && double.IsNaN(value2) == false && value2 != 0)
+                {
+                    double value = value1 / value2 - 1;
+                    Dictionary<int, string> formats = values[3] as Dictionary<int, string>;
+                    if (formats != null)
+                    {
+                        int index = (int)values[2];
+                        string format = null;
+                        if (formats.TryGetValue(index, out format))
+                        {
+                            return (value * 100).ToString(format);
+                        }
+                    }
+                    return (value * 100).ToString(DefaultFormat);
+                }
+            }
+            return null;
+        }
+
+        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, System.Globalization.CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+    
 
     //public class ColorConverter : IValueConverter
     //{

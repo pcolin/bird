@@ -3,9 +3,10 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
              xmlns:local="clr-namespace:client.Views"
              mc:Ignorable="d" 
-             d:DesignHeight="400" d:DesignWidth="600">
+             d:DesignHeight="400" d:DesignWidth="700">
     <UserControl.Resources>
         <local:DateConverter x:Key="DateConverter" />
         <local:TimeConverter x:Key="TimeConverter" />
@@ -32,10 +33,11 @@
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition></ColumnDefinition>
-                    <ColumnDefinition MinWidth="50"></ColumnDefinition>
+                    <ColumnDefinition MinWidth="100"></ColumnDefinition>
                 </Grid.ColumnDefinitions>
                 <TextBlock Margin="5" VerticalAlignment="Center">CharmCutoff:</TextBlock>
-                <TextBox Margin="5" Grid.Column="1" Text="{Binding CharmCutoff, Mode=TwoWay, Converter={StaticResource TimeConverter}}"></TextBox>
+                <xctk:TimePicker Margin="5" Grid.Column="1" Format="LongTime" Text="{Binding CharmCutoff, Mode=TwoWay, Converter={StaticResource TimeConverter}}"/>
+                <!--<TextBox Margin="5" Grid.Column="1" Text="{Binding CharmCutoff, Mode=TwoWay, Converter={StaticResource TimeConverter}}"></TextBox>-->
                 <!--TextBlock Margin="5" VerticalAlignment="Center" Grid.Row="1">QRDelay:</>
                 <TextBox Margin="5" Grid.Row="1" Grid.Column="1">15</TextBox>
                 <TextBlock Margin="5" VerticalAlignment="Center" Grid.Row="2">QRTimeout:</TextBlock>
@@ -62,7 +64,16 @@
                     </ContextMenu>
                 </DataGrid.ContextMenu>
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="Holidays" Width="80" Binding="{Binding Holiday, Mode=TwoWay, Converter={StaticResource DateConverter}}" />
+                    <DataGridTemplateColumn Header="Holidays">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <xctk:DateTimePicker Format="Custom" FormatString="yyyy/MM/dd"
+                                                     TimePickerVisibility="Collapsed"
+                                                     Text="{Binding Holiday, Mode=TwoWay, Converter={StaticResource DateConverter}, UpdateSourceTrigger=LostFocus}" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <!--<DataGridTextColumn Header="Holidays" Width="80" Binding="{Binding Holiday, Mode=TwoWay, Converter={StaticResource DateConverter}}" />-->
                     <DataGridTextColumn Header="Weight" MinWidth="50" Binding="{Binding Weight, Mode=TwoWay, Converter={StaticResource WeightConverter}}" />
                 </DataGrid.Columns>
             </DataGrid>
@@ -85,9 +96,30 @@
                     </ContextMenu>
                 </DataGrid.ContextMenu>
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="Begin" MinWidth="70" Binding="{Binding Begin, Mode=TwoWay, Converter={StaticResource TimeConverter}}" />
+                    <DataGridTemplateColumn Header="Begin" MinWidth="80">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <xctk:TimePicker Format="LongTime" Text="{Binding Begin, Mode=TwoWay, Converter={StaticResource TimeConverter}, UpdateSourceTrigger=LostFocus}" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTemplateColumn Header="End" MinWidth="80">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <xctk:TimePicker Format="LongTime" Text="{Binding End, Mode=TwoWay, Converter={StaticResource TimeConverter}, UpdateSourceTrigger=LostFocus}" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTemplateColumn Header="Stop" MinWidth="80">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <xctk:TimePicker Format="LongTime" Text="{Binding Stop, Mode=TwoWay, Converter={StaticResource TimeConverter}, UpdateSourceTrigger=LostFocus}" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <!--<DataGridTextColumn Header="Begin" MinWidth="70" Binding="{Binding Begin, Mode=TwoWay, Converter={StaticResource TimeConverter}}" />
                     <DataGridTextColumn Header="End" MinWidth="70" Binding="{Binding End, Mode=TwoWay, Converter={StaticResource TimeConverter}}" />
-                    <DataGridTextColumn Header="Stop" MinWidth="70" Binding="{Binding Stop, Mode=TwoWay, Converter={StaticResource TimeConverter}}" />
+                    <DataGridTextColumn Header="Stop" MinWidth="70" Binding="{Binding Stop, Mode=TwoWay, Converter={StaticResource TimeConverter}}" />-->
                 </DataGrid.Columns>
             </DataGrid>
         </GroupBox>
@@ -109,10 +141,30 @@
                     </ContextMenu>
                 </DataGrid.ContextMenu>
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="Begin" MinWidth="70" Binding="{Binding Begin, Mode=TwoWay, Converter={StaticResource TimeConverter}}" />
+                    <DataGridTemplateColumn Header="Begin" MinWidth="80">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <xctk:TimePicker Format="LongTime" Text="{Binding Begin, Mode=TwoWay, Converter={StaticResource TimeConverter}, UpdateSourceTrigger=LostFocus}" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTemplateColumn Header="End" MinWidth="80">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <xctk:TimePicker Format="LongTime" Text="{Binding End, Mode=TwoWay, Converter={StaticResource TimeConverter}, UpdateSourceTrigger=LostFocus}" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTemplateColumn Header="Stop" MinWidth="80">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <xctk:TimePicker Format="LongTime" Text="{Binding Stop, Mode=TwoWay, Converter={StaticResource TimeConverter}, UpdateSourceTrigger=LostFocus}" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <!--<DataGridTextColumn Header="Begin" MinWidth="70" Binding="{Binding Begin, Mode=TwoWay, Converter={StaticResource TimeConverter}}" />
                     <DataGridTextColumn Header="End" MinWidth="70" Binding="{Binding End, Mode=TwoWay, Converter={StaticResource TimeConverter}}" />
-                    <DataGridTextColumn Header="Stop" MinWidth="70" Binding="{Binding Stop, Mode=TwoWay, Converter={StaticResource TimeConverter}}" />
-                    <!--DataGridTextColumn Header="Stop" MinWidth="70" Binding="{Binding Stop, StringFormat={}{0:HH:mm:ss}, Mode=TwoWay}" /-->
+                    <DataGridTextColumn Header="Stop" MinWidth="70" Binding="{Binding Stop, Mode=TwoWay, Converter={StaticResource TimeConverter}}" />-->
                 </DataGrid.Columns>
             </DataGrid>
         </GroupBox>

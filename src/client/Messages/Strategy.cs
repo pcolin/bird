@@ -24,32 +24,81 @@ namespace Proto {
     static StrategyReflection() {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
-            "Cg5TdHJhdGVneS5wcm90bxIFUHJvdG8aDVJlcXVlc3QucHJvdG8ibAoRU3Ry",
-            "YXRlZ3lTdGF0dXNSZXESIAoEdHlwZRgBIAEoDjISLlByb3RvLlJlcXVlc3RU",
-            "eXBlEicKCHN0YXR1c2VzGAIgAygLMhUuUHJvdG8uU3RyYXRlZ3lTdGF0dXMS",
-            "DAoEdXNlchgDIAEoCSIiChFTdHJhdGVneVN0YXR1c1JlcBINCgVlcnJvchgB",
-            "IAEoCSKrAQoOU3RyYXRlZ3lTdGF0dXMSDAoEbmFtZRgBIAEoCRISCgp1bmRl",
-            "cmx5aW5nGAIgASgJEiwKBnN0YXR1cxgDIAEoDjIcLlByb3RvLlN0cmF0ZWd5",
-            "U3RhdHVzLlN0YXR1cyJJCgZTdGF0dXMSCAoEUGxheRAAEggKBFN0b3AQARIL",
-            "CgdSdW5uaW5nEAISCQoFUGF1c2UQAxIJCgVFcnJvchAEEggKBExvc3QQBWIG",
-            "cHJvdG8z"));
+            "Cg5TdHJhdGVneS5wcm90bxIFUHJvdG8aDVJlcXVlc3QucHJvdG8aC1JlcGx5",
+            "LnByb3RvGg5FeGNoYW5nZS5wcm90byJeCg9TdHJhdGVneU9wZXJhdGUSDAoE",
+            "bmFtZRgBIAEoCRISCgp1bmRlcmx5aW5nGAIgASgJEikKB29wZXJhdGUYAyAB",
+            "KA4yGC5Qcm90by5TdHJhdGVneU9wZXJhdGlvbiKRAQoSU3RyYXRlZ3lPcGVy",
+            "YXRlUmVxEiAKBHR5cGUYASABKA4yEi5Qcm90by5SZXF1ZXN0VHlwZRIhCghl",
+            "eGNoYW5nZRgCIAEoDjIPLlByb3RvLkV4Y2hhbmdlEgwKBHVzZXIYAyABKAkS",
+            "KAoIb3BlcmF0ZXMYBCADKAsyFi5Qcm90by5TdHJhdGVneU9wZXJhdGUifAoO",
+            "U3RyYXRlZ3lTd2l0Y2gSJQoIc3RyYXRlZ3kYASABKA4yEy5Qcm90by5TdHJh",
+            "dGVneVR5cGUSDgoGb3B0aW9uGAIgASgJEg4KBmlzX2JpZBgDIAEoCBIOCgZp",
+            "c19hc2sYBCABKAgSEwoLaXNfcXJfY292ZXIYBSABKAgitgEKEVN0cmF0ZWd5",
+            "U3dpdGNoUmVxEiAKBHR5cGUYASABKA4yEi5Qcm90by5SZXF1ZXN0VHlwZRIh",
+            "CghleGNoYW5nZRgCIAEoDjIPLlByb3RvLkV4Y2hhbmdlEgwKBHVzZXIYAyAB",
+            "KAkSJQoIc3RyYXRlZ3kYBCABKA4yEy5Qcm90by5TdHJhdGVneVR5cGUSJwoI",
+            "c3dpdGNoZXMYBSADKAsyFS5Qcm90by5TdHJhdGVneVN3aXRjaCJaChFTdHJh",
+            "dGVneVN3aXRjaFJlcBInCghzd2l0Y2hlcxgBIAMoCzIVLlByb3RvLlN0cmF0",
+            "ZWd5U3dpdGNoEhwKBnJlc3VsdBgCIAEoCzIMLlByb3RvLlJlcGx5ItEBChFT",
+            "dHJhdGVneVN0YXRpc3RpYxIMCgRuYW1lGAEgASgJEiEKBHR5cGUYAiABKA4y",
+            "Ey5Qcm90by5TdHJhdGVneVR5cGUSIQoIZXhjaGFuZ2UYAyABKA4yDy5Qcm90",
+            "by5FeGNoYW5nZRISCgp1bmRlcmx5aW5nGAQgASgJEiUKBnN0YXR1cxgFIAEo",
+            "DjIVLlByb3RvLlN0cmF0ZWd5U3RhdHVzEg0KBWRlbHRhGAYgASgBEg4KBm9y",
+            "ZGVycxgHIAEoBRIOCgZ0cmFkZXMYCCABKAUqTgoMU3RyYXRlZ3lUeXBlEgoK",
+            "BlF1b3RlchAAEgoKBkhpdHRlchABEgkKBURpbWVyEAISDwoLRHVtbXlRdW90",
+            "ZXIQAxIKCgZNYW51YWwQBCozChFTdHJhdGVneU9wZXJhdGlvbhIJCgVTdGFy",
+            "dBAAEgkKBVBhdXNlEAESCAoEU3RvcBACKlgKDlN0cmF0ZWd5U3RhdHVzEgsK",
+            "B1J1bm5pbmcQABILCgdTdGFydGVkEAISCwoHU3RvcHBlZBADEgoKBlBhdXNl",
+            "ZBAEEgkKBUVycm9yEAUSCAoETG9zdBAGYgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
-          new pbr::FileDescriptor[] { global::Proto.RequestReflection.Descriptor, },
-          new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::Proto.StrategyStatusReq), global::Proto.StrategyStatusReq.Parser, new[]{ "Type", "Statuses", "User" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Proto.StrategyStatusRep), global::Proto.StrategyStatusRep.Parser, new[]{ "Error" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Proto.StrategyStatus), global::Proto.StrategyStatus.Parser, new[]{ "Name", "Underlying", "Status" }, null, new[]{ typeof(global::Proto.StrategyStatus.Types.Status) }, null)
+          new pbr::FileDescriptor[] { global::Proto.RequestReflection.Descriptor, global::Proto.ReplyReflection.Descriptor, global::Proto.ExchangeReflection.Descriptor, },
+          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Proto.StrategyType), typeof(global::Proto.StrategyOperation), typeof(global::Proto.StrategyStatus), }, new pbr::GeneratedClrTypeInfo[] {
+            new pbr::GeneratedClrTypeInfo(typeof(global::Proto.StrategyOperate), global::Proto.StrategyOperate.Parser, new[]{ "Name", "Underlying", "Operate" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Proto.StrategyOperateReq), global::Proto.StrategyOperateReq.Parser, new[]{ "Type", "Exchange", "User", "Operates" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Proto.StrategySwitch), global::Proto.StrategySwitch.Parser, new[]{ "Strategy", "Option", "IsBid", "IsAsk", "IsQrCover" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Proto.StrategySwitchReq), global::Proto.StrategySwitchReq.Parser, new[]{ "Type", "Exchange", "User", "Strategy", "Switches" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Proto.StrategySwitchRep), global::Proto.StrategySwitchRep.Parser, new[]{ "Switches", "Result" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Proto.StrategyStatistic), global::Proto.StrategyStatistic.Parser, new[]{ "Name", "Type", "Exchange", "Underlying", "Status", "Delta", "Orders", "Trades" }, null, null, null)
           }));
     }
     #endregion
 
   }
+  #region Enums
+  public enum StrategyType {
+    [pbr::OriginalName("Quoter")] Quoter = 0,
+    [pbr::OriginalName("Hitter")] Hitter = 1,
+    [pbr::OriginalName("Dimer")] Dimer = 2,
+    [pbr::OriginalName("DummyQuoter")] DummyQuoter = 3,
+    [pbr::OriginalName("Manual")] Manual = 4,
+  }
+
+  public enum StrategyOperation {
+    [pbr::OriginalName("Start")] Start = 0,
+    [pbr::OriginalName("Pause")] Pause = 1,
+    [pbr::OriginalName("Stop")] Stop = 2,
+  }
+
+  public enum StrategyStatus {
+    [pbr::OriginalName("Running")] Running = 0,
+    [pbr::OriginalName("Started")] Started = 2,
+    [pbr::OriginalName("Stopped")] Stopped = 3,
+    [pbr::OriginalName("Paused")] Paused = 4,
+    [pbr::OriginalName("Error")] Error = 5,
+    /// <summary>
+    //// heartbeat lost
+    /// </summary>
+    [pbr::OriginalName("Lost")] Lost = 6,
+  }
+
+  #endregion
+
   #region Messages
-  public sealed partial class StrategyStatusReq : pb::IMessage<StrategyStatusReq> {
-    private static readonly pb::MessageParser<StrategyStatusReq> _parser = new pb::MessageParser<StrategyStatusReq>(() => new StrategyStatusReq());
+  public sealed partial class StrategyOperate : pb::IMessage<StrategyOperate> {
+    private static readonly pb::MessageParser<StrategyOperate> _parser = new pb::MessageParser<StrategyOperate>(() => new StrategyOperate());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public static pb::MessageParser<StrategyStatusReq> Parser { get { return _parser; } }
+    public static pb::MessageParser<StrategyOperate> Parser { get { return _parser; } }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
@@ -62,329 +111,23 @@ namespace Proto {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public StrategyStatusReq() {
+    public StrategyOperate() {
       OnConstruction();
     }
 
     partial void OnConstruction();
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public StrategyStatusReq(StrategyStatusReq other) : this() {
-      type_ = other.type_;
-      statuses_ = other.statuses_.Clone();
-      user_ = other.user_;
-      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public StrategyStatusReq Clone() {
-      return new StrategyStatusReq(this);
-    }
-
-    /// <summary>Field number for the "type" field.</summary>
-    public const int TypeFieldNumber = 1;
-    private global::Proto.RequestType type_ = 0;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::Proto.RequestType Type {
-      get { return type_; }
-      set {
-        type_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "statuses" field.</summary>
-    public const int StatusesFieldNumber = 2;
-    private static readonly pb::FieldCodec<global::Proto.StrategyStatus> _repeated_statuses_codec
-        = pb::FieldCodec.ForMessage(18, global::Proto.StrategyStatus.Parser);
-    private readonly pbc::RepeatedField<global::Proto.StrategyStatus> statuses_ = new pbc::RepeatedField<global::Proto.StrategyStatus>();
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public pbc::RepeatedField<global::Proto.StrategyStatus> Statuses {
-      get { return statuses_; }
-    }
-
-    /// <summary>Field number for the "user" field.</summary>
-    public const int UserFieldNumber = 3;
-    private string user_ = "";
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public string User {
-      get { return user_; }
-      set {
-        user_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
-      }
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public override bool Equals(object other) {
-      return Equals(other as StrategyStatusReq);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool Equals(StrategyStatusReq other) {
-      if (ReferenceEquals(other, null)) {
-        return false;
-      }
-      if (ReferenceEquals(other, this)) {
-        return true;
-      }
-      if (Type != other.Type) return false;
-      if(!statuses_.Equals(other.statuses_)) return false;
-      if (User != other.User) return false;
-      return Equals(_unknownFields, other._unknownFields);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public override int GetHashCode() {
-      int hash = 1;
-      if (Type != 0) hash ^= Type.GetHashCode();
-      hash ^= statuses_.GetHashCode();
-      if (User.Length != 0) hash ^= User.GetHashCode();
-      if (_unknownFields != null) {
-        hash ^= _unknownFields.GetHashCode();
-      }
-      return hash;
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public override string ToString() {
-      return pb::JsonFormatter.ToDiagnosticString(this);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void WriteTo(pb::CodedOutputStream output) {
-      if (Type != 0) {
-        output.WriteRawTag(8);
-        output.WriteEnum((int) Type);
-      }
-      statuses_.WriteTo(output, _repeated_statuses_codec);
-      if (User.Length != 0) {
-        output.WriteRawTag(26);
-        output.WriteString(User);
-      }
-      if (_unknownFields != null) {
-        _unknownFields.WriteTo(output);
-      }
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public int CalculateSize() {
-      int size = 0;
-      if (Type != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Type);
-      }
-      size += statuses_.CalculateSize(_repeated_statuses_codec);
-      if (User.Length != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeStringSize(User);
-      }
-      if (_unknownFields != null) {
-        size += _unknownFields.CalculateSize();
-      }
-      return size;
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void MergeFrom(StrategyStatusReq other) {
-      if (other == null) {
-        return;
-      }
-      if (other.Type != 0) {
-        Type = other.Type;
-      }
-      statuses_.Add(other.statuses_);
-      if (other.User.Length != 0) {
-        User = other.User;
-      }
-      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void MergeFrom(pb::CodedInputStream input) {
-      uint tag;
-      while ((tag = input.ReadTag()) != 0) {
-        switch(tag) {
-          default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
-            break;
-          case 8: {
-            type_ = (global::Proto.RequestType) input.ReadEnum();
-            break;
-          }
-          case 18: {
-            statuses_.AddEntriesFrom(input, _repeated_statuses_codec);
-            break;
-          }
-          case 26: {
-            User = input.ReadString();
-            break;
-          }
-        }
-      }
-    }
-
-  }
-
-  public sealed partial class StrategyStatusRep : pb::IMessage<StrategyStatusRep> {
-    private static readonly pb::MessageParser<StrategyStatusRep> _parser = new pb::MessageParser<StrategyStatusRep>(() => new StrategyStatusRep());
-    private pb::UnknownFieldSet _unknownFields;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public static pb::MessageParser<StrategyStatusRep> Parser { get { return _parser; } }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public static pbr::MessageDescriptor Descriptor {
-      get { return global::Proto.StrategyReflection.Descriptor.MessageTypes[1]; }
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    pbr::MessageDescriptor pb::IMessage.Descriptor {
-      get { return Descriptor; }
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public StrategyStatusRep() {
-      OnConstruction();
-    }
-
-    partial void OnConstruction();
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public StrategyStatusRep(StrategyStatusRep other) : this() {
-      error_ = other.error_;
-      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public StrategyStatusRep Clone() {
-      return new StrategyStatusRep(this);
-    }
-
-    /// <summary>Field number for the "error" field.</summary>
-    public const int ErrorFieldNumber = 1;
-    private string error_ = "";
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public string Error {
-      get { return error_; }
-      set {
-        error_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
-      }
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public override bool Equals(object other) {
-      return Equals(other as StrategyStatusRep);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool Equals(StrategyStatusRep other) {
-      if (ReferenceEquals(other, null)) {
-        return false;
-      }
-      if (ReferenceEquals(other, this)) {
-        return true;
-      }
-      if (Error != other.Error) return false;
-      return Equals(_unknownFields, other._unknownFields);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public override int GetHashCode() {
-      int hash = 1;
-      if (Error.Length != 0) hash ^= Error.GetHashCode();
-      if (_unknownFields != null) {
-        hash ^= _unknownFields.GetHashCode();
-      }
-      return hash;
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public override string ToString() {
-      return pb::JsonFormatter.ToDiagnosticString(this);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void WriteTo(pb::CodedOutputStream output) {
-      if (Error.Length != 0) {
-        output.WriteRawTag(10);
-        output.WriteString(Error);
-      }
-      if (_unknownFields != null) {
-        _unknownFields.WriteTo(output);
-      }
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public int CalculateSize() {
-      int size = 0;
-      if (Error.Length != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeStringSize(Error);
-      }
-      if (_unknownFields != null) {
-        size += _unknownFields.CalculateSize();
-      }
-      return size;
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void MergeFrom(StrategyStatusRep other) {
-      if (other == null) {
-        return;
-      }
-      if (other.Error.Length != 0) {
-        Error = other.Error;
-      }
-      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void MergeFrom(pb::CodedInputStream input) {
-      uint tag;
-      while ((tag = input.ReadTag()) != 0) {
-        switch(tag) {
-          default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
-            break;
-          case 10: {
-            Error = input.ReadString();
-            break;
-          }
-        }
-      }
-    }
-
-  }
-
-  public sealed partial class StrategyStatus : pb::IMessage<StrategyStatus> {
-    private static readonly pb::MessageParser<StrategyStatus> _parser = new pb::MessageParser<StrategyStatus>(() => new StrategyStatus());
-    private pb::UnknownFieldSet _unknownFields;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public static pb::MessageParser<StrategyStatus> Parser { get { return _parser; } }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public static pbr::MessageDescriptor Descriptor {
-      get { return global::Proto.StrategyReflection.Descriptor.MessageTypes[2]; }
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    pbr::MessageDescriptor pb::IMessage.Descriptor {
-      get { return Descriptor; }
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public StrategyStatus() {
-      OnConstruction();
-    }
-
-    partial void OnConstruction();
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public StrategyStatus(StrategyStatus other) : this() {
+    public StrategyOperate(StrategyOperate other) : this() {
       name_ = other.name_;
       underlying_ = other.underlying_;
-      status_ = other.status_;
+      operate_ = other.operate_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public StrategyStatus Clone() {
-      return new StrategyStatus(this);
+    public StrategyOperate Clone() {
+      return new StrategyOperate(this);
     }
 
     /// <summary>Field number for the "name" field.</summary>
@@ -409,24 +152,24 @@ namespace Proto {
       }
     }
 
-    /// <summary>Field number for the "status" field.</summary>
-    public const int StatusFieldNumber = 3;
-    private global::Proto.StrategyStatus.Types.Status status_ = 0;
+    /// <summary>Field number for the "operate" field.</summary>
+    public const int OperateFieldNumber = 3;
+    private global::Proto.StrategyOperation operate_ = 0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::Proto.StrategyStatus.Types.Status Status {
-      get { return status_; }
+    public global::Proto.StrategyOperation Operate {
+      get { return operate_; }
       set {
-        status_ = value;
+        operate_ = value;
       }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
-      return Equals(other as StrategyStatus);
+      return Equals(other as StrategyOperate);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool Equals(StrategyStatus other) {
+    public bool Equals(StrategyOperate other) {
       if (ReferenceEquals(other, null)) {
         return false;
       }
@@ -435,7 +178,7 @@ namespace Proto {
       }
       if (Name != other.Name) return false;
       if (Underlying != other.Underlying) return false;
-      if (Status != other.Status) return false;
+      if (Operate != other.Operate) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -444,7 +187,7 @@ namespace Proto {
       int hash = 1;
       if (Name.Length != 0) hash ^= Name.GetHashCode();
       if (Underlying.Length != 0) hash ^= Underlying.GetHashCode();
-      if (Status != 0) hash ^= Status.GetHashCode();
+      if (Operate != 0) hash ^= Operate.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -466,9 +209,9 @@ namespace Proto {
         output.WriteRawTag(18);
         output.WriteString(Underlying);
       }
-      if (Status != 0) {
+      if (Operate != 0) {
         output.WriteRawTag(24);
-        output.WriteEnum((int) Status);
+        output.WriteEnum((int) Operate);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
@@ -484,8 +227,8 @@ namespace Proto {
       if (Underlying.Length != 0) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(Underlying);
       }
-      if (Status != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Status);
+      if (Operate != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Operate);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -494,7 +237,7 @@ namespace Proto {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void MergeFrom(StrategyStatus other) {
+    public void MergeFrom(StrategyOperate other) {
       if (other == null) {
         return;
       }
@@ -504,8 +247,8 @@ namespace Proto {
       if (other.Underlying.Length != 0) {
         Underlying = other.Underlying;
       }
-      if (other.Status != 0) {
-        Status = other.Status;
+      if (other.Operate != 0) {
+        Operate = other.Operate;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -527,31 +270,1171 @@ namespace Proto {
             break;
           }
           case 24: {
-            status_ = (global::Proto.StrategyStatus.Types.Status) input.ReadEnum();
+            operate_ = (global::Proto.StrategyOperation) input.ReadEnum();
             break;
           }
         }
       }
     }
 
-    #region Nested types
-    /// <summary>Container for nested types declared in the StrategyStatus message type.</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public static partial class Types {
-      public enum Status {
-        [pbr::OriginalName("Play")] Play = 0,
-        [pbr::OriginalName("Stop")] Stop = 1,
-        [pbr::OriginalName("Running")] Running = 2,
-        [pbr::OriginalName("Pause")] Pause = 3,
-        [pbr::OriginalName("Error")] Error = 4,
-        /// <summary>
-        //// heartbeat lost
-        /// </summary>
-        [pbr::OriginalName("Lost")] Lost = 5,
-      }
+  }
 
+  public sealed partial class StrategyOperateReq : pb::IMessage<StrategyOperateReq> {
+    private static readonly pb::MessageParser<StrategyOperateReq> _parser = new pb::MessageParser<StrategyOperateReq>(() => new StrategyOperateReq());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<StrategyOperateReq> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::Proto.StrategyReflection.Descriptor.MessageTypes[1]; }
     }
-    #endregion
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public StrategyOperateReq() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public StrategyOperateReq(StrategyOperateReq other) : this() {
+      type_ = other.type_;
+      exchange_ = other.exchange_;
+      user_ = other.user_;
+      operates_ = other.operates_.Clone();
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public StrategyOperateReq Clone() {
+      return new StrategyOperateReq(this);
+    }
+
+    /// <summary>Field number for the "type" field.</summary>
+    public const int TypeFieldNumber = 1;
+    private global::Proto.RequestType type_ = 0;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::Proto.RequestType Type {
+      get { return type_; }
+      set {
+        type_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "exchange" field.</summary>
+    public const int ExchangeFieldNumber = 2;
+    private global::Proto.Exchange exchange_ = 0;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::Proto.Exchange Exchange {
+      get { return exchange_; }
+      set {
+        exchange_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "user" field.</summary>
+    public const int UserFieldNumber = 3;
+    private string user_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string User {
+      get { return user_; }
+      set {
+        user_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "operates" field.</summary>
+    public const int OperatesFieldNumber = 4;
+    private static readonly pb::FieldCodec<global::Proto.StrategyOperate> _repeated_operates_codec
+        = pb::FieldCodec.ForMessage(34, global::Proto.StrategyOperate.Parser);
+    private readonly pbc::RepeatedField<global::Proto.StrategyOperate> operates_ = new pbc::RepeatedField<global::Proto.StrategyOperate>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<global::Proto.StrategyOperate> Operates {
+      get { return operates_; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as StrategyOperateReq);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(StrategyOperateReq other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (Type != other.Type) return false;
+      if (Exchange != other.Exchange) return false;
+      if (User != other.User) return false;
+      if(!operates_.Equals(other.operates_)) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (Type != 0) hash ^= Type.GetHashCode();
+      if (Exchange != 0) hash ^= Exchange.GetHashCode();
+      if (User.Length != 0) hash ^= User.GetHashCode();
+      hash ^= operates_.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (Type != 0) {
+        output.WriteRawTag(8);
+        output.WriteEnum((int) Type);
+      }
+      if (Exchange != 0) {
+        output.WriteRawTag(16);
+        output.WriteEnum((int) Exchange);
+      }
+      if (User.Length != 0) {
+        output.WriteRawTag(26);
+        output.WriteString(User);
+      }
+      operates_.WriteTo(output, _repeated_operates_codec);
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (Type != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Type);
+      }
+      if (Exchange != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Exchange);
+      }
+      if (User.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(User);
+      }
+      size += operates_.CalculateSize(_repeated_operates_codec);
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(StrategyOperateReq other) {
+      if (other == null) {
+        return;
+      }
+      if (other.Type != 0) {
+        Type = other.Type;
+      }
+      if (other.Exchange != 0) {
+        Exchange = other.Exchange;
+      }
+      if (other.User.Length != 0) {
+        User = other.User;
+      }
+      operates_.Add(other.operates_);
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 8: {
+            type_ = (global::Proto.RequestType) input.ReadEnum();
+            break;
+          }
+          case 16: {
+            exchange_ = (global::Proto.Exchange) input.ReadEnum();
+            break;
+          }
+          case 26: {
+            User = input.ReadString();
+            break;
+          }
+          case 34: {
+            operates_.AddEntriesFrom(input, _repeated_operates_codec);
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class StrategySwitch : pb::IMessage<StrategySwitch> {
+    private static readonly pb::MessageParser<StrategySwitch> _parser = new pb::MessageParser<StrategySwitch>(() => new StrategySwitch());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<StrategySwitch> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::Proto.StrategyReflection.Descriptor.MessageTypes[2]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public StrategySwitch() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public StrategySwitch(StrategySwitch other) : this() {
+      strategy_ = other.strategy_;
+      option_ = other.option_;
+      isBid_ = other.isBid_;
+      isAsk_ = other.isAsk_;
+      isQrCover_ = other.isQrCover_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public StrategySwitch Clone() {
+      return new StrategySwitch(this);
+    }
+
+    /// <summary>Field number for the "strategy" field.</summary>
+    public const int StrategyFieldNumber = 1;
+    private global::Proto.StrategyType strategy_ = 0;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::Proto.StrategyType Strategy {
+      get { return strategy_; }
+      set {
+        strategy_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "option" field.</summary>
+    public const int OptionFieldNumber = 2;
+    private string option_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string Option {
+      get { return option_; }
+      set {
+        option_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "is_bid" field.</summary>
+    public const int IsBidFieldNumber = 3;
+    private bool isBid_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool IsBid {
+      get { return isBid_; }
+      set {
+        isBid_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "is_ask" field.</summary>
+    public const int IsAskFieldNumber = 4;
+    private bool isAsk_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool IsAsk {
+      get { return isAsk_; }
+      set {
+        isAsk_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "is_qr_cover" field.</summary>
+    public const int IsQrCoverFieldNumber = 5;
+    private bool isQrCover_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool IsQrCover {
+      get { return isQrCover_; }
+      set {
+        isQrCover_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as StrategySwitch);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(StrategySwitch other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (Strategy != other.Strategy) return false;
+      if (Option != other.Option) return false;
+      if (IsBid != other.IsBid) return false;
+      if (IsAsk != other.IsAsk) return false;
+      if (IsQrCover != other.IsQrCover) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (Strategy != 0) hash ^= Strategy.GetHashCode();
+      if (Option.Length != 0) hash ^= Option.GetHashCode();
+      if (IsBid != false) hash ^= IsBid.GetHashCode();
+      if (IsAsk != false) hash ^= IsAsk.GetHashCode();
+      if (IsQrCover != false) hash ^= IsQrCover.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (Strategy != 0) {
+        output.WriteRawTag(8);
+        output.WriteEnum((int) Strategy);
+      }
+      if (Option.Length != 0) {
+        output.WriteRawTag(18);
+        output.WriteString(Option);
+      }
+      if (IsBid != false) {
+        output.WriteRawTag(24);
+        output.WriteBool(IsBid);
+      }
+      if (IsAsk != false) {
+        output.WriteRawTag(32);
+        output.WriteBool(IsAsk);
+      }
+      if (IsQrCover != false) {
+        output.WriteRawTag(40);
+        output.WriteBool(IsQrCover);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (Strategy != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Strategy);
+      }
+      if (Option.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(Option);
+      }
+      if (IsBid != false) {
+        size += 1 + 1;
+      }
+      if (IsAsk != false) {
+        size += 1 + 1;
+      }
+      if (IsQrCover != false) {
+        size += 1 + 1;
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(StrategySwitch other) {
+      if (other == null) {
+        return;
+      }
+      if (other.Strategy != 0) {
+        Strategy = other.Strategy;
+      }
+      if (other.Option.Length != 0) {
+        Option = other.Option;
+      }
+      if (other.IsBid != false) {
+        IsBid = other.IsBid;
+      }
+      if (other.IsAsk != false) {
+        IsAsk = other.IsAsk;
+      }
+      if (other.IsQrCover != false) {
+        IsQrCover = other.IsQrCover;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 8: {
+            strategy_ = (global::Proto.StrategyType) input.ReadEnum();
+            break;
+          }
+          case 18: {
+            Option = input.ReadString();
+            break;
+          }
+          case 24: {
+            IsBid = input.ReadBool();
+            break;
+          }
+          case 32: {
+            IsAsk = input.ReadBool();
+            break;
+          }
+          case 40: {
+            IsQrCover = input.ReadBool();
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class StrategySwitchReq : pb::IMessage<StrategySwitchReq> {
+    private static readonly pb::MessageParser<StrategySwitchReq> _parser = new pb::MessageParser<StrategySwitchReq>(() => new StrategySwitchReq());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<StrategySwitchReq> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::Proto.StrategyReflection.Descriptor.MessageTypes[3]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public StrategySwitchReq() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public StrategySwitchReq(StrategySwitchReq other) : this() {
+      type_ = other.type_;
+      exchange_ = other.exchange_;
+      user_ = other.user_;
+      strategy_ = other.strategy_;
+      switches_ = other.switches_.Clone();
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public StrategySwitchReq Clone() {
+      return new StrategySwitchReq(this);
+    }
+
+    /// <summary>Field number for the "type" field.</summary>
+    public const int TypeFieldNumber = 1;
+    private global::Proto.RequestType type_ = 0;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::Proto.RequestType Type {
+      get { return type_; }
+      set {
+        type_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "exchange" field.</summary>
+    public const int ExchangeFieldNumber = 2;
+    private global::Proto.Exchange exchange_ = 0;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::Proto.Exchange Exchange {
+      get { return exchange_; }
+      set {
+        exchange_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "user" field.</summary>
+    public const int UserFieldNumber = 3;
+    private string user_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string User {
+      get { return user_; }
+      set {
+        user_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "strategy" field.</summary>
+    public const int StrategyFieldNumber = 4;
+    private global::Proto.StrategyType strategy_ = 0;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::Proto.StrategyType Strategy {
+      get { return strategy_; }
+      set {
+        strategy_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "switches" field.</summary>
+    public const int SwitchesFieldNumber = 5;
+    private static readonly pb::FieldCodec<global::Proto.StrategySwitch> _repeated_switches_codec
+        = pb::FieldCodec.ForMessage(42, global::Proto.StrategySwitch.Parser);
+    private readonly pbc::RepeatedField<global::Proto.StrategySwitch> switches_ = new pbc::RepeatedField<global::Proto.StrategySwitch>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<global::Proto.StrategySwitch> Switches {
+      get { return switches_; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as StrategySwitchReq);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(StrategySwitchReq other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (Type != other.Type) return false;
+      if (Exchange != other.Exchange) return false;
+      if (User != other.User) return false;
+      if (Strategy != other.Strategy) return false;
+      if(!switches_.Equals(other.switches_)) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (Type != 0) hash ^= Type.GetHashCode();
+      if (Exchange != 0) hash ^= Exchange.GetHashCode();
+      if (User.Length != 0) hash ^= User.GetHashCode();
+      if (Strategy != 0) hash ^= Strategy.GetHashCode();
+      hash ^= switches_.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (Type != 0) {
+        output.WriteRawTag(8);
+        output.WriteEnum((int) Type);
+      }
+      if (Exchange != 0) {
+        output.WriteRawTag(16);
+        output.WriteEnum((int) Exchange);
+      }
+      if (User.Length != 0) {
+        output.WriteRawTag(26);
+        output.WriteString(User);
+      }
+      if (Strategy != 0) {
+        output.WriteRawTag(32);
+        output.WriteEnum((int) Strategy);
+      }
+      switches_.WriteTo(output, _repeated_switches_codec);
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (Type != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Type);
+      }
+      if (Exchange != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Exchange);
+      }
+      if (User.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(User);
+      }
+      if (Strategy != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Strategy);
+      }
+      size += switches_.CalculateSize(_repeated_switches_codec);
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(StrategySwitchReq other) {
+      if (other == null) {
+        return;
+      }
+      if (other.Type != 0) {
+        Type = other.Type;
+      }
+      if (other.Exchange != 0) {
+        Exchange = other.Exchange;
+      }
+      if (other.User.Length != 0) {
+        User = other.User;
+      }
+      if (other.Strategy != 0) {
+        Strategy = other.Strategy;
+      }
+      switches_.Add(other.switches_);
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 8: {
+            type_ = (global::Proto.RequestType) input.ReadEnum();
+            break;
+          }
+          case 16: {
+            exchange_ = (global::Proto.Exchange) input.ReadEnum();
+            break;
+          }
+          case 26: {
+            User = input.ReadString();
+            break;
+          }
+          case 32: {
+            strategy_ = (global::Proto.StrategyType) input.ReadEnum();
+            break;
+          }
+          case 42: {
+            switches_.AddEntriesFrom(input, _repeated_switches_codec);
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class StrategySwitchRep : pb::IMessage<StrategySwitchRep> {
+    private static readonly pb::MessageParser<StrategySwitchRep> _parser = new pb::MessageParser<StrategySwitchRep>(() => new StrategySwitchRep());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<StrategySwitchRep> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::Proto.StrategyReflection.Descriptor.MessageTypes[4]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public StrategySwitchRep() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public StrategySwitchRep(StrategySwitchRep other) : this() {
+      switches_ = other.switches_.Clone();
+      Result = other.result_ != null ? other.Result.Clone() : null;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public StrategySwitchRep Clone() {
+      return new StrategySwitchRep(this);
+    }
+
+    /// <summary>Field number for the "switches" field.</summary>
+    public const int SwitchesFieldNumber = 1;
+    private static readonly pb::FieldCodec<global::Proto.StrategySwitch> _repeated_switches_codec
+        = pb::FieldCodec.ForMessage(10, global::Proto.StrategySwitch.Parser);
+    private readonly pbc::RepeatedField<global::Proto.StrategySwitch> switches_ = new pbc::RepeatedField<global::Proto.StrategySwitch>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<global::Proto.StrategySwitch> Switches {
+      get { return switches_; }
+    }
+
+    /// <summary>Field number for the "result" field.</summary>
+    public const int ResultFieldNumber = 2;
+    private global::Proto.Reply result_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::Proto.Reply Result {
+      get { return result_; }
+      set {
+        result_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as StrategySwitchRep);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(StrategySwitchRep other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if(!switches_.Equals(other.switches_)) return false;
+      if (!object.Equals(Result, other.Result)) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      hash ^= switches_.GetHashCode();
+      if (result_ != null) hash ^= Result.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      switches_.WriteTo(output, _repeated_switches_codec);
+      if (result_ != null) {
+        output.WriteRawTag(18);
+        output.WriteMessage(Result);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      size += switches_.CalculateSize(_repeated_switches_codec);
+      if (result_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(Result);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(StrategySwitchRep other) {
+      if (other == null) {
+        return;
+      }
+      switches_.Add(other.switches_);
+      if (other.result_ != null) {
+        if (result_ == null) {
+          result_ = new global::Proto.Reply();
+        }
+        Result.MergeFrom(other.Result);
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10: {
+            switches_.AddEntriesFrom(input, _repeated_switches_codec);
+            break;
+          }
+          case 18: {
+            if (result_ == null) {
+              result_ = new global::Proto.Reply();
+            }
+            input.ReadMessage(result_);
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class StrategyStatistic : pb::IMessage<StrategyStatistic> {
+    private static readonly pb::MessageParser<StrategyStatistic> _parser = new pb::MessageParser<StrategyStatistic>(() => new StrategyStatistic());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<StrategyStatistic> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::Proto.StrategyReflection.Descriptor.MessageTypes[5]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public StrategyStatistic() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public StrategyStatistic(StrategyStatistic other) : this() {
+      name_ = other.name_;
+      type_ = other.type_;
+      exchange_ = other.exchange_;
+      underlying_ = other.underlying_;
+      status_ = other.status_;
+      delta_ = other.delta_;
+      orders_ = other.orders_;
+      trades_ = other.trades_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public StrategyStatistic Clone() {
+      return new StrategyStatistic(this);
+    }
+
+    /// <summary>Field number for the "name" field.</summary>
+    public const int NameFieldNumber = 1;
+    private string name_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string Name {
+      get { return name_; }
+      set {
+        name_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "type" field.</summary>
+    public const int TypeFieldNumber = 2;
+    private global::Proto.StrategyType type_ = 0;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::Proto.StrategyType Type {
+      get { return type_; }
+      set {
+        type_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "exchange" field.</summary>
+    public const int ExchangeFieldNumber = 3;
+    private global::Proto.Exchange exchange_ = 0;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::Proto.Exchange Exchange {
+      get { return exchange_; }
+      set {
+        exchange_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "underlying" field.</summary>
+    public const int UnderlyingFieldNumber = 4;
+    private string underlying_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string Underlying {
+      get { return underlying_; }
+      set {
+        underlying_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "status" field.</summary>
+    public const int StatusFieldNumber = 5;
+    private global::Proto.StrategyStatus status_ = 0;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::Proto.StrategyStatus Status {
+      get { return status_; }
+      set {
+        status_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "delta" field.</summary>
+    public const int DeltaFieldNumber = 6;
+    private double delta_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public double Delta {
+      get { return delta_; }
+      set {
+        delta_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "orders" field.</summary>
+    public const int OrdersFieldNumber = 7;
+    private int orders_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int Orders {
+      get { return orders_; }
+      set {
+        orders_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "trades" field.</summary>
+    public const int TradesFieldNumber = 8;
+    private int trades_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int Trades {
+      get { return trades_; }
+      set {
+        trades_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as StrategyStatistic);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(StrategyStatistic other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (Name != other.Name) return false;
+      if (Type != other.Type) return false;
+      if (Exchange != other.Exchange) return false;
+      if (Underlying != other.Underlying) return false;
+      if (Status != other.Status) return false;
+      if (!pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.Equals(Delta, other.Delta)) return false;
+      if (Orders != other.Orders) return false;
+      if (Trades != other.Trades) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (Name.Length != 0) hash ^= Name.GetHashCode();
+      if (Type != 0) hash ^= Type.GetHashCode();
+      if (Exchange != 0) hash ^= Exchange.GetHashCode();
+      if (Underlying.Length != 0) hash ^= Underlying.GetHashCode();
+      if (Status != 0) hash ^= Status.GetHashCode();
+      if (Delta != 0D) hash ^= pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.GetHashCode(Delta);
+      if (Orders != 0) hash ^= Orders.GetHashCode();
+      if (Trades != 0) hash ^= Trades.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (Name.Length != 0) {
+        output.WriteRawTag(10);
+        output.WriteString(Name);
+      }
+      if (Type != 0) {
+        output.WriteRawTag(16);
+        output.WriteEnum((int) Type);
+      }
+      if (Exchange != 0) {
+        output.WriteRawTag(24);
+        output.WriteEnum((int) Exchange);
+      }
+      if (Underlying.Length != 0) {
+        output.WriteRawTag(34);
+        output.WriteString(Underlying);
+      }
+      if (Status != 0) {
+        output.WriteRawTag(40);
+        output.WriteEnum((int) Status);
+      }
+      if (Delta != 0D) {
+        output.WriteRawTag(49);
+        output.WriteDouble(Delta);
+      }
+      if (Orders != 0) {
+        output.WriteRawTag(56);
+        output.WriteInt32(Orders);
+      }
+      if (Trades != 0) {
+        output.WriteRawTag(64);
+        output.WriteInt32(Trades);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (Name.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(Name);
+      }
+      if (Type != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Type);
+      }
+      if (Exchange != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Exchange);
+      }
+      if (Underlying.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(Underlying);
+      }
+      if (Status != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Status);
+      }
+      if (Delta != 0D) {
+        size += 1 + 8;
+      }
+      if (Orders != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Orders);
+      }
+      if (Trades != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Trades);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(StrategyStatistic other) {
+      if (other == null) {
+        return;
+      }
+      if (other.Name.Length != 0) {
+        Name = other.Name;
+      }
+      if (other.Type != 0) {
+        Type = other.Type;
+      }
+      if (other.Exchange != 0) {
+        Exchange = other.Exchange;
+      }
+      if (other.Underlying.Length != 0) {
+        Underlying = other.Underlying;
+      }
+      if (other.Status != 0) {
+        Status = other.Status;
+      }
+      if (other.Delta != 0D) {
+        Delta = other.Delta;
+      }
+      if (other.Orders != 0) {
+        Orders = other.Orders;
+      }
+      if (other.Trades != 0) {
+        Trades = other.Trades;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10: {
+            Name = input.ReadString();
+            break;
+          }
+          case 16: {
+            type_ = (global::Proto.StrategyType) input.ReadEnum();
+            break;
+          }
+          case 24: {
+            exchange_ = (global::Proto.Exchange) input.ReadEnum();
+            break;
+          }
+          case 34: {
+            Underlying = input.ReadString();
+            break;
+          }
+          case 40: {
+            status_ = (global::Proto.StrategyStatus) input.ReadEnum();
+            break;
+          }
+          case 49: {
+            Delta = input.ReadDouble();
+            break;
+          }
+          case 56: {
+            Orders = input.ReadInt32();
+            break;
+          }
+          case 64: {
+            Trades = input.ReadInt32();
+            break;
+          }
+        }
+      }
+    }
 
   }
 

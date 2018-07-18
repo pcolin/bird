@@ -7,6 +7,7 @@ using Prism.Mvvm;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -25,10 +26,11 @@ namespace client.ViewModels
     class MainWindowViewModel : BindableBase
     {
         public ICommand InitializeCommand { get; set; }
-        public ICommand LoginCommand { get; set; }
+        public DelegateCommand<object> LoginCommand { get; set; }
         public ICommand LogoutCommand { get; set; }
 
         public InteractionRequest<INotification> NotificationRequest { get; set; }
+        public InteractionRequest<IConfirmation> ConfirmationRequest { get; set; }
 
         private string version = "0.2.01";
         public string Version
@@ -64,11 +66,18 @@ namespace client.ViewModels
             {
                 if (SetProperty(ref isExchange1Selected, value))
                 {
-                    (LoginCommand as DelegateCommand).RaiseCanExecuteChanged();
+                    LoginCommand.RaiseCanExecuteChanged();
                 }
             }
-        }        
+        }
 
+        private bool isExchange1Logined;
+        public bool IsExchange1Logined
+        {
+            get { return isExchange1Logined; }
+            set { SetProperty(ref isExchange1Logined, value); }
+        }
+        
         private ConnectStatus exchange1Status = ConnectStatus.Disabled;
         public ConnectStatus Exchange1Status
         {
@@ -104,11 +113,18 @@ namespace client.ViewModels
             {
                 if (SetProperty(ref isExchange2Selected, value))
                 {
-                    (LoginCommand as DelegateCommand).RaiseCanExecuteChanged();
+                    LoginCommand.RaiseCanExecuteChanged();
                 }
             }
         }
 
+        private bool isExchange2Logined;
+        public bool IsExchange2Logined
+        {
+            get { return isExchange2Logined; }
+            set { SetProperty(ref isExchange2Logined, value); }
+        }
+        
         private ConnectStatus exchange2Status = ConnectStatus.Disabled;
         public ConnectStatus Exchange2Status
         {
@@ -144,10 +160,17 @@ namespace client.ViewModels
             {
                 if (SetProperty(ref isExchange3Selected, value))
                 {
-                    (LoginCommand as DelegateCommand).RaiseCanExecuteChanged();
+                    LoginCommand.RaiseCanExecuteChanged();
                 }
             }
         }
+
+        private bool isExchange3Logined;
+        public bool IsExchange3Logined
+        {
+            get { return isExchange3Logined; }
+            set { SetProperty(ref isExchange3Logined, value); }
+        }        
 
         private ConnectStatus exchange3Status = ConnectStatus.Disabled;
         public ConnectStatus Exchange3Status
@@ -169,7 +192,13 @@ namespace client.ViewModels
             set { SetProperty(ref this.exchange4, value); }
         }
 
-
+        private bool isExchange4Logined;
+        public bool IsExchange4Logined
+        {
+            get { return isExchange4Logined; }
+            set { SetProperty(ref isExchange4Logined, value); }
+        }
+        
         private bool exchange4Visible = false;
         public bool Exchange4Visible
         {
@@ -185,7 +214,7 @@ namespace client.ViewModels
             {
                 if (SetProperty(ref isExchange4Selected, value))
                 {
-                    (LoginCommand as DelegateCommand).RaiseCanExecuteChanged();
+                    LoginCommand.RaiseCanExecuteChanged();
                 }
             }
         }
@@ -210,12 +239,12 @@ namespace client.ViewModels
             set { SetProperty(ref user, value); }
         }
 
-        private string password = "colin";
-        public string Password
-        {
-            get { return password; }
-            set { SetProperty(ref password, value); }
-        }
+        //private string password = "colin";
+        //public string Password
+        //{
+        //    get { return password; }
+        //    set { SetProperty(ref password, value); }
+        //}
 
         private string layout;
         public string Layout
@@ -225,12 +254,13 @@ namespace client.ViewModels
         
         public MainWindowViewModel(IUnityContainer container)
         {
-            //LoginCommand = new DelegateCommand<object>(new Action<object>(this.LoginExecute), new Func<object, bool>(this.CanLogin));
+            LoginCommand = new DelegateCommand<object>(new Action<object>(this.LoginExecute), new Func<object, bool>(this.CanLogin));
             //InitializeCommand = new DelegateCommand(this.InitializeExecute);
-            LoginCommand = new DelegateCommand(this.LoginExecute, this.CanLogin);
+            //LoginCommand = new DelegateCommand(this.LoginExecute, this.CanLogin);
             LogoutCommand = new DelegateCommand(this.LogoutExecute, this.CanLogout);
 
             NotificationRequest = new InteractionRequest<INotification>();
+            ConfirmationRequest = new InteractionRequest<IConfirmation>();
             //this.serverService = service;
             this.container = container;
         }
@@ -341,92 +371,103 @@ namespace client.ViewModels
             this.container.RegisterInstance<TheoCalculator>(exchange.ToString(), calculator);
         }
         
-        public void Stop()
+        public bool Stop()
         {
-            if (Exchange1Visible)
+            bool success = true;
+            if (IsExchange1Logined)
             {
-                StopService(Exchange1);
+                if (Logout(Exchange1) == false)
+                    success = false;
             }
-            if (Exchange2Visible)
+            if (IsExchange2Logined)
             {
-                StopService(Exchange2);
+                if (Logout(Exchange2) == false)
+                    success = false;
             }
-            if (Exchange3Visible)
+            if (IsExchange3Logined)
             {
-                StopService(Exchange3);
+                if (Logout(Exchange3) == false)
+                    success = false;
             }
-            if (Exchange4Visible)
+            if (IsExchange4Logined)
             {
-                StopService(Exchange4);
+                if (Logout(Exchange4) == false)
+                    success = false;
             }
+            return success;
         }
 
-        private void StopService(Proto.Exchange exchange)
-        {
-            string exch = exchange.ToString();
-            var server = this.container.Resolve<ServerService>(exch);
-            if (server != null)
-            {
-                server.Stop();
-            }
-            var database = this.container.Resolve<DatabaseService>(exch);
-            if (database != null)
-            {
-                database.Stop();
-            }
-            var proxy = this.container.Resolve<ProxyService>(exch);
-            if (proxy != null)
-            {
-                proxy.Stop();
-            }
+        //private void StopService(Proto.Exchange exchange)
+        //{
+        //    string exch = exchange.ToString();
+        //    var server = this.container.Resolve<ServerService>(exch);
+        //    if (server != null)
+        //    {
+        //        server.Stop();
+        //    }
+        //    var database = this.container.Resolve<DatabaseService>(exch);
+        //    if (database != null)
+        //    {
+        //        database.Stop();
+        //    }
+        //    var proxy = this.container.Resolve<ProxyService>(exch);
+        //    if (proxy != null)
+        //    {
+        //        proxy.Stop();
+        //    }
 
-            var calculator = this.container.Resolve<TheoCalculator>(exch);
-            if (calculator != null)
-            {
-                calculator.Stop();
-            }
-        }
+        //    var calculator = this.container.Resolve<TheoCalculator>(exch);
+        //    if (calculator != null)
+        //    {
+        //        calculator.Stop();
+        //    }
+        //}
 
         private void InitializeWindows()
         {
 
         }
-       
-        private void LoginExecute()
+
+        private void LoginExecute(object obj)
         {
+            var pwd = obj as System.Windows.Controls.PasswordBox;
             List<Proto.Exchange> exchanges = new List<Proto.Exchange>();
             if (IsExchange1Selected)
             {
-                if (Login(this.exchange1))
+                if (Login(this.exchange1, pwd.Password))
                 {
                     exchanges.Add(this.exchange1);
+                    IsExchange1Logined = true;
                     Exchange1Status = ConnectStatus.Connected;
                 }
             }
 
             if (IsExchange2Selected)
             {
-                if (Login(this.exchange2))
+                if (Login(this.exchange2, pwd.Password))
                 {
                     exchanges.Add(this.exchange2);
+                    IsExchange2Logined = true;
                     Exchange2Status = ConnectStatus.Connected;
                 }
             }
 
             if (IsExchange3Selected)
             {
-                if (Login(this.exchange3))
+                if (Login(this.exchange3, pwd.Password))
                 {
                     exchanges.Add(this.exchange3);
+                    IsExchange3Logined = true;
                     Exchange3Status = ConnectStatus.Connected;
                 }
             }
 
             if (IsExchange4Selected)
             {
-                if (Login(this.exchange4))
+                if (Login(this.exchange4, pwd.Password))
                 {
                     exchanges.Add(this.exchange4);
+                    IsExchange4Logined = true;
                     Exchange4Status = ConnectStatus.Connected;
                 }
             }
@@ -436,11 +477,55 @@ namespace client.ViewModels
             }
         }
 
-        private bool Login(Proto.Exchange exchange)
+        //public void Login(string password)
+        //{
+        //    List<Proto.Exchange> exchanges = new List<Proto.Exchange>();
+        //    if (IsExchange1Selected)
+        //    {
+        //        if (Login(this.exchange1, password))
+        //        {
+        //            exchanges.Add(this.exchange1);
+        //            Exchange1Status = ConnectStatus.Connected;
+        //        }
+        //    }
+
+        //    if (IsExchange2Selected)
+        //    {
+        //        if (Login(this.exchange2, password))
+        //        {
+        //            exchanges.Add(this.exchange2);
+        //            Exchange2Status = ConnectStatus.Connected;
+        //        }
+        //    }
+
+        //    if (IsExchange3Selected)
+        //    {
+        //        if (Login(this.exchange3, password))
+        //        {
+        //            exchanges.Add(this.exchange3);
+        //            Exchange3Status = ConnectStatus.Connected;
+        //        }
+        //    }
+
+        //    if (IsExchange4Selected)
+        //    {
+        //        if (Login(this.exchange4, password))
+        //        {
+        //            exchanges.Add(this.exchange4);
+        //            Exchange4Status = ConnectStatus.Connected;
+        //        }
+        //    }
+        //    if (exchanges.Count > 0)
+        //    {
+        //        this.container.Resolve<EventAggregator>().GetEvent<PubSubEvent<List<Proto.Exchange>>>().Publish(exchanges);
+        //    }
+        //}
+
+        private bool Login(Proto.Exchange exchange, string password)
         {
             string ex = exchange.ToString();
             var server = this.container.Resolve<ServerService>(ex);
-            var r = server.Login(this.User, this.Password, this.Version);
+            var r = server.Login(this.User, password, this.Version);
             if (r != null)
             {
                 if (r.Result)
@@ -468,51 +553,140 @@ namespace client.ViewModels
             return false;
         }
 
-        private void Logout(Proto.Exchange exchange)
+        //private bool Logout(Proto.Exchange exchange)
+        //{
+        //    string exch = exchange.ToString();
+        //    var server = this.container.Resolve<ServerService>(exch);
+        //    bool ret = true;
+        //    Action<IConfirmation> action = c =>
+        //        {
+        //            if (c.Confirmed)
+        //            {
+        //                server.Stop();
+        //                var database = this.container.Resolve<DatabaseService>(exch);
+        //                if (database != null)
+        //                {
+        //                    database.Stop();
+        //                }
+        //                var proxy = this.container.Resolve<ProxyService>(exch);
+        //                if (proxy != null)
+        //                {
+        //                    proxy.Stop();
+        //                }
+
+        //                var calculator = this.container.Resolve<TheoCalculator>(exch);
+        //                if (calculator != null)
+        //                {
+        //                    calculator.Stop();
+        //                }
+        //            }
+        //            else
+        //            {
+        //                ret = false;
+        //            }
+        //        };
+
+        //    var r = server.Logout(this.User);
+        //    if (r != null)
+        //    {
+        //        if (r.Result)
+        //        {
+        //            Exchange1Status = ConnectStatus.Disconnected;
+        //            server.Stop();
+
+        //            var database = this.container.Resolve<DatabaseService>(exch);
+        //            if (database != null)
+        //            {
+        //                database.Stop();
+        //            }
+        //            var proxy = this.container.Resolve<ProxyService>(exch);
+        //            if (proxy != null)
+        //            {
+        //                proxy.Stop();
+        //            }
+
+        //            var calculator = this.container.Resolve<TheoCalculator>(exch);
+        //            if (calculator != null)
+        //            {
+        //                calculator.Stop();
+        //            }
+        //            return true;
+        //        }
+        //        else
+        //        {
+        //            NotificationRequest.Raise(new Notification { Content = r.Error, Title = "Login Failed" });
+        //        }
+        //    }
+        //    else
+        //    {
+        //        //NotificationRequest.Raise(new Notification { Content = "Logout " + exchange + " timeout", Title = "Login Failed" });
+        //        ConfirmationRequest.Raise(new Confirmation { Title = "Confirmation", Content = "Logout " + exchange + " timeout, exit anyway?" }, action);
+        //    }
+        //    return false;
+        //}
+        private bool Logout(Proto.Exchange exchange)
         {
-            var server = this.container.Resolve<ServerService>(exchange.ToString());
+            string exch = exchange.ToString();
+            var server = this.container.Resolve<ServerService>(exch);
+            bool logout = true;
             var r = server.Logout(this.User);
             if (r != null)
             {
-                if (r.Result)
+                if (!r.Result)
                 {
-                    Exchange1Status = ConnectStatus.Disconnected;
-                    server.Stop();
-                }
-                else
-                {
-                    NotificationRequest.Raise(new Notification { Content = r.Error, Title = "Login Failed" });
+                    ConfirmationRequest.Raise(new Confirmation { Title = "Confirmation", Content = "Logout " + exchange + " failed: " + r.Error + ", exit anyway?" }, c => logout = c.Confirmed);
                 }
             }
             else
             {
-                NotificationRequest.Raise(new Notification { Content = "Logout " + exchange + " timeout", Title = "Login Failed" });
+                ConfirmationRequest.Raise(new Confirmation { Title = "Confirmation", Content = "Logout " + exchange + " timeout, exit anyway?" }, c => logout = c.Confirmed);
             }
+            if (logout)
+            {
+                server.Stop();
+                var database = this.container.Resolve<DatabaseService>(exch);
+                if (database != null)
+                {
+                    database.Stop();
+                }
+                var proxy = this.container.Resolve<ProxyService>(exch);
+                if (proxy != null)
+                {
+                    proxy.Stop();
+                }
+
+                var calculator = this.container.Resolve<TheoCalculator>(exch);
+                if (calculator != null)
+                {
+                    calculator.Stop();
+                }
+            }
+            return logout;
         }
 
-        private bool CanLogin()
+        private bool CanLogin(Object obj)
         {
             return IsExchange1Selected || IsExchange2Selected || IsExchange3Selected || IsExchange4Selected;
         }
 
         private void LogoutExecute()
         {
-            if (IsExchange1Selected)
+            if (IsExchange1Logined)
             {
                 Logout(this.exchange1);
             }
 
-            if (IsExchange2Selected)
+            if (IsExchange2Logined)
             {
                 Logout(this.exchange2);
             }
 
-            if (IsExchange3Selected)
+            if (IsExchange3Logined)
             {
                 Logout(this.exchange3);
             }
 
-            if (IsExchange4Selected)
+            if (IsExchange4Logined)
             {
                 Logout(this.exchange4);
             }

@@ -1,0 +1,8 @@
+﻿<Window x:Class="client.Views.CreditWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Icon="/Images/bird_32x32.ico"
+        Title="Credit Setting" Height="300" Width="300"
+        Closing="Window_Closing">
+    <TabControl Name="CreditTabControl" />
+</Window>

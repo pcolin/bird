@@ -1,0 +1,48 @@
+﻿<UserControl x:Class="client.Views.StrategyCreditUserControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:client.Views"
+             mc:Ignorable="d" 
+             d:DesignHeight="600" d:DesignWidth="800">
+    <UserControl.Resources>
+        <local:BoolToStringConverter x:Key="BoolToStringConverter" />
+    </UserControl.Resources>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition></ColumnDefinition>
+            <ColumnDefinition Width="Auto"></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+        <DataGrid Margin="3"
+                  RowHeaderWidth="15"
+                  CanUserAddRows="False"
+                  AutoGenerateColumns="False"
+                  CanUserSortColumns="False"
+                  HorizontalGridLinesBrush="LightGray"
+                  VerticalGridLinesBrush="LightGray"
+                  ItemsSource="{Binding Credits}">
+            <DataGrid.RowHeaderTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding DataContext.Modified, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=DataGridRowHeader}, Converter={StaticResource ResourceKey=BoolToStringConverter}}"
+                                Foreground="Red" FontSize="10" />
+                </DataTemplate>
+            </DataGrid.RowHeaderTemplate>
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Underlying" IsReadOnly="True" Binding="{Binding Underlying.Id}"></DataGridTextColumn>
+                <DataGridTextColumn Header="Maturity" IsReadOnly="True" Binding="{Binding Maturity, StringFormat={}{0:yyyyMMdd}}"></DataGridTextColumn>
+                <DataGridTextColumn Header="Delta" Binding="{Binding Delta, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"></DataGridTextColumn>
+                <DataGridTextColumn Header="Vega" Binding="{Binding Vega, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"></DataGridTextColumn>
+                <DataGridTextColumn Header="Skew" Binding="{Binding Skew, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"></DataGridTextColumn>
+                <DataGridTextColumn Header="Convex" Binding="{Binding Convex, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"></DataGridTextColumn>
+                <DataGridTextColumn Header="Cash" Binding="{Binding Cash, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"></DataGridTextColumn>
+                <DataGridTextColumn Header="Price" Binding="{Binding Price, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"></DataGridTextColumn>
+                <DataGridTextColumn Header="Multiplier" Binding="{Binding Multiplier, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"></DataGridTextColumn>                
+            </DataGrid.Columns>
+        </DataGrid>
+        <StackPanel Grid.Column="1" Orientation="Vertical">
+            <Button Margin="5" MinHeight="30" MinWidth="70" Command="{Binding RefreshCommand}" >Refresh</Button>
+            <Button Margin="5" MinHeight="30" MinWidth="70" Command="{Binding SetCommand}" >Set</Button>
+        </StackPanel>
+    </Grid>
+</UserControl>

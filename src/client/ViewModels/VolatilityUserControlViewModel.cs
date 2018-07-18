@@ -115,7 +115,7 @@ namespace client.ViewModels
                 Dictionary<DateTime, VolatilityItem> item = null;
                 if (this.items.TryGetValue(inst, out item))
                 {
-                    dispatcher.BeginInvoke((MethodInvoker)delegate
+                    dispatcher.Invoke((MethodInvoker)delegate
                     {
                         foreach (var kvp in item)
                         {
@@ -142,7 +142,7 @@ namespace client.ViewModels
                             var maturity = DateTime.ParseExact(r.Maturity, "yyyyMMdd", CultureInfo.InvariantCulture);
                             if (item.TryGetValue(maturity, out vol))
                             {
-                                dispatcher.BeginInvoke((MethodInvoker)delegate
+                                dispatcher.Invoke((MethodInvoker)delegate
                                 {
                                     vol.SSRate = r.Rate;
                                     vol.SSRateModified = false;

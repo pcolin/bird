@@ -34,17 +34,17 @@ namespace client.Views
             this.StrategyTabControl.Items.Add(new TabItem()
                 {
                     Header = "Quoter",
-                    Content = "To be continue...",
+                    Content = new QuoterUserControl(exchange, container),
                 });
             this.StrategyTabControl.Items.Add(new TabItem()
                 {
                     Header = "Hitter",
-                    Content = "To be continue...",
+                    Content = new HitterUserControl(exchange, container),
                 });
             this.StrategyTabControl.Items.Add(new TabItem()
                 {
                     Header = "Dimer",
-                    Content = "To be continue...",
+                    Content = new DimerUserControl(exchange, container),
                 });
             this.StrategyTabControl.Items.Add(new TabItem()
                 {

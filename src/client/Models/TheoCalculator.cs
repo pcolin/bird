@@ -168,49 +168,46 @@ namespace client.Models
                             VolatilityModel = new VolatilityModelWrapper(),
                             Parameters = new Dictionary<DateTime, PricingParameters>(),
                         };
-                    foreach (var op in ps.Options)
+                    var options = pm.GetOptionsByHedgeUnderlying(underlying);
+                    foreach (var option in options)
                     {
-                        var option = pm.FindId(op) as Option;
-                        if (option != null)
+                        PricingParameters parameters = null;
+                        if (pricing.Parameters.TryGetValue(option.Maturity, out parameters) == false)
                         {
-                            PricingParameters parameters = null;
-                            if (pricing.Parameters.TryGetValue(option.Maturity, out parameters) == false)
-                            {
-                                parameters = new PricingParameters()
-                                    {
-                                        Rate = rm.GetInterestRate(option.Maturity),
-                                        SSRate = ssm.GetSSRate(option.HedgeUnderlying.Id, option.Maturity),
-                                        Parameters = new Dictionary<Option, Parameter>(),
-                                    };
-                                var vc = vcm.GetVolatilityCurve(option.HedgeUnderlying.Id, option.Maturity);
-                                if (vc != null)
+                            parameters = new PricingParameters()
                                 {
-                                    parameters.Volatility = new VolatilityParameterWrapper()
-                                        {
-                                            spot = vc.Spot,
-                                            skew = vc.Skew,
-                                            atm_vol = vc.AtmVol,
-                                            call_convex = vc.CallConvex,
-                                            put_convex = vc.PutConvex,
-                                            call_slope = vc.CallSlope,
-                                            put_slope = vc.PutSlope,
-                                            call_cutoff = vc.CallCutoff,
-                                            put_cutoff = vc.PutCutoff,
-                                            vcr = vc.Vcr,
-                                            scr = vc.Scr,
-                                            ccr = vc.Ccr,
-                                            spcr = vc.Spcr,
-                                            sccr = vc.Sccr
-                                        };
-                                }
-                                pricing.Parameters.Add(option.Maturity, parameters);
-                            }
-                            parameters.Parameters[option] = new Parameter()
-                                {
-                                    Position = pnm.GetPosition(option.Id), 
-                                    Destriker = dm.GetDestriker(option.Id),
+                                    Rate = rm.GetInterestRate(option.Maturity),
+                                    SSRate = ssm.GetSSRate(option.HedgeUnderlying.Id, option.Maturity),
+                                    Parameters = new Dictionary<Option, Parameter>(),
                                 };
+                            var vc = vcm.GetVolatilityCurve(option.HedgeUnderlying.Id, option.Maturity);
+                            if (vc != null)
+                            {
+                                parameters.Volatility = new VolatilityParameterWrapper()
+                                    {
+                                        spot = vc.Spot,
+                                        skew = vc.Skew,
+                                        atm_vol = vc.AtmVol,
+                                        call_convex = vc.CallConvex,
+                                        put_convex = vc.PutConvex,
+                                        call_slope = vc.CallSlope,
+                                        put_slope = vc.PutSlope,
+                                        call_cutoff = vc.CallCutoff,
+                                        put_cutoff = vc.PutCutoff,
+                                        vcr = vc.Vcr,
+                                        scr = vc.Scr,
+                                        ccr = vc.Ccr,
+                                        spcr = vc.Spcr,
+                                        sccr = vc.Sccr
+                                    };
+                            }
+                            pricing.Parameters.Add(option.Maturity, parameters);
                         }
+                        parameters.Parameters[option] = new Parameter()
+                            {
+                                Position = pnm.GetPosition(option.Id),
+                                Destriker = dm.GetDestriker(option.Id),
+                            };
                     }
                     this.pricings.Add(underlying, pricing);
                 }
@@ -299,13 +296,14 @@ namespace client.Models
                             this.pricings.Add(underlying, pricing);
                         }
                         pricing.PricingModel = new PricingModelWrapper(ps.Model == Proto.PricingModel.Bsm);
-                        var options = new SortedSet<string>();
-                        foreach (var op in ps.Options)
+                        //var options = new SortedSet<string>();
+                        var options = pm.GetOptionsByHedgeUnderlying(underlying);
+                        foreach (var option in options)
                         {
-                            var option = pm.FindId(op) as Option;
-                            if (option != null)
-                            {
-                                options.Add(option.Id);
+                            //var option = pm.FindId(op) as Option;
+                            //if (option != null)
+                            //{
+                                //options.Add(option.Id);
                                 PricingParameters parameters = null;
                                 if (pricing.Parameters.TryGetValue(option.Maturity, out parameters) == false)
                                 {
@@ -346,37 +344,37 @@ namespace client.Models
                                             Destriker = dm.GetDestriker(option.Id),
                                         });
                                 }
-                            }
-                            var itemsToRemove = new Dictionary<DateTime, List<Option>>();
-                            foreach (var kvp in pricing.Parameters)
-                            {
-                                List<Option> items = new List<Option>();
-                                foreach (var param in kvp.Value.Parameters)
-                                {
-                                    if (options.Contains(param.Key.Id) == false)
-                                    {
-                                        items.Add(param.Key);
-                                    }
-                                }
-                                if (items.Count > 0)
-                                {
-                                    itemsToRemove.Add(kvp.Key, items.Count < kvp.Value.Parameters.Count ? items : null);
-                                }
-                            }
-                            foreach (var kvp in itemsToRemove)
-                            {
-                                if (kvp.Value != null)
-                                {
-                                    foreach (var opt in kvp.Value)
-                                    {
-                                        pricing.Parameters[kvp.Key].Parameters.Remove(opt);
-                                    }
-                                }
-                                else
-                                {
-                                    pricing.Parameters.Remove(kvp.Key);
-                                }
-                            }
+                            //}
+                            //var itemsToRemove = new Dictionary<DateTime, List<Option>>();
+                            //foreach (var kvp in pricing.Parameters)
+                            //{
+                            //    List<Option> items = new List<Option>();
+                            //    foreach (var param in kvp.Value.Parameters)
+                            //    {
+                            //        if (options.Contains(param.Key.Id) == false)
+                            //        {
+                            //            items.Add(param.Key);
+                            //        }
+                            //    }
+                            //    if (items.Count > 0)
+                            //    {
+                            //        itemsToRemove.Add(kvp.Key, items.Count < kvp.Value.Parameters.Count ? items : null);
+                            //    }
+                            //}
+                            //foreach (var kvp in itemsToRemove)
+                            //{
+                            //    if (kvp.Value != null)
+                            //    {
+                            //        foreach (var opt in kvp.Value)
+                            //        {
+                            //            pricing.Parameters[kvp.Key].Parameters.Remove(opt);
+                            //        }
+                            //    }
+                            //    else
+                            //    {
+                            //        pricing.Parameters.Remove(kvp.Key);
+                            //    }
+                            //}
                         }
                     }
                 }

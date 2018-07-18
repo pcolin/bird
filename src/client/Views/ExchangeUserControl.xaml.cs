@@ -32,14 +32,14 @@ namespace client.Views
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
             DateTime dt = (DateTime)value;
-            return dt.ToString("yyyyMMdd");
+            return dt.ToString("yyyy/MM/dd");
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
             try
             {
-                return DateTime.ParseExact(value.ToString(), "yyyyMMdd", CultureInfo.InvariantCulture);
+                return DateTime.ParseExact(value.ToString(), "yyyy/MM/dd", CultureInfo.InvariantCulture);
             }
             catch (Exception)
             {
@@ -53,14 +53,14 @@ namespace client.Views
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
             DateTime dt = (DateTime)value;
-            return dt.ToString("HH:mm:ss");
+            return dt.ToString("H:mm:ss");
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
             try
             {
-                return DateTime.ParseExact(value.ToString(), "HH:mm:ss", CultureInfo.InvariantCulture);
+                return DateTime.ParseExact(value.ToString(), "H:mm:ss", CultureInfo.InvariantCulture);
             }
             catch (Exception)
             {

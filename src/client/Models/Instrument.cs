@@ -53,6 +53,7 @@ namespace client.Models
         }
 
         public Proto.Currency Currency { get; set; }
+        public int Lot { get; set; }
         public double Tick { get; set; }
         public double Multiplier { get; set; }
 

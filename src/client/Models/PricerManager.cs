@@ -50,7 +50,7 @@ namespace client.Models
             return ret;
         }
 
-        public List<Proto.Pricer> GetPricingSpecs()
+        public List<Proto.Pricer> GetPricers()
         {
             lock (this.pricers)
             {

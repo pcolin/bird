@@ -34,7 +34,10 @@ namespace client.Models
             ok = ok && QuerySSRates();
             ok = ok && QueryVolatilityCurves();
             ok = ok && QueryDestrikers();
+            ok = ok && QueryCredits();
             ok = ok && QueryPricers();
+            ok = ok && QueryQuoters();
+            ok = ok && QueryStrategySwitches();
             return ok;
         }
 
@@ -217,6 +220,33 @@ namespace client.Models
             return false;
         }
 
+        private bool QueryCredits()
+        {
+            Proto.CreditReq req = new Proto.CreditReq();
+            req.Type = Proto.RequestType.Get;
+            req.User = user;
+
+            byte[] bytes = ProtoMessageCoder.Encode(req);
+            socket.Send(bytes);
+
+            bytes = socket.Receive();
+            if (bytes != null)
+            {
+                var rep = ProtoMessageCoder.Decode<Proto.CreditRep>(bytes);
+                if (rep.Result.Result)
+                {
+                    var manager = new CreditManager();
+                    if (rep.Credits.Count > 0)
+                    {
+                        manager.OnProtoMessage(rep);
+                    }
+                    this.container.RegisterInstance<CreditManager>(exchange.ToString(), manager);
+                    return true;
+                }
+            }
+            return false;
+        }
+
         private bool QueryPricers()
         {
             Proto.PricerReq req = new Proto.PricerReq();
@@ -238,6 +268,60 @@ namespace client.Models
                         manager.OnProtoMessage(rep);
                     }
                     this.container.RegisterInstance<PricerManager>(exchange.ToString(), manager);
+                    return true;
+                }
+            }
+            return false;
+        }
+        
+        private bool QueryQuoters()
+        {
+            Proto.QuoterReq req = new Proto.QuoterReq();
+            req.Type = Proto.RequestType.Get;
+            req.User = user;
+
+            byte[] bytes = ProtoMessageCoder.Encode(req);
+            socket.Send(bytes);
+
+            bytes = socket.Receive();
+            if (bytes != null)
+            {
+                var rep = ProtoMessageCoder.Decode<Proto.QuoterRep>(bytes);
+                if (rep.Result.Result)
+                {
+                    var manager = new QuoterManager();
+                    if (rep.Quoters.Count > 0)
+                    {
+                        manager.OnProtoMessage(rep);
+                    }
+                    this.container.RegisterInstance<QuoterManager>(exchange.ToString(), manager);
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private bool QueryStrategySwitches()
+        {
+            Proto.StrategySwitchReq req = new Proto.StrategySwitchReq();
+            req.Type = Proto.RequestType.Get;
+            req.User = user;
+
+            byte[] bytes = ProtoMessageCoder.Encode(req);
+            socket.Send(bytes);
+
+            bytes = socket.Receive();
+            if (bytes != null)
+            {
+                var rep = ProtoMessageCoder.Decode<Proto.StrategySwitchRep>(bytes);
+                if (rep.Result.Result)
+                {
+                    var manager = new StrategySwitchManager();
+                    if (rep.Switches.Count > 0)
+                    {
+                        manager.OnProtoMessage(rep);
+                    }
+                    this.container.RegisterInstance<StrategySwitchManager>(exchange.ToString(), manager);
                     return true;
                 }
             }

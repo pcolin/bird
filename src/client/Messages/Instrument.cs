@@ -25,35 +25,36 @@ namespace Proto {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
             "ChBJbnN0cnVtZW50LnByb3RvEgVQcm90bxoORXhjaGFuZ2UucHJvdG8aDVJl",
-            "cXVlc3QucHJvdG8aC1JlcGx5LnByb3RvGg5DdXJyZW5jeS5wcm90byLGAwoK",
+            "cXVlc3QucHJvdG8aC1JlcGx5LnByb3RvGg5DdXJyZW5jeS5wcm90byLTAwoK",
             "SW5zdHJ1bWVudBIKCgJpZBgBIAEoCRIOCgZzeW1ib2wYAiABKAkSIQoIZXhj",
             "aGFuZ2UYAyABKA4yDy5Qcm90by5FeGNoYW5nZRIjCgR0eXBlGAQgASgOMhUu",
             "UHJvdG8uSW5zdHJ1bWVudFR5cGUSIQoIY3VycmVuY3kYBSABKA4yDy5Qcm90",
             "by5DdXJyZW5jeRISCgp1bmRlcmx5aW5nGAYgASgJEhgKEGhlZGdlX3VuZGVy",
-            "bHlpbmcYByABKAkSDAoEdGljaxgIIAEoARISCgptdWx0aXBsaWVyGAkgASgB",
-            "Eg8KB2hpZ2hlc3QYCiABKAESDgoGbG93ZXN0GAsgASgBEiMKCGNhbGxfcHV0",
-            "GAwgASgOMhEuUHJvdG8uT3B0aW9uVHlwZRIQCghtYXR1cml0eRgNIAEoCRIl",
-            "CghleGVyY2lzZRgOIAEoDjITLlByb3RvLkV4ZXJjaXNlVHlwZRIpCgpzZXR0",
-            "bGVtZW50GA8gASgOMhUuUHJvdG8uU2V0dGxlbWVudFR5cGUSDgoGc3RyaWtl",
-            "GBAgASgBEicKBnN0YXR1cxgRIAEoDjIXLlByb3RvLkluc3RydW1lbnRTdGF0",
-            "dXMiigEKDUluc3RydW1lbnRSZXESIAoEdHlwZRgBIAEoDjISLlByb3RvLlJl",
-            "cXVlc3RUeXBlEiEKCGV4Y2hhbmdlGAIgASgOMg8uUHJvdG8uRXhjaGFuZ2US",
-            "JgoLaW5zdHJ1bWVudHMYAyADKAsyES5Qcm90by5JbnN0cnVtZW50EgwKBHVz",
-            "ZXIYBCABKAkiVQoNSW5zdHJ1bWVudFJlcBImCgtpbnN0cnVtZW50cxgBIAMo",
-            "CzIRLlByb3RvLkluc3RydW1lbnQSHAoGcmVzdWx0GAIgASgLMgwuUHJvdG8u",
-            "UmVwbHkqMwoOSW5zdHJ1bWVudFR5cGUSCQoFU3RvY2sQABIKCgZGdXR1cmUQ",
-            "ARIKCgZPcHRpb24QAiqOAQoQSW5zdHJ1bWVudFN0YXR1cxILCgdVbmtub3du",
-            "EAASCgoGQ2xvc2VkEAESCwoHUHJlT3BlbhACEhIKDk9wZW5pbmdBdWN0aW9u",
-            "EAMSCwoHVHJhZGluZxAEEggKBEZ1c2UQBRILCgdBdWN0aW9uEAYSEgoOQ2xv",
-            "c2luZ0F1Y3Rpb24QBxIICgRIYWx0EAgqHwoKT3B0aW9uVHlwZRIICgRDYWxs",
-            "EAASBwoDUHV0EAEqKgoMRXhlcmNpc2VUeXBlEgwKCEV1cm9wZWFuEAASDAoI",
-            "QW1lcmljYW4QASo8Cg5TZXR0bGVtZW50VHlwZRISCg5DYXNoU2V0dGxlbWVu",
-            "dBAAEhYKElBoeXNpY2FsU2V0dGxlbWVudBABKi8KDlJvdW5kRGlyZWN0aW9u",
-            "EgsKB05lYXJlc3QQABIGCgJVcBABEggKBERvd24QAmIGcHJvdG8z"));
+            "bHlpbmcYByABKAkSCwoDbG90GAggASgFEgwKBHRpY2sYCSABKAESEgoKbXVs",
+            "dGlwbGllchgKIAEoARIPCgdoaWdoZXN0GAsgASgBEg4KBmxvd2VzdBgMIAEo",
+            "ARIjCghjYWxsX3B1dBgNIAEoDjIRLlByb3RvLk9wdGlvblR5cGUSEAoIbWF0",
+            "dXJpdHkYDiABKAkSJQoIZXhlcmNpc2UYDyABKA4yEy5Qcm90by5FeGVyY2lz",
+            "ZVR5cGUSKQoKc2V0dGxlbWVudBgQIAEoDjIVLlByb3RvLlNldHRsZW1lbnRU",
+            "eXBlEg4KBnN0cmlrZRgRIAEoARInCgZzdGF0dXMYEiABKA4yFy5Qcm90by5J",
+            "bnN0cnVtZW50U3RhdHVzIooBCg1JbnN0cnVtZW50UmVxEiAKBHR5cGUYASAB",
+            "KA4yEi5Qcm90by5SZXF1ZXN0VHlwZRIhCghleGNoYW5nZRgCIAEoDjIPLlBy",
+            "b3RvLkV4Y2hhbmdlEiYKC2luc3RydW1lbnRzGAMgAygLMhEuUHJvdG8uSW5z",
+            "dHJ1bWVudBIMCgR1c2VyGAQgASgJIlUKDUluc3RydW1lbnRSZXASJgoLaW5z",
+            "dHJ1bWVudHMYASADKAsyES5Qcm90by5JbnN0cnVtZW50EhwKBnJlc3VsdBgC",
+            "IAEoCzIMLlByb3RvLlJlcGx5KjMKDkluc3RydW1lbnRUeXBlEgkKBVN0b2Nr",
+            "EAASCgoGRnV0dXJlEAESCgoGT3B0aW9uEAIqjgEKEEluc3RydW1lbnRTdGF0",
+            "dXMSCwoHVW5rbm93bhAAEgoKBkNsb3NlZBABEgsKB1ByZU9wZW4QAhISCg5P",
+            "cGVuaW5nQXVjdGlvbhADEgsKB1RyYWRpbmcQBBIICgRGdXNlEAUSCwoHQXVj",
+            "dGlvbhAGEhIKDkNsb3NpbmdBdWN0aW9uEAcSCAoESGFsdBAIKh8KCk9wdGlv",
+            "blR5cGUSCAoEQ2FsbBAAEgcKA1B1dBABKioKDEV4ZXJjaXNlVHlwZRIMCghF",
+            "dXJvcGVhbhAAEgwKCEFtZXJpY2FuEAEqPAoOU2V0dGxlbWVudFR5cGUSEgoO",
+            "Q2FzaFNldHRsZW1lbnQQABIWChJQaHlzaWNhbFNldHRsZW1lbnQQASovCg5S",
+            "b3VuZERpcmVjdGlvbhILCgdOZWFyZXN0EAASBgoCVXAQARIICgREb3duEAJi",
+            "BnByb3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Proto.ExchangeReflection.Descriptor, global::Proto.RequestReflection.Descriptor, global::Proto.ReplyReflection.Descriptor, global::Proto.CurrencyReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Proto.InstrumentType), typeof(global::Proto.InstrumentStatus), typeof(global::Proto.OptionType), typeof(global::Proto.ExerciseType), typeof(global::Proto.SettlementType), typeof(global::Proto.RoundDirection), }, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::Proto.Instrument), global::Proto.Instrument.Parser, new[]{ "Id", "Symbol", "Exchange", "Type", "Currency", "Underlying", "HedgeUnderlying", "Tick", "Multiplier", "Highest", "Lowest", "CallPut", "Maturity", "Exercise", "Settlement", "Strike", "Status" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Proto.Instrument), global::Proto.Instrument.Parser, new[]{ "Id", "Symbol", "Exchange", "Type", "Currency", "Underlying", "HedgeUnderlying", "Lot", "Tick", "Multiplier", "Highest", "Lowest", "CallPut", "Maturity", "Exercise", "Settlement", "Strike", "Status" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Proto.InstrumentReq), global::Proto.InstrumentReq.Parser, new[]{ "Type", "Exchange", "Instruments", "User" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Proto.InstrumentRep), global::Proto.InstrumentRep.Parser, new[]{ "Instruments", "Result" }, null, null, null)
           }));
@@ -136,6 +137,7 @@ namespace Proto {
       currency_ = other.currency_;
       underlying_ = other.underlying_;
       hedgeUnderlying_ = other.hedgeUnderlying_;
+      lot_ = other.lot_;
       tick_ = other.tick_;
       multiplier_ = other.multiplier_;
       highest_ = other.highest_;
@@ -231,8 +233,19 @@ namespace Proto {
       }
     }
 
+    /// <summary>Field number for the "lot" field.</summary>
+    public const int LotFieldNumber = 8;
+    private int lot_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int Lot {
+      get { return lot_; }
+      set {
+        lot_ = value;
+      }
+    }
+
     /// <summary>Field number for the "tick" field.</summary>
-    public const int TickFieldNumber = 8;
+    public const int TickFieldNumber = 9;
     private double tick_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public double Tick {
@@ -243,7 +256,7 @@ namespace Proto {
     }
 
     /// <summary>Field number for the "multiplier" field.</summary>
-    public const int MultiplierFieldNumber = 9;
+    public const int MultiplierFieldNumber = 10;
     private double multiplier_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public double Multiplier {
@@ -254,7 +267,7 @@ namespace Proto {
     }
 
     /// <summary>Field number for the "highest" field.</summary>
-    public const int HighestFieldNumber = 10;
+    public const int HighestFieldNumber = 11;
     private double highest_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public double Highest {
@@ -265,7 +278,7 @@ namespace Proto {
     }
 
     /// <summary>Field number for the "lowest" field.</summary>
-    public const int LowestFieldNumber = 11;
+    public const int LowestFieldNumber = 12;
     private double lowest_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public double Lowest {
@@ -276,7 +289,7 @@ namespace Proto {
     }
 
     /// <summary>Field number for the "call_put" field.</summary>
-    public const int CallPutFieldNumber = 12;
+    public const int CallPutFieldNumber = 13;
     private global::Proto.OptionType callPut_ = 0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Proto.OptionType CallPut {
@@ -287,7 +300,7 @@ namespace Proto {
     }
 
     /// <summary>Field number for the "maturity" field.</summary>
-    public const int MaturityFieldNumber = 13;
+    public const int MaturityFieldNumber = 14;
     private string maturity_ = "";
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string Maturity {
@@ -298,7 +311,7 @@ namespace Proto {
     }
 
     /// <summary>Field number for the "exercise" field.</summary>
-    public const int ExerciseFieldNumber = 14;
+    public const int ExerciseFieldNumber = 15;
     private global::Proto.ExerciseType exercise_ = 0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Proto.ExerciseType Exercise {
@@ -309,7 +322,7 @@ namespace Proto {
     }
 
     /// <summary>Field number for the "settlement" field.</summary>
-    public const int SettlementFieldNumber = 15;
+    public const int SettlementFieldNumber = 16;
     private global::Proto.SettlementType settlement_ = 0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Proto.SettlementType Settlement {
@@ -320,7 +333,7 @@ namespace Proto {
     }
 
     /// <summary>Field number for the "strike" field.</summary>
-    public const int StrikeFieldNumber = 16;
+    public const int StrikeFieldNumber = 17;
     private double strike_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public double Strike {
@@ -331,7 +344,7 @@ namespace Proto {
     }
 
     /// <summary>Field number for the "status" field.</summary>
-    public const int StatusFieldNumber = 17;
+    public const int StatusFieldNumber = 18;
     private global::Proto.InstrumentStatus status_ = 0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Proto.InstrumentStatus Status {
@@ -361,6 +374,7 @@ namespace Proto {
       if (Currency != other.Currency) return false;
       if (Underlying != other.Underlying) return false;
       if (HedgeUnderlying != other.HedgeUnderlying) return false;
+      if (Lot != other.Lot) return false;
       if (!pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.Equals(Tick, other.Tick)) return false;
       if (!pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.Equals(Multiplier, other.Multiplier)) return false;
       if (!pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.Equals(Highest, other.Highest)) return false;
@@ -384,6 +398,7 @@ namespace Proto {
       if (Currency != 0) hash ^= Currency.GetHashCode();
       if (Underlying.Length != 0) hash ^= Underlying.GetHashCode();
       if (HedgeUnderlying.Length != 0) hash ^= HedgeUnderlying.GetHashCode();
+      if (Lot != 0) hash ^= Lot.GetHashCode();
       if (Tick != 0D) hash ^= pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.GetHashCode(Tick);
       if (Multiplier != 0D) hash ^= pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.GetHashCode(Multiplier);
       if (Highest != 0D) hash ^= pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.GetHashCode(Highest);
@@ -435,44 +450,48 @@ namespace Proto {
         output.WriteRawTag(58);
         output.WriteString(HedgeUnderlying);
       }
+      if (Lot != 0) {
+        output.WriteRawTag(64);
+        output.WriteInt32(Lot);
+      }
       if (Tick != 0D) {
-        output.WriteRawTag(65);
+        output.WriteRawTag(73);
         output.WriteDouble(Tick);
       }
       if (Multiplier != 0D) {
-        output.WriteRawTag(73);
+        output.WriteRawTag(81);
         output.WriteDouble(Multiplier);
       }
       if (Highest != 0D) {
-        output.WriteRawTag(81);
+        output.WriteRawTag(89);
         output.WriteDouble(Highest);
       }
       if (Lowest != 0D) {
-        output.WriteRawTag(89);
+        output.WriteRawTag(97);
         output.WriteDouble(Lowest);
       }
       if (CallPut != 0) {
-        output.WriteRawTag(96);
+        output.WriteRawTag(104);
         output.WriteEnum((int) CallPut);
       }
       if (Maturity.Length != 0) {
-        output.WriteRawTag(106);
+        output.WriteRawTag(114);
         output.WriteString(Maturity);
       }
       if (Exercise != 0) {
-        output.WriteRawTag(112);
+        output.WriteRawTag(120);
         output.WriteEnum((int) Exercise);
       }
       if (Settlement != 0) {
-        output.WriteRawTag(120);
+        output.WriteRawTag(128, 1);
         output.WriteEnum((int) Settlement);
       }
       if (Strike != 0D) {
-        output.WriteRawTag(129, 1);
+        output.WriteRawTag(137, 1);
         output.WriteDouble(Strike);
       }
       if (Status != 0) {
-        output.WriteRawTag(136, 1);
+        output.WriteRawTag(144, 1);
         output.WriteEnum((int) Status);
       }
       if (_unknownFields != null) {
@@ -504,6 +523,9 @@ namespace Proto {
       if (HedgeUnderlying.Length != 0) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(HedgeUnderlying);
       }
+      if (Lot != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Lot);
+      }
       if (Tick != 0D) {
         size += 1 + 8;
       }
@@ -526,7 +548,7 @@ namespace Proto {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Exercise);
       }
       if (Settlement != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Settlement);
+        size += 2 + pb::CodedOutputStream.ComputeEnumSize((int) Settlement);
       }
       if (Strike != 0D) {
         size += 2 + 8;
@@ -565,6 +587,9 @@ namespace Proto {
       }
       if (other.HedgeUnderlying.Length != 0) {
         HedgeUnderlying = other.HedgeUnderlying;
+      }
+      if (other.Lot != 0) {
+        Lot = other.Lot;
       }
       if (other.Tick != 0D) {
         Tick = other.Tick;
@@ -635,43 +660,47 @@ namespace Proto {
             HedgeUnderlying = input.ReadString();
             break;
           }
-          case 65: {
-            Tick = input.ReadDouble();
+          case 64: {
+            Lot = input.ReadInt32();
             break;
           }
           case 73: {
-            Multiplier = input.ReadDouble();
+            Tick = input.ReadDouble();
             break;
           }
           case 81: {
-            Highest = input.ReadDouble();
+            Multiplier = input.ReadDouble();
             break;
           }
           case 89: {
+            Highest = input.ReadDouble();
+            break;
+          }
+          case 97: {
             Lowest = input.ReadDouble();
             break;
           }
-          case 96: {
+          case 104: {
             callPut_ = (global::Proto.OptionType) input.ReadEnum();
             break;
           }
-          case 106: {
+          case 114: {
             Maturity = input.ReadString();
             break;
           }
-          case 112: {
+          case 120: {
             exercise_ = (global::Proto.ExerciseType) input.ReadEnum();
             break;
           }
-          case 120: {
+          case 128: {
             settlement_ = (global::Proto.SettlementType) input.ReadEnum();
             break;
           }
-          case 129: {
+          case 137: {
             Strike = input.ReadDouble();
             break;
           }
-          case 136: {
+          case 144: {
             status_ = (global::Proto.InstrumentStatus) input.ReadEnum();
             break;
           }

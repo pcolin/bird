@@ -13,95 +13,94 @@
         <local:OppositeBoolConverter x:Key="OppositeBoolConverter" />
     </UserControl.Resources>
     <Grid>
-        <Grid>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition />
-                <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
-            <DataGrid Margin="3"
-                      RowHeaderWidth="15"
-                      Name="PricerDataGrid"
-                      CanUserAddRows="False"
-                      AutoGenerateColumns="False"
-                      HorizontalGridLinesBrush="LightGray"                      
-                      VerticalGridLinesBrush="LightGray"
-                      IsReadOnly="{Binding IsEditable, Converter={StaticResource OppositeBoolConverter}}"
-                      ItemsSource="{Binding Pricers}"
-                      SelectedItem="{Binding SelectedPricer, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
-                <DataGrid.Resources>
-                    <ObjectDataProvider MethodName="GetValues" ObjectType="{x:Type sys:Enum}" x:Key="GetPricingModels">
-                        <ObjectDataProvider.MethodParameters>
-                            <x:Type TypeName="proto:PricingModel" />
-                        </ObjectDataProvider.MethodParameters>
-                    </ObjectDataProvider>
-                    <ObjectDataProvider MethodName="GetValues" ObjectType="{x:Type sys:Enum}" x:Key="GetTheoTypes">
-                        <ObjectDataProvider.MethodParameters>
-                            <x:Type TypeName="proto:UnderlyingTheoType" />
-                        </ObjectDataProvider.MethodParameters>
-                    </ObjectDataProvider>
-                </DataGrid.Resources>
-                <DataGrid.RowHeaderTemplate>
-                    <DataTemplate>
-                        <TextBlock Text="{Binding DataContext.Modified, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=DataGridRowHeader}, Converter={StaticResource ResourceKey=BoolToStringConverter}}"
-                                   Foreground="Red" FontSize="10" />
-                    </DataTemplate>
-                </DataGrid.RowHeaderTemplate>
-                <DataGrid.Columns>
-                    <DataGridTextColumn Header="Name" Binding="{Binding Name}" IsReadOnly="True"></DataGridTextColumn>
-                    <DataGridComboBoxColumn Header="Underlying" x:Name="UnderlyingColumn" SelectedItemBinding="{Binding Underlying, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" DisplayMemberPath="Id" />
-                    <DataGridComboBoxColumn Header="Model" ItemsSource="{Binding Source={StaticResource GetPricingModels}}" SelectedItemBinding="{Binding Model, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                    <DataGridTextColumn Header="Interval(s)" Binding="{Binding Interval}"></DataGridTextColumn>
-                    <DataGridComboBoxColumn Header="SpotTheoType" ItemsSource="{Binding Source={StaticResource GetTheoTypes}}" SelectedItemBinding="{Binding UnderlyingTheoType, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                    <DataGridTextColumn Header="MaxTickChange" Binding="{Binding MaxTickChange, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"></DataGridTextColumn>
-                    <DataGridTextColumn Header="Elastic" Binding="{Binding Elastic, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"></DataGridTextColumn>
-                    <DataGridTextColumn Header="ElasticLimit" Binding="{Binding ElasticLimit, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"></DataGridTextColumn>
-                </DataGrid.Columns>
-                <DataGrid.ContextMenu>
-                    <ContextMenu>
-                        <MenuItem Header="Edit" Command="{Binding EditCommand}" />
-                        <MenuItem Header="Add..." Click="AddMenuItem_Click" IsEnabled="{Binding IsEditable}" />
-                        <MenuItem Header="Delete" Command="{Binding DeleteCommand}" />
-                        <Separator></Separator>
-                        <MenuItem Header="Refresh" Command="{Binding RefreshCommand}" />
-                        <Separator></Separator>
-                        <MenuItem Header="Set" Command="{Binding SetCommand}" />
-                        <!--<MenuItem Header="Set All" Command="{Binding SetAllCommand}" />-->
-                    </ContextMenu>
-                </DataGrid.ContextMenu>
-            </DataGrid>
-            <DataGrid Name="OptionDataGrid"
-                      Margin="3"
-                      RowHeaderWidth="15"
-                      Grid.Column="1"
-                      CanUserAddRows="False"
-                      AutoGenerateColumns="False"
-                      CanUserReorderColumns="False"
-                      IsReadOnly="{Binding ElementName=PricerDataGrid, Path=IsReadOnly}"
-                      ItemsSource="{Binding SelectedPricer.Options}">
-                <DataGrid.ContextMenu>
-                    <ContextMenu>
-                        <MenuItem Header="Select All" Command="{Binding SelectAllCommand}" />
-                    </ContextMenu>
-                </DataGrid.ContextMenu>
-                <DataGrid.RowHeaderTemplate>
-                    <DataTemplate>
-                        <TextBlock Text="{Binding DataContext.Modified, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=DataGridRowHeader}, Converter={StaticResource ResourceKey=BoolToStringConverter}}"
-                                           Foreground="Red" FontSize="10" />
-                    </DataTemplate>
-                </DataGrid.RowHeaderTemplate>
-                <DataGrid.Columns>
-                    <DataGridCheckBoxColumn Header="Select" Binding="{Binding Selected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" >
-                        <DataGridCheckBoxColumn.ElementStyle>
-                            <Style TargetType="CheckBox">
-                                <Setter Property="VerticalAlignment" Value="Center" />
-                                <Setter Property="HorizontalAlignment" Value="Center" />
-                                <Setter Property="IsEnabled" Value="{Binding ElementName=PricerDataGrid, Path=IsReadOnly, Converter={StaticResource ResourceKey=OppositeBoolConverter}}" />
-                            </Style>
-                        </DataGridCheckBoxColumn.ElementStyle>
-                    </DataGridCheckBoxColumn>
-                    <DataGridTextColumn Header="Option" IsReadOnly="True" Binding="{Binding Option.Id}"></DataGridTextColumn>
-                </DataGrid.Columns>
-            </DataGrid>
-        </Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition />
+            <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+        <DataGrid Margin="3"
+                  RowHeaderWidth="15"
+                  Name="PricerDataGrid"
+                  CanUserAddRows="False"
+                  AutoGenerateColumns="False"
+                  HorizontalGridLinesBrush="LightGray"                      
+                  VerticalGridLinesBrush="LightGray"
+                  IsReadOnly="{Binding IsEditable, Converter={StaticResource OppositeBoolConverter}}"
+                  ItemsSource="{Binding Pricers}"
+                  SelectedItem="{Binding SelectedPricer, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+            <DataGrid.Resources>
+                <ObjectDataProvider MethodName="GetValues" ObjectType="{x:Type sys:Enum}" x:Key="GetPricingModels">
+                    <ObjectDataProvider.MethodParameters>
+                        <x:Type TypeName="proto:PricingModel" />
+                    </ObjectDataProvider.MethodParameters>
+                </ObjectDataProvider>
+                <ObjectDataProvider MethodName="GetValues" ObjectType="{x:Type sys:Enum}" x:Key="GetTheoTypes">
+                    <ObjectDataProvider.MethodParameters>
+                        <x:Type TypeName="proto:UnderlyingTheoType" />
+                    </ObjectDataProvider.MethodParameters>
+                </ObjectDataProvider>
+            </DataGrid.Resources>
+            <DataGrid.RowHeaderTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding DataContext.Modified, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=DataGridRowHeader}, Converter={StaticResource ResourceKey=BoolToStringConverter}}"
+                                Foreground="Red" FontSize="10" />
+                </DataTemplate>
+            </DataGrid.RowHeaderTemplate>
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Name" Binding="{Binding Name}" IsReadOnly="True"></DataGridTextColumn>
+                <DataGridComboBoxColumn Header="Underlying" x:Name="UnderlyingColumn" SelectedItemBinding="{Binding Underlying, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" DisplayMemberPath="Id" />
+                <DataGridComboBoxColumn Header="Model" ItemsSource="{Binding Source={StaticResource GetPricingModels}}" SelectedItemBinding="{Binding Model, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                <DataGridTextColumn Header="Interval(s)" Binding="{Binding Interval}"></DataGridTextColumn>
+                <DataGridComboBoxColumn Header="SpotTheoType" ItemsSource="{Binding Source={StaticResource GetTheoTypes}}" SelectedItemBinding="{Binding UnderlyingTheoType, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                <DataGridTextColumn Header="MaxTickChange" Binding="{Binding MaxTickChange, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"></DataGridTextColumn>
+                <DataGridTextColumn Header="Elastic" Binding="{Binding Elastic, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"></DataGridTextColumn>
+                <DataGridTextColumn Header="ElasticLimit" Binding="{Binding ElasticLimit, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"></DataGridTextColumn>
+            </DataGrid.Columns>
+            <DataGrid.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="Edit" Command="{Binding EditCommand}" />
+                    <MenuItem Header="Add..." Click="AddMenuItem_Click" IsEnabled="{Binding IsEditable}" />
+                    <MenuItem Header="Delete" Command="{Binding DeleteCommand}" />
+                    <Separator></Separator>
+                    <MenuItem Header="Refresh" Command="{Binding RefreshCommand}" />
+                    <Separator></Separator>
+                    <MenuItem Header="Set" Command="{Binding SetCommand}" />
+                    <!--<MenuItem Header="Set All" Command="{Binding SetAllCommand}" />-->
+                </ContextMenu>
+            </DataGrid.ContextMenu>
+        </DataGrid>
+        <DataGrid Name="OptionDataGrid"
+                  Visibility="Collapsed"
+                    Margin="3"
+                    RowHeaderWidth="15"
+                    Grid.Column="1"
+                    CanUserAddRows="False"
+                    AutoGenerateColumns="False"
+                    CanUserReorderColumns="False"
+                    IsReadOnly="{Binding ElementName=PricerDataGrid, Path=IsReadOnly}"
+                    ItemsSource="{Binding SelectedPricer.Options}">
+            <DataGrid.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="Select All" Command="{Binding SelectAllCommand}" />
+                </ContextMenu>
+            </DataGrid.ContextMenu>
+            <DataGrid.RowHeaderTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding DataContext.Modified, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=DataGridRowHeader}, Converter={StaticResource ResourceKey=BoolToStringConverter}}"
+                                        Foreground="Red" FontSize="10" />
+                </DataTemplate>
+            </DataGrid.RowHeaderTemplate>
+            <DataGrid.Columns>
+                <DataGridCheckBoxColumn Header="Select" Binding="{Binding Selected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" >
+                    <DataGridCheckBoxColumn.ElementStyle>
+                        <Style TargetType="CheckBox">
+                            <Setter Property="VerticalAlignment" Value="Center" />
+                            <Setter Property="HorizontalAlignment" Value="Center" />
+                            <Setter Property="IsEnabled" Value="{Binding ElementName=PricerDataGrid, Path=IsReadOnly, Converter={StaticResource ResourceKey=OppositeBoolConverter}}" />
+                        </Style>
+                    </DataGridCheckBoxColumn.ElementStyle>
+                </DataGridCheckBoxColumn>
+                <DataGridTextColumn Header="Option" IsReadOnly="True" Binding="{Binding Option.Id}"></DataGridTextColumn>
+            </DataGrid.Columns>
+        </DataGrid>
     </Grid>
 </UserControl>

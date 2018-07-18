@@ -24,28 +24,41 @@ namespace Proto {
     static OrderReflection() {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
-            "CgtPcmRlci5wcm90bxIFUHJvdG8aDkV4Y2hhbmdlLnByb3RvIoEDCgVPcmRl",
-            "chIKCgJpZBgBIAEoBBISCgppbnN0cnVtZW50GAIgASgJEiEKCGV4Y2hhbmdl",
-            "GAMgASgOMg8uUHJvdG8uRXhjaGFuZ2USEgoKY291bnRlcl9pZBgEIAEoCRIT",
-            "CgtleGNoYW5nZV9pZBgFIAEoCRIMCgRub3RlGAYgASgJEg0KBXByaWNlGAcg",
-            "ASgBEhoKEmF2Z19leGVjdXRlZF9wcmljZRgIIAEoARIOCgZ2b2x1bWUYCSAB",
-            "KAUSFwoPZXhlY3V0ZWRfdm9sdW1lGAogASgFEhkKBHNpZGUYCyABKA4yCy5Q",
-            "cm90by5TaWRlEiwKDnRpbWVfY29uZGl0aW9uGAwgASgOMhQuUHJvdG8uVGlt",
-            "ZUNvbmRpdGlvbhIeCgR0eXBlGA0gASgOMhAuUHJvdG8uT3JkZXJUeXBlEiIK",
-            "BnN0YXR1cxgOIAEoDjISLlByb3RvLk9yZGVyU3RhdHVzEgwKBHRpbWUYDyAB",
-            "KAQSDwoHbGF0ZW5jeRgQIAEoBSqMAQoEU2lkZRIHCgNCdXkQABIICgRTZWxs",
-            "EAESDAoIQnV5Q292ZXIQAhIRCg1CdXlDb3ZlclRvZGF5EAMSFQoRQnV5Q292",
-            "ZXJZZXN0ZXJkYXkQBBINCglTZWxsQ292ZXIQBRISCg5TZWxsQ292ZXJUb2Rh",
-            "eRAGEhYKElNlbGxDb3Zlclllc3RlcmRheRAHKiEKDVRpbWVDb25kaXRpb24S",
-            "BwoDR1REEAASBwoDSU9DEAEqIgoJT3JkZXJUeXBlEgkKBUxpbWl0EAASCgoG",
-            "TWFya2V0EAEqlQEKC09yZGVyU3RhdHVzEg0KCVVuZGVmaW5lZBAAEgkKBUxv",
-            "Y2FsEAESDQoJU3VibWl0dGVkEAISBwoDTmV3EAMSEQoNUGFydGlhbEZpbGxl",
-            "ZBAEEgoKBkZpbGxlZBAFEhkKFVBhcnRpYWxGaWxsZWRDYW5jZWxlZBAGEgwK",
-            "CENhbmNlbGVkEAcSDAoIUmVqZWN0ZWQQCGIGcHJvdG8z"));
+            "CgtPcmRlci5wcm90bxIFUHJvdG8aDkV4Y2hhbmdlLnByb3RvGg5TdHJhdGVn",
+            "eS5wcm90bxoNUmVxdWVzdC5wcm90bxoLUmVwbHkucHJvdG8ivwMKBU9yZGVy",
+            "EgoKAmlkGAEgASgEEhIKCmluc3RydW1lbnQYAiABKAkSEgoKY291bnRlcl9p",
+            "ZBgDIAEoCRITCgtleGNoYW5nZV9pZBgEIAEoCRIQCghzdHJhdGVneRgFIAEo",
+            "CRIMCgRub3RlGAYgASgJEg0KBXByaWNlGAcgASgBEhoKEmF2Z19leGVjdXRl",
+            "ZF9wcmljZRgIIAEoARIOCgZ2b2x1bWUYCSABKAUSFwoPZXhlY3V0ZWRfdm9s",
+            "dW1lGAogASgFEiEKCGV4Y2hhbmdlGAsgASgOMg8uUHJvdG8uRXhjaGFuZ2US",
+            "KgoNc3RyYXRlZ3lfdHlwZRgMIAEoDjITLlByb3RvLlN0cmF0ZWd5VHlwZRIZ",
+            "CgRzaWRlGA0gASgOMgsuUHJvdG8uU2lkZRIsCg50aW1lX2NvbmRpdGlvbhgO",
+            "IAEoDjIULlByb3RvLlRpbWVDb25kaXRpb24SHgoEdHlwZRgPIAEoDjIQLlBy",
+            "b3RvLk9yZGVyVHlwZRIiCgZzdGF0dXMYECABKA4yEi5Qcm90by5PcmRlclN0",
+            "YXR1cxIMCgR0aW1lGBEgASgEEg8KB2xhdGVuY3kYEiABKAUiUAoMT3JkZXJS",
+            "ZXF1ZXN0EiIKBmFjdGlvbhgBIAEoDjISLlByb3RvLk9yZGVyQWN0aW9uEhwK",
+            "Bm9yZGVycxgCIAMoCzIMLlByb3RvLk9yZGVyInsKCE9yZGVyUmVxEiAKBHR5",
+            "cGUYASABKA4yEi5Qcm90by5SZXF1ZXN0VHlwZRIhCghleGNoYW5nZRgCIAEo",
+            "DjIPLlByb3RvLkV4Y2hhbmdlEgwKBHVzZXIYAyABKAkSHAoGb3JkZXJzGAQg",
+            "AygLMgwuUHJvdG8uT3JkZXIiRgoIT3JkZXJSZXASHAoGb3JkZXJzGAEgAygL",
+            "MgwuUHJvdG8uT3JkZXISHAoGcmVzdWx0GAIgASgLMgwuUHJvdG8uUmVwbHkq",
+            "jAEKBFNpZGUSBwoDQnV5EAASCAoEU2VsbBABEgwKCEJ1eUNvdmVyEAISEQoN",
+            "QnV5Q292ZXJUb2RheRADEhUKEUJ1eUNvdmVyWWVzdGVyZGF5EAQSDQoJU2Vs",
+            "bENvdmVyEAUSEgoOU2VsbENvdmVyVG9kYXkQBhIWChJTZWxsQ292ZXJZZXN0",
+            "ZXJkYXkQByohCg1UaW1lQ29uZGl0aW9uEgcKA0dURBAAEgcKA0lPQxABKiIK",
+            "CU9yZGVyVHlwZRIJCgVMaW1pdBAAEgoKBk1hcmtldBABKpUBCgtPcmRlclN0",
+            "YXR1cxINCglVbmRlZmluZWQQABIJCgVMb2NhbBABEg0KCVN1Ym1pdHRlZBAC",
+            "EgcKA05ldxADEhEKDVBhcnRpYWxGaWxsZWQQBBIKCgZGaWxsZWQQBRIZChVQ",
+            "YXJ0aWFsRmlsbGVkQ2FuY2VsZWQQBhIMCghDYW5jZWxlZBAHEgwKCFJlamVj",
+            "dGVkEAgqMAoLT3JkZXJBY3Rpb24SCgoGU3VibWl0EAASCgoGQ2FuY2VsEAES",
+            "CQoFQW1lbmQQAmIGcHJvdG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
-          new pbr::FileDescriptor[] { global::Proto.ExchangeReflection.Descriptor, },
-          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Proto.Side), typeof(global::Proto.TimeCondition), typeof(global::Proto.OrderType), typeof(global::Proto.OrderStatus), }, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::Proto.Order), global::Proto.Order.Parser, new[]{ "Id", "Instrument", "Exchange", "CounterId", "ExchangeId", "Note", "Price", "AvgExecutedPrice", "Volume", "ExecutedVolume", "Side", "TimeCondition", "Type", "Status", "Time", "Latency" }, null, null, null)
+          new pbr::FileDescriptor[] { global::Proto.ExchangeReflection.Descriptor, global::Proto.StrategyReflection.Descriptor, global::Proto.RequestReflection.Descriptor, global::Proto.ReplyReflection.Descriptor, },
+          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Proto.Side), typeof(global::Proto.TimeCondition), typeof(global::Proto.OrderType), typeof(global::Proto.OrderStatus), typeof(global::Proto.OrderAction), }, new pbr::GeneratedClrTypeInfo[] {
+            new pbr::GeneratedClrTypeInfo(typeof(global::Proto.Order), global::Proto.Order.Parser, new[]{ "Id", "Instrument", "CounterId", "ExchangeId", "Strategy", "Note", "Price", "AvgExecutedPrice", "Volume", "ExecutedVolume", "Exchange", "StrategyType", "Side", "TimeCondition", "Type", "Status", "Time", "Latency" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Proto.OrderRequest), global::Proto.OrderRequest.Parser, new[]{ "Action", "Orders" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Proto.OrderReq), global::Proto.OrderReq.Parser, new[]{ "Type", "Exchange", "User", "Orders" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Proto.OrderRep), global::Proto.OrderRep.Parser, new[]{ "Orders", "Result" }, null, null, null)
           }));
     }
     #endregion
@@ -85,6 +98,12 @@ namespace Proto {
     [pbr::OriginalName("Rejected")] Rejected = 8,
   }
 
+  public enum OrderAction {
+    [pbr::OriginalName("Submit")] Submit = 0,
+    [pbr::OriginalName("Cancel")] Cancel = 1,
+    [pbr::OriginalName("Amend")] Amend = 2,
+  }
+
   #endregion
 
   #region Messages
@@ -115,14 +134,16 @@ namespace Proto {
     public Order(Order other) : this() {
       id_ = other.id_;
       instrument_ = other.instrument_;
-      exchange_ = other.exchange_;
       counterId_ = other.counterId_;
       exchangeId_ = other.exchangeId_;
+      strategy_ = other.strategy_;
       note_ = other.note_;
       price_ = other.price_;
       avgExecutedPrice_ = other.avgExecutedPrice_;
       volume_ = other.volume_;
       executedVolume_ = other.executedVolume_;
+      exchange_ = other.exchange_;
+      strategyType_ = other.strategyType_;
       side_ = other.side_;
       timeCondition_ = other.timeCondition_;
       type_ = other.type_;
@@ -159,19 +180,8 @@ namespace Proto {
       }
     }
 
-    /// <summary>Field number for the "exchange" field.</summary>
-    public const int ExchangeFieldNumber = 3;
-    private global::Proto.Exchange exchange_ = 0;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::Proto.Exchange Exchange {
-      get { return exchange_; }
-      set {
-        exchange_ = value;
-      }
-    }
-
     /// <summary>Field number for the "counter_id" field.</summary>
-    public const int CounterIdFieldNumber = 4;
+    public const int CounterIdFieldNumber = 3;
     private string counterId_ = "";
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string CounterId {
@@ -182,13 +192,24 @@ namespace Proto {
     }
 
     /// <summary>Field number for the "exchange_id" field.</summary>
-    public const int ExchangeIdFieldNumber = 5;
+    public const int ExchangeIdFieldNumber = 4;
     private string exchangeId_ = "";
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string ExchangeId {
       get { return exchangeId_; }
       set {
         exchangeId_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "strategy" field.</summary>
+    public const int StrategyFieldNumber = 5;
+    private string strategy_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string Strategy {
+      get { return strategy_; }
+      set {
+        strategy_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -247,8 +268,30 @@ namespace Proto {
       }
     }
 
+    /// <summary>Field number for the "exchange" field.</summary>
+    public const int ExchangeFieldNumber = 11;
+    private global::Proto.Exchange exchange_ = 0;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::Proto.Exchange Exchange {
+      get { return exchange_; }
+      set {
+        exchange_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "strategy_type" field.</summary>
+    public const int StrategyTypeFieldNumber = 12;
+    private global::Proto.StrategyType strategyType_ = 0;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::Proto.StrategyType StrategyType {
+      get { return strategyType_; }
+      set {
+        strategyType_ = value;
+      }
+    }
+
     /// <summary>Field number for the "side" field.</summary>
-    public const int SideFieldNumber = 11;
+    public const int SideFieldNumber = 13;
     private global::Proto.Side side_ = 0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Proto.Side Side {
@@ -259,7 +302,7 @@ namespace Proto {
     }
 
     /// <summary>Field number for the "time_condition" field.</summary>
-    public const int TimeConditionFieldNumber = 12;
+    public const int TimeConditionFieldNumber = 14;
     private global::Proto.TimeCondition timeCondition_ = 0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Proto.TimeCondition TimeCondition {
@@ -270,7 +313,7 @@ namespace Proto {
     }
 
     /// <summary>Field number for the "type" field.</summary>
-    public const int TypeFieldNumber = 13;
+    public const int TypeFieldNumber = 15;
     private global::Proto.OrderType type_ = 0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Proto.OrderType Type {
@@ -281,7 +324,7 @@ namespace Proto {
     }
 
     /// <summary>Field number for the "status" field.</summary>
-    public const int StatusFieldNumber = 14;
+    public const int StatusFieldNumber = 16;
     private global::Proto.OrderStatus status_ = 0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Proto.OrderStatus Status {
@@ -292,11 +335,8 @@ namespace Proto {
     }
 
     /// <summary>Field number for the "time" field.</summary>
-    public const int TimeFieldNumber = 15;
+    public const int TimeFieldNumber = 17;
     private ulong time_;
-    /// <summary>
-    ///google.protobuf.Timestamp time = 14;
-    /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public ulong Time {
       get { return time_; }
@@ -306,7 +346,7 @@ namespace Proto {
     }
 
     /// <summary>Field number for the "latency" field.</summary>
-    public const int LatencyFieldNumber = 16;
+    public const int LatencyFieldNumber = 18;
     private int latency_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int Latency {
@@ -331,14 +371,16 @@ namespace Proto {
       }
       if (Id != other.Id) return false;
       if (Instrument != other.Instrument) return false;
-      if (Exchange != other.Exchange) return false;
       if (CounterId != other.CounterId) return false;
       if (ExchangeId != other.ExchangeId) return false;
+      if (Strategy != other.Strategy) return false;
       if (Note != other.Note) return false;
       if (!pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.Equals(Price, other.Price)) return false;
       if (!pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.Equals(AvgExecutedPrice, other.AvgExecutedPrice)) return false;
       if (Volume != other.Volume) return false;
       if (ExecutedVolume != other.ExecutedVolume) return false;
+      if (Exchange != other.Exchange) return false;
+      if (StrategyType != other.StrategyType) return false;
       if (Side != other.Side) return false;
       if (TimeCondition != other.TimeCondition) return false;
       if (Type != other.Type) return false;
@@ -353,14 +395,16 @@ namespace Proto {
       int hash = 1;
       if (Id != 0UL) hash ^= Id.GetHashCode();
       if (Instrument.Length != 0) hash ^= Instrument.GetHashCode();
-      if (Exchange != 0) hash ^= Exchange.GetHashCode();
       if (CounterId.Length != 0) hash ^= CounterId.GetHashCode();
       if (ExchangeId.Length != 0) hash ^= ExchangeId.GetHashCode();
+      if (Strategy.Length != 0) hash ^= Strategy.GetHashCode();
       if (Note.Length != 0) hash ^= Note.GetHashCode();
       if (Price != 0D) hash ^= pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.GetHashCode(Price);
       if (AvgExecutedPrice != 0D) hash ^= pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.GetHashCode(AvgExecutedPrice);
       if (Volume != 0) hash ^= Volume.GetHashCode();
       if (ExecutedVolume != 0) hash ^= ExecutedVolume.GetHashCode();
+      if (Exchange != 0) hash ^= Exchange.GetHashCode();
+      if (StrategyType != 0) hash ^= StrategyType.GetHashCode();
       if (Side != 0) hash ^= Side.GetHashCode();
       if (TimeCondition != 0) hash ^= TimeCondition.GetHashCode();
       if (Type != 0) hash ^= Type.GetHashCode();
@@ -388,17 +432,17 @@ namespace Proto {
         output.WriteRawTag(18);
         output.WriteString(Instrument);
       }
-      if (Exchange != 0) {
-        output.WriteRawTag(24);
-        output.WriteEnum((int) Exchange);
-      }
       if (CounterId.Length != 0) {
-        output.WriteRawTag(34);
+        output.WriteRawTag(26);
         output.WriteString(CounterId);
       }
       if (ExchangeId.Length != 0) {
-        output.WriteRawTag(42);
+        output.WriteRawTag(34);
         output.WriteString(ExchangeId);
+      }
+      if (Strategy.Length != 0) {
+        output.WriteRawTag(42);
+        output.WriteString(Strategy);
       }
       if (Note.Length != 0) {
         output.WriteRawTag(50);
@@ -420,28 +464,36 @@ namespace Proto {
         output.WriteRawTag(80);
         output.WriteInt32(ExecutedVolume);
       }
-      if (Side != 0) {
+      if (Exchange != 0) {
         output.WriteRawTag(88);
+        output.WriteEnum((int) Exchange);
+      }
+      if (StrategyType != 0) {
+        output.WriteRawTag(96);
+        output.WriteEnum((int) StrategyType);
+      }
+      if (Side != 0) {
+        output.WriteRawTag(104);
         output.WriteEnum((int) Side);
       }
       if (TimeCondition != 0) {
-        output.WriteRawTag(96);
+        output.WriteRawTag(112);
         output.WriteEnum((int) TimeCondition);
       }
       if (Type != 0) {
-        output.WriteRawTag(104);
+        output.WriteRawTag(120);
         output.WriteEnum((int) Type);
       }
       if (Status != 0) {
-        output.WriteRawTag(112);
+        output.WriteRawTag(128, 1);
         output.WriteEnum((int) Status);
       }
       if (Time != 0UL) {
-        output.WriteRawTag(120);
+        output.WriteRawTag(136, 1);
         output.WriteUInt64(Time);
       }
       if (Latency != 0) {
-        output.WriteRawTag(128, 1);
+        output.WriteRawTag(144, 1);
         output.WriteInt32(Latency);
       }
       if (_unknownFields != null) {
@@ -458,14 +510,14 @@ namespace Proto {
       if (Instrument.Length != 0) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(Instrument);
       }
-      if (Exchange != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Exchange);
-      }
       if (CounterId.Length != 0) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(CounterId);
       }
       if (ExchangeId.Length != 0) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(ExchangeId);
+      }
+      if (Strategy.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(Strategy);
       }
       if (Note.Length != 0) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(Note);
@@ -482,6 +534,12 @@ namespace Proto {
       if (ExecutedVolume != 0) {
         size += 1 + pb::CodedOutputStream.ComputeInt32Size(ExecutedVolume);
       }
+      if (Exchange != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Exchange);
+      }
+      if (StrategyType != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) StrategyType);
+      }
       if (Side != 0) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Side);
       }
@@ -492,10 +550,10 @@ namespace Proto {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Type);
       }
       if (Status != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Status);
+        size += 2 + pb::CodedOutputStream.ComputeEnumSize((int) Status);
       }
       if (Time != 0UL) {
-        size += 1 + pb::CodedOutputStream.ComputeUInt64Size(Time);
+        size += 2 + pb::CodedOutputStream.ComputeUInt64Size(Time);
       }
       if (Latency != 0) {
         size += 2 + pb::CodedOutputStream.ComputeInt32Size(Latency);
@@ -517,14 +575,14 @@ namespace Proto {
       if (other.Instrument.Length != 0) {
         Instrument = other.Instrument;
       }
-      if (other.Exchange != 0) {
-        Exchange = other.Exchange;
-      }
       if (other.CounterId.Length != 0) {
         CounterId = other.CounterId;
       }
       if (other.ExchangeId.Length != 0) {
         ExchangeId = other.ExchangeId;
+      }
+      if (other.Strategy.Length != 0) {
+        Strategy = other.Strategy;
       }
       if (other.Note.Length != 0) {
         Note = other.Note;
@@ -540,6 +598,12 @@ namespace Proto {
       }
       if (other.ExecutedVolume != 0) {
         ExecutedVolume = other.ExecutedVolume;
+      }
+      if (other.Exchange != 0) {
+        Exchange = other.Exchange;
+      }
+      if (other.StrategyType != 0) {
+        StrategyType = other.StrategyType;
       }
       if (other.Side != 0) {
         Side = other.Side;
@@ -578,16 +642,16 @@ namespace Proto {
             Instrument = input.ReadString();
             break;
           }
-          case 24: {
-            exchange_ = (global::Proto.Exchange) input.ReadEnum();
-            break;
-          }
-          case 34: {
+          case 26: {
             CounterId = input.ReadString();
             break;
           }
-          case 42: {
+          case 34: {
             ExchangeId = input.ReadString();
+            break;
+          }
+          case 42: {
+            Strategy = input.ReadString();
             break;
           }
           case 50: {
@@ -611,27 +675,544 @@ namespace Proto {
             break;
           }
           case 88: {
-            side_ = (global::Proto.Side) input.ReadEnum();
+            exchange_ = (global::Proto.Exchange) input.ReadEnum();
             break;
           }
           case 96: {
-            timeCondition_ = (global::Proto.TimeCondition) input.ReadEnum();
+            strategyType_ = (global::Proto.StrategyType) input.ReadEnum();
             break;
           }
           case 104: {
-            type_ = (global::Proto.OrderType) input.ReadEnum();
+            side_ = (global::Proto.Side) input.ReadEnum();
             break;
           }
           case 112: {
-            status_ = (global::Proto.OrderStatus) input.ReadEnum();
+            timeCondition_ = (global::Proto.TimeCondition) input.ReadEnum();
             break;
           }
           case 120: {
-            Time = input.ReadUInt64();
+            type_ = (global::Proto.OrderType) input.ReadEnum();
             break;
           }
           case 128: {
+            status_ = (global::Proto.OrderStatus) input.ReadEnum();
+            break;
+          }
+          case 136: {
+            Time = input.ReadUInt64();
+            break;
+          }
+          case 144: {
             Latency = input.ReadInt32();
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class OrderRequest : pb::IMessage<OrderRequest> {
+    private static readonly pb::MessageParser<OrderRequest> _parser = new pb::MessageParser<OrderRequest>(() => new OrderRequest());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<OrderRequest> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::Proto.OrderReflection.Descriptor.MessageTypes[1]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public OrderRequest() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public OrderRequest(OrderRequest other) : this() {
+      action_ = other.action_;
+      orders_ = other.orders_.Clone();
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public OrderRequest Clone() {
+      return new OrderRequest(this);
+    }
+
+    /// <summary>Field number for the "action" field.</summary>
+    public const int ActionFieldNumber = 1;
+    private global::Proto.OrderAction action_ = 0;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::Proto.OrderAction Action {
+      get { return action_; }
+      set {
+        action_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "orders" field.</summary>
+    public const int OrdersFieldNumber = 2;
+    private static readonly pb::FieldCodec<global::Proto.Order> _repeated_orders_codec
+        = pb::FieldCodec.ForMessage(18, global::Proto.Order.Parser);
+    private readonly pbc::RepeatedField<global::Proto.Order> orders_ = new pbc::RepeatedField<global::Proto.Order>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<global::Proto.Order> Orders {
+      get { return orders_; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as OrderRequest);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(OrderRequest other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (Action != other.Action) return false;
+      if(!orders_.Equals(other.orders_)) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (Action != 0) hash ^= Action.GetHashCode();
+      hash ^= orders_.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (Action != 0) {
+        output.WriteRawTag(8);
+        output.WriteEnum((int) Action);
+      }
+      orders_.WriteTo(output, _repeated_orders_codec);
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (Action != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Action);
+      }
+      size += orders_.CalculateSize(_repeated_orders_codec);
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(OrderRequest other) {
+      if (other == null) {
+        return;
+      }
+      if (other.Action != 0) {
+        Action = other.Action;
+      }
+      orders_.Add(other.orders_);
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 8: {
+            action_ = (global::Proto.OrderAction) input.ReadEnum();
+            break;
+          }
+          case 18: {
+            orders_.AddEntriesFrom(input, _repeated_orders_codec);
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class OrderReq : pb::IMessage<OrderReq> {
+    private static readonly pb::MessageParser<OrderReq> _parser = new pb::MessageParser<OrderReq>(() => new OrderReq());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<OrderReq> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::Proto.OrderReflection.Descriptor.MessageTypes[2]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public OrderReq() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public OrderReq(OrderReq other) : this() {
+      type_ = other.type_;
+      exchange_ = other.exchange_;
+      user_ = other.user_;
+      orders_ = other.orders_.Clone();
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public OrderReq Clone() {
+      return new OrderReq(this);
+    }
+
+    /// <summary>Field number for the "type" field.</summary>
+    public const int TypeFieldNumber = 1;
+    private global::Proto.RequestType type_ = 0;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::Proto.RequestType Type {
+      get { return type_; }
+      set {
+        type_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "exchange" field.</summary>
+    public const int ExchangeFieldNumber = 2;
+    private global::Proto.Exchange exchange_ = 0;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::Proto.Exchange Exchange {
+      get { return exchange_; }
+      set {
+        exchange_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "user" field.</summary>
+    public const int UserFieldNumber = 3;
+    private string user_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string User {
+      get { return user_; }
+      set {
+        user_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "orders" field.</summary>
+    public const int OrdersFieldNumber = 4;
+    private static readonly pb::FieldCodec<global::Proto.Order> _repeated_orders_codec
+        = pb::FieldCodec.ForMessage(34, global::Proto.Order.Parser);
+    private readonly pbc::RepeatedField<global::Proto.Order> orders_ = new pbc::RepeatedField<global::Proto.Order>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<global::Proto.Order> Orders {
+      get { return orders_; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as OrderReq);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(OrderReq other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (Type != other.Type) return false;
+      if (Exchange != other.Exchange) return false;
+      if (User != other.User) return false;
+      if(!orders_.Equals(other.orders_)) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (Type != 0) hash ^= Type.GetHashCode();
+      if (Exchange != 0) hash ^= Exchange.GetHashCode();
+      if (User.Length != 0) hash ^= User.GetHashCode();
+      hash ^= orders_.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (Type != 0) {
+        output.WriteRawTag(8);
+        output.WriteEnum((int) Type);
+      }
+      if (Exchange != 0) {
+        output.WriteRawTag(16);
+        output.WriteEnum((int) Exchange);
+      }
+      if (User.Length != 0) {
+        output.WriteRawTag(26);
+        output.WriteString(User);
+      }
+      orders_.WriteTo(output, _repeated_orders_codec);
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (Type != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Type);
+      }
+      if (Exchange != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Exchange);
+      }
+      if (User.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(User);
+      }
+      size += orders_.CalculateSize(_repeated_orders_codec);
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(OrderReq other) {
+      if (other == null) {
+        return;
+      }
+      if (other.Type != 0) {
+        Type = other.Type;
+      }
+      if (other.Exchange != 0) {
+        Exchange = other.Exchange;
+      }
+      if (other.User.Length != 0) {
+        User = other.User;
+      }
+      orders_.Add(other.orders_);
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 8: {
+            type_ = (global::Proto.RequestType) input.ReadEnum();
+            break;
+          }
+          case 16: {
+            exchange_ = (global::Proto.Exchange) input.ReadEnum();
+            break;
+          }
+          case 26: {
+            User = input.ReadString();
+            break;
+          }
+          case 34: {
+            orders_.AddEntriesFrom(input, _repeated_orders_codec);
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class OrderRep : pb::IMessage<OrderRep> {
+    private static readonly pb::MessageParser<OrderRep> _parser = new pb::MessageParser<OrderRep>(() => new OrderRep());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<OrderRep> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::Proto.OrderReflection.Descriptor.MessageTypes[3]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public OrderRep() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public OrderRep(OrderRep other) : this() {
+      orders_ = other.orders_.Clone();
+      Result = other.result_ != null ? other.Result.Clone() : null;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public OrderRep Clone() {
+      return new OrderRep(this);
+    }
+
+    /// <summary>Field number for the "orders" field.</summary>
+    public const int OrdersFieldNumber = 1;
+    private static readonly pb::FieldCodec<global::Proto.Order> _repeated_orders_codec
+        = pb::FieldCodec.ForMessage(10, global::Proto.Order.Parser);
+    private readonly pbc::RepeatedField<global::Proto.Order> orders_ = new pbc::RepeatedField<global::Proto.Order>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<global::Proto.Order> Orders {
+      get { return orders_; }
+    }
+
+    /// <summary>Field number for the "result" field.</summary>
+    public const int ResultFieldNumber = 2;
+    private global::Proto.Reply result_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::Proto.Reply Result {
+      get { return result_; }
+      set {
+        result_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as OrderRep);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(OrderRep other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if(!orders_.Equals(other.orders_)) return false;
+      if (!object.Equals(Result, other.Result)) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      hash ^= orders_.GetHashCode();
+      if (result_ != null) hash ^= Result.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      orders_.WriteTo(output, _repeated_orders_codec);
+      if (result_ != null) {
+        output.WriteRawTag(18);
+        output.WriteMessage(Result);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      size += orders_.CalculateSize(_repeated_orders_codec);
+      if (result_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(Result);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(OrderRep other) {
+      if (other == null) {
+        return;
+      }
+      orders_.Add(other.orders_);
+      if (other.result_ != null) {
+        if (result_ == null) {
+          result_ = new global::Proto.Reply();
+        }
+        Result.MergeFrom(other.Result);
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10: {
+            orders_.AddEntriesFrom(input, _repeated_orders_codec);
+            break;
+          }
+          case 18: {
+            if (result_ == null) {
+              result_ = new global::Proto.Reply();
+            }
+            input.ReadMessage(result_);
             break;
           }
         }

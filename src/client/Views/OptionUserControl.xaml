@@ -43,6 +43,10 @@
                   VerticalGridLinesBrush="LightGray"
                   SelectionUnit="CellOrRowHeader"
                   ItemsSource="{Binding Underlyings}">
+            <DataGrid.Resources>
+                <local:NetToColorMultiConverter x:Key="NetToColorMultiConverter" />
+                <local:NetPercentFormatToStringMultiConverter DefaultFormat="N2" x:Key="NetPercentToStringMultiConverter" />
+            </DataGrid.Resources>
             <DataGrid.ContextMenu>
                 <ContextMenu>
                     <MenuItem Header="Setting..." Click="UnderlyingMenuItem_Click" />
@@ -128,6 +132,28 @@
                         </MultiBinding>
                     </DataGridTextColumn.Binding>
                 </DataGridTextColumn>
+                <DataGridTemplateColumn Header="NetPC(%)">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Margin="-1">
+                                <TextBlock.Text>
+                                    <MultiBinding Converter="{StaticResource NetPercentToStringMultiConverter}">
+                                        <Binding Path="LastPrice" />
+                                        <Binding Path="PreClose" />
+                                        <Binding Path="Column.DisplayIndex" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGridCell}}" />
+                                        <Binding Path="UnderlyingFormats" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
+                                    </MultiBinding>
+                                </TextBlock.Text>
+                                <TextBlock.Background>
+                                    <MultiBinding Converter="{StaticResource NetToColorMultiConverter}">
+                                        <Binding Path="LastPrice" />
+                                        <Binding Path="PreClose" />
+                                    </MultiBinding>
+                                </TextBlock.Background>
+                            </TextBlock>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
                 <DataGridTextColumn Header="PreSettle">
                     <DataGridTextColumn.Binding>
                         <MultiBinding Converter="{StaticResource DoubleFormatConverter}">
@@ -137,7 +163,45 @@
                         </MultiBinding>
                     </DataGridTextColumn.Binding>
                 </DataGridTextColumn>
+                <DataGridTemplateColumn Header="NetPS(%)">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Margin="-1">
+                                <TextBlock.Text>
+                                    <MultiBinding Converter="{StaticResource NetPercentToStringMultiConverter}">
+                                        <Binding Path="LastPrice" />
+                                        <Binding Path="PreSettlement" />
+                                        <Binding Path="Column.DisplayIndex" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGridCell}}" />
+                                        <Binding Path="UnderlyingFormats" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
+                                    </MultiBinding>
+                                </TextBlock.Text>
+                                <TextBlock.Background>
+                                    <MultiBinding Converter="{StaticResource NetToColorMultiConverter}">
+                                        <Binding Path="LastPrice" />
+                                        <Binding Path="PreSettlement" />
+                                    </MultiBinding>
+                                </TextBlock.Background>
+                            </TextBlock>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
                 <DataGridTextColumn Header="Pos" Binding="{Binding Position}" />
+                <DataGridTemplateColumn Header="BullPos"></DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="BullLimit"></DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="BearPos"></DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="BearLimit"></DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="LongPos"></DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="LongLimit"></DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="ShortPos"></DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="ShortLimit"></DataGridTemplateColumn>
+                <DataGridTextColumn Header="ULOrderCnt"></DataGridTextColumn>
+                <DataGridTextColumn Header="OrderCnt"></DataGridTextColumn>
+                <DataGridTextColumn Header="QuoteSpread"></DataGridTextColumn>
+                <DataGridTextColumn Header="QuoteRatio"></DataGridTextColumn>
+                <DataGridTextColumn Header="OpenAuct"></DataGridTextColumn>
+                <DataGridTextColumn Header="CloseAuct"></DataGridTextColumn>
+                <DataGridTextColumn Header="FuseAuct"></DataGridTextColumn>
+                <DataGridTextColumn Header="RFQ"></DataGridTextColumn>
             </DataGrid.Columns>
         </DataGrid>
         <GridSplitter Grid.Row="1" Height="3" HorizontalAlignment="Stretch"></GridSplitter>
@@ -205,37 +269,52 @@
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
                 <DataGridTextColumn x:Name="StatusC" Header="Status" Binding="{Binding Call.Status}" />
-                <DataGridTextColumn x:Name="CreditQC" Header="CreditQ">
-                    <DataGridTextColumn.Binding>
-                        <MultiBinding Converter="{StaticResource DoubleFormatConverter}">
-                            <Binding Path="Call.QuoterCredit" />
-                            <Binding Path="Column.DisplayIndex" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGridCell}}" />
-                            <Binding Path="OptionFormats" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
-                        </MultiBinding>
-                    </DataGridTextColumn.Binding>
-                    <DataGridTextColumn.CellStyle>
-                        <Style TargetType="{x:Type DataGridCell}">
-                            <Setter Property="Margin" Value="0, -1, -1, -1" />
-                            <Setter Property="Background" Value="{Binding IsAtmOption, Converter={StaticResource AtmOptionColorConverter}, UpdateSourceTrigger=PropertyChanged}" />
-                        </Style>
-                    </DataGridTextColumn.CellStyle>
-                </DataGridTextColumn>
-                <DataGridTextColumn x:Name="CriditHC" Header="CreditH">
-                    <DataGridTextColumn.Binding>
-                        <MultiBinding Converter="{StaticResource DoubleFormatConverter}">
-                            <Binding Path="Call.HitterCredit" />
-                            <Binding Path="Column.DisplayIndex" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGridCell}}" />
-                            <Binding Path="OptionFormats" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
-                        </MultiBinding>
-                    </DataGridTextColumn.Binding>
-                    <DataGridTextColumn.CellStyle>
-                        <Style TargetType="{x:Type DataGridCell}">
-                            <Setter Property="Margin" Value="-1" />
-                            <Setter Property="Background" Value="{Binding IsAtmOption, Converter={StaticResource AtmOptionColorConverter}, UpdateSourceTrigger=PropertyChanged}" />
-                        </Style>
-                    </DataGridTextColumn.CellStyle>
-                </DataGridTextColumn>
-                <DataGridTextColumn x:Name="CriditDC" Header="CreditD">
+                <DataGridTemplateColumn x:Name="CreditQC" Header="CreditQ" >
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Margin="-1" Background="{Binding IsAtmOption, Converter={StaticResource AtmOptionColorConverter}, UpdateSourceTrigger=PropertyChanged}">
+                                <TextBlock.Text>
+                                    <MultiBinding Converter="{StaticResource DoubleFormatConverter}">
+                                        <Binding Path="Call.QuoterCredit" />
+                                        <Binding Path="Column.DisplayIndex" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGridCell}}" />
+                                        <Binding Path="OptionFormats" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
+                                    </MultiBinding>
+                                </TextBlock.Text>
+                            </TextBlock>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn x:Name="CriditHC" Header="CreditH" >
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Margin="-1" Background="{Binding IsAtmOption, Converter={StaticResource AtmOptionColorConverter}, UpdateSourceTrigger=PropertyChanged}">
+                                <TextBlock.Text>
+                                    <MultiBinding Converter="{StaticResource DoubleFormatConverter}">
+                                        <Binding Path="Call.HitterCredit" />
+                                        <Binding Path="Column.DisplayIndex" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGridCell}}" />
+                                        <Binding Path="OptionFormats" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
+                                    </MultiBinding>
+                                </TextBlock.Text>
+                            </TextBlock>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn x:Name="CriditDC" Header="CreditD" >
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Margin="-1" Background="{Binding IsAtmOption, Converter={StaticResource AtmOptionColorConverter}, UpdateSourceTrigger=PropertyChanged}">
+                                <TextBlock.Text>
+                                    <MultiBinding Converter="{StaticResource DoubleFormatConverter}">
+                                        <Binding Path="Call.DimerCredit" />
+                                        <Binding Path="Column.DisplayIndex" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGridCell}}" />
+                                        <Binding Path="OptionFormats" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
+                                    </MultiBinding>
+                                </TextBlock.Text>
+                            </TextBlock>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <!--<DataGridTextColumn x:Name="CriditDC" Header="CreditD">
                     <DataGridTextColumn.Binding>
                         <MultiBinding Converter="{StaticResource DoubleFormatConverter}">
                             <Binding Path="Call.DimerCredit" />
@@ -249,7 +328,7 @@
                             <Setter Property="Background" Value="{Binding IsAtmOption, Converter={StaticResource AtmOptionColorConverter}, UpdateSourceTrigger=PropertyChanged}" />
                         </Style>
                     </DataGridTextColumn.CellStyle>
-                </DataGridTextColumn>
+                </DataGridTextColumn>-->
                 <DataGridTemplateColumn x:Name="CoverC" Header="Cover" >
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
@@ -1033,7 +1112,52 @@
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
-                <DataGridTextColumn x:Name="CreditQP" Header="CreditQ">
+                <DataGridTemplateColumn x:Name="CreditQP" Header="CreditQ" >
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Margin="-1" Background="{Binding IsAtmOption, Converter={StaticResource AtmOptionColorConverter}, UpdateSourceTrigger=PropertyChanged}">
+                                <TextBlock.Text>
+                                    <MultiBinding Converter="{StaticResource DoubleFormatConverter}">
+                                        <Binding Path="Put.QuoterCredit" />
+                                        <Binding Path="Column.DisplayIndex" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGridCell}}" />
+                                        <Binding Path="OptionFormats" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
+                                    </MultiBinding>
+                                </TextBlock.Text>
+                            </TextBlock>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn x:Name="CriditHP" Header="CreditH" >
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Margin="-1" Background="{Binding IsAtmOption, Converter={StaticResource AtmOptionColorConverter}, UpdateSourceTrigger=PropertyChanged}">
+                                <TextBlock.Text>
+                                    <MultiBinding Converter="{StaticResource DoubleFormatConverter}">
+                                        <Binding Path="Put.HitterCredit" />
+                                        <Binding Path="Column.DisplayIndex" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGridCell}}" />
+                                        <Binding Path="OptionFormats" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
+                                    </MultiBinding>
+                                </TextBlock.Text>
+                            </TextBlock>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn x:Name="CriditDP" Header="CreditD" >
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Margin="-1" Background="{Binding IsAtmOption, Converter={StaticResource AtmOptionColorConverter}, UpdateSourceTrigger=PropertyChanged}">
+                                <TextBlock.Text>
+                                    <MultiBinding Converter="{StaticResource DoubleFormatConverter}">
+                                        <Binding Path="Put.DimerCredit" />
+                                        <Binding Path="Column.DisplayIndex" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGridCell}}" />
+                                        <Binding Path="OptionFormats" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
+                                    </MultiBinding>
+                                </TextBlock.Text>
+                            </TextBlock>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <!--<DataGridTextColumn x:Name="CreditQP" Header="CreditQ">
                     <DataGridTextColumn.Binding>
                         <MultiBinding Converter="{StaticResource DoubleFormatConverter}">
                             <Binding Path="Put.QuoterCredit" />
@@ -1077,7 +1201,7 @@
                             <Setter Property="Background" Value="{Binding IsAtmOption, Converter={StaticResource AtmOptionColorConverter}, UpdateSourceTrigger=PropertyChanged}" />
                         </Style>
                     </DataGridTextColumn.CellStyle>
-                </DataGridTextColumn>
+                </DataGridTextColumn>-->
                 <DataGridTextColumn x:Name="StatusP" Header="Status" Binding="{Binding Put.Status}" />
                 <DataGridTemplateColumn x:Name="SymbolP" Header="Symbol">
                     <DataGridTemplateColumn.CellTemplate>

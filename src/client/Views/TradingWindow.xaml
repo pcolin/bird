@@ -1,0 +1,258 @@
+﻿<Window x:Class="client.Views.TradingWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+        xmlns:local="clr-namespace:client.Views"
+        Icon="/Images/bird_32x32.ico"
+        Height="320" Width="500" MinHeight="320" MinWidth="500"
+        Closing="Window_Closing">
+    <Window.Title>
+        <MultiBinding StringFormat="Trading - {0} - {1}">
+            <Binding Path = "Exchange"></Binding>
+            <Binding ElementName = "SymbolComboBox" Path="Text"></Binding>
+        </MultiBinding>
+    </Window.Title>
+    <Window.Resources>
+        <local:NetToColorMultiConverter x:Key="NetToColorMultiConverter" />
+        <local:NetPercentToStringMultiConverter x:Key="NetPercentToStringMultiConverter" />
+        <local:NetToStringMultiConverter x:Key="NetToStringMultiConverter" />
+    </Window.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"></ColumnDefinition>
+            <ColumnDefinition ></ColumnDefinition>
+            <ColumnDefinition Width="Auto"></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+        <TextBlock Margin="3" VerticalAlignment="Center" Text="Symbol: "></TextBlock>
+        <ComboBox Name="SymbolComboBox" Margin="3" Grid.Column="1" IsEditable="True"
+                  SelectedItem="{Binding SelectedItem}"
+                  ItemsSource="{Binding Items}"
+                  DisplayMemberPath="Instrument.Id"></ComboBox>
+        <StackPanel Margin="3" Grid.Column="2" Orientation="Horizontal">
+            <RadioButton Margin="3" VerticalAlignment="Center" Content="{Binding Type}" IsChecked="True"></RadioButton>
+            <RadioButton Margin="3" VerticalAlignment="Center" Content="Option" IsChecked="{Binding IsOption, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"></RadioButton>
+        </StackPanel>
+        <DataGrid Margin="3"
+                  Grid.Row="1" Grid.RowSpan="2" Grid.ColumnSpan="2"
+                  IsReadOnly="True"
+                  RowHeaderWidth="0"
+                  AutoGenerateColumns="False"
+                  CanUserAddRows="False"
+                  CanUserDeleteRows="False"
+                  CanUserReorderColumns="False"
+                  CanUserSortColumns="False"
+                  HorizontalGridLinesBrush="LightGray"                      
+                  VerticalGridLinesBrush="LightGray"
+                  SelectionUnit="Cell"
+                  ItemsSource="{Binding SelectedItem.Prices}">
+            <DataGrid.Resources>
+                <local:VolumeConverter x:Key="VolumeConverter" />
+                <local:VolumeToColorConverter x:Key="VolumeToColorConverter" />
+            </DataGrid.Resources>
+            <DataGrid.Columns>
+                <DataGridTemplateColumn Header="Bid#">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Margin="-1" Text="{Binding BidVolume, Converter={StaticResource VolumeConverter}}" TextAlignment="Right">
+                                <TextBlock.InputBindings>
+                                    <MouseBinding Gesture="LeftDoubleClick"
+                                                  Command="{Binding DataContext.CancelBuyOrdersCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGrid}}}"
+                                                  CommandParameter="{Binding CurrentCell, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGrid}}}" />
+                                </TextBlock.InputBindings>
+                            </TextBlock>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="B#">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Margin="-1" Text="{Binding MarketBidVolume, Converter={StaticResource VolumeConverter}}" TextAlignment="Right"></TextBlock>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="Price">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Margin="-1" Text="{Binding Price}" TextAlignment="Center">
+                                <TextBlock.InputBindings>
+                                    <MouseBinding Gesture="LeftDoubleClick"
+                                                  Command="{Binding DataContext.PriceCopyCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGrid}}}"
+                                                  CommandParameter="{Binding CurrentCell, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGrid}}}" />
+                                </TextBlock.InputBindings>
+                                <TextBlock.Foreground>
+                                    <MultiBinding Converter="{StaticResource VolumeToColorConverter}">
+                                        <Binding Path="MarketBidVolume"></Binding>
+                                        <Binding Path="MarketAskVolume"></Binding>
+                                        <Binding Path="BidVolume"></Binding>
+                                    </MultiBinding>
+                                </TextBlock.Foreground>
+                            </TextBlock>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="A#">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Margin="-1" Text="{Binding MarketAskVolume, Converter={StaticResource VolumeConverter}}" TextAlignment="Left"></TextBlock>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="Ask#">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Margin="-1" Text="{Binding AskVolume, Converter={StaticResource VolumeConverter}}" TextAlignment="Left">
+                                <TextBlock.InputBindings>
+                                    <MouseBinding Gesture="LeftDoubleClick"
+                                                  Command="{Binding DataContext.CancelSellOrdersCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGrid}}}"
+                                                  CommandParameter="{Binding CurrentCell, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGrid}}}" />
+                                </TextBlock.InputBindings>
+                            </TextBlock>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+        <Grid Margin="3" Grid.Row="1" Grid.Column="2">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"></RowDefinition>
+                <RowDefinition Height="Auto"></RowDefinition>
+                <RowDefinition Height="Auto"></RowDefinition>
+                <RowDefinition></RowDefinition>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition></ColumnDefinition>
+                <ColumnDefinition Width="Auto"></ColumnDefinition>
+                <ColumnDefinition Width="Auto"></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition></RowDefinition>
+                    <RowDefinition></RowDefinition>
+                    <RowDefinition Height="Auto"></RowDefinition>
+                    <RowDefinition></RowDefinition>
+                    <RowDefinition Height="Auto"></RowDefinition>
+                    <RowDefinition></RowDefinition>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition></ColumnDefinition>
+                    <ColumnDefinition MinWidth="60"></ColumnDefinition>
+                    <ColumnDefinition></ColumnDefinition>
+                    <ColumnDefinition MinWidth="60"></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+                <TextBlock Name="LastPriceTextBlock"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           FontSize="30"
+                           FontWeight="Bold"
+                           Grid.RowSpan="2"
+                           Grid.ColumnSpan="3"
+                           Text="{Binding SelectedItem.Last}">
+                    <TextBlock.Foreground>
+                        <MultiBinding Converter="{StaticResource NetToColorMultiConverter}">
+                            <Binding Path="SelectedItem.Last"></Binding>
+                            <Binding Path="SelectedItem.Close"></Binding>
+                        </MultiBinding>
+                    </TextBlock.Foreground>
+                </TextBlock>
+                <TextBlock Margin="3" Grid.Column="3" VerticalAlignment="Center" Foreground="{Binding ElementName=LastPriceTextBlock, Path=Foreground}">
+                    <TextBlock.Text>
+                        <MultiBinding Converter="{StaticResource NetToStringMultiConverter}">
+                            <Binding Path="SelectedItem.Last"></Binding>
+                            <Binding Path="SelectedItem.Close"></Binding>
+                        </MultiBinding>
+                    </TextBlock.Text>
+                </TextBlock>
+                <TextBlock Margin="3" Grid.Row="1" Grid.Column="3" VerticalAlignment="Center"
+                           Foreground="{Binding ElementName=LastPriceTextBlock, Path=Foreground}">
+                    <TextBlock.Text>
+                        <MultiBinding Converter="{StaticResource NetPercentToStringMultiConverter}">
+                            <Binding Path="SelectedItem.Last"></Binding>
+                            <Binding Path="SelectedItem.Close"></Binding>
+                        </MultiBinding>
+                    </TextBlock.Text>
+                </TextBlock>
+                <Separator Margin="3" Grid.Row="2" Grid.ColumnSpan="4"></Separator>
+                <TextBlock Margin="3" Grid.Row="3" VerticalAlignment="Center">Up:</TextBlock>
+                <TextBox Margin="3" Grid.Row="3" Grid.Column="1" Text="{Binding SelectedItem.Instrument.Highest}" IsReadOnly="True"></TextBox>
+                <TextBlock Margin="3" Grid.Row="3" Grid.Column="2" VerticalAlignment="Center">Down:</TextBlock>
+                <TextBox Margin="3" Grid.Row="3" Grid.Column="3" Text="{Binding SelectedItem.Instrument.Lowest}" IsReadOnly="True"></TextBox>
+                <!--<Separator Margin="3" Grid.Row="4" Grid.ColumnSpan="4"></Separator>-->
+                <TextBlock Margin="3" Grid.Row="5" VerticalAlignment="Center">Long:</TextBlock>
+                <TextBox Margin="3" Grid.Row="5" Grid.Column="1" Text="{Binding SelectedItem.LongPosition}" IsReadOnly="True"></TextBox>
+                <TextBlock Margin="3" Grid.Row="5" Grid.Column="2" VerticalAlignment="Center">Short:</TextBlock>
+                <TextBox Margin="3" Grid.Row="5" Grid.Column="3" Text="{Binding SelectedItem.ShortPosition}" IsReadOnly="True"></TextBox>
+            </Grid>
+            <GridSplitter Margin="3" Grid.Column="1"></GridSplitter>
+            <Grid Grid.Column="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition></RowDefinition>
+                    <RowDefinition></RowDefinition>
+                    <RowDefinition></RowDefinition>
+                    <RowDefinition></RowDefinition>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition></ColumnDefinition>
+                    <ColumnDefinition MinWidth="60"></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+                <TextBlock Margin="3" VerticalAlignment="Center">Open:</TextBlock>
+                <TextBox Margin="3" Grid.Column="1" VerticalAlignment="Center" Text="{Binding SelectedItem.Open}" IsReadOnly="True"></TextBox>
+                <TextBlock Margin="3" Grid.Row="1" VerticalAlignment="Center">High:</TextBlock>
+                <TextBox Margin="3" Grid.Row="1" Grid.Column="1" VerticalAlignment="Center" Text="{Binding SelectedItem.High}" IsReadOnly="True"></TextBox>
+                <TextBlock Margin="3" Grid.Row="2" VerticalAlignment="Center">Low:</TextBlock>
+                <TextBox Margin="3" Grid.Row="2" Grid.Column="1" VerticalAlignment="Center" Text="{Binding SelectedItem.Low}" IsReadOnly="True"></TextBox>
+                <TextBlock Margin="3" Grid.Row="3" VerticalAlignment="Center">Close:</TextBlock>
+                <TextBox Margin="3" Grid.Row="3" Grid.Column="1" VerticalAlignment="Center" Text="{Binding SelectedItem.Close}" IsReadOnly="True"></TextBox>
+            </Grid> 
+            <Separator Margin="3" Grid.Row="1" Grid.ColumnSpan="3"></Separator>
+            <Grid Grid.Row="2" Grid.ColumnSpan="3">
+                <Grid.RowDefinitions>
+                    <RowDefinition MinHeight="35"></RowDefinition>
+                    <RowDefinition MinHeight="35"></RowDefinition>
+                    <RowDefinition></RowDefinition>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"></ColumnDefinition>
+                    <ColumnDefinition Width="Auto" MinWidth="100"></ColumnDefinition>
+                    <ColumnDefinition></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+                <TextBlock Margin="3" VerticalAlignment="Center">Price:</TextBlock>
+                <xctk:DoubleUpDown Name="PriceDoubleUpDown"
+                                   Margin="3"
+                                   Grid.Column="1"
+                                   Minimum="{Binding SelectedItem.Instrument.Lowest}"
+                                   Maximum="{Binding SelectedItem.Instrument.Highest}"
+                                   Increment="{Binding SelectedItem.Instrument.Tick}"
+                                   Value="{Binding Price, Mode=TwoWay, UpdateSourceTrigger=LostFocus}">
+                </xctk:DoubleUpDown>
+                <TextBlock Margin="3" Grid.Column="2" VerticalAlignment="Center" Text="{Binding SelectedItem.Theo, StringFormat=({0:F4})}"></TextBlock>
+                <TextBlock Margin="3" Grid.Row="1" VerticalAlignment="Center">Volume:</TextBlock>
+                <xctk:IntegerUpDown Name="VolumeIntegerUpDown"
+                                    Margin="3"
+                                    Grid.Row="1" Grid.Column="1"
+                                    Minimum="{Binding SelectedItem.Instrument.Lot}"
+                                    Increment="{Binding ElementName=VolumeIntegerUpDown, Path=Minimum}"
+                                    Value="{Binding Volume, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                </xctk:IntegerUpDown>
+                <CheckBox Name="CoverCheckBox" Margin="3" Grid.Row="1" Grid.Column="2" VerticalAlignment="Center"
+                          IsChecked="{Binding IsCover, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">Cover</CheckBox>
+                <StackPanel Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" Orientation="Horizontal">
+                    <RadioButton Margin="3,3,5,3" Checked="RadioButton1_Checked">1</RadioButton>
+                    <RadioButton Margin="5,3,5,3" Checked="RadioButton2_Checked">2</RadioButton>
+                    <RadioButton Margin="5,3,5,3" Checked="RadioButton5_Checked">5</RadioButton>
+                    <RadioButton Margin="5,3,5,3" Checked="RadioButton10_Checked">10</RadioButton>
+                    <RadioButton Margin="5,3,5,3" Checked="RadioButton20_Checked">20</RadioButton>
+                    <RadioButton Margin="5,3,5,3" Checked="RadioButton50_Checked">50</RadioButton>
+                </StackPanel>
+            </Grid>
+        </Grid>
+        <StackPanel Margin="3" Grid.Row="2" Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Center">
+            <Button Margin="0,0,10,0" Background="Red" Foreground="White" HorizontalAlignment="Center" MinHeight="28" MinWidth="80" Command="{Binding BuyOrderCommand}">Buy</Button>
+            <Button Margin="10,0,5,0" Background="Green" Foreground="White" HorizontalAlignment="Center" MinHeight="28" MinWidth="80" Command="{Binding SellOrderCommand}">Sell</Button>
+        </StackPanel>
+    </Grid>
+</Window>

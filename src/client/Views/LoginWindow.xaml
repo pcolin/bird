@@ -1,6 +1,7 @@
 ﻿<Window x:Class="client.Views.LoginWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         xmlns:local="clr-namespace:client.Views"
         Icon="/Images/bird_32x32.ico"
         WindowStartupLocation="CenterScreen"
@@ -42,8 +43,10 @@
         <TextBlock Grid.Row="1" Grid.Column="1" Margin="5" VerticalAlignment="Bottom">User:</TextBlock>
         <TextBox Grid.Row="1" Grid.Column="2" Margin="5" VerticalAlignment="Bottom" Text="{Binding User, Mode=TwoWay}"></TextBox>
         <TextBlock Grid.Row="2" Grid.Column="1" Margin="5">Password:</TextBlock>
-        <TextBox Grid.Row="2" Grid.Column="2" Margin="5" VerticalAlignment="Top" Text="{Binding Password,Mode=TwoWay}"></TextBox>
-        <Button Grid.Row="3" Grid.Column="2" Margin="5" IsDefault="True" Click="Button_Click" Command="{Binding LoginCommand}">Login</Button>
+        <PasswordBox Name="PasswordBox" Grid.Row="2" Grid.Column="2" Margin="5" Password="colin" VerticalAlignment="Top"></PasswordBox>
+        <!--<xctk:WatermarkPasswordBox Grid.Row="2" Grid.Column="2" Margin="5" VerticalAlignment="Top" Password="{Binding Password, Mode=TwoWay}"></xctk:WatermarkPasswordBox>-->
+        <!--<TextBox Grid.Row="2" Grid.Column="2" Margin="5" VerticalAlignment="Top" Text="{Binding Password,Mode=TwoWay}"></TextBox>-->
+        <Button Grid.Row="3" Grid.Column="2" Margin="5" IsDefault="True" Click="Button_Click" Command="{Binding LoginCommand}" CommandParameter="{Binding ElementName=PasswordBox}">Login</Button>
         <Button Grid.Row="3" Grid.Column="3" Margin="5" IsCancel="True" Click="Button_Click">Exit</Button>
     </Grid>
 </Window>

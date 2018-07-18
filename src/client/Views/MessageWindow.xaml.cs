@@ -65,7 +65,7 @@ namespace client.Views
         {
             ulong t = (ulong)value;
             var time = this.dt.AddSeconds(t);
-            return time.ToString("HH:mm:ss");
+            return time.ToString("H:mm:ss");
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)

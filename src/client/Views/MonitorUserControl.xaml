@@ -1,0 +1,151 @@
+﻿<UserControl x:Class="client.Views.MonitorUserControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:client.Views"
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="888">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition></RowDefinition>
+        </Grid.RowDefinitions>
+
+        <StackPanel Orientation="Horizontal">
+            <Button Margin="3,3,5,3" Foreground="Green" Command="{Binding PlayActiveCommand}">Play Active</Button>
+            <Button Margin="5,3,5,3" Foreground="Green" Command="{Binding PlayAllCommand}">Play All</Button>
+            <Button Margin="5,3,5,3" Foreground="Green" Command="{Binding PlayQuotersCommand}">Play Quoter</Button>
+            <Button Margin="5,3,5,3" Foreground="Green" Command="{Binding PlayHittersCommand}">Play Hitter</Button>
+            <Button Margin="5,3,5,3" Foreground="Green" Command="{Binding PlayDimersCommand}">Play Dimer</Button>
+            <Button Margin="5,3,20,3" Foreground="Green" Command="{Binding PlayDummyQuotersCommand}">Play Dummy</Button>
+            <Button Margin="20,3,5,3" Foreground="Red" Command="{Binding StopAllCommand}">Stop All</Button>
+            <Button Margin="5,3,5,3" Foreground="Red" Command="{Binding StopQuotersCommand}">Stop Quoter</Button>
+            <Button Margin="5,3,5,3" Foreground="Red" Command="{Binding StopHittersCommand}">Stop Hitter</Button>
+            <Button Margin="5,3,5,3" Foreground="Red" Command="{Binding StopDimersCommand}">Stop Dimer</Button>
+            <Button Margin="5,3,5,3" Foreground="Red" Command="{Binding StopDummyQuotersCommand}">Stop Dummy</Button>
+        </StackPanel>
+        <DataGrid Margin="3"
+                  Grid.Row="1"
+                  RowHeaderWidth="0"
+                  IsReadOnly="True"
+                  CanUserAddRows="False"
+                  AutoGenerateColumns="False"
+                  HorizontalGridLinesBrush="LightGray"                      
+                  VerticalGridLinesBrush="LightGray"
+                  SelectionUnit="Cell"
+                  ItemsSource="{Binding Monitors}" >
+            <DataGrid.Resources>
+                <local:StatusToColorConverter x:Key="StatusToColorConverter" />
+            </DataGrid.Resources>
+            <DataGrid.Columns>
+                <DataGridTemplateColumn Header="Name">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Margin="-1" VerticalAlignment="Center" Text="{Binding Name}" Foreground="{Binding Status, Converter={StaticResource StatusToColorConverter}}" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTextColumn Header="Underlying" Binding="{Binding Underlying}">
+                    <DataGridTextColumn.ElementStyle>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="VerticalAlignment" Value="Center"></Setter>
+                        </Style>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+                <DataGridTextColumn Header="Type" Binding="{Binding Type}" >
+                    <DataGridTextColumn.ElementStyle>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="VerticalAlignment" Value="Center"></Setter>
+                        </Style>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+                <DataGridTemplateColumn Header="Status">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Margin="-1" VerticalAlignment="Center" Text="{Binding Status}" Foreground="{Binding Status, Converter={StaticResource StatusToColorConverter}}" />                              
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTextColumn Header="Statistics" >
+                    <DataGridTextColumn.Binding>
+                        <MultiBinding StringFormat="{}{0}-{1}-{2}-{3}">
+                            <Binding Path="RefilledNum"></Binding>
+                            <Binding Path="BidOnNum"></Binding>
+                            <Binding Path="AskOnNum"></Binding>
+                            <Binding Path="OptionNum"></Binding>
+                        </MultiBinding>
+                    </DataGridTextColumn.Binding>
+                    <DataGridTextColumn.ElementStyle>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="VerticalAlignment" Value="Center"></Setter>
+                        </Style>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+                <DataGridTextColumn Header="Delta" Binding="{Binding Delta}" >
+                    <DataGridTextColumn.ElementStyle>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="VerticalAlignment" Value="Center"></Setter>
+                        </Style>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+                <DataGridTextColumn Header="DeltaLimit" Binding="{Binding DeltaLimit}" >
+                    <DataGridTextColumn.ElementStyle>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="VerticalAlignment" Value="Center"></Setter>
+                        </Style>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+                <DataGridTextColumn Header="Order" Binding="{Binding OrderNum}" >
+                    <DataGridTextColumn.ElementStyle>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="VerticalAlignment" Value="Center"></Setter>
+                        </Style>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+                <DataGridTextColumn Header="OrderLimit" Binding="{Binding OrderLimit}" >
+                    <DataGridTextColumn.ElementStyle>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="VerticalAlignment" Value="Center"></Setter>
+                        </Style>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+                <DataGridTextColumn Header="Trade" Binding="{Binding TradeNum}" >
+                    <DataGridTextColumn.ElementStyle>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="VerticalAlignment" Value="Center"></Setter>
+                        </Style>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+                <DataGridTextColumn Header="TradeLimit" Binding="{Binding TradeLimit}" >
+                    <DataGridTextColumn.ElementStyle>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="VerticalAlignment" Value="Center"></Setter>
+                        </Style>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+                <DataGridTemplateColumn Header="Start">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Button Foreground="Green" Command="{Binding PlayCommand}">Start</Button>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="Pause">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Button Command="{Binding PauseCommand}">Pause</Button>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="Stop">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Button Foreground="Red" Command="{Binding StopCommand}">Stop</Button>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+    </Grid>
+</UserControl>

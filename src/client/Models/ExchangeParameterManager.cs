@@ -32,14 +32,14 @@ namespace client.Models
 
         private void OnProtoMessage(Proto.ExchangeParameter param)
         {
-            Func<IList<Proto.TradingSession>, List<Tuple<DateTime, DateTime>>, int> parseSessionFunc = (protoSessions, sessions) =>
+            Func<IList<Proto.TradingSession>, List<Tuple<DateTime, DateTime, DateTime>>, int> parseSessionFunc = (protoSessions, sessions) =>
             {
                 sessions.Clear();
                 int seconds = 0;
                 foreach (var s in protoSessions)
                 {
                     var d = tradingDay;
-                    var begin_time = DateTime.ParseExact(s.Begin, "HH:mm:ss", CultureInfo.InvariantCulture);
+                    var begin_time = DateTime.ParseExact(s.Begin, "H:mm:ss", CultureInfo.InvariantCulture);
                     if (s.Begin.CompareTo(param.NightSessionTime) >= 0)
                     {
                         do
@@ -49,13 +49,15 @@ namespace client.Models
                     }
                     var begin = new DateTime(d.Year, d.Month, d.Day, begin_time.Hour, begin_time.Minute, begin_time.Second);
 
-                    var end_time = DateTime.ParseExact(s.End, "HH:mm:ss", CultureInfo.InvariantCulture);
+                    var end_time = DateTime.ParseExact(s.End, "H:mm:ss", CultureInfo.InvariantCulture);
                     if (begin_time > end_time)
                     {
                         d = d.AddDays(1);
                     }
                     var end = new DateTime(d.Year, d.Month, d.Day, end_time.Hour, end_time.Minute, end_time.Second);
-                    sessions.Add(Tuple.Create(begin, end));
+                    var stop_time = DateTime.ParseExact(s.Stop, "H:mm:ss", CultureInfo.InvariantCulture);
+                    var stop = new DateTime(d.Year, d.Month, d.Day, stop_time.Hour, stop_time.Minute, stop_time.Second);
+                    sessions.Add(Tuple.Create(begin, end, stop));
                     seconds += (int)(end - begin).TotalSeconds;
                 }
                 return seconds;
@@ -79,7 +81,7 @@ namespace client.Models
                     //    nextTradingDay = nextTradingDay.AddDays(1);
                     //}
                     var now = DateTime.Now;
-                    var charmTime = DateTime.ParseExact(param.CharmStartTime, "HH:mm:ss", CultureInfo.InvariantCulture);
+                    var charmTime = DateTime.ParseExact(param.CharmStartTime, "H:mm:ss", CultureInfo.InvariantCulture);
                     this.charmDateTime = new DateTime(now.Year, now.Month, now.Day, charmTime.Hour, charmTime.Minute, charmTime.Second);
 
                     this.sessionSeconds = parseSessionFunc(param.Sessions, sessions);
@@ -112,6 +114,23 @@ namespace client.Models
             {
                 return parameter;
             }
+        }
+
+        public TimeSpan GetStopTime()
+        {
+            //var now = DateTime.Now.AddSeconds(30);
+            var now = DateTime.Now;
+            lock (this.mutex)
+            {
+                foreach (var t in this.sessions)
+                {
+                    if (now < t.Item3)
+                    {
+                        return t.Item3 - now;
+                    }
+                }
+            }
+            return TimeSpan.Zero;
         }
 
         public double GetTimeValue(DateTime maturity)
@@ -169,7 +188,7 @@ namespace client.Models
             }
         }
 
-        double GetFraction(DateTime now, List<Tuple<DateTime, DateTime>> sessions, double seconds)
+        double GetFraction(DateTime now, List<Tuple<DateTime, DateTime, DateTime>> sessions, double seconds)
         {
             double ret = 0;
             for (int i = sessions.Count - 1; i >= 0 && now < sessions[i].Item2; --i)
@@ -209,7 +228,7 @@ namespace client.Models
                     daysToMaturity.Add(maturity, tradingDays);
                 }
 
-                Func<List<Tuple<DateTime, DateTime>>, int, double> fractionFunc = (sessions, seconds) =>
+                Func<List<Tuple<DateTime, DateTime, DateTime>>, int, double> fractionFunc = (sessions, seconds) =>
                 {
                     double ret = 0;
                     for (int i = sessions.Count - 1; i >= 0 && time < sessions[i].Item2; --i)
@@ -239,8 +258,8 @@ namespace client.Models
         DateTime tradingDay;
         DateTime charmDateTime;
         SortedList<DateTime, double> holidays = new SortedList<DateTime, double>();
-        List<Tuple<DateTime, DateTime>> sessions = new List<Tuple<DateTime, DateTime>>();
-        List<Tuple<DateTime, DateTime>> maturitySessions = new List<Tuple<DateTime, DateTime>>();
+        List<Tuple<DateTime, DateTime, DateTime>> sessions = new List<Tuple<DateTime, DateTime, DateTime>>();
+        List<Tuple<DateTime, DateTime, DateTime>> maturitySessions = new List<Tuple<DateTime, DateTime, DateTime>>();
         int sessionSeconds;
         int maturitySessionSeconds;
         Dictionary<DateTime, double> daysToMaturity = new Dictionary<DateTime, double>();

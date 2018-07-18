@@ -37,6 +37,7 @@ namespace client.Models
                     instrument.Exchange = inst.Exchange;
                     instrument.Type = inst.Type;
                     instrument.Currency = inst.Currency;
+                    instrument.Lot = inst.Lot;
                     instrument.Tick = inst.Tick;
                     instrument.Multiplier = inst.Multiplier;
                     instrument.Highest = inst.Highest;
@@ -140,6 +141,11 @@ namespace client.Models
                 instruments.TryGetValue(id, out inst);
             }
             return inst;
+        }
+
+        public IEnumerable<Instrument> GetInstrusments()
+        {
+            return instruments.Values;
         }
 
         public IEnumerable<Instrument> GetUnderlyings()

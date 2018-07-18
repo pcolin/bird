@@ -131,7 +131,7 @@ namespace client.ViewModels
             var parameter = manager.GetExchangeParameter();
             if (parameter != null)
             {
-                SetProperty(ref charmCutoff, DateTime.ParseExact(parameter.CharmStartTime, "HH:mm:ss", CultureInfo.InvariantCulture));
+                SetProperty(ref charmCutoff, DateTime.ParseExact(parameter.CharmStartTime, "H:mm:ss", CultureInfo.InvariantCulture));
                 var holidays = new List<HolidayItem>();
                 foreach (var holiday in parameter.Holidays)
                 {
@@ -145,9 +145,9 @@ namespace client.ViewModels
                 foreach (var session in parameter.Sessions)
                 {
                     tradingSessions.Add(new TradingSession(this.SetModified,
-                        DateTime.ParseExact(session.Begin, "HH:mm:ss", CultureInfo.InvariantCulture),
-                        DateTime.ParseExact(session.End, "HH:mm:ss", CultureInfo.InvariantCulture),
-                        DateTime.ParseExact(session.Stop, "HH:mm:ss", CultureInfo.InvariantCulture)));
+                        DateTime.ParseExact(session.Begin, "H:mm:ss", CultureInfo.InvariantCulture),
+                        DateTime.ParseExact(session.End, "H:mm:ss", CultureInfo.InvariantCulture),
+                        DateTime.ParseExact(session.Stop, "H:mm:ss", CultureInfo.InvariantCulture)));
                 }
                 TradingSessions = tradingSessions;
 
@@ -155,9 +155,9 @@ namespace client.ViewModels
                 foreach (var session in parameter.MaturitySessions)
                 {
                     maturityTradingSessions.Add(new TradingSession(this.SetModified,
-                        DateTime.ParseExact(session.Begin, "HH:mm:ss", CultureInfo.InvariantCulture),
-                        DateTime.ParseExact(session.End, "HH:mm:ss", CultureInfo.InvariantCulture),
-                        DateTime.ParseExact(session.Stop, "HH:mm:ss", CultureInfo.InvariantCulture)));
+                        DateTime.ParseExact(session.Begin, "H:mm:ss", CultureInfo.InvariantCulture),
+                        DateTime.ParseExact(session.End, "H:mm:ss", CultureInfo.InvariantCulture),
+                        DateTime.ParseExact(session.Stop, "H:mm:ss", CultureInfo.InvariantCulture)));
                 }
                 MaturityTradingSessions = maturityTradingSessions;
 
@@ -173,23 +173,23 @@ namespace client.ViewModels
 
             Proto.ExchangeParameter p = new Proto.ExchangeParameter();
             p.Exchange = this.Exchange;
-            p.CharmStartTime = this.CharmCutoff.ToString("HH:mm:ss");
+            p.CharmStartTime = this.CharmCutoff.ToString("H:mm:ss");
 
             foreach (TradingSession session in TradingSessions)
             {
                 Proto.TradingSession s = new Proto.TradingSession();
-                s.Begin = session.Begin.ToString("HH:mm:ss");
-                s.End = session.End.ToString("HH:mm:ss");
-                s.Stop = session.Stop.ToString("HH:mm:ss");
+                s.Begin = session.Begin.ToString("H:mm:ss");
+                s.End = session.End.ToString("H:mm:ss");
+                s.Stop = session.Stop.ToString("H:mm:ss");
                 p.Sessions.Add(s);
             }
 
             foreach (TradingSession session in MaturityTradingSessions)
             {
                 Proto.TradingSession s = new Proto.TradingSession();
-                s.Begin = session.Begin.ToString("HH:mm:ss");
-                s.End = session.End.ToString("HH:mm:ss");
-                s.Stop = session.Stop.ToString("HH:mm:ss");
+                s.Begin = session.Begin.ToString("H:mm:ss");
+                s.End = session.End.ToString("H:mm:ss");
+                s.Stop = session.Stop.ToString("H:mm:ss");
                 p.MaturitySessions.Add(s);
             }
 

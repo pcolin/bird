@@ -54,6 +54,7 @@ namespace client.Models
                 actionThread.Abort();
                 actionThread.Join();
             }
+            //socket.Shutdown()
         }
 
         //public void RegisterAction(string type, Action<IMessage> action)
@@ -124,130 +125,217 @@ namespace client.Models
             }
         }
 
+        void OnHeartbeat(byte[] bytes, int pos)
+        {
+            var h = Proto.Heartbeat.Parser.ParseFrom(bytes, pos, bytes.Count() - pos);
+            if (h != null)
+            {
+                this.container.Resolve<EventAggregator>().GetEvent<PubSubEvent<Proto.Heartbeat>>().Publish(h);
+            }
+        }
+
+        void OnPrice(byte[] bytes, int pos)
+        {
+            var p = Proto.Price.Parser.ParseFrom(bytes, pos, bytes.Count() - pos);
+            if (p != null)
+            {
+                this.container.Resolve<EventAggregator>().GetEvent<PubSubEvent<Proto.Price>>().Publish(p);
+            }
+        }
+
+        void OnOrderReq(byte[] bytes, int pos)
+        {
+            var o = Proto.OrderReq.Parser.ParseFrom(bytes, pos, bytes.Count() - pos);
+            if (o != null)
+            {
+                this.container.Resolve<EventAggregator>().GetEvent<PubSubEvent<Proto.OrderReq>>().Publish(o);
+            }
+        }
+
+        void OnPositionReq(byte[] bytes, int pos)
+        {
+            var p = Proto.PositionReq.Parser.ParseFrom(bytes, pos, bytes.Count() - pos);
+            if (p != null)
+            {
+                this.positionManager.OnProtoMessage(p);
+                this.container.Resolve<EventAggregator>().GetEvent<PubSubEvent<Proto.PositionReq>>().Publish(p);
+            }
+        }
+
+        void OnCash(byte[] bytes, int pos)
+        {
+            var c = Proto.Cash.Parser.ParseFrom(bytes, pos, bytes.Count() - pos);
+            if (c != null)
+            {
+                this.container.Resolve<EventAggregator>().GetEvent<PubSubEvent<Proto.Cash>>().Publish(c);
+            }
+        }
+
+        void OnInstrumentReq(byte[] bytes, int pos)
+        {
+            var r = Proto.InstrumentReq.Parser.ParseFrom(bytes, pos, bytes.Count() - pos);
+            if (r != null)
+            {
+                this.productManger.OnProtoMessage(r);
+                this.container.Resolve<EventAggregator>().GetEvent<PubSubEvent<Proto.InstrumentReq>>().Publish(r);
+            }
+        }
+
+        void OnExchangeParameterReq(byte[] bytes, int pos)
+        {
+            var e = Proto.ExchangeParameterReq.Parser.ParseFrom(bytes, pos, bytes.Count() - pos);
+            if (e != null)
+            {
+                this.exchangeManager.OnProtoMessage(e);
+                this.container.Resolve<EventAggregator>().GetEvent<PubSubEvent<Proto.ExchangeParameterReq>>().Publish(e);
+            }
+        }
+
+        void OnInterestRateReq(byte[] bytes, int pos)
+        {
+            var r = Proto.InterestRateReq.Parser.ParseFrom(bytes, pos, bytes.Count() - pos);
+            if (r != null)
+            {
+                this.interestManager.OnProtoMessage(r);
+                this.container.Resolve<EventAggregator>().GetEvent<PubSubEvent<Proto.InterestRateReq>>().Publish(r);
+            }
+        }
+
+        void OnSSRateReq(byte[] bytes, int pos)
+        {
+            var s = Proto.SSRateReq.Parser.ParseFrom(bytes, pos, bytes.Count() - pos);
+            if (s != null)
+            {
+                this.ssrateManager.OnProtoMessage(s);
+                this.container.Resolve<EventAggregator>().GetEvent<PubSubEvent<Proto.SSRateReq>>().Publish(s);
+            }
+        }
+
+        void OnVolatilityCurveReq(byte[] bytes, int pos)
+        {
+            var v = Proto.VolatilityCurveReq.Parser.ParseFrom(bytes, pos, bytes.Count() - pos);
+            if (v != null)
+            {
+                this.volatilityManager.OnProtoMessage(v);
+                this.container.Resolve<EventAggregator>().GetEvent<PubSubEvent<Proto.VolatilityCurveReq>>().Publish(v);
+            }
+        }
+
+        void OnDestrikerReq(byte[] bytes, int pos)
+        {
+            var d = Proto.DestrikerReq.Parser.ParseFrom(bytes, pos, bytes.Count() - pos);
+            if (d != null)
+            {
+                this.destrikerManager.OnProtoMessage(d);
+                this.container.Resolve<EventAggregator>().GetEvent<PubSubEvent<Proto.DestrikerReq>>().Publish(d);
+            }
+        }
+
+        void OnCreditReq(byte[] bytes, int pos)
+        {
+            var c = Proto.CreditReq.Parser.ParseFrom(bytes, pos, bytes.Count() - pos);
+            if (c != null)
+            {
+                this.creditManager.OnProtoMessage(c);
+                this.container.Resolve<EventAggregator>().GetEvent<PubSubEvent<Proto.CreditReq>>().Publish(c);
+            }
+        }
+
+        void OnPricerReq(byte[] bytes, int pos)
+        {
+            var p = Proto.PricerReq.Parser.ParseFrom(bytes, pos, bytes.Count() - pos);
+            if (p != null)
+            {
+                this.pricerManager.OnProtoMessage(p);
+                this.container.Resolve<EventAggregator>().GetEvent<PubSubEvent<Proto.PricerReq>>().Publish(p);
+            }
+        }
+
+        void OnStrategySwitchReq(byte[] bytes, int pos)
+        {
+            var s = Proto.StrategySwitchReq.Parser.ParseFrom(bytes, pos, bytes.Count() - pos);
+            if (s != null)
+            {
+                this.strategyManager.OnProtoMessage(s);
+                this.container.Resolve<EventAggregator>().GetEvent<PubSubEvent<Proto.StrategySwitchReq>>().Publish(s);
+            }
+        }
+
+        void OnStrategyStatistic(byte[] bytes, int pos)
+        {
+            var s = Proto.StrategyStatistic.Parser.ParseFrom(bytes, pos, bytes.Count() - pos);
+            if (s != null)
+            {
+                this.container.Resolve<EventAggregator>().GetEvent<PubSubEvent<Proto.StrategyStatistic>>().Publish(s);
+            }
+        }
+
+        void OnQuoterReq(byte[] bytes, int pos)
+        {
+            var q = Proto.QuoterReq.Parser.ParseFrom(bytes, pos, bytes.Count() - pos);
+            if (q != null)
+            {
+                this.quoterManager.OnProtoMessage(q);
+                this.container.Resolve<EventAggregator>().GetEvent<PubSubEvent<Proto.QuoterReq>>().Publish(q);
+            }
+        }
+
+        void OnServerInfo(byte[] bytes, int pos)
+        {
+            var i = Proto.ServerInfo.Parser.ParseFrom(bytes, pos, bytes.Count() - pos);
+            if (i != null)
+            {
+                this.container.Resolve<EventAggregator>().GetEvent<PubSubEvent<Proto.ServerInfo>>().Publish(i);
+            }
+        }
+
         private void ActionRun()
         {
             try
             {
+                var actions = new Dictionary<string, Action<byte[], int>>()
+                    {
+                        {"Heartbeat", (bytes, pos) => OnHeartbeat(bytes, pos)},
+                        {"Price", (bytes, pos) => OnPrice(bytes, pos)},
+                        {"OrderReq", (bytes, pos) => OnOrderReq(bytes, pos)},
+                        {"PositionReq", (bytes, pos) => OnPositionReq(bytes, pos)},
+                        {"Cash", (bytes, pos) => OnCash(bytes, pos)},
+                        {"InstrumentReq", (bytes, pos) => OnInstrumentReq(bytes, pos)},
+                        {"ExchangeParameterReq", (bytes, pos) => OnExchangeParameterReq(bytes, pos)},
+                        {"InterestRateReq", (bytes, pos) => OnInterestRateReq(bytes, pos)},
+                        {"SSRateReq", (bytes, pos) => OnSSRateReq(bytes, pos)},
+                        {"VolatilityCurveReq", (bytes, pos) => OnVolatilityCurveReq(bytes, pos)},
+                        {"DestrikerReq", (bytes, pos) => OnDestrikerReq(bytes, pos)},
+                        {"CreditReq", (bytes, pos) => OnCreditReq(bytes, pos)},
+                        {"PricerReq", (bytes, pos) => OnPricerReq(bytes, pos)},
+                        {"StrategySwitchReq", (bytes, pos) => OnStrategySwitchReq(bytes, pos)},
+                        {"StrategyStatistic", (bytes, pos) => OnStrategyStatistic(bytes, pos)},
+                        {"QuoterReq", (bytes, pos) => OnQuoterReq(bytes, pos)},
+                        {"ServerInfo", (bytes, pos) => OnServerInfo(bytes, pos)},
+                        /// to be done...
+                    };
                 var exch = this.exchange.ToString();
-                var pm = this.container.Resolve<ProductManager>(exch);
-                var em = this.container.Resolve<ExchangeParameterManager>(exch);
-                var im = this.container.Resolve<InterestRateManager>(exch);
-                var sm = this.container.Resolve<SSRateManager>(exch);
-                var vm = this.container.Resolve<VolatilityCurveManager>(exch);
-                var psm = this.container.Resolve<PricerManager>(exch);
-                var pnm = this.container.Resolve<PositionManager>(exch);
-                var dm = this.container.Resolve<DestrikerManager>(exch);
-                if (vm == null) return;
+                this.productManger = this.container.Resolve<ProductManager>(exch);
+                this.exchangeManager = this.container.Resolve<ExchangeParameterManager>(exch);
+                this.interestManager = this.container.Resolve<InterestRateManager>(exch);
+                this.ssrateManager = this.container.Resolve<SSRateManager>(exch);
+                this.volatilityManager = this.container.Resolve<VolatilityCurveManager>(exch);
+                this.creditManager = this.container.Resolve<CreditManager>(exch);
+                this.pricerManager = this.container.Resolve<PricerManager>(exch);
+                this.quoterManager = this.container.Resolve<QuoterManager>(exch);
+                this.positionManager = this.container.Resolve<PositionManager>(exch);
+                this.destrikerManager = this.container.Resolve<DestrikerManager>(exch);
+                this.strategyManager = this.container.Resolve<StrategySwitchManager>(exch);
                 while (running)
                 {
-                    byte[] bytes = messages.Take();
-                     
+                    byte[] bytes = messages.Take();                     
                     int len = bytes[4];
-                    //IMessage msg = null;
                     string type = Encoding.UTF8.GetString(bytes, 11, len - 6);
-                    if (type == "Heartbeat")
+                    Action<byte[], int> action = null;
+                    if (actions.TryGetValue(type, out action))
                     {
-                        var heartbeat = Proto.Heartbeat.Parser.ParseFrom(bytes, len + 5, bytes.Count() - len - 5);
-                        /// to be done...
-                    }
-                    else if (type == "Price")
-                    {
-                        var p = Proto.Price.Parser.ParseFrom(bytes, len + 5, bytes.Count() - len - 5);
-                        if (p != null)
-                        {
-                            this.container.Resolve<EventAggregator>().GetEvent<PubSubEvent<Proto.Price>>().Publish(p);
-                        }
-                    }
-                    else if (type == "PositionReq")
-                    {
-                        var p = Proto.PositionReq.Parser.ParseFrom(bytes, len + 5, bytes.Count() - len - 5);
-                        if (p != null)
-                        {
-                            pnm.OnProtoMessage(p);
-                            this.container.Resolve<EventAggregator>().GetEvent<PubSubEvent<Proto.PositionReq>>().Publish(p);
-                        }
-                    }
-                    else if (type == "Cash")
-                    {
-                        var c = Proto.Cash.Parser.ParseFrom(bytes, len + 5, bytes.Count() - len - 5);
-                        if (c != null)
-                        {
-                            this.container.Resolve<EventAggregator>().GetEvent<PubSubEvent<Proto.Cash>>().Publish(c);
-                        }
-                    }
-                    else if (type == "InstrumentReq")
-                    {
-                        var r = Proto.InstrumentReq.Parser.ParseFrom(bytes, len + 5, bytes.Count() - len - 5);
-                        if (r != null)
-                        {
-                            pm.OnProtoMessage(r);
-                            this.container.Resolve<EventAggregator>().GetEvent<PubSubEvent<Proto.InstrumentReq>>().Publish(r);
-                        }
-                    }
-                    else if (type == "ExchangeParameterReq")
-                    {
-                        var e = Proto.ExchangeParameterReq.Parser.ParseFrom(bytes, len + 5, bytes.Count() - len - 5);
-                        if (e != null && em != null)
-                        {
-                            em.OnProtoMessage(e);
-                            this.container.Resolve<EventAggregator>().GetEvent<PubSubEvent<Proto.ExchangeParameterReq>>().Publish(e);
-                        }
-                    }
-                    else if (type == "InterestRateReq")
-                    {
-                        var r = Proto.InterestRateReq.Parser.ParseFrom(bytes, len + 5, bytes.Count() - len - 5);
-                        if (r != null && im != null)
-                        {
-                            im.OnProtoMessage(r);
-                            this.container.Resolve<EventAggregator>().GetEvent<PubSubEvent<Proto.InterestRateReq>>().Publish(r);
-                        }
-                    }
-                    else if (type == "SSRateReq")
-                    {
-                        var s = Proto.SSRateReq.Parser.ParseFrom(bytes, len + 5, bytes.Count() - len - 5);
-                        if (s != null && sm != null)
-                        {
-                            sm.OnProtoMessage(s);
-                            this.container.Resolve<EventAggregator>().GetEvent<PubSubEvent<Proto.SSRateReq>>().Publish(s);
-                        }
-                    }
-                    else if (type == "VolatilityCurveReq")
-                    {
-                        var v = Proto.VolatilityCurveReq.Parser.ParseFrom(bytes, len + 5, bytes.Count() - len - 5);
-                        if (v != null)
-                        {
-                            vm.OnProtoMessage(v);
-                            this.container.Resolve<EventAggregator>().GetEvent<PubSubEvent<Proto.VolatilityCurveReq>>().Publish(v);
-                        }
-                    }
-                    else if (type == "DestrikerReq")
-                    {
-                        var d = Proto.DestrikerReq.Parser.ParseFrom(bytes, len + 5, bytes.Count() - len - 5);
-                        if (d != null)
-                        {
-                            dm.OnProtoMessage(d);
-                            this.container.Resolve<EventAggregator>().GetEvent<PubSubEvent<Proto.DestrikerReq>>().Publish(d);
-                        }
-                    }
-                    else if (type == "PricerReq")
-                    {
-                        var p = Proto.PricerReq.Parser.ParseFrom(bytes, len + 5, bytes.Count() - len - 5);
-                        if (p != null)
-                        {
-                            psm.OnProtoMessage(p);
-                            this.container.Resolve<EventAggregator>().GetEvent<PubSubEvent<Proto.PricerReq>>().Publish(p);
-                        }
-                    }
-                    else if (type == "ServerInfo")
-                    {
-                        var i = Proto.ServerInfo.Parser.ParseFrom(bytes, len + 5, bytes.Count() - len - 5);
-                        if (i != null)
-                        {
-                            this.container.Resolve<EventAggregator>().GetEvent<PubSubEvent<Proto.ServerInfo>>().Publish(i);
-                        }
-                    }
-                    /// to be done...
-                        
+                        action(bytes, len + 5);
+                    }                        
                 }
             }
             catch (InvalidOperationException)
@@ -265,9 +353,20 @@ namespace client.Models
         private Thread actionThread;
         private SubscribeSocket socket;
         private BlockingCollection<byte[]> messages = new BlockingCollection<byte[]>();
-        //private Dictionary<string, List<Action<IMessage>>> actions = new Dictionary<string,List<Action<IMessage>>>();
 
         private IUnityContainer container;
         private Proto.Exchange exchange;
+
+        private ProductManager productManger;
+        private ExchangeParameterManager exchangeManager;
+        private InterestRateManager interestManager;
+        private SSRateManager ssrateManager;
+        private VolatilityCurveManager volatilityManager;
+        private CreditManager creditManager;
+        private PricerManager pricerManager;
+        private QuoterManager quoterManager;
+        private PositionManager positionManager;
+        private DestrikerManager destrikerManager;
+        private StrategySwitchManager strategyManager;
     }
 }

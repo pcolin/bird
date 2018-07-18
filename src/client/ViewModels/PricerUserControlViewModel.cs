@@ -34,7 +34,13 @@ namespace client.ViewModels
         public PricerItem SelectedPricer
         {
             get { return selectedPricer; }
-            set { SetProperty(ref selectedPricer, value); }
+            set
+            {
+                if (SetProperty(ref selectedPricer, value))
+                {
+                    DeleteCommand.RaiseCanExecuteChanged();
+                }
+            }
         }
 
         private bool isEditable;
@@ -46,7 +52,6 @@ namespace client.ViewModels
                 if (SetProperty(ref isEditable, value))
                 {
                     EditCommand.RaiseCanExecuteChanged();
-                    //AddCommand.RaiseCanExecuteChanged();
                     DeleteCommand.RaiseCanExecuteChanged();
                     //SetCommand.RaiseCanExecuteChanged();
                     //SetAllCommand.RaiseCanExecuteChanged();
@@ -59,6 +64,16 @@ namespace client.ViewModels
         {
             var pm = Container.Resolve<ProductManager>(Exchange.ToString());
             return pm.GetHedgeUnderlyings();
+        }
+
+        public bool IsPricerNameExisted(string name)
+        {
+            foreach (var p in this.Pricers)
+            {
+                if (p.Name == name)
+                    return true;
+            }
+            return false;
         }
 
         public void AddPricer(string name, Instrument underlying, Proto.PricingModel model, int interval, Proto.UnderlyingTheoType theoType,
@@ -87,7 +102,7 @@ namespace client.ViewModels
                         Elastic = elastic,
                         ElasticLimit = elasticLimit,
                     };
-                    pricer.Options.AddRange(from it in item.Options where it.Selected select it.Option.Id);
+                    //pricer.Options.AddRange(from it in item.Options where it.Selected select it.Option.Id);
                     req.Pricers.Add(pricer);
                     var service = this.Container.Resolve<ServerService>(Exchange.ToString());
                     req.User = service.User;
@@ -126,10 +141,10 @@ namespace client.ViewModels
             return !IsEditable;
         }
 
-        private void AddExecute(PricerItem item)
-        {
+        //private void AddExecute(PricerItem item)
+        //{
 
-        }
+        //}
 
         private void DeleteExecute()
         {
@@ -152,9 +167,13 @@ namespace client.ViewModels
             {
                 SelectedPricer = this.pricers[idx];
             }
-            else
+            else if (this.Pricers.Count > 0)
             {
                 SelectedPricer = this.pricers.Last();
+            }
+            else
+            {
+                SelectedPricer = null;
             }
         }
 
@@ -200,14 +219,14 @@ namespace client.ViewModels
                             Elastic = p.Elastic,
                             ElasticLimit = p.ElasticLimit,
                         };
-                    foreach (var it in p.Options)
-                    {
-                        it.Modified = false;
-                        if (it.Selected)
-                        {
-                            pricer.Options.Add(it.Option.Id);
-                        }
-                    }
+                    //foreach (var it in p.Options)
+                    //{
+                    //    it.Modified = false;
+                    //    if (it.Selected)
+                    //    {
+                    //        pricer.Options.Add(it.Option.Id);
+                    //    }
+                    //}
                     //pricer.Options.AddRange(from it in p.Options where it.Selected select it.Option.Id);
                     req.Pricers.Add(pricer);
                     p.Modified = false;
@@ -244,7 +263,7 @@ namespace client.ViewModels
                 if (pm != null)
                 {
                     var items = new ObservableCollection<PricerItem>();
-                    var pricings = psm.GetPricingSpecs();
+                    var pricings = psm.GetPricers();
                     pricings.Sort((x, y) => x.Name.CompareTo(y.Name));
                     foreach (var p in pricings)
                     {
@@ -447,11 +466,11 @@ namespace client.ViewModels
             elastic = p.Elastic;
             elasticLimit = p.ElasticLimit;
 
-            this.options = new ObservableCollection<SelectedOptionItem>();
-            foreach (Option option in options)
-            {
-                this.options.Add(new SelectedOptionItem(this.SetModified, p.Options.Contains(option.Id), option));
-            }
+            //this.options = new ObservableCollection<SelectedOptionItem>();
+            //foreach (Option option in options)
+            //{
+            //    this.options.Add(new SelectedOptionItem(this.SetModified, p.Options.Contains(option.Id), option));
+            //}
         }
     }
 
