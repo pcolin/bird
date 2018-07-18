@@ -5,6 +5,7 @@
 #include "ParameterManager.h"
 #include "Instrument.pb.h"
 #include "Credit.pb.h"
+#include "exchange/manager/ExchangeManager.h"
 #include "strategy/DeviceManager.h"
 #include "strategy/ClusterManager.h"
 #include "config/EnvConfig.h"
@@ -99,6 +100,59 @@ base::ProtoMessagePtr Middleware::Request(const google::protobuf::Message &reque
 //   }
 // }
 
+std::shared_ptr<Proto::Reply> Middleware::OnOrderRequest(
+    const std::shared_ptr<Proto::OrderRequest> &req)
+{
+  LOG_INF << "OnOrderRequest: " << req->ShortDebugString();
+  if (req->action() == Proto::OrderAction::Submit)
+  {
+    for (auto &ord : req->orders())
+    {
+      auto *inst = ProductManager::GetInstance()->FindId(ord.instrument());
+      if (inst)
+      {
+        auto order = Message::NewOrder();
+        order->instrument = inst;
+        // order->id = ord.id();
+        order->header.time = ord.time();
+        order->price = ord.price();
+        order->volume = ord.volume();
+        order->strategy_type = ord.strategy_type();
+        order->side = ord.side();
+        order->time_condition = ord.time_condition();
+        order->type = ord.type();
+        order->status = ord.status();
+        ExchangeManager::GetInstance()->GetTraderApi()->Submit(order);
+      }
+    }
+  }
+  else if (req->action() == Proto::OrderAction::Cancel)
+  {
+    for (auto &ord : req->orders())
+    {
+      auto *inst = ProductManager::GetInstance()->FindId(ord.instrument());
+      if (inst)
+      {
+        auto order = Message::NewOrder();
+        order->instrument = inst;
+        order->id = ord.id();
+        order->counter_id = ord.counter_id();
+        order->exchange_id = ord.exchange_id();
+        order->header.time = ord.time();
+        order->price = ord.price();
+        order->volume = ord.volume();
+        order->executed_volume = ord.executed_volume();
+        order->strategy_type = ord.strategy_type();
+        order->side = ord.side();
+        order->time_condition = ord.time_condition();
+        order->type = ord.type();
+        order->status = ord.status();
+        ExchangeManager::GetInstance()->GetTraderApi()->Cancel(order);
+      }
+    }
+  }
+}
+
 void Middleware::RunTimer()
 {
   LOG_INF << "Start middleware timer...";
@@ -180,6 +234,8 @@ void Middleware::RunResponder()
   }
 
   base::ProtoMessageDispatcher<std::shared_ptr<Proto::Reply>> dispatcher;
+  dispatcher.RegisterCallback<Proto::OrderRequest>(std::bind(
+        &Middleware::OnOrderRequest, this, std::placeholders::_1));
   dispatcher.RegisterCallback<Proto::Heartbeat>(std::bind(
         &ClientManager::OnHeartbeat, ClientManager::GetInstance(), std::placeholders::_1));
   dispatcher.RegisterCallback<Proto::Login>(std::bind(

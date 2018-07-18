@@ -13,9 +13,23 @@ thread_local boost::uuids::random_generator id_generator;
 
 Order::Order()
   : header(MsgType::Order),
-  id(boost::uuids::hash_value(id_generator()))
+    id(boost::uuids::hash_value(id_generator())), status(Proto::OrderStatus::Local)
 {
   header.SetTime();
+}
+
+Order::Order(const Proto::Order &ord)
+  : header(MsgType::Order),
+    id(ord.id()),
+    price(ord.price()),
+    volume(ord.volume()),
+    strategy_type(ord.strategy_type()),
+    side(ord.side()),
+    time_condition(ord.time_condition()),
+    type(ord.type()),
+    status(ord.status())
+{
+  header.time = ord.time();
 }
 
 std::string Order::Dump() const
@@ -79,4 +93,29 @@ std::shared_ptr<Proto::Order> Order::Serialize() const
   ord->set_time(header.time);
   ord->set_latency(header.interval[2]);
   return ord;
+}
+
+void Order::Serialize(Proto::Order *order) const
+{
+  order->set_id(id);
+  order->set_instrument(instrument->Id());
+  order->set_counter_id(counter_id);
+  order->set_exchange_id(exchange_id);
+  order->set_note(note);
+  order->set_price(price);
+  order->set_avg_executed_price(avg_executed_price);
+  order->set_volume(volume);
+  order->set_executed_volume(executed_volume);
+  order->set_exchange(instrument->Exchange());
+  order->set_strategy_type(strategy_type);
+  order->set_side(side);
+  order->set_time_condition(time_condition);
+  order->set_type(type);
+  order->set_status(status);
+  // google::protobuf::Timestamp *t = new google::protobuf::Timestamp;
+  // t->set_seconds(header.time / 1000000);
+  // t->set_nanos(header.time % 1000000 * 1000);
+  // order->set_allocated_time(t);
+  order->set_time(header.time);
+  order->set_latency(header.interval[2]);
 }

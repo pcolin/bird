@@ -31,8 +31,11 @@ public:
   //   order_ref_ = order_ref;
   // }
   void OnUserLogin(int order_ref, int front_id, int session_id);
-  OrderPtr FindOrder(int order_ref);
-  OrderPtr RemoveOrder(int order_ref);
+  OrderPtr FindAndUpdate(const char *order_ref);
+  OrderPtr FindAndUpdate(const char *order_ref, const char *exchange_id);
+  OrderPtr FindAndUpdate(const char *order_ref, int trade_volume);
+  OrderPtr FindOrder(const char *order_ref);
+  OrderPtr RemoveOrder(const char *order_ref);
 
 protected:
   void SubmitOrder(const OrderPtr &order) override;

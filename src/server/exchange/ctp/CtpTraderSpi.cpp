@@ -331,13 +331,13 @@ void CtpTraderSpi::OnRspQryInvestorPosition(CThostFtdcInvestorPositionField *pIn
       if (pInvestorPosition->PosiDirection == THOST_FTDC_PD_Long)
       {
         pos->set_total_long(pInvestorPosition->Position);
-        pos->set_liquid_long(pInvestorPosition->Position - pInvestorPosition->LongFrozen);
+        pos->set_liquid_long(pInvestorPosition->Position - pInvestorPosition->ShortFrozen);
         pos->set_yesterday_long(pInvestorPosition->YdPosition);
       }
       else if (pInvestorPosition->PosiDirection == THOST_FTDC_PD_Short)
       {
         pos->set_total_short(pInvestorPosition->Position);
-        pos->set_liquid_short(pInvestorPosition->Position - pInvestorPosition->ShortFrozen);
+        pos->set_liquid_short(pInvestorPosition->Position - pInvestorPosition->LongFrozen);
         pos->set_yesterday_short(pInvestorPosition->YdPosition);
       }
       // pos->set_time(base::Now());
@@ -390,7 +390,7 @@ void CtpTraderSpi::OnRspOrderInsert(CThostFtdcInputOrderField *pInputOrder,
       "ErrorMsg(%4%), nRequestID(%5%), bIsLast(%6%)") %
     pInputOrder->InstrumentID % pInputOrder->OrderRef % pRspInfo->ErrorID % err % nRequestID %
     bIsLast;
-  auto ord = api_->RemoveOrder(atoi(pInputOrder->OrderRef));
+  auto ord = api_->RemoveOrder(pInputOrder->OrderRef);
   if (ord)
   {
     auto update = Message::NewOrder(ord);
@@ -413,7 +413,7 @@ void CtpTraderSpi::OnErrRtnOrderInsert(CThostFtdcInputOrderField *pInputOrder,
   LOG_ERR << boost::format("OnRspOrderInsert: InstrumentID(%1%), OrderRef(%2%), ErrorID(%3%), "
       "ErrorMsg(%4%)") %
     pInputOrder->InstrumentID % pInputOrder->OrderRef % pRspInfo->ErrorID % err;
-  auto ord = api_->RemoveOrder(atoi(pInputOrder->OrderRef));
+  auto ord = api_->RemoveOrder(pInputOrder->OrderRef);
   if (ord)
   {
     auto update = Message::NewOrder(ord);
@@ -440,50 +440,37 @@ void CtpTraderSpi::OnRtnOrder(CThostFtdcOrderField *pOrder)
     pOrder->StatusMsg % pOrder->FrontID % pOrder->SessionID % pOrder->TraderID;
   if (pOrder->OrderStatus == THOST_FTDC_OST_Unknown)
   {
-    auto ord = api_->FindOrder(atoi(pOrder->OrderRef));
+    auto ord = api_->FindAndUpdate(pOrder->OrderRef);
     if (ord)
     {
-      auto update = Message::NewOrder(ord);
-      update->counter_id = pOrder->OrderRef;
-      update->status = Proto::OrderStatus::Submitted;
-      update->header.SetInterval(1);
-      api_->OnOrderResponse(update);
-    }
-    else
-    {
-      LOG_ERR << "Failed to find order by order ref " << pOrder->OrderRef;
+      api_->OnOrderResponse(Message::NewOrder(ord));
     }
   }
   else if (pOrder->OrderStatus == THOST_FTDC_OST_NoTradeQueueing)
   {
-    auto ord = api_->RemoveOrder(atoi(pOrder->OrderRef));
+    auto ord = api_->FindAndUpdate(pOrder->OrderRef, pOrder->OrderSysID);
     if (ord)
     {
-      auto update = Message::NewOrder(ord);
-      update->counter_id = pOrder->OrderRef;
-      update->exchange_id = pOrder->OrderSysID;
-      update->status = Proto::OrderStatus::New;
-      update->header.SetInterval(2);
-      api_->OnOrderResponse(update);
-    }
-    else
-    {
-      LOG_ERR << "Failed to find order by order ref " << pOrder->OrderRef;
+      api_->OnOrderResponse(Message::NewOrder(ord));
     }
   }
   else if (pOrder->OrderStatus == THOST_FTDC_OST_Canceled)
   {
     if (strlen(pOrder->OrderSysID) > 0)
     {
-      if (pOrder->VolumeTraded == 0)
-        UpdateOrder(pOrder->OrderSysID, 0, Proto::OrderStatus::Canceled);
-      else
-        UpdateOrder(pOrder->OrderSysID, pOrder->VolumeTraded,
-            Proto::OrderStatus::PartialFilledCanceled);
+      auto ord = api_->RemoveOrder(pOrder->OrderRef);
+      if (ord)
+      {
+        auto update = Message::NewOrder(ord);
+        update->executed_volume = pOrder->VolumeTraded;
+        update->status = pOrder->VolumeTraded ?
+          Proto::OrderStatus::PartialFilledCanceled : Proto::OrderStatus::Canceled;
+        api_->OnOrderResponse(update);
+      }
     }
     else
     {
-      auto ord = api_->RemoveOrder(atoi(pOrder->OrderRef));
+      auto ord = api_->RemoveOrder(pOrder->OrderRef);
       if (ord)
       {
         auto update = Message::NewOrder(ord);
@@ -500,11 +487,22 @@ void CtpTraderSpi::OnRtnOrder(CThostFtdcOrderField *pOrder)
   }
   else if (pOrder->OrderStatus == THOST_FTDC_OST_AllTraded)
   {
-    UpdateOrder(pOrder->OrderSysID, pOrder->VolumeTraded, Proto::OrderStatus::Filled);
+    auto ord = api_->RemoveOrder(pOrder->OrderRef);
+    if (ord)
+    {
+      auto update = Message::NewOrder(ord);
+      update->executed_volume = pOrder->VolumeTraded;
+      update->status = Proto::OrderStatus::Filled;
+      api_->OnOrderResponse(update);
+    }
   }
   else if (pOrder->OrderStatus == THOST_FTDC_OST_PartTradedQueueing)
   {
-    UpdateOrder(pOrder->OrderSysID, pOrder->VolumeTraded, Proto::OrderStatus::PartialFilled);
+    auto ord = api_->FindAndUpdate(pOrder->OrderRef, pOrder->VolumeTraded);
+    if (ord)
+    {
+      api_->OnOrderResponse(Message::NewOrder(ord));
+    }
   }
   else
   {
@@ -524,29 +522,33 @@ void CtpTraderSpi::OnRtnTrade(CThostFtdcTradeField *pTrade)
   const Instrument *inst = ProductManager::GetInstance()->FindId(pTrade->InstrumentID);
   if (inst)
   {
-    auto ord = OrderManager::GetInstance()->FindOrder(pTrade->OrderSysID);
+    auto ord = api_->FindOrder(pTrade->OrderRef);
+    if (ord == nullptr)
+    {
+      ord = OrderManager::GetInstance()->FindOrder(pTrade->OrderSysID);
+    }
     if (ord)
     {
       auto trade = Message::NewTrade();
       trade->instrument = inst;
       trade->order_id = ord->id;
-      auto update = Message::NewOrder(ord);
-      if (update->executed_volume == pTrade->Volume)
-      {
-        update->avg_executed_price = pTrade->Price;
-      }
-      else if (update->executed_volume > pTrade->Volume)
-      {
-        update->avg_executed_price = (update->avg_executed_price * (update->executed_volume -
-              pTrade->Volume) + pTrade->Price * pTrade->Volume) / update->executed_volume;
-      }
+      // auto update = Message::NewOrder(ord);
+      // if (update->executed_volume == pTrade->Volume)
+      // {
+      //   update->avg_executed_price = pTrade->Price;
+      // }
+      // else if (update->executed_volume > pTrade->Volume)
+      // {
+      //   update->avg_executed_price = (update->avg_executed_price * (update->executed_volume -
+      //         pTrade->Volume) + pTrade->Price * pTrade->Volume) / update->executed_volume;
+      // }
       trade->side = ord->side;
       trade->id = (boost::format("%1%%2%") % (ord->IsBid() ? 'B' : 'A') % pTrade->TradeID).str();
       trade->price = pTrade->Price;
       trade->volume = pTrade->Volume;
       TradeManager::GetInstance()->OnTrade(trade);
       ClusterManager::GetInstance()->FindDevice(inst->HedgeUnderlying())->Publish(trade);
-      api_->OnOrderResponse(update);
+      // api_->OnOrderResponse(update);
     }
     else
     {

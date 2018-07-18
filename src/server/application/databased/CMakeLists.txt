@@ -6,6 +6,8 @@ ADD_EXECUTABLE(databased
   InstrumentDB.cpp
   ExchangeParameterDB.cpp
   PositionDB.cpp
+  OrderDB.cpp
+  TradeDB.cpp
   CashLimitDB.cpp
   InterestRateDB.cpp
   SSRateDB.cpp

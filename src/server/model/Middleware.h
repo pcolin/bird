@@ -5,6 +5,7 @@
 #include "base/logger/Logging.h"
 #include "base/common/ProtoMessageCoder.h"
 #include "base/common/ProtoMessageDispatcher.h"
+#include "Order.pb.h"
 
 #include "nn.h"
 #include "reqrep.h"
@@ -91,6 +92,7 @@ private:
   // ProtoReplyPtr OnPriceReq(const std::shared_ptr<Proto::PriceReq> &msg);
   // ProtoReplyPtr OnPricingSpecReq(const std::shared_ptr<Proto::PricingSpecReq> &msg);
   // ProtoReplyPtr OnStrategyStatusReq(const std::shared_ptr<Proto::StrategyStatusReq> &msg);
+  std::shared_ptr<Proto::Reply> OnOrderRequest(const std::shared_ptr<Proto::OrderRequest> &req);
 
   void RunTimer();
   void RunPublisher();

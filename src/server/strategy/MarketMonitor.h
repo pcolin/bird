@@ -1,6 +1,7 @@
 #ifndef STRATEGY_MARKET_MONITOR_H
 #define STRATEGY_MARKET_MONITOR_H
 
+#include "base/concurrency/blockingconcurrentqueue.h"
 #include "Strategy.h"
 #include "Position.pb.h"
 
@@ -17,7 +18,7 @@ protected:
   virtual void OnPrice(const PricePtr &price) override;
   virtual void OnOrder(const OrderPtr &order) override;
   virtual void OnTrade(const TradePtr &trade) override;
-  virtual void OnLastEvent() override;
+  // virtual void OnLastEvent() override;
 
 private:
   bool OnInstrumentReq(const std::shared_ptr<Proto::InstrumentReq> &req);
@@ -26,7 +27,12 @@ private:
   int und_price_time_;
   int opt_price_time_;
 
-  std::vector<OrderPtr> orders_;
+  void RunOrder();
+
+  // std::vector<OrderPtr> orders_;
+  static const size_t capacity_ = 1024;
+  moodycamel::BlockingConcurrentQueue<OrderPtr> orders_;
+  std::unique_ptr<std::thread> order_thread_;
 
   PriceMap prices_;
   // std::unique_ptr<std::thread> cash_thread_;

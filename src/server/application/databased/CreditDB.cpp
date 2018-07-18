@@ -16,7 +16,7 @@ void CreditDB::RefreshCache()
   char sql[1024];
   sprintf(sql, "DELETE FROM %s WHERE maturity<'%s'", table_name_.c_str(), trading_day_.c_str());
   ExecSql(sql);
-  sprintf(sql, "DELETE FROM %s WHERE NOT EXISTS(SELECT id FROM %s WHERE id = %s.instrument)",
+  sprintf(sql, "DELETE FROM %s WHERE NOT EXISTS(SELECT id FROM %s WHERE id = %s.option)",
       record_table_name_.c_str(), instrument_db_.TableName().c_str(), record_table_name_.c_str());
   ExecSql(sql);
 

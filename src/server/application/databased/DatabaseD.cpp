@@ -13,6 +13,8 @@
 #include "DestrikerDB.h"
 #include "CashLimitDB.h"
 #include "PositionDB.h"
+#include "OrderDB.h"
+#include "TradeDB.h"
 #include "PricerDB.h"
 #include "StrategySwitchDB.h"
 #include "QuoterDB.h"
@@ -156,13 +158,28 @@ int main(int argc, char *argv[])
   int sub = InitSubSocket();
   if (sub < 0) return -1;
 
-  std::string config_db_file;
-  if (EnvConfig::GetInstance()->GetValue(EnvVar::CONFIG_DB_FILE, config_db_file) == false)
+  std::string db_file;
+  if (EnvConfig::GetInstance()->GetValue(EnvVar::CONFIG_DB_FILE, db_file) == false)
   {
     LOG_FAT << "Failed to read CONFIG_DB_FILE";
     return -1;
   }
-  ConcurrentSqliteDB config_db(config_db_file);
+  ConcurrentSqliteDB config_db(db_file);
+
+  if (EnvConfig::GetInstance()->GetValue(EnvVar::ORDER_DB_FILE, db_file) == false)
+  {
+    LOG_FAT << "Failed to read ORDER_DB_FILE";
+    return -1;
+  }
+  ConcurrentSqliteDB order_db(db_file);
+
+  if (EnvConfig::GetInstance()->GetValue(EnvVar::TRADE_DB_FILE, db_file) == false)
+  {
+    LOG_FAT << "Failed to read TRADE_DB_FILE";
+    return -1;
+  }
+  ConcurrentSqliteDB trade_db(db_file);
+
   ProtoMessageDispatcher<ProtoMessagePtr> dispatcher;
   UserDB user_db(config_db, "UserInfo");
   bool ok = user_db.Initialize(dispatcher);
@@ -190,6 +207,12 @@ int main(int argc, char *argv[])
 
   PositionDB position(config_db, "Position");
   ok = ok && position.Initialize(dispatcher);
+
+  OrderDB order(order_db, instrument_db, exchange_db);
+  ok = ok && order.Initialize(dispatcher);
+
+  TradeDB trade(trade_db, instrument_db, exchange_db);
+  ok = ok && trade.Initialize(dispatcher);
 
   PricerDB pricing(config_db, "Pricer", instrument_db);
   ok = ok && pricing.Initialize(dispatcher);

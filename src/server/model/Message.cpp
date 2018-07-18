@@ -28,6 +28,11 @@ OrderPtr Message::NewOrder(const OrderPtr &ord)
   return order_factory.Allocate(ord);
 }
 
+// OrderPtr Message::NewOrder(const Proto::Order &ord)
+// {
+//   return order_factory.Allocate(ord);
+// }
+
 TradePtr Message::NewTrade()
 {
   static MessageFactory<Trade> factory;

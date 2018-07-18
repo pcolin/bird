@@ -1,6 +1,8 @@
 syntax = "proto3";
 package Proto;
 
+import "Request.proto";
+import "Reply.proto";
 import "Exchange.proto";
 import "Order.proto";
 // import "google/protobuf/timestamp.proto";
@@ -16,4 +18,18 @@ message Trade
   //google.protobuf.Timestamp time = 6;
   uint64 time = 7;
   uint64 order_id = 8;
+}
+
+message TradeReq
+{
+  RequestType type = 1;
+  Exchange exchange = 2;
+  string user = 3;
+  repeated Trade trades = 4;
+}
+
+message TradeRep
+{
+  repeated Trade trades = 1;
+  Reply result = 2;
 }

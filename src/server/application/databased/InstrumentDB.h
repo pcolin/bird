@@ -14,6 +14,7 @@ public:
   InstrumentDB(ConcurrentSqliteDB &db, const std::string &table_name, ExchangeParameterDB &exch);
   std::shared_ptr<Proto::Instrument> FindOption(const std::string &id);
   std::shared_ptr<Proto::Instrument> FindUnderlying(const std::string &id);
+  std::shared_ptr<Proto::Instrument> FindInstrument(const std::string &id);
 
 private:
   virtual void RefreshCache() override;

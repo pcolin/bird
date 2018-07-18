@@ -29,6 +29,12 @@ std::shared_ptr<Proto::Instrument> InstrumentDB::FindUnderlying(const std::strin
   return it != underlyings_.end() ? it->second : nullptr;
 }
 
+std::shared_ptr<Proto::Instrument> InstrumentDB::FindInstrument(const std::string &id)
+{
+  auto inst = FindOption(id);
+  return inst ? inst : FindUnderlying(id);
+}
+
 void InstrumentDB::RefreshCache()
 {
   char query[1024];
@@ -94,7 +100,7 @@ base::ProtoMessagePtr InstrumentDB::OnRequest(const std::shared_ptr<Proto::Instr
       }
       else if (inst.status() != Proto::InstrumentStatus::Unknown)
       {
-        sprintf(sql, "UPDATE %s SET status = %d WHERE id = %s", table_name_.c_str(),
+        sprintf(sql, "UPDATE %s SET status = %d WHERE id = '%s'", table_name_.c_str(),
             static_cast<int32_t>(inst.status()), inst.id().c_str());
         ExecSql(sql);
         UpdateInstrumentStatus(inst,

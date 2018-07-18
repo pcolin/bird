@@ -123,7 +123,9 @@ void CtpTraderApi::SubmitOrder(const OrderPtr &order)
 
   if (order->IsOpen())
   {
-    if (PositionManager::GetInstance()->TryFreeze(order))
+    if ((order->strategy_type == Proto::StrategyType::Quoter ||
+        order->strategy_type == Proto::StrategyType::DummyQuoter) &&
+        PositionManager::GetInstance()->TryFreeze(order))
     {
       order->side = order->IsBid() ? Proto::Side::BuyCover : Proto::Side::SellCover;
       field.CombOffsetFlag[0] = THOST_FTDC_OF_Close;
@@ -135,6 +137,14 @@ void CtpTraderApi::SubmitOrder(const OrderPtr &order)
   }
   else
   {
+    if (unlikely(order->strategy_type == Proto::StrategyType::Manual &&
+        PositionManager::GetInstance()->TryFreeze(order) == false))
+    {
+      order->side = order->IsBid() ? Proto::Side::Buy : Proto::Side::Sell;
+      order->note = "not enough position";
+      RejectOrder(order);
+      return;
+    }
     field.CombOffsetFlag[0] = THOST_FTDC_OF_Close;
   }
 
@@ -144,17 +154,21 @@ void CtpTraderApi::SubmitOrder(const OrderPtr &order)
   field.LimitPrice = order->price;
   field.VolumeTotalOriginal = order->volume;
 
+  {
+    auto copy = Message::NewOrder(order);
+    copy->header.SetInterval(0);
+    std::lock_guard<std::mutex> lck(ref_mtx_);
+    order_refs_[order_ref_] = copy;
+  }
   int id = req_id_++;
   int ret = api_->ReqOrderInsert(&field, id);
-  if (ret == 0)
+  if (likely(ret == 0))
   {
     // auto ord = Message::NewOrder(order);
     // ord->counter_id = field.OrderRef;
     // ord->status = OrderStatus::Submitted;
     // ord->header.SetInterval(0);
     // OnOrderResponse(ord);
-    order->header.SetInterval(0);
-    order_refs_[order_ref_] = order;
     LOG_INF << "Success to send order request " << id;
     // LOG_INF << boost::format("Field: %1%,%2%,%3%,%4%,%5%,%6%,%7%,%8%,%9%,%10%,%11%,%12%,%13%,%14%,"
     //     "%15%,%16%") %
@@ -168,6 +182,8 @@ void CtpTraderApi::SubmitOrder(const OrderPtr &order)
     LOG_ERR << "Failed to send order request: " << ret;
     order->note = std::move((boost::format("Send fail %1%") % ret).str());
     RejectOrder(order);
+    std::lock_guard<std::mutex> lck(ref_mtx_);
+    order_refs_.erase(order_ref_);
   }
 }
 
@@ -396,17 +412,85 @@ void CtpTraderApi::OnUserLogin(int order_ref, int front_id, int session_id)
   pull_quote_.ActionFlag = THOST_FTDC_AF_Delete;
 }
 
-OrderPtr CtpTraderApi::FindOrder(int order_ref)
+OrderPtr CtpTraderApi::FindAndUpdate(const char *order_ref)
 {
+  int ref = atoi(order_ref);
   std::lock_guard<std::mutex> lck(ref_mtx_);
-  auto it = order_refs_.find(order_ref);
+  auto it = order_refs_.find(ref);
+  if (it != order_refs_.end())
+  {
+    if (it->second->status == Proto::OrderStatus::Local)
+    {
+      it->second->header.SetInterval(1);
+      it->second->counter_id = order_ref;
+      it->second->status = Proto::OrderStatus::Submitted;
+      return it->second;
+    }
+  }
+  else
+  {
+    LOG_ERR << "Can't find order by ref " << order_ref;
+  }
+  return nullptr;
+}
+
+OrderPtr CtpTraderApi::FindAndUpdate(const char *order_ref, const char *exchange_id)
+{
+  int ref = atoi(order_ref);
+  std::lock_guard<std::mutex> lck(ref_mtx_);
+  auto it = order_refs_.find(ref);
+  if (it != order_refs_.end())
+  {
+    if (it->second->status == Proto::OrderStatus::Submitted)
+    {
+      it->second->header.SetInterval(2);
+      it->second->exchange_id = exchange_id;
+      it->second->status = Proto::OrderStatus::New;
+      return it->second;
+    }
+  }
+  else
+  {
+    LOG_ERR << "Can't find order by ref " << order_ref;
+  }
+  return nullptr;
+}
+
+
+OrderPtr CtpTraderApi::FindAndUpdate(const char *order_ref, int trade_volume)
+{
+  int ref = atoi(order_ref);
+  std::lock_guard<std::mutex> lck(ref_mtx_);
+  auto it = order_refs_.find(ref);
+  if (it != order_refs_.end())
+  {
+    if (trade_volume > it->second->executed_volume)
+    {
+      it->second->status = Proto::OrderStatus::PartialFilled;
+      it->second->executed_volume = trade_volume;
+      return it->second;
+    }
+  }
+  else
+  {
+    LOG_ERR << "Can't find order by ref " << order_ref;
+  }
+  return nullptr;
+}
+
+OrderPtr CtpTraderApi::FindOrder(const char *order_ref)
+{
+  int ref = atoi(order_ref);
+  std::lock_guard<std::mutex> lck(ref_mtx_);
+  auto it = order_refs_.find(ref);
   return it != order_refs_.end() ? it->second : nullptr;
 }
 
-OrderPtr CtpTraderApi::RemoveOrder(int order_ref)
+OrderPtr CtpTraderApi::RemoveOrder(const char *order_ref)
 {
+  int ref = atoi(order_ref);
   std::lock_guard<std::mutex> lck(ref_mtx_);
-  auto it = order_refs_.find(order_ref);
+  auto it = order_refs_.find(ref);
   if (it != order_refs_.end())
   {
     OrderPtr ord = it->second;

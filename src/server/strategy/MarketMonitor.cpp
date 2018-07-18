@@ -3,6 +3,7 @@
 #include "Order.pb.h"
 #include "Trade.pb.h"
 #include "base/logger/Logging.h"
+#include "config/EnvConfig.h"
 #include "model/OrderManager.h"
 #include "model/PositionManager.h"
 #include "model/Middleware.h"
@@ -11,7 +12,7 @@
 #include <sys/time.h>
 
 MarketMonitor::MarketMonitor(const std::string &name, DeviceManager *dm)
-  : Strategy(name, dm)
+  : Strategy(name, dm), orders_(capacity_)
 {
   struct timeval tv;
   gettimeofday(&tv, NULL);
@@ -24,6 +25,8 @@ MarketMonitor::MarketMonitor(const std::string &name, DeviceManager *dm)
       std::bind(&MarketMonitor::OnPriceReq, this, std::placeholders::_1));
   dispatcher_.RegisterCallback<Proto::Position>(
       std::bind(&MarketMonitor::OnPosition, this, std::placeholders::_1));
+
+  order_thread_ = std::make_unique<std::thread>(std::bind(&MarketMonitor::RunOrder, this));
 }
 
 void MarketMonitor::OnStart()
@@ -74,7 +77,8 @@ void MarketMonitor::OnOrder(const OrderPtr &order)
 {
   // LOG_INF << "OnOrder : " << order->DebugString();
   OrderManager::GetInstance()->OnOrder(order);
-  Middleware::GetInstance()->Publish(order->Serialize());
+  orders_.enqueue(order);
+  // Middleware::GetInstance()->Publish(order->Serialize());
 }
 
 void MarketMonitor::OnTrade(const TradePtr &trade)
@@ -83,15 +87,15 @@ void MarketMonitor::OnTrade(const TradePtr &trade)
   Middleware::GetInstance()->Publish(trade->Serialize());
 }
 
-void MarketMonitor::OnLastEvent()
-{
-  if (orders_.size() > 0)
-  {
-    LOG_INF << boost::format("Update %1% orders") % orders_.size();
-    OrderManager::GetInstance()->OnOrder(orders_);
-    orders_.clear();
-  }
-}
+// void MarketMonitor::OnLastEvent()
+// {
+//   if (orders_.size() > 0)
+//   {
+//     LOG_INF << boost::format("Update %1% orders") % orders_.size();
+//     OrderManager::GetInstance()->OnOrder(orders_);
+//     orders_.clear();
+//   }
+// }
 
 bool MarketMonitor::OnInstrumentReq(const std::shared_ptr<Proto::InstrumentReq> &req)
 {
@@ -114,4 +118,35 @@ bool MarketMonitor::OnPriceReq(const std::shared_ptr<Proto::PriceReq> &req)
     Middleware::GetInstance()->Publish(it.second);
   }
   return true;
+}
+
+void MarketMonitor::RunOrder()
+{
+  LOG_INF << "Start order publishing thread...";
+  OrderPtr orders[capacity_];
+  auto req = Message::NewProto<Proto::OrderReq>();
+  req->set_type(Proto::RequestType::Set);
+  req->set_exchange(Underlying()->Exchange());
+  const std::string user = EnvConfig::GetInstance()->GetString(EnvVar::EXCHANGE);
+  req->set_user(user);
+  while (true)
+  {
+    size_t cnt = orders_.wait_dequeue_bulk(orders, capacity_);
+    for (size_t i = 1; i <= cnt; ++i)
+    {
+      orders[i - 1]->Serialize(req->add_orders());
+      if (i % 10 == 0)
+      {
+        Middleware::GetInstance()->Publish(req);
+        req = Message::NewProto<Proto::OrderReq>();
+        req->set_type(Proto::RequestType::Set);
+        req->set_exchange(Underlying()->Exchange());
+        req->set_user(user);
+      }
+    }
+    if (req->orders_size())
+    {
+      Middleware::GetInstance()->Publish(req);
+    }
+  }
 }

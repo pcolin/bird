@@ -72,6 +72,10 @@ private:
 class Price;
 class TheoMatrix;
 class Order;
+// namespace Proto
+// {
+//   class Order;
+// }
 class Trade;
 class Message
 {
@@ -80,6 +84,7 @@ public:
   static std::shared_ptr<TheoMatrix> NewTheoMatrix();
   static std::shared_ptr<Order> NewOrder();
   static std::shared_ptr<Order> NewOrder(const std::shared_ptr<Order> &ord);
+  // static std::shared_ptr<Order> NewOrder(const Proto::Order &ord);
   static std::shared_ptr<Trade> NewTrade();
   template<class T> static std::shared_ptr<T> NewProto()
   {
