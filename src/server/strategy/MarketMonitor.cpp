@@ -129,24 +129,50 @@ void MarketMonitor::RunOrder()
   req->set_exchange(Underlying()->Exchange());
   const std::string user = EnvConfig::GetInstance()->GetString(EnvVar::EXCHANGE);
   req->set_user(user);
+  std::unordered_map<size_t, int> indexes;
   while (true)
   {
     size_t cnt = orders_.wait_dequeue_bulk(orders, capacity_);
-    for (size_t i = 1; i <= cnt; ++i)
+    for (size_t i = 0; i < cnt; ++i)
     {
-      orders[i - 1]->Serialize(req->add_orders());
-      if (i % 10 == 0)
+      auto it = indexes.find(orders[i]->id);
+      if (it != indexes.end())
       {
-        Middleware::GetInstance()->Publish(req);
-        req = Message::NewProto<Proto::OrderReq>();
-        req->set_type(Proto::RequestType::Set);
-        req->set_exchange(Underlying()->Exchange());
-        req->set_user(user);
+        if (orders[it->second]->status < orders[i]->status ||
+            orders[it->second]->executed_volume < orders[i]->executed_volume)
+        {
+          orders[it->second] = orders[i];
+        }
+        orders[i] = nullptr;
+      }
+      else
+      {
+        indexes[orders[i]->id] = i;
+      }
+    }
+    for (size_t i = 0; i < cnt; ++i)
+    {
+      if (orders[i])
+      {
+        orders[i]->Serialize(req->add_orders());
+        if (req->orders_size()  == 10)
+        {
+          Middleware::GetInstance()->Publish(req);
+          req = Message::NewProto<Proto::OrderReq>();
+          req->set_type(Proto::RequestType::Set);
+          req->set_exchange(Underlying()->Exchange());
+          req->set_user(user);
+        }
       }
     }
     if (req->orders_size())
     {
       Middleware::GetInstance()->Publish(req);
+      req = Message::NewProto<Proto::OrderReq>();
+      req->set_type(Proto::RequestType::Set);
+      req->set_exchange(Underlying()->Exchange());
+      req->set_user(user);
     }
+    indexes.clear();
   }
 }

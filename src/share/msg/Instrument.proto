@@ -44,6 +44,12 @@ enum SettlementType
   PhysicalSettlement = 1;
 }
 
+enum CommissionType
+{
+  Volume = 0;
+  Money = 1;
+}
+
 enum RoundDirection
 {
   Nearest = 0;
@@ -65,12 +71,16 @@ message Instrument
   double multiplier = 10;
   double highest = 11;
   double lowest = 12;
-  OptionType call_put = 13;
-  string maturity = 14;
-  ExerciseType exercise = 15;
-  SettlementType settlement = 16;
-  double strike = 17;
-  InstrumentStatus status = 18;
+  CommissionType commission = 13;
+  double open_commission = 14;
+  double close_commission = 15;
+  double close_today_commission = 16;
+  OptionType call_put = 17;
+  string maturity = 18;
+  ExerciseType exercise = 19;
+  SettlementType settlement = 20;
+  double strike = 21;
+  InstrumentStatus status = 22;
 }
 
 message InstrumentReq

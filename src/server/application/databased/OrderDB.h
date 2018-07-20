@@ -22,7 +22,7 @@ private:
   virtual void RegisterCallback(base::ProtoMessageDispatcher<base::ProtoMessagePtr> &dispatcher);
 
   base::ProtoMessagePtr OnRequest(const std::shared_ptr<Proto::OrderReq> &msg);
-  void UpdateOrder(const Proto::Order &inst, OrderMap &cache);
+  // void UpdateOrder(const Proto::Order &inst, OrderMap &cache);
 
   void Run();
 

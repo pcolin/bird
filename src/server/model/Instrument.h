@@ -49,6 +49,18 @@ class Instrument
     const base::PriceType Lowest() const { return lowest_; }
     void Lowest(base::PriceType lowest) { lowest_ = lowest; }
 
+    const Proto::CommissionType CommissionType() const { return commission_type_; }
+    void CommissionType(Proto::CommissionType type) { commission_type_ = type; }
+
+    const base::PriceType OpenCommission() const { return open_commission_; }
+    void OpenCommission(base::PriceType commission) { open_commission_ = commission; }
+
+    const base::PriceType CloseCommission() const { return close_commission_; }
+    void CloseCommission(base::PriceType commission) { close_commission_ = commission; }
+
+    const base::PriceType CloseTodayCommission() const { return close_today_commission_; }
+    void CloseTodayCommission(base::PriceType commission) { close_today_commission_ = commission; }
+
     const boost::gregorian::date& Maturity() const { return maturity_; }
     void Maturity(int year, int month, int day)
     {
@@ -123,6 +135,10 @@ class Instrument
     base::PriceType multiplier_ = base::PRICE_UNDEFINED;
     base::PriceType highest_ = base::PRICE_UNDEFINED;
     base::PriceType lowest_ = base::PRICE_UNDEFINED;
+    Proto::CommissionType commission_type_;
+    base::PriceType open_commission_ = base::PRICE_UNDEFINED;
+    base::PriceType close_commission_ = base::PRICE_UNDEFINED;
+    base::PriceType close_today_commission_ = base::PRICE_UNDEFINED;
     boost::gregorian::date maturity_;
 
     const Instrument* underlying_ = nullptr;

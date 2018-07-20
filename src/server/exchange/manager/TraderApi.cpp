@@ -79,6 +79,10 @@ void TraderApi::OnOrderResponse(const OrderPtr &order)
   auto *dm = ClusterManager::GetInstance()->FindDevice(order->instrument->HedgeUnderlying());
   if (dm)
   {
+    if (order->IsInactive())
+    {
+      protector_.Remove(order);
+    }
     dm->Publish(order);
     // OrderManager::GetInstance()->OnOrder(order);
   }

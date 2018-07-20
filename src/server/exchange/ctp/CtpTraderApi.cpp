@@ -276,6 +276,58 @@ void CtpTraderApi::QueryInstruments()
   LOG_INF << "Success to send query instrument request";
 }
 
+void CtpTraderApi::QueryFutureCommissionRate()
+{
+  LOG_INF << "Query future commission rate of " << exchange_;
+  CThostFtdcQryInstrumentCommissionRateField field;
+  memset(&field, 0, sizeof(field));
+  strcpy(field.BrokerID, broker_.c_str());
+  strcpy(field.InvestorID, investor_.c_str());
+  // strcpy(field.InstrumentID, .c_str());
+
+  while (int ret = api_->ReqQryInstrumentCommissionRate(&field, req_id_++))
+  {
+    LOG_ERR << boost::format(
+        "Failed to send query future commission rate request(%1%), retry after 1s") % ret;
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+  }
+  LOG_INF << "Success to send query future commission rate request";
+}
+
+void CtpTraderApi::QueryOptionCommissionRate()
+{
+  LOG_INF << "Query option commission rate of " << exchange_;
+  CThostFtdcQryOptionInstrCommRateField field;
+  memset(&field, 0, sizeof(field));
+  strcpy(field.BrokerID, broker_.c_str());
+  strcpy(field.InvestorID, investor_.c_str());
+
+  while (int ret = api_->ReqQryOptionInstrCommRate(&field, req_id_++))
+  {
+    LOG_ERR << boost::format(
+        "Failed to send query option commission rate request(%1%), retry after 1s") % ret;
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+  }
+  LOG_INF << "Success to send query option commission rate";
+}
+
+void CtpTraderApi::QueryMMOptionCommissionRate()
+{
+  LOG_INF << "Query mm option commission rate of " << exchange_;
+  CThostFtdcQryMMOptionInstrCommRateField field;
+  memset(&field, 0, sizeof(field));
+  strcpy(field.BrokerID, broker_.c_str());
+  strcpy(field.InvestorID, investor_.c_str());
+
+  while (int ret = api_->ReqQryMMOptionInstrCommRate(&field, req_id_++))
+  {
+    LOG_ERR << boost::format(
+        "Failed to send query mm option commission rate request(%1%), retry after 1s") % ret;
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+  }
+  LOG_INF << "Success to send query mm option commission rate";
+}
+
 void CtpTraderApi::QueryMarketData()
 {
   LOG_INF << "Query market data of " << exchange_;

@@ -40,6 +40,15 @@ class CtpTraderSpi : public CThostFtdcTraderSpi
 
     virtual void OnRspQryInstrument(CThostFtdcInstrumentField *pInstrument,
         CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) override;
+	  virtual void OnRspQryInstrumentCommissionRate(
+        CThostFtdcInstrumentCommissionRateField *pInstrumentCommissionRate,
+        CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) override;
+	  virtual void OnRspQryOptionInstrCommRate(CThostFtdcOptionInstrCommRateField *pOptionInstrCommRate
+        , CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) override;
+	  virtual void OnRspQryMMOptionInstrCommRate(
+        CThostFtdcMMOptionInstrCommRateField *pMMOptionInstrCommRate,
+        CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) override;
+
     virtual void OnRspQryDepthMarketData(CThostFtdcDepthMarketDataField *pDepthMarketData,
         CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) override;
     virtual void OnRspQryOrder(CThostFtdcOrderField *pOrder,

@@ -21,6 +21,9 @@ public:
   // virtual void CancelAll();
 
   void QueryInstruments();
+  void QueryFutureCommissionRate();
+  void QueryOptionCommissionRate();
+  void QueryMMOptionCommissionRate();
   void QueryMarketData();
   void QueryOrders();
   void QueryTrades();

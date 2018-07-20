@@ -28,7 +28,7 @@ public:
   ~PositionManager() {}
 
   void Init();
- 
+
   bool TryFreeze(const OrderPtr &order);
   void Release(const OrderPtr &order);
 

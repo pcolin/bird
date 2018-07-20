@@ -18,7 +18,7 @@ void TradeDB::RefreshCache()
   char sql[1024];
   sprintf(sql, "CREATE TABLE '%s'(id varchar(24) PRIMARY KEY UNIQUE, instrument varchar(20), "
       "exchange integer, side integer, price real, volume integer, time varchar(30), "
-      "order_id unsigned integer)", table_name_.c_str());
+      "order_id varchar(24))", table_name_.c_str());
   if (!ExecSql(sql))
   {
     sprintf(sql, "SELECT * FROM %s", table_name_.c_str());
@@ -31,6 +31,8 @@ void TradeDB::RegisterCallback(base::ProtoMessageDispatcher<base::ProtoMessagePt
 {
   dispatcher.RegisterCallback<Proto::TradeReq>(
     std::bind(&TradeDB::OnRequest, this, std::placeholders::_1));
+  dispatcher.RegisterCallback<Proto::Trade>(
+    std::bind(&TradeDB::OnTrade, this, std::placeholders::_1));
 }
 
 base::ProtoMessagePtr TradeDB::OnRequest(const std::shared_ptr<Proto::TradeReq> &msg)
@@ -42,65 +44,55 @@ base::ProtoMessagePtr TradeDB::OnRequest(const std::shared_ptr<Proto::TradeReq> 
     std::lock_guard<std::mutex> lck(mtx_);
     for (auto &trade : trades_)
     {
-      reply->add_trades()->CopyFrom(*trade.second);
+      reply->add_trades()->CopyFrom(*trade);
     }
     LOG_INF << boost::format("Get %1% trades totally.") % reply->trades_size();
   }
-  else
-  {
-    requests_.enqueue(msg);
-  }
+  // else
+  // {
+  //   requests_.enqueue(msg);
+  // }
   reply->mutable_result()->set_result(true);
   return reply;
+}
+
+base::ProtoMessagePtr TradeDB::OnTrade(const std::shared_ptr<Proto::Trade> &msg)
+{
+  LOG_INF << "Trade: " << msg->ShortDebugString();
+  requests_.enqueue(msg);
+  return nullptr;
 }
 
 void TradeDB::Run()
 {
   LOG_INF << "Trade update thread is running...";
-  std::shared_ptr<Proto::TradeReq> requests[capacity_];
+  std::shared_ptr<Proto::Trade> trades[capacity_];
   while (true)
   {
-    size_t cnt = requests_.wait_dequeue_bulk(requests, capacity_);
+    size_t cnt = requests_.wait_dequeue_bulk(trades, capacity_);
     char sql[1024];
     TransactionGuard tg(this);
     for (size_t i = 0; i < cnt; ++i)
     {
-      if (requests[i]->type() == Proto::RequestType::Set)
+      char time[32];
+      base::TimeToString(trades[i]->time(), time, sizeof(time));
+      sprintf(sql, "INSERT OR REPLACE INTO %s VALUES('%s', '%s', %d, %d, %f, %d, '%s', '%s')",
+          table_name_.c_str(), trades[i]->id().c_str(), trades[i]->instrument().c_str(),
+          static_cast<int>(trades[i]->exchange()), static_cast<int>(trades[i]->side()),
+          trades[i]->price(), trades[i]->volume(), time,
+          std::to_string(trades[i]->order_id()).c_str());
+      ExecSql(sql);
       {
-        for (auto &t : requests[i]->trades())
-        {
-          char time[32];
-          base::TimeToString(t.time(), time, sizeof(time));
-          sprintf(sql, "INSERT OR REPLACE INTO %s VALUES('%s', '%s', %d, %d, %f, %d, %s, %llu)",
-              table_name_.c_str(), t.id().c_str(), t.instrument().c_str(),
-              static_cast<int>(t.exchange()), static_cast<int>(t.side()), t.price(), t.volume(),
-              time, t.order_id());
-          ExecSql(sql);
-          {
-            std::lock_guard<std::mutex> lck(mtx_);
-            auto it = trades_.find(t.id());
-            if (it != trades_.end())
-            {
-              it->second->CopyFrom(t);
-            }
-            else
-            {
-              auto trade = Message::NewProto<Proto::Trade>();
-              trade->CopyFrom(t);
-              trades_.emplace(t.id(), trade);
-            }
-          }
-        }
+        std::lock_guard<std::mutex> lck(mtx_);
+        trades_.push_back(trades[i]);
       }
-      else if (requests[i]->type() == Proto::RequestType::Del)
-      { }
     }
   }
 }
 
 int TradeDB::Callback(void *data, int argc, char **argv, char **col_name)
 {
-  auto *tmp = static_cast<std::tuple<TradeMap*, InstrumentDB*>*>(data);
+  auto *tmp = static_cast<std::tuple<TradeArray*, InstrumentDB*>*>(data);
   auto *trades = std::get<0>(*tmp);
   auto *instrument_db = std::get<1>(*tmp);
 
@@ -119,7 +111,7 @@ int TradeDB::Callback(void *data, int argc, char **argv, char **col_name)
     trade->set_time(base::StringToTime(argv[6]));
     char *end = NULL;
     trade->set_order_id(strtoull(argv[7], &end, 10));
-    (*trades)[id] = trade;
+    trades->push_back(trade);
   }
   else
   {

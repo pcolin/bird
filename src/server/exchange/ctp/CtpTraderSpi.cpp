@@ -230,6 +230,151 @@ void CtpTraderSpi::OnRspQryInstrument(CThostFtdcInstrumentField *pInstrument,
     // Middleware::GetInstance()->Publish(req);
     // api_->NotifyInstrumentReady();
     // api_->QueryPositions();
+    api_->QueryFutureCommissionRate();
+  }
+}
+
+void CtpTraderSpi::OnRspQryInstrumentCommissionRate(CThostFtdcInstrumentCommissionRateField
+    *pInstrumentCommissionRate, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
+{
+  if (pRspInfo && pRspInfo->ErrorID != 0)
+  {
+    LOG_ERR << boost::format("Failed to query future commission rate: %1%(%2%).") %
+      pRspInfo->ErrorID % base::GB2312ToUtf8(pRspInfo->ErrorMsg);
+    return;
+  }
+  LOG_INF << boost::format("OnRspQryInstrumentCommissionRate: InstrumentID(%1%), BrokerID(%2%), "
+      "InvestorID(%3%), OpenRatioByMoney(%4%), OpenRatioByVolume(%5%), CloseRatioByMoney(%6%), "
+      "CloseRatioByVolume(%7%), CloseTodayRatioByMoney(%8%), CloseTodayRatioByVolume(%9%)") %
+    pInstrumentCommissionRate->InstrumentID % pInstrumentCommissionRate->BrokerID %
+    pInstrumentCommissionRate->InvestorID % pInstrumentCommissionRate->OpenRatioByMoney %
+    pInstrumentCommissionRate->OpenRatioByVolume % pInstrumentCommissionRate->CloseRatioByMoney %
+    pInstrumentCommissionRate->CloseRatioByVolume %
+    pInstrumentCommissionRate->CloseTodayRatioByMoney %
+    pInstrumentCommissionRate->CloseTodayRatioByVolume;
+
+  /// to be done...
+  auto instruments = ProductManager::GetInstance()->FindInstruments([&](const Instrument *inst)
+      { return inst->Product() == pInstrumentCommissionRate->InstrumentID; });
+  if (instruments.size() > 0)
+  {
+    if (pInstrumentCommissionRate->OpenRatioByMoney > 0 ||
+        pInstrumentCommissionRate->CloseRatioByMoney > 0 ||
+        pInstrumentCommissionRate->CloseTodayRatioByMoney > 0)
+    {
+      for(auto *instrument : instruments)
+      {
+        Instrument *inst = const_cast<Instrument*>(instrument);
+        inst->CommissionType(Proto::CommissionType::Money);
+        inst->OpenCommission(pInstrumentCommissionRate->OpenRatioByMoney);
+        inst->CloseCommission(pInstrumentCommissionRate->CloseRatioByMoney);
+        inst->CloseTodayCommission(pInstrumentCommissionRate->CloseTodayRatioByMoney);
+      }
+    }
+    else
+    {
+      for(auto *instrument : instruments)
+      {
+        Instrument *inst = const_cast<Instrument*>(instrument);
+        inst->CommissionType(Proto::CommissionType::Volume);
+        inst->OpenCommission(pInstrumentCommissionRate->OpenRatioByVolume);
+        inst->CloseCommission(pInstrumentCommissionRate->CloseRatioByVolume);
+        inst->CloseTodayCommission(pInstrumentCommissionRate->CloseTodayRatioByVolume);
+      }
+    }
+  }
+
+  if (bIsLast)
+  {
+    api_->QueryOptionCommissionRate();
+  }
+}
+
+void CtpTraderSpi::OnRspQryOptionInstrCommRate(CThostFtdcOptionInstrCommRateField
+    *pOptionInstrCommRate, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
+{
+  if (pRspInfo && pRspInfo->ErrorID != 0)
+  {
+    LOG_ERR << boost::format("Failed to query option commission rate: %1%(%2%).") %
+      pRspInfo->ErrorID % base::GB2312ToUtf8(pRspInfo->ErrorMsg);
+    return;
+  }
+
+  LOG_INF << boost::format("OnRspQryOptionInstrCommRate: InstrumentID(%1%), BrokerID(%2%), "
+      "InvestorID(%3%), OpenRatioByMoney(%4%), OpenRatioByVolume(%5%), CloseRatioByMoney(%6%), "
+      "CloseRatioByVolume(%7%), CloseTodayRatioByMoney(%8%), CloseTodayRatioByVolume(%9%)") %
+    pOptionInstrCommRate->InstrumentID % pOptionInstrCommRate->BrokerID %
+    pOptionInstrCommRate->InvestorID % pOptionInstrCommRate->OpenRatioByMoney %
+    pOptionInstrCommRate->OpenRatioByVolume % pOptionInstrCommRate->CloseRatioByMoney %
+    pOptionInstrCommRate->CloseRatioByVolume % pOptionInstrCommRate->CloseTodayRatioByMoney %
+    pOptionInstrCommRate->CloseTodayRatioByVolume;
+
+  /// to be done...
+  auto instruments = ProductManager::GetInstance()->FindInstruments([&](const Instrument *inst)
+      { return inst->Product() == pOptionInstrCommRate->InstrumentID; });
+  if (instruments.size() > 0)
+  {
+    if (pOptionInstrCommRate->OpenRatioByMoney > 0 ||
+        pOptionInstrCommRate->CloseRatioByMoney > 0 ||
+        pOptionInstrCommRate->CloseTodayRatioByMoney > 0)
+    {
+      for(auto *instrument : instruments)
+      {
+        Instrument *inst = const_cast<Instrument*>(instrument);
+        inst->CommissionType(Proto::CommissionType::Money);
+        inst->OpenCommission(pOptionInstrCommRate->OpenRatioByMoney);
+        inst->CloseCommission(pOptionInstrCommRate->CloseRatioByMoney);
+        inst->CloseTodayCommission(pOptionInstrCommRate->CloseTodayRatioByMoney);
+      }
+    }
+    else
+    {
+      for(auto *instrument : instruments)
+      {
+        Instrument *inst = const_cast<Instrument*>(instrument);
+        inst->CommissionType(Proto::CommissionType::Volume);
+        inst->OpenCommission(pOptionInstrCommRate->OpenRatioByVolume);
+        inst->CloseCommission(pOptionInstrCommRate->CloseRatioByVolume);
+        inst->CloseTodayCommission(pOptionInstrCommRate->CloseTodayRatioByVolume);
+      }
+    }
+  }
+
+  if (bIsLast)
+  {
+    // api_->QueryMMOptionCommissionRate();
+    api_->QueryMarketData();
+  }
+}
+
+void CtpTraderSpi::OnRspQryMMOptionInstrCommRate(CThostFtdcMMOptionInstrCommRateField
+    *pMMOptionInstrCommRate, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
+{
+  if (pRspInfo && pRspInfo->ErrorID != 0)
+  {
+    LOG_ERR << boost::format("Failed to query market maker option commission rate: %1%(%2%).") %
+      pRspInfo->ErrorID % base::GB2312ToUtf8(pRspInfo->ErrorMsg);
+    return;
+  }
+
+  if (pMMOptionInstrCommRate) /// is null in simulation enrionment
+  {
+  LOG_INF << boost::format("OnRspMMQryOptionInstrCommRate: InstrumentID(%1%), BrokerID(%2%), "
+      "InvestorID(%3%), OpenRatioByMoney(%4%), OpenRatioByVolume(%5%), CloseRatioByMoney(%6%), "
+      "CloseRatioByVolume(%7%), CloseTodayRatioByMoney(%8%), CloseTodayRatioByVolume(%9%)") %
+    "" % "" %
+    // pMMOptionInstrCommRate->InstrumentID % pMMOptionInstrCommRate->BrokerID %
+    "" % pMMOptionInstrCommRate->OpenRatioByMoney %
+    // pMMOptionInstrCommRate->InvestorID % pMMOptionInstrCommRate->OpenRatioByMoney %
+    pMMOptionInstrCommRate->OpenRatioByVolume % pMMOptionInstrCommRate->CloseRatioByMoney %
+    pMMOptionInstrCommRate->CloseRatioByVolume % pMMOptionInstrCommRate->CloseTodayRatioByMoney %
+    pMMOptionInstrCommRate->CloseTodayRatioByVolume;
+  }
+
+  /// to be done...
+
+  if (bIsLast)
+  {
     api_->QueryMarketData();
   }
 }
@@ -546,8 +691,15 @@ void CtpTraderSpi::OnRtnTrade(CThostFtdcTradeField *pTrade)
       trade->id = (boost::format("%1%%2%") % (ord->IsBid() ? 'B' : 'A') % pTrade->TradeID).str();
       trade->price = pTrade->Price;
       trade->volume = pTrade->Volume;
+      trade->time = base::StringToTime(pTrade->TradeDate, pTrade->TradeTime);
       TradeManager::GetInstance()->OnTrade(trade);
       ClusterManager::GetInstance()->FindDevice(inst->HedgeUnderlying())->Publish(trade);
+      int date = atoi(pTrade->TradeDate);
+      int h = atoi(pTrade->TradeTime);
+      int m = atoi(pTrade->TradeTime + 3);
+      int s = atoi(pTrade->TradeTime + 6);
+      LOG_INF << "Date: " << date << " year: " << (date / 10000 - 1900) << " h: "
+        << h << " m: " << m << " s: " << s;
       // api_->OnOrderResponse(update);
     }
     else
@@ -659,6 +811,7 @@ void CtpTraderSpi::OnRtnInstrumentStatus(CThostFtdcInstrumentStatusField *pInstr
       auto *tmp = req->add_instruments();
       assert(tmp);
       tmp->set_id(inst->Id());
+      tmp->set_type(inst->Type());
       tmp->set_status(status);
     }
     ClusterManager::GetInstance()->OnInstrumentReq(req);

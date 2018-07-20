@@ -16,7 +16,7 @@ OrderDB::OrderDB(ConcurrentSqliteDB &db, InstrumentDB &instrument_db,
 void OrderDB::RefreshCache()
 {
   char sql[1024];
-  sprintf(sql, "CREATE TABLE '%s'(id unsigned integer PRIMARY KEY UNIQUE, instrument varchar(20), "
+  sprintf(sql, "CREATE TABLE '%s'(id varchar(24) PRIMARY KEY UNIQUE, instrument varchar(20), "
       "counter_id varchar(15), exchange_id varchar(24), strategy varchar(20), note varchar(100), "
       "price real, avg_executed_price real, volume integer, executed_volume integer, "
       "exchange integer, strategy_type integer, side integer, time_condition integer, type integer, "
@@ -74,15 +74,23 @@ void OrderDB::Run()
         {
           char time[32];
           base::TimeToString(ord.time(), time, sizeof(time));
-          sprintf(sql, "INSERT OR REPLACE INTO %s VALUES(%llu, '%s', '%s', '%s', '%s', '%s', %f, "
+          // sprintf(sql, "INSERT OR REPLACE INTO %s VALUES(%llu, '%s', '%s', '%s', '%s', '%s', %f, "
+          sprintf(sql, "INSERT OR REPLACE INTO %s VALUES('%s', '%s', '%s', '%s', '%s', '%s', %f, "
               "%f, %d, %d, %d, %d, %d, %d, %d, %d, '%s', %d)",
-              table_name_.c_str(), ord.id(), ord.instrument().c_str(), ord.counter_id().c_str(),
-              ord.exchange_id().c_str(), ord.strategy().c_str(), ord.note().c_str(), ord.price(),
-              ord.avg_executed_price(), ord.volume(), ord.executed_volume(),
-              static_cast<int>(ord.exchange()), static_cast<int>(ord.strategy_type()),
-              static_cast<int>(ord.side()), static_cast<int>(ord.time_condition()),
-              static_cast<int>(ord.type()), static_cast<int>(ord.status()), time, ord.latency());
+              table_name_.c_str(), std::to_string(ord.id()).c_str(), ord.instrument().c_str(),
+              ord.counter_id().c_str(), ord.exchange_id().c_str(), ord.strategy().c_str(),
+              ord.note().c_str(), ord.price(), ord.avg_executed_price(), ord.volume(),
+              ord.executed_volume(), static_cast<int>(ord.exchange()),
+              static_cast<int>(ord.strategy_type()), static_cast<int>(ord.side()),
+              static_cast<int>(ord.time_condition()), static_cast<int>(ord.type()),
+              static_cast<int>(ord.status()), time, ord.latency());
           ExecSql(sql);
+          if (ord.status() == Proto::OrderStatus::Canceled)
+          {
+            std::lock_guard<std::mutex> lck(mtx_);
+            orders_.erase(ord.id());
+          }
+          else
           {
             std::lock_guard<std::mutex> lck(mtx_);
             auto it = orders_.find(ord.id());
@@ -117,6 +125,7 @@ int OrderDB::Callback(void *data, int argc, char **argv, char **col_name)
   {
     auto order = Message::NewProto<Proto::Order>();
     char *end = NULL;
+    LOG_DBG << "Retrive order id = " << argv[0];
     size_t id = strtoull(argv[0], &end, 10);
     order->set_id(id);
     order->set_instrument(instrument);
@@ -137,6 +146,7 @@ int OrderDB::Callback(void *data, int argc, char **argv, char **col_name)
     order->set_time(base::StringToTime(argv[16]));
     order->set_latency(atoi(argv[17]));
     (*orders)[id] = order;
+    LOG_DBG << "Retrive order: " << order->ShortDebugString();
   }
   else
   {

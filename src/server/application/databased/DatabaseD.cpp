@@ -146,6 +146,12 @@ void SubscribeRun(int sub, ProtoMessageDispatcher<ProtoMessagePtr> &dispatcher,
 
 int main(int argc, char *argv[])
 {
+  // char tmp[22] = {0};
+  // size_t n = 15345678901234567890ULL;
+  // sprintf(tmp, "%llu", n);
+  // printf("%s\n", tmp);
+  // return 0;
+
   Logger::InitFileLogger(EnvConfig::GetInstance()->GetString(EnvVar::LOGGING_DIR).c_str(),
                          EnvConfig::GetInstance()->GetString(EnvVar::APP_NAME).c_str(),
                          EnvConfig::GetInstance()->GetBool(EnvVar::ASYNC_LOGGING) == false);

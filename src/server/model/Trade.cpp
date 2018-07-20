@@ -27,7 +27,7 @@ std::shared_ptr<Proto::Trade> Trade::Serialize() const
   // tm->set_seconds(header.time / 1000000);
   // tm->set_nanos(header.time % 1000000 * 1000);
   // t->set_allocated_time(tm);
-  t->set_time(header.time);
+  t->set_time(time);
   t->set_order_id(order_id);
   return t;
 }

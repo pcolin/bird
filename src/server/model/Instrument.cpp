@@ -45,6 +45,11 @@ void Instrument::Serialize(Proto::Instrument *inst) const
     tmp[6] = '0';
     base::convert(tmp + 7, day);
   }
+
+  inst->set_commission(commission_type_);
+  inst->set_open_commission(open_commission_);
+  inst->set_close_commission(close_commission_);
+  inst->set_close_today_commission(close_today_commission_);
   inst->set_maturity(tmp);
   inst->set_status(status_);
 }
