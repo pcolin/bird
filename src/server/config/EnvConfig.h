@@ -40,6 +40,7 @@ enum class EnvVar : int8_t
   WASH_TRADE_PROT,
   ORDER_GC_THRESHOLD,
   NIGHT_SESSION_TIME,
+  CLOSE_TODAY_POS,
 
   /// ctp
   CTP_TRADE_ADDR,

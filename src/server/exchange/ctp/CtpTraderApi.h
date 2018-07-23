@@ -52,6 +52,7 @@ protected:
 
 private:
   void BuildTemplate();
+  char GetOffsetFlag(Proto::Side side);
 
   CThostFtdcTraderApi *api_ = nullptr;
   CtpTraderSpi *spi_ = nullptr;

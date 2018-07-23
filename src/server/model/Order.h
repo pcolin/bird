@@ -22,6 +22,11 @@ struct Order
     return side == Proto::Side::Buy || side == Proto::Side::Sell;
   }
 
+  bool IsCloseToday() const
+  {
+    return side == Proto::Side::BuyCoverToday || side == Proto::Side::SellCoverToday;
+  }
+
   bool IsInactive() const
   {
     return status >= Proto::OrderStatus::Filled;

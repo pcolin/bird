@@ -453,11 +453,14 @@ void CtpTraderSpi::OnRspQryInvestorPosition(CThostFtdcInvestorPositionField *pIn
   static std::unordered_map<const Instrument*, PositionPtr> positions;
   if (pInvestorPosition)
   {
-    LOG_INF << boost::format("OnRspQryInvestorPosition: InstrumentID(%1%), PosiDirection(%2%) "
-        "YdPosition(%3%), Position(%4%), LongFrozen(%5%), ShortFrozen(%6%), PositionDate(%7%)") %
+    LOG_INF << boost::format("OnRspQryInvestorPosition: InstrumentID(%1%), PosiDirection(%2%), "
+        "YdPosition(%3%), Position(%4%), LongFrozen(%5%), ShortFrozen(%6%), PositionDate(%7%), "
+        "OpenVolume(%8%), CloseVolume(%9%), TodayPosition(%10%)") %
       pInvestorPosition->InstrumentID % pInvestorPosition->PosiDirection %
       pInvestorPosition->YdPosition % pInvestorPosition->Position % pInvestorPosition->LongFrozen %
-      pInvestorPosition->ShortFrozen % pInvestorPosition->PositionDate;
+      pInvestorPosition->ShortFrozen % pInvestorPosition->PositionDate %
+      pInvestorPosition->OpenVolume % pInvestorPosition->CloseVolume %
+      pInvestorPosition->TodayPosition;
     auto *inst = ProductManager::GetInstance()->FindId(pInvestorPosition->InstrumentID);
     if (inst)
     {

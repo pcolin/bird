@@ -12,13 +12,15 @@ message Position
 
   int32 total_long = 3;
   int32 liquid_long = 4;
-  int32 yesterday_long = 5;
+  int32 liquid_yesterday_long = 5;
+  int32 yesterday_long = 6;
 
-  int32 total_short = 6;
-  int32 liquid_short = 7;
-  int32 yesterday_short = 8;
+  int32 total_short = 7;
+  int32 liquid_short = 8;
+  int32 liquid_yesterday_short = 9;
+  int32 yesterday_short = 10;
 
-  uint64 time = 9;
+  uint64 time = 11;
 }
 
 message PositionReq

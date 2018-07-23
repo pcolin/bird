@@ -114,6 +114,15 @@ void CtpTraderApi::SubmitOrder(const OrderPtr &order)
     return;
   }
 
+  if (unlikely(order->strategy_type == Proto::StrategyType::Manual && order->IsOpen() == false &&
+      PositionManager::GetInstance()->TryFreeze(order) == false))
+  {
+    order->side = order->IsBid() ? Proto::Side::Buy : Proto::Side::Sell;
+    order->note = "not enough position";
+    RejectOrder(order);
+    return;
+  }
+
   CThostFtdcInputOrderField field(new_order_);
   strcpy(field.InstrumentID, order->instrument->Symbol().c_str());
   // const std::string order_ref_str = std::to_string(++order_ref_);
@@ -121,32 +130,26 @@ void CtpTraderApi::SubmitOrder(const OrderPtr &order)
   sprintf(field.OrderRef, "%012d", ++order_ref_);
   field.Direction = order->IsBid() ? THOST_FTDC_D_Buy : THOST_FTDC_D_Sell;
 
-  if (order->IsOpen())
-  {
-    if ((order->strategy_type == Proto::StrategyType::Quoter ||
-        order->strategy_type == Proto::StrategyType::DummyQuoter) &&
-        PositionManager::GetInstance()->TryFreeze(order))
-    {
-      order->side = order->IsBid() ? Proto::Side::BuyCover : Proto::Side::SellCover;
-      field.CombOffsetFlag[0] = THOST_FTDC_OF_Close;
-    }
-    else
-    {
-      field.CombOffsetFlag[0] = THOST_FTDC_OF_Open;
-    }
-  }
-  else
-  {
-    if (unlikely(order->strategy_type == Proto::StrategyType::Manual &&
-        PositionManager::GetInstance()->TryFreeze(order) == false))
-    {
-      order->side = order->IsBid() ? Proto::Side::Buy : Proto::Side::Sell;
-      order->note = "not enough position";
-      RejectOrder(order);
-      return;
-    }
-    field.CombOffsetFlag[0] = THOST_FTDC_OF_Close;
-  }
+  field.CombOffsetFlag[0] = GetOffsetFlag(order->side);
+
+  // if (order->IsOpen())
+  // {
+  //   if ((order->strategy_type == Proto::StrategyType::Quoter ||
+  //       order->strategy_type == Proto::StrategyType::DummyQuoter) &&
+  //       PositionManager::GetInstance()->TryFreeze(order))
+  //   {
+  //     order->side = order->IsBid() ? Proto::Side::BuyCover : Proto::Side::SellCover;
+  //     field.CombOffsetFlag[0] = THOST_FTDC_OF_Close;
+  //   }
+  //   else
+  //   {
+  //     field.CombOffsetFlag[0] = THOST_FTDC_OF_Open;
+  //   }
+  // }
+  // else
+  // {
+  //   field.CombOffsetFlag[0] = THOST_FTDC_OF_Close;
+  // }
 
   if (order->time_condition == Proto::TimeCondition::IOC)
     field.TimeCondition = THOST_FTDC_TC_IOC;
@@ -586,4 +589,25 @@ void CtpTraderApi::BuildTemplate()
   strcpy(pull_quote_.InvestorID, investor_.c_str());
   strcpy(pull_quote_.ExchangeID, exchange_.c_str());
   pull_quote_.ActionFlag = THOST_FTDC_AF_Delete;
+}
+
+char CtpTraderApi::GetOffsetFlag(Proto::Side side)
+{
+  switch (side)
+  {
+    case Proto::Side::Buy:
+    case Proto::Side::Sell:
+      return THOST_FTDC_OF_Open;
+    case Proto::Side::BuyCover:
+    case Proto::Side::SellCover:
+      return THOST_FTDC_OF_Close;
+    case Proto::Side::BuyCoverYesterday:
+    case Proto::Side::SellCoverYesterday:
+      return THOST_FTDC_OF_CloseYesterday;
+    case Proto::Side::BuyCoverToday:
+    case Proto::Side::SellCoverToday:
+      return THOST_FTDC_OF_CloseToday;
+    default:
+      assert(false);
+  }
 }

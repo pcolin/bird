@@ -7,18 +7,6 @@
 #include <unordered_map>
 #include <mutex>
 
-// struct Position
-// {
-//   base::VolumeType total_long;
-//   base::VolumeType liquid_long;
-//   base::VolumeType yesterday_long;
-
-//   base::VolumeType total_short;
-//   base::VolumeType liquid_short;
-//   base::VolumeType yesterday_short;
-// };
-
-// typedef std::shared_ptr<Position> PositionPtr;
 typedef std::shared_ptr<Proto::Position> PositionPtr;
 
 class PositionManager
