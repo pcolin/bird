@@ -20,7 +20,7 @@ namespace client.Models
         {
             socket = new RequestSocket();
             socket.Options.TcpNoDelay = true;
-            socket.Options.ReceiveTimeout = new TimeSpan(0, 0, 10);
+            socket.Options.ReceiveTimeout = new TimeSpan(0, 0, 5);
             socket.Connect(address);
         }
 

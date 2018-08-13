@@ -96,6 +96,11 @@ namespace client.Models
             }
         }
 
+        public Proto.CommissionType CommissionType { get; set; }
+        public double OpenCommission { get; set; }
+        public double CloseCommission { get; set; }
+        public double CloseTodayCommission { get; set; }        
+
         public DateTime Maturity { get; set; }
 
         public Instrument Underlying { get; set; }

@@ -42,6 +42,10 @@ namespace client.Models
                     instrument.Multiplier = inst.Multiplier;
                     instrument.Highest = inst.Highest;
                     instrument.Lowest = inst.Lowest;
+                    instrument.CommissionType = inst.Commission;
+                    instrument.OpenCommission = inst.OpenCommission;
+                    instrument.CloseCommission = inst.CloseCommission;
+                    instrument.CloseTodayCommission = inst.CloseTodayCommission;
                     instrument.Maturity = maturity;
                     //this.instruments.Add(inst.Id, instrument);
                     instrumentUnderlyings.Add(inst.Id, Tuple.Create(instrument, inst.Underlying, inst.HedgeUnderlying));

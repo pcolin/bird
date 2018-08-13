@@ -148,7 +148,18 @@ namespace client.Models
             var o = Proto.OrderReq.Parser.ParseFrom(bytes, pos, bytes.Count() - pos);
             if (o != null)
             {
+                this.orderManager.OnProtoMessage(o);
                 this.container.Resolve<EventAggregator>().GetEvent<PubSubEvent<Proto.OrderReq>>().Publish(o);
+            }
+        }
+
+        void OnTrade(byte[] bytes, int pos)
+        {
+            var t = Proto.Trade.Parser.ParseFrom(bytes, pos, bytes.Count() - pos);
+            if (t != null)
+            {
+                this.tradeManager.OnProtoMessage(t);
+                this.container.Resolve<EventAggregator>().GetEvent<PubSubEvent<Proto.Trade>>().Publish(t);
             }
         }
 
@@ -298,6 +309,7 @@ namespace client.Models
                         {"Heartbeat", (bytes, pos) => OnHeartbeat(bytes, pos)},
                         {"Price", (bytes, pos) => OnPrice(bytes, pos)},
                         {"OrderReq", (bytes, pos) => OnOrderReq(bytes, pos)},
+                        {"Trade", (bytes, pos) => OnTrade(bytes, pos)},
                         {"PositionReq", (bytes, pos) => OnPositionReq(bytes, pos)},
                         {"Cash", (bytes, pos) => OnCash(bytes, pos)},
                         {"InstrumentReq", (bytes, pos) => OnInstrumentReq(bytes, pos)},
@@ -324,6 +336,8 @@ namespace client.Models
                 this.pricerManager = this.container.Resolve<PricerManager>(exch);
                 this.quoterManager = this.container.Resolve<QuoterManager>(exch);
                 this.positionManager = this.container.Resolve<PositionManager>(exch);
+                this.orderManager = this.container.Resolve<OrderManager>(exch);
+                this.tradeManager = this.container.Resolve<TradeManager>(exch);
                 this.destrikerManager = this.container.Resolve<DestrikerManager>(exch);
                 this.strategyManager = this.container.Resolve<StrategySwitchManager>(exch);
                 while (running)
@@ -366,6 +380,8 @@ namespace client.Models
         private PricerManager pricerManager;
         private QuoterManager quoterManager;
         private PositionManager positionManager;
+        private OrderManager orderManager;
+        private TradeManager tradeManager;
         private DestrikerManager destrikerManager;
         private StrategySwitchManager strategyManager;
     }

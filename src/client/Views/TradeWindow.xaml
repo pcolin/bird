@@ -1,0 +1,49 @@
+﻿<Window x:Class="client.Views.TradeWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:client.Views"
+        Icon="/Images/bird_32x32.ico"
+        Title="Trades" Height="600" Width="800">
+    <Grid>
+        <Grid.Resources>
+            <local:DoubleToStringMultiConverter DefaultFormat="N2" x:Key="DoubleFormatConverter" />
+        </Grid.Resources>
+        <DataGrid Name="TradeDataGrid"
+                  AutoGenerateColumns="False"
+                  CanUserAddRows="False"
+                  CanUserSortColumns="False"
+                  IsReadOnly="True"
+                  RowHeaderWidth="0"
+                  HorizontalGridLinesBrush="LightGray"                      
+                  VerticalGridLinesBrush="LightGray"
+                  ItemsSource="{Binding Items}">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Exchange" Binding="{Binding Instrument.Exchange}"></DataGridTextColumn>
+                <DataGridTextColumn Header="Strategy" Binding="{Binding Order.StrategyType}"></DataGridTextColumn>
+                <DataGridTextColumn Header="ID" Binding="{Binding Trade.Id}"></DataGridTextColumn>
+                <DataGridTextColumn Header="OrderID" Binding="{Binding Trade.OrderId}"></DataGridTextColumn>
+                <!--<DataGridTextColumn Header="Status"></DataGridTextColumn>-->
+                <DataGridTextColumn Header="Time" Binding="{Binding Time, StringFormat={}{0:H:mm:ss.fff}}"></DataGridTextColumn>
+                <DataGridTextColumn Header="Instrument" Binding="{Binding Instrument.Id}"></DataGridTextColumn>
+                <DataGridTextColumn Header="Underlying" Binding="{Binding Instrument.HedgeUnderlying.Id}"></DataGridTextColumn>
+                <DataGridTextColumn Header="Type" Binding="{Binding Type}"></DataGridTextColumn>
+                <DataGridTextColumn Header="Side" Binding="{Binding Trade.Side}"></DataGridTextColumn>
+                <DataGridTextColumn Header="Price" Binding="{Binding Trade.Price}"></DataGridTextColumn>
+                <DataGridTextColumn Header="Volume" Binding="{Binding Trade.Volume}"></DataGridTextColumn>
+                <DataGridTextColumn Header="PnL">
+                    <DataGridTextColumn.Binding>
+                        <MultiBinding Converter="{StaticResource DoubleFormatConverter}">
+                            <Binding Path="PnL"></Binding>
+                            <Binding Path="Column.DisplayIndex" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGridCell}}" />
+                            <Binding Path="Formats" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}" />
+                        </MultiBinding>
+                    </DataGridTextColumn.Binding>
+                </DataGridTextColumn>
+                <DataGridTextColumn Header="Fee" Binding="{Binding Fee}"></DataGridTextColumn>
+                <DataGridTextColumn Header="OrderPrice" Binding="{Binding Order.Price}"></DataGridTextColumn>
+                <DataGridTextColumn Header="OrderVolume" Binding="{Binding Order.Volume}"></DataGridTextColumn>
+                <DataGridTextColumn Header="OrderTime" Binding="{Binding OrderTime, StringFormat={}{0:H:mm:ss.fff}}"></DataGridTextColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+    </Grid>
+</Window>

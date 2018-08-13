@@ -442,7 +442,7 @@ namespace client.Models
                                 PricingParameters parameters = null;
                                 if (pricing.Parameters.TryGetValue(maturity, out parameters))
                                 {
-                                    parameters.Rate = r.Rate;
+                                    parameters.SSRate = r.Rate;
                                     Calculate(pricing, maturity, parameters);
                                 }
                             }

@@ -29,6 +29,8 @@ namespace client.Models
         {
             bool ok = QueryInstruments();
             ok = ok && QueryPositions();
+            ok = ok && QueryOrders();
+            ok = ok && QueryTrades();
             ok = ok && QueryExchangeParameters();
             ok = ok && QueryInterestRates();
             ok = ok && QuerySSRates();
@@ -89,6 +91,54 @@ namespace client.Models
                     PositionManager positions = new PositionManager();
                     positions.OnProtoMessage(rep);
                     this.container.RegisterInstance<PositionManager>(exchange.ToString(), positions);
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private bool QueryOrders()
+        {
+            Proto.OrderReq req = new Proto.OrderReq();
+            req.Type = Proto.RequestType.Get;
+            req.User = user;
+
+            byte[] bytes = ProtoMessageCoder.Encode(req);
+            socket.Send(bytes);
+
+            bytes = socket.Receive();
+            if (bytes != null)
+            {
+                var rep = ProtoMessageCoder.Decode<Proto.OrderRep>(bytes);
+                if (rep.Result.Result)
+                {
+                    OrderManager manager = new OrderManager();
+                    manager.OnProtoMessage(rep);
+                    this.container.RegisterInstance<OrderManager>(exchange.ToString(), manager);
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private bool QueryTrades()
+        {
+            Proto.TradeReq req = new Proto.TradeReq();
+            req.Type = Proto.RequestType.Get;
+            req.User = user;
+
+            byte[] bytes = ProtoMessageCoder.Encode(req);
+            socket.Send(bytes);
+
+            bytes = socket.Receive();
+            if (bytes != null)
+            {
+                var rep = ProtoMessageCoder.Decode<Proto.TradeRep>(bytes);
+                if (rep.Result.Result)
+                {
+                    TradeManager manager = new TradeManager();
+                    manager.OnProtoMessage(rep);
+                    this.container.RegisterInstance<TradeManager>(exchange.ToString(), manager);
                     return true;
                 }
             }
