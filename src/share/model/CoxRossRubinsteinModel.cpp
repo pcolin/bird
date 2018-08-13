@@ -49,9 +49,9 @@ void CoxRossRubinsteinModel::Calculate(bool call, double s, double k, double v, 
   InitTree(st2_, pt2_, 2 * depth_, call, s, k, v, r, t);
   theo.theo = 2 * pt2_[0] - pt_[0];
   theo.delta = 2 * DeltaFromTree(pt2_, st2_) - DeltaFromTree(pt_, st_);
-  theo.theta = (2 * (pt2_[4] - pt2_[0]) / (t / depth_) - (pt_[4] - pt_[0]) / (2 * t / depth_)) /
-    PricingModel::AnnualTradingDays;
-  theo.gamma = 2 * GammaFromTree(pt2_, st2_) - GammaFromTree(pt_, st_);
+  // theo.theta = (2 * (pt2_[4] - pt2_[0]) / (t / depth_) - (pt_[4] - pt_[0]) / (2 * t / depth_)) /
+  //   PricingModel::AnnualTradingDays;
+  // theo.gamma = 2 * GammaFromTree(pt2_, st2_) - GammaFromTree(pt_, st_);
 }
 
 double CoxRossRubinsteinModel::CalculateDelta(bool call, double s, double k, double v, double r,

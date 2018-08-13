@@ -4,6 +4,7 @@
 #include "Middleware.h"
 #include "strategy/ClusterManager.h"
 #include "config/EnvConfig.h"
+#include "boost/format.hpp"
 
 ParameterManager* ParameterManager::GetInstance()
 {
@@ -124,6 +125,7 @@ void ParameterManager::Init()
       std::lock_guard<std::mutex> lck(volatility_curves_mtx_);
       for (auto &v : rep->curves())
       {
+        LOG_INF << "VolatilityCurve: " << v.ShortDebugString();
         auto *inst = ProductManager::GetInstance()->FindId(v.underlying());
         if (inst)
         {
@@ -136,6 +138,7 @@ void ParameterManager::Init()
           auto curve = Message::NewProto<Proto::VolatilityCurve>();
           curve->CopyFrom(v);
           (*it->second)[date] = curve;
+          LOG_DBG << "Add volatility curve of " << v.underlying() << '@' << v.maturity();
         }
       }
     }

@@ -58,15 +58,15 @@ void BlackScholesMertonModel::Calculate(bool call, double s, double k, double v,
   {
     theo.theo = CalculateCall(s, k);
     theo.delta = CalculateCallDelta();
-    theo.theta = CalculateCallTheta(s, k, v, r, q);
+    // theo.theta = CalculateCallTheta(s, k, v, r, q);
   }
   else
   {
     theo.theo = CalculatePut(s, k);
     theo.delta = CalculatePutDelta();
-    theo.theta = CalculatePutTheta(s, k, v, r, q);
+    // theo.theta = CalculatePutTheta(s, k, v, r, q);
   }
-  theo.gamma = CalculateGamma(s, v);
+  // theo.gamma = CalculateGamma(s, v);
 }
 
 double BlackScholesMertonModel::CalculateDelta(bool call, double s, double k, double v, double r,

@@ -635,13 +635,14 @@ void CtpTraderSpi::OnRtnOrder(CThostFtdcOrderField *pOrder)
   }
   else if (pOrder->OrderStatus == THOST_FTDC_OST_AllTraded)
   {
-    auto ord = api_->RemoveOrder(pOrder->OrderRef);
+    auto ord = api_->FindAndUpdate(pOrder->OrderRef, pOrder->VolumeTraded);
     if (ord)
     {
-      auto update = Message::NewOrder(ord);
-      update->executed_volume = pOrder->VolumeTraded;
-      update->status = Proto::OrderStatus::Filled;
-      api_->OnOrderResponse(update);
+      api_->OnOrderResponse(Message::NewOrder(ord));
+      // auto update = Message::NewOrder(ord);
+      // update->executed_volume = pOrder->VolumeTraded;
+      // update->status = Proto::OrderStatus::Filled;
+      // api_->OnOrderResponse(update);
     }
   }
   else if (pOrder->OrderStatus == THOST_FTDC_OST_PartTradedQueueing)
@@ -670,11 +671,11 @@ void CtpTraderSpi::OnRtnTrade(CThostFtdcTradeField *pTrade)
   const Instrument *inst = ProductManager::GetInstance()->FindId(pTrade->InstrumentID);
   if (inst)
   {
-    auto ord = api_->FindOrder(pTrade->OrderRef);
-    if (ord == nullptr)
-    {
-      ord = OrderManager::GetInstance()->FindOrder(pTrade->OrderSysID);
-    }
+    auto ord = api_->FindAndRemove(pTrade->OrderRef);
+    // if (ord == nullptr)
+    // {
+    //   ord = OrderManager::GetInstance()->FindOrder(pTrade->OrderSysID);
+    // }
     if (ord)
     {
       auto trade = Message::NewTrade();
@@ -740,12 +741,12 @@ void CtpTraderSpi::OnRspOrderAction(CThostFtdcInputOrderActionField *pInputOrder
     CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
 {
   assert (pInputOrderAction && pRspInfo);
-  LOG_ERR << boost::format("OnRspOrderAction: FrontID(%1%), SessionID(%2%), OrderRef(%3%), "
-      "OrderSysID(%4%), InstrumentID(%5%), ErrorID(%6%), ErrorMsg(%7%), nRequestID(%8%), "
-      "bIsLast(%9%)") %
-    pInputOrderAction->FrontID % pInputOrderAction->SessionID % pInputOrderAction->OrderRef %
-    pInputOrderAction->OrderSysID % pInputOrderAction->InstrumentID % pRspInfo->ErrorID %
-    base::GB2312ToUtf8(pRspInfo->ErrorMsg) % nRequestID % bIsLast;
+  LOG_ERR << boost::format("OnRspOrderAction: FrontID(%1%), SessionID(%2%), ExchangeID(%3%), "
+      "OrderRef(%4%), OrderSysID(%5%), InstrumentID(%6%), ErrorID(%7%), ErrorMsg(%8%), "
+      "nRequestID(%9%), bIsLast(%10%)") %
+    pInputOrderAction->FrontID % pInputOrderAction->SessionID % pInputOrderAction->ExchangeID %
+    pInputOrderAction->OrderRef % pInputOrderAction->OrderSysID % pInputOrderAction->InstrumentID %
+    pRspInfo->ErrorID % base::GB2312ToUtf8(pRspInfo->ErrorMsg) % nRequestID % bIsLast;
 }
 
 /// 交易所认为撤单非法
@@ -753,11 +754,11 @@ void CtpTraderSpi::OnErrRtnOrderAction(CThostFtdcOrderActionField *pOrderAction,
     CThostFtdcRspInfoField *pRspInfo)
 {
   assert (pOrderAction && pRspInfo);
-  LOG_ERR << boost::format("OnErrRtnOrderAction: FrontID(%1%), SessionID(%2%), OrderRef(%3%), "
-      "OrderSysID(%4%), InstrumentID(%5%), ErrorID(%6%), ErrorMsg(%7%)") %
-    pOrderAction->FrontID % pOrderAction->SessionID % pOrderAction->OrderRef %
-    pOrderAction->OrderSysID % pOrderAction->InstrumentID % pRspInfo->ErrorID %
-    base::GB2312ToUtf8(pRspInfo->ErrorMsg);
+  LOG_ERR << boost::format("OnErrRtnOrderAction: FrontID(%1%), SessionID(%2%), ExchangeID(%3%), "
+      "OrderRef(%4%), OrderSysID(%5%), InstrumentID(%6%), ErrorID(%7%), ErrorMsg(%8%)") %
+    pOrderAction->FrontID % pOrderAction->SessionID % pOrderAction->ExchangeID %
+    pOrderAction->OrderRef % pOrderAction->OrderSysID % pOrderAction->InstrumentID %
+    pRspInfo->ErrorID % base::GB2312ToUtf8(pRspInfo->ErrorMsg);
 }
 
 /// CTP认为撤Quote单非法

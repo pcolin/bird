@@ -1,4 +1,5 @@
 #include "Strategy.h"
+#include "StrategyDevice.h"
 #include "model/Middleware.h"
 // #include <sys/time.h>
 

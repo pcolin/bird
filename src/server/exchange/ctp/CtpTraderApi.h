@@ -37,7 +37,10 @@ public:
   OrderPtr FindAndUpdate(const char *order_ref);
   OrderPtr FindAndUpdate(const char *order_ref, const char *exchange_id);
   OrderPtr FindAndUpdate(const char *order_ref, int trade_volume);
+  OrderPtr FindAndRemove(const char *order_ref);
+  void FindAndCancel(size_t id);
   OrderPtr FindOrder(const char *order_ref);
+  bool FindOrder(size_t id, std::string &exchange_id);
   OrderPtr RemoveOrder(const char *order_ref);
 
 protected:
@@ -49,6 +52,8 @@ protected:
   void CancelQuote(const OrderPtr &bid, const OrderPtr &ask) override;
 
   virtual void QueryCash() override;
+
+  void CancelOrder(const Instrument* inst, size_t id, const std::string &exchange_id);
 
 private:
   void BuildTemplate();
@@ -68,6 +73,7 @@ private:
 
   std::mutex ref_mtx_;
   std::unordered_map<int, OrderPtr> order_refs_;
+  std::unordered_map<size_t, OrderPtr> order_ids_;
   // std::mutex pull_mtx_;
   // std::unordered_set<int> pulling_refs_;
   static const size_t capacity_ = 256;

@@ -14,6 +14,7 @@ public:
   virtual void OnStart() = 0;
   virtual void OnStop() = 0;
 
+  void Initialize(std::function<void(const std::string&)> f) { stop_ = f; }
   const std::string& Name() const { return name_; }
   const Instrument* Underlying() const { return dm_->GetUnderlying(); }
   const std::string& UnderlyingId() const { return dm_->GetUnderlying()->Id(); }
@@ -33,6 +34,8 @@ protected:
   void OnProtoMessage(const ProtoMessagePtr &message) { dispatcher_.OnProtoMessage(message); }
   virtual bool OnHeartbeat(const std::shared_ptr<Proto::Heartbeat> &heartbeat);
   virtual void OnLastEvent() {}
+
+  std::function<void(const std::string&)> stop_;
 
   const std::string name_;
   DeviceManager *dm_;

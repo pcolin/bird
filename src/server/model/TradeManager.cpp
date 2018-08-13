@@ -18,7 +18,8 @@ void TradeManager::Init()
 
 void TradeManager::OnTrade(const TradePtr &trade)
 {
-  LOG_INF << "OnTrade: " << trade->Dump();
+  // LOG_INF << "OnTrade: " << trade->Dump();
+  LOG_DBG << trade;
   const std::string exch_id = trade->id.substr(1);
   std::lock_guard<std::mutex> lck(mtx_);
   auto range = trades_.equal_range(exch_id);

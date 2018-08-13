@@ -1,7 +1,10 @@
 #include "TheoMatrix.h"
 #include "base/common/Likely.h"
 #include "base/common/Float.h"
+#include "base/logger/Logging.h"
 #include "boost/format.hpp"
+
+#include <iostream>
 
 void TheoData::InterpolateFrom(const TheoData &td1, const TheoData &td2)
 {
@@ -26,6 +29,7 @@ bool TheoMatrix::FindTheo(base::PriceType spot, TheoData &theo) const
   if (unlikely(base::IsEqual((double)tick, option->HedgeUnderlying()->ConvertToHalfTickRatio(spot))))
   {
     auto idx = tick - lower;
+    // LOG_DBG << tick << " " << idx;
     if (likely(idx >= 0 && idx < 2 * DEPTH + 1 && theos[idx]))
     {
       theo = theos[idx];
@@ -36,6 +40,7 @@ bool TheoMatrix::FindTheo(base::PriceType spot, TheoData &theo) const
   {
     auto idx1 = tick - lower;
     auto idx2 = idx1 + 1;
+    // LOG_DBG << tick << " " << idx1 << " " << lower << theos[idx2].spot;
     if (likely(idx1 >= 0 && idx2 < 2 * DEPTH + 1 && theos[idx2]))
     {
       theo.spot = spot;
@@ -46,15 +51,62 @@ bool TheoMatrix::FindTheo(base::PriceType spot, TheoData &theo) const
   return false;
 }
 
-std::string TheoMatrix::Dump() const
+// std::string TheoMatrix::Dump()
+// {
+//   // assert (option);
+//   if (option)
+//   {
+//   std::string id = option->Id();
+//   // LOG_DBG << "Begin to dump " << id;
+//   LOG_DBG << "Begin to dump " << option->Id();
+//   std::ostringstream oss;
+//   // LOG_DBG << "before to dump ";
+//   LOG_DBG << "before to dump " << option->Id();
+//   // oss << boost::format("%1% lower(%2%) upper(%3%)") % option->Id() % lower % upper;
+//   LOG_DBG << "Middle to dump " << option->Id();
+//   for (int i = 0; (i < 2 * DEPTH + 1) && theos[i]; ++i)
+//   {
+//     oss << " [" << i << '|' << theos[i].spot << '|' << theos[i].volatility << '|' << theos[i].ss_rate
+//       << '|' << theos[i].theo << '|' << theos[i].delta << '|' << theos[i].gamma << '|'
+//       << theos[i].theta << "]";
+//   }
+//   if (oss.good())
+//   {
+//     // LOG_DBG << "End to dump " << option->Id() << " : " << oss.str().size();
+//     return oss.str();
+//   }
+//   else
+//   {
+//     LOG_ERR << "Err stream";
+//     return "Err Stream";
+//   }
+//   // LOG_DBG << "End to dump " << option->Id();
+//   }
+//   else
+//   {
+//     LOG_DBG << "option is null";
+//   }
+// }
+
+namespace base
 {
-  std::ostringstream oss;
-  oss << boost::format("%1% lower(%2%) upper(%3%)") % option->Id() % lower % upper;
-  for (int i = 0; (i < 2 * DEPTH + 1) && theos[i]; ++i)
+LogStream& operator<<(LogStream& stream, const TheoMatrixPtr &matrix)
+{
+  stream << matrix->option->Id() << " lower(" << matrix->lower << ") upper(" << matrix->upper << ')';
+  for (int i = 0; (i < 2 * matrix->DEPTH + 1) && matrix->theos[i]; ++i)
   {
-    oss << " [" << i << '-' << theos[i].spot << '-' << theos[i].volatility << '-' << theos[i].ss_rate
-      << '-' << theos[i].theo << '-' << theos[i].delta << '-' << theos[i].gamma << '-'
-      << theos[i].theta << "]";
+    // double s = matrix->theos[i].spot;
+    // double v = matrix->theos[i].volatility;
+    // double ssr = matrix->theos[i].ss_rate;
+    // double t = matrix->theos[i].theo;
+    // double d = matrix->theos[i].delta;
+    // double g = matrix->theos[i].gamma;
+    // double th = matrix->theos[i].theta;
+    // stream << " [" << i << '|' << s << '|' << v << '|' << ssr << '|' << t << '|' << d << '|' << g << '|' << th << "]";
+    stream << " [" << i << '|' << matrix->theos[i].spot << '|' << matrix->theos[i].volatility << '|'
+      << matrix->theos[i].ss_rate << '|' << matrix->theos[i].theo << '|' << matrix->theos[i].delta
+      << '|' << matrix->theos[i].gamma << '|' << matrix->theos[i].theta << "]";
   }
-  return oss.str();
+  return stream;
+}
 }

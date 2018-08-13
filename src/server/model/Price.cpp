@@ -4,81 +4,81 @@
 #include "base/logger/Logging.h"
 #include <boost/format.hpp>
 
-std::string Price::Dump() const
-{
-  // return (boost::format("instrument(%1%), last(%2%), bid(%3%), ask(%4%), open(%5%), high(%6%), "
-  //   "low(%7%), close(%8%), amount(%9%), bid_volume(%10%), ask_volume(%11%), volume(%12%)")
-  //   % instrument->Id() % last % bid % ask % open % high % low % close % amount % bid_volume
-  //   % ask_volume % volume).str();
-  std::ostringstream oss;
-  if (instrument)
-  {
-    oss << instrument->Id() << ':';
-  }
-  if (last.price != base::PRICE_UNDEFINED)
-  {
-    oss << " last(" << last.price << '/' << last.volume << ") ";
-  }
-  if (bids[0])
-  {
-    oss << " bids { ";
-    for (int i = 0; i < LEVELS && bids[i]; ++i)
-    {
-      oss << bids[i].price << '/' << bids[i].volume << ' ';
-    }
-    oss << '}';
-  }
-  if (asks[0])
-  {
-    oss << " asks { ";
-    for (int i = 0; i < LEVELS && asks[i]; ++i)
-    {
-      oss << asks[i].price << '/' << asks[i].volume << ' ';
-    }
-    oss << '}';
-  }
-  if (adjusted_price != base::PRICE_UNDEFINED)
-  {
-    oss << " adjusted_price(" << adjusted_price << ") ";
-  }
-  if (adjust != base::PRICE_UNDEFINED)
-  {
-    oss << " adjust(" << adjust << ") ";
-  }
-  if (open != base::PRICE_UNDEFINED)
-  {
-    oss << " open(" << open << ") ";
-  }
-  if (high != base::PRICE_UNDEFINED)
-  {
-    oss << " high(" << high << ") ";
-  }
-  if (low != base::PRICE_UNDEFINED)
-  {
-    oss << " low(" << low << ") ";
-  }
-  if (close != base::PRICE_UNDEFINED)
-  {
-    oss << " close(" << close << ") ";
-  }
-  if (pre_close != base::PRICE_UNDEFINED)
-  {
-    oss << " pre_close(" << pre_close << ") ";
-  }
-  if (pre_settlement != base::PRICE_UNDEFINED)
-  {
-    oss << " pre_settlement(" << pre_settlement << ") ";
-  }
-  if (amount != base::PRICE_UNDEFINED)
-  {
-    oss << " amount(" << amount << ") ";
-  }
-  if (volume != base::VOLUME_UNDEFINED)
-  {
-    oss << " volume(" << volume << ") ";
-  }
-  return oss.str();
-}
+// std::string Price::Dump() const
+// {
+//   // return (boost::format("instrument(%1%), last(%2%), bid(%3%), ask(%4%), open(%5%), high(%6%), "
+//   //   "low(%7%), close(%8%), amount(%9%), bid_volume(%10%), ask_volume(%11%), volume(%12%)")
+//   //   % instrument->Id() % last % bid % ask % open % high % low % close % amount % bid_volume
+//   //   % ask_volume % volume).str();
+//   std::ostringstream oss;
+//   if (instrument)
+//   {
+//     oss << instrument->Id() << ':';
+//   }
+//   if (last.price != base::PRICE_UNDEFINED)
+//   {
+//     oss << " last(" << last.price << '/' << last.volume << ") ";
+//   }
+//   if (bids[0])
+//   {
+//     oss << " bids { ";
+//     for (int i = 0; i < LEVELS && bids[i]; ++i)
+//     {
+//       oss << bids[i].price << '/' << bids[i].volume << ' ';
+//     }
+//     oss << '}';
+//   }
+//   if (asks[0])
+//   {
+//     oss << " asks { ";
+//     for (int i = 0; i < LEVELS && asks[i]; ++i)
+//     {
+//       oss << asks[i].price << '/' << asks[i].volume << ' ';
+//     }
+//     oss << '}';
+//   }
+//   if (adjusted_price != base::PRICE_UNDEFINED)
+//   {
+//     oss << " adjusted_price(" << adjusted_price << ") ";
+//   }
+//   if (adjust != base::PRICE_UNDEFINED)
+//   {
+//     oss << " adjust(" << adjust << ") ";
+//   }
+//   if (open != base::PRICE_UNDEFINED)
+//   {
+//     oss << " open(" << open << ") ";
+//   }
+//   if (high != base::PRICE_UNDEFINED)
+//   {
+//     oss << " high(" << high << ") ";
+//   }
+//   if (low != base::PRICE_UNDEFINED)
+//   {
+//     oss << " low(" << low << ") ";
+//   }
+//   if (close != base::PRICE_UNDEFINED)
+//   {
+//     oss << " close(" << close << ") ";
+//   }
+//   if (pre_close != base::PRICE_UNDEFINED)
+//   {
+//     oss << " pre_close(" << pre_close << ") ";
+//   }
+//   if (pre_settlement != base::PRICE_UNDEFINED)
+//   {
+//     oss << " pre_settlement(" << pre_settlement << ") ";
+//   }
+//   if (amount != base::PRICE_UNDEFINED)
+//   {
+//     oss << " amount(" << amount << ") ";
+//   }
+//   if (volume != base::VOLUME_UNDEFINED)
+//   {
+//     oss << " volume(" << volume << ") ";
+//   }
+//   return oss.str();
+// }
 
 std::shared_ptr<Proto::Price> Price::Serialize() const
 {
@@ -144,6 +144,79 @@ std::shared_ptr<Proto::Price> Price::Serialize() const
     p->set_volume(volume);
   }
   return p;
+}
+
+namespace base
+{
+LogStream& operator<<(LogStream& stream, const PricePtr &price)
+{
+  assert(price && price->instrument);
+  stream << price->instrument->Id() << ':';
+
+  if (price->last.price != base::PRICE_UNDEFINED)
+  {
+    stream << " last(" << price->last.price << '/' << price->last.volume << ") ";
+  }
+  if (price->bids[0])
+  {
+    stream << " bids { ";
+    for (int i = 0; i < price->LEVELS && price->bids[i]; ++i)
+    {
+      stream << price->bids[i].price << '/' << price->bids[i].volume << ' ';
+    }
+    stream << '}';
+  }
+  if (price->asks[0])
+  {
+    stream << " asks { ";
+    for (int i = 0; i < price->LEVELS && price->asks[i]; ++i)
+    {
+      stream << price->asks[i].price << '/' << price->asks[i].volume << ' ';
+    }
+    stream << '}';
+  }
+  if (price->adjusted_price != base::PRICE_UNDEFINED)
+  {
+    stream << " adjusted_price(" << price->adjusted_price << ") ";
+  }
+  if (price->adjust != base::PRICE_UNDEFINED)
+  {
+    stream << " adjust(" << price->adjust << ") ";
+  }
+  if (price->open != base::PRICE_UNDEFINED)
+  {
+    stream << " open(" << price->open << ") ";
+  }
+  if (price->high != base::PRICE_UNDEFINED)
+  {
+    stream << " high(" << price->high << ") ";
+  }
+  if (price->low != base::PRICE_UNDEFINED)
+  {
+    stream << " low(" << price->low << ") ";
+  }
+  if (price->close != base::PRICE_UNDEFINED)
+  {
+    stream << " close(" << price->close << ") ";
+  }
+  if (price->pre_close != base::PRICE_UNDEFINED)
+  {
+    stream << " pre_close(" << price->pre_close << ") ";
+  }
+  if (price->pre_settlement != base::PRICE_UNDEFINED)
+  {
+    stream << " pre_settlement(" << price->pre_settlement << ") ";
+  }
+  if (price->amount != base::PRICE_UNDEFINED)
+  {
+    stream << " amount(" << price->amount << ") ";
+  }
+  if (price->volume != base::VOLUME_UNDEFINED)
+  {
+    stream << " volume(" << price->volume << ") ";
+  }
+  return stream;
+}
 }
 
 UnderlyingPrice::UnderlyingPrice(const Instrument *underlying)

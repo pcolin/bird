@@ -28,7 +28,7 @@ void TestStrategy::OnStop()
   {
     if (!it.second->IsInactive())
     {
-      LOG_INF << boost::format("Cancel order(stop): %1%") % it.second->Dump();
+      LOG_INF << "Cancel order(stop): " << it.second;
       api_->Cancel(it.second);
     }
   }
@@ -36,7 +36,7 @@ void TestStrategy::OnStop()
 
 void TestStrategy::OnPrice(const PricePtr &price)
 {
-  LOG_INF << "OnPrice : " << price->Dump();
+  LOG_DBG << price;
   if (price->instrument->Type() == Proto::InstrumentType::Option)
   {
     auto it = orders_.find(price->instrument);
@@ -45,7 +45,7 @@ void TestStrategy::OnPrice(const PricePtr &price)
       if (it->second && std::abs(price->last - it->second->price) >= 5)
       {
         api_->Cancel(it->second);
-        LOG_INF << boost::format("Cancel order(pull to resubmit): %1%") % it->second->Dump();
+        LOG_INF << "Cancel order(pull to resubmit): " << it->second;
       }
     }
     else
@@ -60,7 +60,7 @@ void TestStrategy::OnPrice(const PricePtr &price)
 
 void TestStrategy::OnOrder(const OrderPtr &order)
 {
-  LOG_INF << "OnOrder : " << order->Dump();
+  LOG_DBG << order;
   if (order->strategy == name_)
   {
     if (order->IsInactive())
@@ -80,7 +80,7 @@ void TestStrategy::OnOrder(const OrderPtr &order)
 
 void TestStrategy::OnTrade(const TradePtr &trade)
 {
-  LOG_INF << "OnTrade: " << trade->Dump();
+  LOG_DBG << trade;
 }
 
 bool TestStrategy::OnStrategyOperate(const std::shared_ptr<Proto::StrategyOperate> &msg)

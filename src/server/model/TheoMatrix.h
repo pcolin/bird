@@ -26,7 +26,7 @@ struct TheoMatrix
 
   TheoMatrix() : header(MsgType::TheoMatrix) {}
   bool FindTheo(base::PriceType spot, TheoData &theo) const;
-  std::string Dump() const;
+  // std::string Dump();
 
   MsgHeader header;
   // char pricing_name[16] = {0};
@@ -37,5 +37,11 @@ struct TheoMatrix
 };
 
 typedef std::shared_ptr<TheoMatrix> TheoMatrixPtr;
+
+namespace base
+{
+class LogStream;
+LogStream& operator<<(LogStream& stream, const TheoMatrixPtr &matrix);
+}
 
 #endif

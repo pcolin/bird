@@ -37,36 +37,42 @@ void TraderApi::Submit(const OrderPtr &order)
 {
   auto r = std::make_shared<OrderRequest>(order, Proto::OrderAction::Submit);
   request_queue_.enqueue(r);
+  LOG_INF << "Submit order: " << order;
 }
 
 void TraderApi::Submit(const OrderPtr &bid, const OrderPtr &ask)
 {
   auto r = std::make_shared<QuoteRequest>(bid, ask, Proto::OrderAction::Submit);
   request_queue_.enqueue(r);
+  LOG_INF << "Submit quote: bid(" << bid << ") ask(" << ask << ')';
 }
 
 void TraderApi::Amend(const OrderPtr &order)
 {
   auto r = std::make_shared<OrderRequest>(order, Proto::OrderAction::Amend);
   request_queue_.enqueue(r);
+  LOG_INF << "Amend order: " << order;
 }
 
 void TraderApi::Amend(const OrderPtr &bid, const OrderPtr &ask)
 {
   auto r = std::make_shared<QuoteRequest>(bid, ask, Proto::OrderAction::Amend);
   request_queue_.enqueue(r);
+  LOG_INF << "Amend quote: bid(" << bid << ") ask(" << ask << ')';
 }
 
 void TraderApi::Cancel(const OrderPtr &order)
 {
   auto r = std::make_shared<OrderRequest>(order, Proto::OrderAction::Cancel);
   request_queue_.enqueue(r);
+  LOG_INF << "Cancel order: " << order;
 }
 
 void TraderApi::Cancel(const OrderPtr &bid, const OrderPtr &ask)
 {
   auto r = std::make_shared<QuoteRequest>(bid, ask, Proto::OrderAction::Cancel);
   request_queue_.enqueue(r);
+  LOG_INF << "Cancel quote: bid(" << bid << ") ask(" << ask << ')';
 }
 
 void TraderApi::CancelAll()
@@ -132,10 +138,13 @@ void TraderApi::OnQuoteRequest(const QuoteRequestPtr &r)
   {
     case Proto::OrderAction::Submit:
       SubmitQuote(r->bid, r->ask);
+      break;
     case Proto::OrderAction::Cancel:
       CancelQuote(r->bid, r->ask);
+      break;
     case Proto::OrderAction::Amend:
       AmendQuote(r->bid, r->ask);
+      break;
     default:
       assert(false);
   }

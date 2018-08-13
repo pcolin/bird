@@ -53,14 +53,15 @@ void CtpTraderApi::Init()
         LOG_INF << boost::format("Get %1% saved orders") % cnt;
         for (size_t i = 0; i < cnt; ++i)
         {
-          auto ord = OrderManager::GetInstance()->FindActiveOrder(ids[i]);
-          if (ord)
-          {
-            if (!ord->counter_id.empty())
-              CancelOrder(ord);
-            else
-              pulling_ids_.enqueue(ids[i]);
-          }
+          FindAndCancel(ids[i]);
+          // auto ord = OrderManager::GetInstance()->FindActiveOrder(ids[i]);
+          // if (ord)
+          // {
+          //   if (!ord->counter_id.empty())
+          //     CancelOrder(ord);
+          //   else
+          //     pulling_ids_.enqueue(ids[i]);
+          // }
         }
       }
     });
@@ -162,6 +163,7 @@ void CtpTraderApi::SubmitOrder(const OrderPtr &order)
     copy->header.SetInterval(0);
     std::lock_guard<std::mutex> lck(ref_mtx_);
     order_refs_[order_ref_] = copy;
+    order_ids_[copy->id] = copy;
   }
   int id = req_id_++;
   int ret = api_->ReqOrderInsert(&field, id);
@@ -172,7 +174,7 @@ void CtpTraderApi::SubmitOrder(const OrderPtr &order)
     // ord->status = OrderStatus::Submitted;
     // ord->header.SetInterval(0);
     // OnOrderResponse(ord);
-    LOG_INF << "Success to send order request " << id;
+    LOG_INF << "Success to send order submit request " << id;
     // LOG_INF << boost::format("Field: %1%,%2%,%3%,%4%,%5%,%6%,%7%,%8%,%9%,%10%,%11%,%12%,%13%,%14%,"
     //     "%15%,%16%") %
     //   field.BrokerID % field.InvestorID % field.InstrumentID % field.OrderRef % field.Direction %
@@ -182,11 +184,12 @@ void CtpTraderApi::SubmitOrder(const OrderPtr &order)
   }
   else
   {
-    LOG_ERR << "Failed to send order request: " << ret;
+    LOG_ERR << "Failed to send order submit request: " << ret;
     order->note = std::move((boost::format("Send fail %1%") % ret).str());
     RejectOrder(order);
     std::lock_guard<std::mutex> lck(ref_mtx_);
     order_refs_.erase(order_ref_);
+    order_ids_.erase(order->id);
   }
 }
 
@@ -204,55 +207,37 @@ void CtpTraderApi::AmendQuote(const OrderPtr &bid, const OrderPtr &ask)
 
 void CtpTraderApi::CancelOrder(const OrderPtr &order)
 {
-  if (unlikely(!order)) return;
+  // if (unlikely(!order)) return;
 
-  if (unlikely(order->IsInactive()))
-  {
-    LOG_INF << "Order is completed.";
-    return;
-  }
+  // if (unlikely(order->IsInactive()))
+  // {
+  //   LOG_INF << "Order is completed.";
+  //   return;
+  // }
+  assert(order && !order->IsInactive());
 
-  std::string counter_id = order->counter_id;
-  if (counter_id.empty())
+  std::string exchange_id = order->exchange_id;
+  if (exchange_id.empty())
   {
-    auto ord = OrderManager::GetInstance()->FindActiveOrder(order->id);
-    if (ord)
+    auto ord = FindOrder(order->id, exchange_id);
+    if (FindOrder(order->id, exchange_id))
     {
-      if (ord->counter_id.empty())
+      if (exchange_id.empty())
       {
         LOG_INF << boost::format("Counter ID of %1% is unavailable, saved...") % order->id;
         pulling_ids_.enqueue(order->id);
         return;
       }
-      else
-      {
-        LOG_INF << "Original counter id is empty, but find one";
-        counter_id = ord->counter_id;
-      }
+      LOG_INF << "Original exchange id is empty, but find one";
     }
     else
     {
-      LOG_INF << "Order is completed.";
+      LOG_INF << boost::format("Order %1% is completed") % order->id;
       return;
     }
   }
 
-  CThostFtdcInputOrderActionField field(pull_order_);
-  strcpy(field.InstrumentID, order->instrument->Symbol().c_str());
-  strcpy(field.OrderRef, counter_id.c_str());
-  int id = req_id_++;
-  int ret = api_->ReqOrderAction(&field, id);
-  if (ret == 0)
-  {
-    LOG_INF << boost::format("Success to send order action request %1% (InstrumentID:%2%, FrontID:"
-        "%3%, SessionID:%4%, OrderRef:%5%)") %
-      id % field.InstrumentID % field.FrontID % field.SessionID % field.OrderRef;
-  }
-  else
-  {
-    pulling_ids_.enqueue(order->id);
-    LOG_ERR << "Failed to send order action request: " << ret;
-  }
+  CancelOrder(order->instrument, order->id, exchange_id);
 }
 
 void CtpTraderApi::CancelQuote(const OrderPtr &bid, const OrderPtr &ask)
@@ -262,6 +247,26 @@ void CtpTraderApi::CancelQuote(const OrderPtr &bid, const OrderPtr &ask)
 // void CtpTraderApi::CancelAll()
 // {
 // }
+
+void CtpTraderApi::CancelOrder(const Instrument* inst, size_t id, const std::string &exchange_id)
+{
+  CThostFtdcInputOrderActionField field(pull_order_);
+  strcpy(field.InstrumentID, inst->Symbol().c_str());
+  strcpy(field.OrderSysID, exchange_id.c_str());
+  int req_id = req_id_++;
+  int ret = api_->ReqOrderAction(&field, req_id);
+  if (ret == 0)
+  {
+    LOG_INF << boost::format("Success to send order cancel request %1% ("
+        "InstrumentID:%2%, ExchangeID:%3%, OrderSysID:%4%)") %
+      req_id % field.InstrumentID % field.ExchangeID % field.OrderSysID;
+  }
+  else
+  {
+    pulling_ids_.enqueue(id);
+    LOG_ERR << "Failed to send order cancel request: " << ret;
+  }
+}
 
 void CtpTraderApi::QueryInstruments()
 {
@@ -448,8 +453,9 @@ void CtpTraderApi::OnUserLogin(int order_ref, int front_id, int session_id)
   new_order_.ContingentCondition = THOST_FTDC_CC_Immediately; /// Must be set!!!
 
   memset(&pull_order_, 0, sizeof(pull_order_));
-  pull_order_.FrontID = front_id;
-  pull_order_.SessionID = session_id;
+  // pull_order_.FrontID = front_id;
+  // pull_order_.SessionID = session_id;
+  strcpy(pull_order_.ExchangeID, exchange_.c_str());
   strcpy(pull_order_.BrokerID, broker_.c_str());
   strcpy(pull_order_.InvestorID, investor_.c_str());
   pull_order_.ActionFlag = THOST_FTDC_AF_Delete;
@@ -511,7 +517,6 @@ OrderPtr CtpTraderApi::FindAndUpdate(const char *order_ref, const char *exchange
   return nullptr;
 }
 
-
 OrderPtr CtpTraderApi::FindAndUpdate(const char *order_ref, int trade_volume)
 {
   int ref = atoi(order_ref);
@@ -521,7 +526,8 @@ OrderPtr CtpTraderApi::FindAndUpdate(const char *order_ref, int trade_volume)
   {
     if (trade_volume > it->second->executed_volume)
     {
-      it->second->status = Proto::OrderStatus::PartialFilled;
+      it->second->status = (trade_volume < it->second->volume) ? Proto::OrderStatus::PartialFilled :
+        Proto::OrderStatus::Filled;
       it->second->executed_volume = trade_volume;
       return it->second;
     }
@@ -529,6 +535,24 @@ OrderPtr CtpTraderApi::FindAndUpdate(const char *order_ref, int trade_volume)
   else
   {
     LOG_ERR << "Can't find order by ref " << order_ref;
+  }
+  return nullptr;
+}
+
+OrderPtr CtpTraderApi::FindAndRemove(const char *order_ref)
+{
+  int ref = atoi(order_ref);
+  std::lock_guard<std::mutex> lck(ref_mtx_);
+  auto it = order_refs_.find(ref);
+  if (it != order_refs_.end())
+  {
+    OrderPtr ord = it->second;
+    if (ord->IsInactive())
+    {
+      order_refs_.erase(it);
+      order_ids_.erase(ord->id);
+    }
+    return ord;
   }
   return nullptr;
 }
@@ -541,6 +565,44 @@ OrderPtr CtpTraderApi::FindOrder(const char *order_ref)
   return it != order_refs_.end() ? it->second : nullptr;
 }
 
+bool CtpTraderApi::FindOrder(size_t id, std::string &exchange_id)
+{
+  std::lock_guard<std::mutex> lck(ref_mtx_);
+  auto it = order_ids_.find(id);
+  if (it != order_ids_.end())
+  {
+    exchange_id = it->second->exchange_id;
+    return true;
+  }
+  return false;
+}
+
+void CtpTraderApi::FindAndCancel(size_t id)
+{
+  const Instrument *inst = nullptr;
+  std::string exchange_id;
+  {
+    std::lock_guard<std::mutex> lck(ref_mtx_);
+    auto it = order_ids_.find(id);
+    if (it != order_ids_.end())
+    {
+      inst = it->second->instrument;
+      exchange_id = it->second->exchange_id;
+    }
+  }
+  if (inst)
+  {
+    if (exchange_id.empty())
+    {
+      pulling_ids_.enqueue(id);
+    }
+    else
+    {
+      CancelOrder(inst, id, exchange_id);
+    }
+  }
+}
+
 OrderPtr CtpTraderApi::RemoveOrder(const char *order_ref)
 {
   int ref = atoi(order_ref);
@@ -550,6 +612,7 @@ OrderPtr CtpTraderApi::RemoveOrder(const char *order_ref)
   {
     OrderPtr ord = it->second;
     order_refs_.erase(it);
+    order_ids_.erase(ord->id);
     return ord;
   }
   return nullptr;

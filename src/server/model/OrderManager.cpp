@@ -111,7 +111,7 @@ void OrderManager::UpdateOrder(const OrderPtr &order)
     auto inactive_order = inactive_manager_.FindOrder(order->id);
     if (unlikely(!!inactive_order))
     {
-      LOG_ERR << boost::format("Order becomes to active from inactive (%1%)") % order->Dump();
+      LOG_ERR << "Order becomes to active from inactive (" << order << ')';
       inactive_manager_.Remove(order);
     }
     active_orders_[order->id] = order;
@@ -131,7 +131,7 @@ void OrderManager::Dump()
   LOG_INF << boost::format("Dump %1% active orders...") % active_orders_.size();
   for (auto &it : active_orders_)
   {
-    LOG_INF << it.second->Dump();
+    LOG_INF << it.second;
   }
   inactive_manager_.Dump();
 }

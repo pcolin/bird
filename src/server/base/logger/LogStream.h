@@ -33,15 +33,21 @@ class FixedBuffer : boost::noncopyable
   void append(const char* /*restrict*/ buf, size_t len)
   {
     // FIXME: append partially
-    if (implicit_cast<size_t>(avail()) > len)
+    size_t left = implicit_cast<size_t>(avail());
+    if (left > len)
     {
       memcpy(cur_, buf, len);
       cur_ += len;
     }
     else
     {
-      memcpy(cur_, "......", 6);
-      cur_ += 6;
+      const int ELLIPSIS_LENGTH = 6;
+      if (left > ELLIPSIS_LENGTH )
+      {
+        memcpy(cur_, "......", ELLIPSIS_LENGTH );
+        cur_ += ELLIPSIS_LENGTH;
+      }
+      // stop(); /// write all buffer
     }
   }
 
@@ -52,6 +58,7 @@ class FixedBuffer : boost::noncopyable
   char* current() { return cur_; }
   int avail() const { return static_cast<int>(end() - cur_); }
   void add(size_t len) { cur_ += len; }
+  void stop() { cur_ = data_ + sizeof data_; }
 
   void reset() { cur_ = data_; }
   void bzero() { ::bzero(data_, sizeof data_); }

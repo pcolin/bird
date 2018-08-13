@@ -368,8 +368,7 @@ inline void Prettify(char* buffer, int &length, int k) {
     // 1234e-2 -> 12.34
     std::memmove(&buffer[kk + 1], &buffer[kk], length - kk);
     buffer[kk] = '.';
-    buffer[length + 1] = '\0';
-    ++length;
+    buffer[++length] = '\0';
   }
   else if (-6 < kk && kk <= 0) {
     // 1234e-6 -> 0.001234
@@ -379,8 +378,8 @@ inline void Prettify(char* buffer, int &length, int k) {
     buffer[1] = '.';
     for (int i = 2; i < offset; i++)
       buffer[i] = '0';
-    buffer[length + offset] = '\0';
     length += offset;
+    buffer[length] = '\0';
   }
   else if (length == 1) {
     // 1e30
@@ -403,7 +402,7 @@ inline int dtoa_milo(double value, char* buffer) {
     buffer[1] = 'a';
     buffer[2] = 'N';
     buffer[3] = '\0';
-    return 4;
+    return 3;
   }
   else if (unlikely(isinf(value)))
   {
@@ -411,14 +410,14 @@ inline int dtoa_milo(double value, char* buffer) {
     buffer[1] = 'n';
     buffer[2] = 'f';
     buffer[3] = '\0';
-    return 4;
+    return 3;
   }
   if (value == 0) {
     buffer[0] = '0';
     buffer[1] = '.';
     buffer[2] = '0';
     buffer[3] = '\0';
-    return 4;
+    return 3;
   }
   else {
     if (value < 0) {

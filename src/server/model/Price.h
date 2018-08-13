@@ -47,11 +47,17 @@ struct Price
   PriceType amount = PRICE_UNDEFINED;
   VolumeType volume = VOLUME_UNDEFINED;
 
-  std::string Dump() const;
+  // std::string Dump() const;
   std::shared_ptr<Proto::Price> Serialize() const;
 };
 
 typedef std::shared_ptr<Price> PricePtr;
+
+namespace base
+{
+class LogStream;
+LogStream& operator<<(LogStream& stream, const PricePtr &price);
+}
 
 class UnderlyingPrice
 {

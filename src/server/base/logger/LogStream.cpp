@@ -49,6 +49,10 @@ void LogStream::formatInteger(T v)
     size_t len = convert(buffer_.current(), v);
     buffer_.add(len);
   }
+  else
+  {
+    buffer_.stop();
+  }
 }
 
 LogStream& LogStream::operator<<(short v)
@@ -110,6 +114,10 @@ LogStream& LogStream::operator<<(const void* p)
     size_t len = convertHex(buf+2, v);
     buffer_.add(len+2);
   }
+  else
+  {
+    buffer_.stop();
+  }
   return *this;
 }
 
@@ -118,9 +126,12 @@ LogStream& LogStream::operator<<(double v)
 {
   if (buffer_.avail() >= kMaxNumericSize)
   {
-    // int len = snprintf(buffer_.current(), kMaxNumericSize, "%.12g", v);
     int len = dtoa_milo(v, buffer_.current());
     buffer_.add(len);
+  }
+  else
+  {
+    buffer_.stop();
   }
   return *this;
 }

@@ -38,7 +38,8 @@ public:
   void Stop(const std::string& name, const std::string &reason);
   void StopAll(const std::string &reason);
   void Publish(std::shared_ptr<Price> &price);
-  std::shared_ptr<StrategyDevice> FindStrategyDevice(const std::string &name) const;
+  std::shared_ptr<StrategyDevice> Find(const std::string &name) const;
+  void Remove(const std::string &name);
 
   void OnStrategyOperate(const std::string &user, const Proto::StrategyOperate &op);
   // void OnQuoterSpec(const std::string &user, Proto::RequestType type,

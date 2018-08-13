@@ -8,7 +8,7 @@
 struct Trade
 {
   Trade() : header(MsgType::Trade) {}
-  std::string Dump() const;
+  // std::string Dump() const;
   std::shared_ptr<Proto::Trade> Serialize() const;
 
   MsgHeader header;
@@ -22,5 +22,11 @@ struct Trade
 };
 
 typedef std::shared_ptr<Trade> TradePtr;
+
+namespace base
+{
+class LogStream;
+LogStream& operator<<(LogStream& stream, const TradePtr &order);
+}
 
 #endif

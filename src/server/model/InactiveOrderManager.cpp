@@ -102,7 +102,7 @@ void InactiveOrderManager::Dump() const
       cnt += orders.size();
       for(auto &it : orders)
       {
-        LOG_INF << it.second->Dump();
+        LOG_INF << it.second;
       }
     }
   }

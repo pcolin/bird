@@ -30,6 +30,10 @@ public:
   std::shared_ptr<Proto::Pricer> FindPricer(const Instrument *underlying);
   std::shared_ptr<Proto::QuoterSpec> FindQuoter(const std::string &name);
   std::vector<std::shared_ptr<Proto::QuoterSpec>> FindQuoters(const Instrument *underlying);
+  std::vector<std::shared_ptr<Proto::Credit>> FindCredits(
+      Proto::StrategyType strategy, const Instrument *underlying);
+  std::shared_ptr<Proto::StrategySwitch> FindStrategySwitch(
+      Proto::StrategyType strategy, const Instrument* op);
 
   void OnHeartbeat(const std::shared_ptr<Proto::Heartbeat> &heartbeat);
   void OnInstrumentReq(const std::shared_ptr<Proto::InstrumentReq> &req);
@@ -61,12 +65,12 @@ private:
   std::unordered_map<std::string, std::shared_ptr<Proto::Pricer>> pricers_;
   std::mutex pricer_mtx_;
 
-  typedef std::unordered_map<const Instrument*,
+  typedef std::unordered_map<std::string,
           std::map<boost::gregorian::date, std::shared_ptr<Proto::Credit>>> CreditMap;
   std::vector<CreditMap> credits_;
   std::mutex credit_mtx_;
 
-  typedef std::unordered_map<const Option*, std::shared_ptr<Proto::StrategySwitch>> SwitchMap;
+  typedef std::unordered_map<std::string, std::shared_ptr<Proto::StrategySwitch>> SwitchMap;
   std::vector<SwitchMap> switches_;
   std::mutex switch_mtx_;
 

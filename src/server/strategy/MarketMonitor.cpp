@@ -41,7 +41,7 @@ void MarketMonitor::OnStop()
 
 void MarketMonitor::OnPrice(const PricePtr &price)
 {
-  LOG_INF << "OnPrice : " << price->Dump();
+  LOG_DBG << price;
   struct timeval tv;
   gettimeofday(&tv, NULL);
   int now = tv.tv_sec;

@@ -3,6 +3,7 @@
 #include <condition_variable>
 #include <boost/format.hpp>
 #include "base/common/Version.h"
+#include "base/common/Dtoa.h"
 #include "base/logger/Logging.h"
 #include "Server.pb.h"
 #include "config/EnvConfig.h"
@@ -43,6 +44,23 @@ int main(int argc, char *args[])
       });
   LOG_INF << boost::format("Welcome BIRD-Server %1%.%2%.%3%, build date: %4%") %
     VER_MAJOR % VER_MINOR % VER_PATCH % __DATE__;
+
+  // double v0 = 0;
+  // char buffer0[32] = {'a'};
+  // buffer0[31] = '\0';
+  // int len0 = dtoa_milo(v0, buffer0);
+
+
+  // double v1 = 1234e-6;
+  // char buffer1[32] = {'a'};
+  // buffer1[31] = '\0';
+  // int len1 = dtoa_milo(v1, buffer1);
+
+  // double v = 0.1234567890123456789;
+  // char buffer[32] = {'a'};
+  // buffer[31] = '\0';
+  // int len = dtoa_milo(v, buffer);
+  // assert(len == 32);
 
   Middleware::GetInstance()->Init();
   LOG_INF << "Middleware is running now";

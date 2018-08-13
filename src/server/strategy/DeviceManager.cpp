@@ -136,16 +136,29 @@ void DeviceManager::StopAll(const std::string &reason)
   }
 }
 
-std::shared_ptr<StrategyDevice> DeviceManager::FindStrategyDevice(const std::string &name) const
+std::shared_ptr<StrategyDevice> DeviceManager::Find(const std::string &name) const
 {
   auto it = devices_.find(name);
   return it != devices_.end() ? it->second : nullptr;
 }
 
+void DeviceManager::Remove(const std::string &name)
+{
+  auto it = devices_.find(name);
+  if (it != devices_.end())
+  {
+    if (it->second->IsRunning())
+    {
+      it->second->Stop("delete quoter");
+    }
+    devices_.erase(it);
+  }
+}
+
 void DeviceManager::OnStrategyOperate(const std::string &user, const Proto::StrategyOperate &op)
 {
   bool publish = false;
-  auto sd = FindStrategyDevice(op.name());
+  auto sd = Find(op.name());
   if (sd)
   {
     if (sd->IsRunning())
@@ -169,6 +182,10 @@ void DeviceManager::OnStrategyOperate(const std::string &user, const Proto::Stra
       }
       sd->Start();
     }
+  }
+  else
+  {
+    LOG_ERR << "Can't find strategy " << op.name();
   }
   LOG_PUB << boost::format("%1% %2% %3%") % user % Proto::StrategyOperation_Name(op.operate()) %
     op.name() ;

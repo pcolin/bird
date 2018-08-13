@@ -73,6 +73,10 @@ base::ProtoMessagePtr Middleware::Request(const google::protobuf::Message &reque
         }
         nn_freemsg(msg);
       }
+      else
+      {
+        LOG_ERR << "Failed to receive message: " << nn_strerror(nn_errno());
+      }
     }
     else
     {

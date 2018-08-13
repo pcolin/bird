@@ -66,11 +66,28 @@ base::ProtoMessagePtr CreditDB::OnRequest(const std::shared_ptr<Proto::CreditReq
       ExecSql(sql);
       auto &credits = caches_[c.strategy()][c.underlying()];
       auto it = credits.find(m);
-      if (it == credits.end())
+      if (it != credits.end())
       {
-        it = credits.emplace(m, Message::NewProto<Proto::Credit>()).first;
+        it->second->CopyFrom(c);
+        sprintf(sql, "DELETE FROM %s WHERE strategy=%d AND EXISTS"
+            "(SELECT id FROM '%s' WHERE hedge_underlying='%s' AND maturity='%s')",
+            record_table_name_.c_str(), c.strategy(), instrument_db_.TableName().c_str(),
+            c.underlying().c_str(), m.c_str());
+        ExecSql(sql);
       }
-      it->second->CopyFrom(c);
+      else
+      {
+        auto credit = Message::NewProto<Proto::Credit>();
+        credit->CopyFrom(c);
+        credits.emplace(m, credit);
+      }
+
+      for (auto &r : c.records())
+      {
+        sprintf(sql, "INSERT INTO '%s' VALUES(%d, '%s', %f)", record_table_name_.c_str(),
+            c.strategy(), r.option().c_str(), r.credit());
+        ExecSql(sql);
+      }
     }
   }
   else if (type == Proto::RequestType::Del) { }

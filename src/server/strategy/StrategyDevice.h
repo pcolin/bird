@@ -27,7 +27,8 @@ private:
   base::SequenceBarrier *barrier_;
   base::Sequence sequence_;
 
-  std::unique_ptr<std::thread> thread_;
+  std::thread thread_;
+  // std::unique_ptr<std::thread> thread_;
   std::atomic<bool> running_;
 };
 

@@ -87,9 +87,10 @@ void PositionDB::Run()
           struct tm *t = localtime(&seconds);
           size_t cnt = strftime(time, sizeof(time), "%Y-%m-%d %H:%M:%S", t);
           snprintf(time + cnt, sizeof(time) - cnt, ".%06ld", p.time() % 1000000);
-          sprintf(sql, "INSERT OR REPLACE INTO %s VALUES('%s', %d, %d, %d, %d, %d, %d, '%s')",
-                  table_name_.c_str(), p.instrument().c_str(), p.total_long(), p.liquid_long(),
-                  p.yesterday_long(), p.total_short(), p.liquid_short(), p.yesterday_short(), time);
+          sprintf(sql, "INSERT OR REPLACE INTO %s VALUES('%s', %d, %d, %d, %d, %d, %d, %d, %d, '%s')"
+                  ,table_name_.c_str(), p.instrument().c_str(), p.total_long(), p.liquid_long(),
+                  p.liquid_yesterday_long(), p.yesterday_long(), p.total_short(), p.liquid_short(),
+                  p.liquid_yesterday_short(), p.yesterday_short(), time);
           ExecSql(sql);
           {
             std::lock_guard<std::mutex> lck(mtx_);

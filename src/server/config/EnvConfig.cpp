@@ -51,6 +51,9 @@ EnvConfig::EnvConfig()
     { static_cast<int8_t>(EnvVar::ORDER_GC_THRESHOLD), "GC_THRESHOLD" },
     { static_cast<int8_t>(EnvVar::NIGHT_SESSION_TIME), "NIGHT_SESSION_TIME" },
     { static_cast<int8_t>(EnvVar::CLOSE_TODAY_POS), "CLOSE_TODAY_POS" },
+    { static_cast<int8_t>(EnvVar::SUPPORT_QUOTE), "SUPPORT_QUOTE" },
+    { static_cast<int8_t>(EnvVar::AMEND_QUOTE), "AMEND_QUOTE" },
+    { static_cast<int8_t>(EnvVar::SIDE_QUOTE), "SIDE_QUOTE" },
 
     /// ctp
     { static_cast<int8_t>(EnvVar::CTP_TRADE_ADDR), "CTP_TRADE_ADDR" },

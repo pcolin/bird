@@ -123,9 +123,11 @@ bool TheoCalculator::Initialize(const std::shared_ptr<Proto::Pricer> &spec)
         param->volatility->spcr = vc->spcr();
         param->volatility->sccr = vc->sccr();
       }
-      else if (param->volatility)
+      else/// if (param->volatility)
       {
         param->volatility.reset();
+        LOG_WAN << boost::format("Volatility curve of %1% for %2% is null") %
+          to_iso_string(maturity) % underlying->Id();
       }
 
       auto it = parameters_.find(option->Maturity());
@@ -147,7 +149,7 @@ bool TheoCalculator::Initialize(const std::shared_ptr<Proto::Pricer> &spec)
 void TheoCalculator::OnPrice(const PricePtr &price)
 {
   price->header.SetInterval(0);
-  LOG_INF << "OnPrice : " << price->Dump();
+  LOG_DBG << price;
   tick_ = price->instrument->ConvertToHalfTick(price->adjusted_price);
   if (tick_ < lower_ || tick_ > upper_)
   {
@@ -184,29 +186,32 @@ void TheoCalculator::OnPrice(const PricePtr &price)
 
 void TheoCalculator::OnTrade(const TradePtr &trade)
 {
-  const Option* op = base::down_cast<const Option*>(trade->instrument);
-  auto it = parameters_.find(op->Maturity());
-  if (it != parameters_.end())
+  if (trade->instrument->Type() == Proto::InstrumentType::Option)
   {
-    auto p = it->second.find(op);
-    if (p != it->second.end() && tick_)
+    const Option* op = base::down_cast<const Option*>(trade->instrument);
+    auto it = parameters_.find(op->Maturity());
+    if (it != parameters_.end())
     {
-      LOG_INF << "Recalculate theo due to trade : " << trade->Dump();
-      auto exch = ParameterManager::GetInstance()->GetExchange();
-      if (exch)
+      auto p = it->second.find(op);
+      if (p != it->second.end() && tick_)
       {
-        double t = exch->GetTimeValue(it->first);
-        base::TickType lower = 0, upper = 0;
-        SetLowerUpper(lower, upper);
-        auto matrix = CalculateTheo(op, p->second, lower, upper, t);
-        if (matrix)
+        LOG_INF << "Recalculate theo due to trade : " << trade;
+        auto exch = ParameterManager::GetInstance()->GetExchange();
+        if (exch)
         {
-          dm_->Publish(matrix);
+          double t = exch->GetTimeValue(it->first);
+          base::TickType lower = 0, upper = 0;
+          SetLowerUpper(lower, upper);
+          auto matrix = CalculateTheo(op, p->second, lower, upper, t);
+          if (matrix)
+          {
+            dm_->Publish(matrix);
+          }
         }
-      }
-      else
-      {
-        LOG_WAN << "No exchange parameter";
+        else
+        {
+          LOG_WAN << "No exchange parameter";
+        }
       }
     }
   }
@@ -376,52 +381,6 @@ void TheoCalculator::Recalculate(const boost::gregorian::date &maturity, Paramet
   }
 }
 
-// void TheoCalculator::Recalculate(ParameterMap &parameters)
-// {
-//   if (spot_ != base::PRICE_UNDEFINED)
-//   {
-//     auto begin_time = base::Now();
-//     auto tick = dm_->GetUnderlying()->ConvertToHalfTick(spot_);
-//     lower_ = std::max(1, tick - TheoMatrix::DEPTH);
-//     upper_ = tick + TheoMatrix::DEPTH;
-
-//     std::map<boost::gregorian::date, double> time_values;
-//     for(auto &p : parameters)
-//     {
-//       double t = 0;
-//       auto &maturity = p.first->Maturity();
-//       auto it = time_values.find(maturity);
-//       if (it != time_values.end())
-//       {
-//         t = it->second;
-//       }
-//       else
-//       {
-//         auto exch = ParameterManager::GetInstance()->GetExchange();
-//         if (exch)
-//         {
-//           t = exch->GetTimeValue(p.first);
-//           time_values.emplace(maturity, t);
-//         }
-//         else
-//         {
-//           LOG_WAN << "Can't Get exchange parameter for " << p.first->Id();
-//           continue;
-//         }
-//       }
-//       auto matrix = CalculateTheo(p.first, p.second, lower_, upper_, t);
-//       if (matrix)
-//       {
-//         matrix->header.SetTime();
-//         dm_->Publish(matrix);
-//       }
-//     }
-//     calculate_time_ = base::Now();
-//     LOG_INF << boost::format("Recalc theo with spot(%1%), matrix[%2%, %3%] finished : %4%us") %
-//       spot_ % lower_ % upper_ % (calculate_time_ - begin_time);
-//   }
-// }
-
 TheoMatrixPtr TheoCalculator::CalculateTheo(const Option* op, const std::shared_ptr<Parameter>
     &param, base::TickType lower, base::TickType upper, double t)
 {
@@ -447,12 +406,12 @@ TheoMatrixPtr TheoCalculator::CalculateTheo(const Option* op, const std::shared_
     return nullptr;
   }
   auto matrix = Message::NewTheoMatrix();
+  assert(op);
   matrix->option = op;
+  bool future = underlying->Type() == Proto::InstrumentType::Future;
   for (auto i = lower; i <= upper; ++i)
   {
     double s = underlying->ConvertHalfToPrice(i);
-
-    bool future = underlying->Type() == Proto::InstrumentType::Future;
     double v = vol_model_->Calculate(*param->volatility, future, s, op->Strike(), r, q, t);
 
     Model::TheoData theo;
@@ -467,17 +426,18 @@ TheoMatrixPtr TheoCalculator::CalculateTheo(const Option* op, const std::shared_
     }
 
     int idx = i - lower;
+    matrix->theos[idx].spot = s;
     matrix->theos[idx].volatility = v;
     matrix->theos[idx].ss_rate = q;
     matrix->theos[idx].theo = theo.theo;
     matrix->theos[idx].delta = theo.delta;
     matrix->theos[idx].gamma = theo.gamma;
     matrix->theos[idx].theta = theo.theta;
-    LOG_DBG << boost::format("Calculate %1%: s(%2%), v(%3%), r(%4%), q(%5%), t(%6%), "
+    LOG_TRA << boost::format("Calculate %1%: s(%2%), v(%3%), r(%4%), q(%5%), t(%6%), "
         "theo(%7%), delta(%8%), gamma(%9%), theta(%10%)") % op->Id() % s % v % r % q %
       t % theo.theo % theo.delta % theo.gamma % theo.theta;
   }
   matrix->lower = lower;
   matrix->upper = upper;
-  return matrix;
+  return std::move(matrix);
 }

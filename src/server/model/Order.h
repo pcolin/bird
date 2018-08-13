@@ -11,6 +11,8 @@ struct Order
   Order();
   Order(const Proto::Order &ord);
 
+  void ResetId();
+
   bool IsBid() const
   {
     return side == Proto::Side::Buy || side == Proto::Side::BuyCover ||
@@ -32,7 +34,7 @@ struct Order
     return status >= Proto::OrderStatus::Filled;
   }
 
-  std::string Dump() const;
+  // std::string Dump() const;
   std::shared_ptr<Proto::Order> Serialize() const;
   void Serialize(Proto::Order *order) const;
   // static OrderPtr Deserilize(const )
@@ -81,5 +83,11 @@ struct QuoteRequest
 };
 
 typedef std::shared_ptr<QuoteRequest> QuoteRequestPtr;
+
+namespace base
+{
+class LogStream;
+LogStream& operator<<(LogStream& stream, const OrderPtr &order);
+}
 
 #endif

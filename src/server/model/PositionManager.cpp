@@ -30,7 +30,7 @@ bool PositionManager::TryFreeze(const OrderPtr &order)
   std::lock_guard<std::mutex> lck(mtx_);
   PositionPtr &pos = positions_[order->instrument];
   assert(pos);
-  static bool close_today = EnvConfig::GetInstance()->GetBool(EnvVar::CLOSE_TODAY_POS, false);
+  static bool close_today = EnvConfig::GetInstance()->GetBool(EnvVar::CLOSE_TODAY_POS);
   if (order->IsBid())
   {
     if (close_today)
