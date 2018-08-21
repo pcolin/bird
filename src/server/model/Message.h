@@ -6,6 +6,7 @@
 #include "base/memory/MemoryPool.h"
 #include <mutex>
 #include <memory>
+#include <cassert>
 
 enum class MsgType : int8_t
 {
@@ -18,12 +19,16 @@ enum class MsgType : int8_t
 struct MsgHeader
 {
   MsgType type;
-  int32_t interval[5];
+  int32_t interval[3];
   int64_t time;
 
   MsgHeader(MsgType t) : type(t) {}
   void SetTime() { time = base::Now(); }
-  void SetInterval(int idx) { interval[idx] = static_cast<int32_t>(base::Now() - time); }
+  void SetInterval(int idx)
+  {
+    assert(idx < 3);
+    interval[idx] = static_cast<int32_t>(base::Now() - time);
+  }
 };
 
 template<class T>

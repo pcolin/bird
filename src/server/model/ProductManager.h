@@ -5,7 +5,7 @@
 #include <vector>
 #include <unordered_map>
 #include <functional>
-#include "Instrument.h"
+#include "Option.h"
 
 class ProductManager
 {
@@ -17,6 +17,7 @@ class ProductManager
     void Remove(const Instrument* instrument);
     const Instrument* FindId(const std::string& id);
     const Instrument* FindSymbol(const std::string& symbol);
+    const std::vector<const Option*> FindOptions(const Instrument *hedge_underlying);
     const std::vector<const Instrument*>
       FindInstruments(const std::function<bool(const Instrument*)> &filter );
 

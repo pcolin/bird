@@ -156,7 +156,7 @@ LogStream& operator<<(LogStream& stream, const OrderPtr &order)
     }
     if (order->header.interval[2] > 0)
     {
-      stream << boost::format(" Delay(%1%,%2%,%3%,%4%)") % order->header.time %
+      stream << boost::format(" Latency(%1%,%2%,%3%,%4%)") % order->header.time %
         order->header.interval[0] % order->header.interval[1] % order->header.interval[2];
     }
     if (!order->note.empty())

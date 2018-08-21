@@ -679,6 +679,7 @@ void CtpTraderSpi::OnRtnTrade(CThostFtdcTradeField *pTrade)
     if (ord)
     {
       auto trade = Message::NewTrade();
+      trade->header.SetTime();
       trade->instrument = inst;
       trade->order_id = ord->id;
       // auto update = Message::NewOrder(ord);

@@ -1672,6 +1672,7 @@ void Quoter::CancelOrders(const std::shared_ptr<Parameter> &parameter)
 OrderPtr Quoter::NewOrder(const Instrument *inst, const OrderPtr &order, base::PriceType price)
 {
   auto ord = Message::NewOrder(order);
+  ord->header.SetTime();
   ord->ResetId();
   order_ids_.insert(ord->id);
   ++orders_;

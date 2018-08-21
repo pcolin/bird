@@ -28,15 +28,17 @@ class TheoCalculator
                          std::shared_ptr<Proto::Pricer>,
                          std::shared_ptr<Proto::ExchangeParameterReq>,
                          std::shared_ptr<Proto::InterestRateReq>> CalculatorEvent;
+  typedef std::vector<std::array<const Option*, 2>> OptionsVector;
 
-  struct Parameter
+  struct Parameters
   {
-    std::shared_ptr<double> rate = nullptr;
-    std::shared_ptr<double> basis = nullptr;
+    double rate = NAN;
+    double basis = NAN;
     std::shared_ptr<Model::VolatilityModel::Parameter> volatility = nullptr;
+    // std::unordered_map<double, std::array<const Option*, 2>> options;
+    std::vector<std::array<const Option*, 2>> options;
   };
-  typedef std::unordered_map<const Option*, std::shared_ptr<Parameter>> ParameterMap;
-  typedef std::map<boost::gregorian::date, ParameterMap> MaturityParameterMap;
+  typedef std::map<boost::gregorian::date, Parameters> ParametersMap;
 public:
   TheoCalculator(const std::string &name, DeviceManager *dm);
 
@@ -56,11 +58,14 @@ private:
   void OnSSRate(const std::shared_ptr<Proto::SSRate> &ssr);
   void OnVolatilityCurve(const std::shared_ptr<Proto::VolatilityCurve> &vc);
 
-  int64_t RecalculateAll();
-  void Recalculate(const boost::gregorian::date &maturity, ParameterMap &parameters,
-      base::TickType lower, base::TickType upper);
-  TheoMatrixPtr CalculateTheo(const Option* op, const std::shared_ptr<Parameter> &param,
-      base::TickType lower, base::TickType upper, double time_value);
+  // int64_t RecalculateAll();
+  void Recalculate(ParametersMap::value_type &value, base::TickType lower, base::TickType upper);
+  void CalculateAndPublish(const Option *call, const Option *put, Parameters &p,
+      double time_value, base::TickType lower, base::TickType upper);
+  void CalculateAndPublish(const Option *option, Parameters &p,
+      double time_value, base::TickType lower, base::TickType upper);
+  // TheoMatrixPtr CalculateTheo(const Option* op, const std::shared_ptr<Parameter> &param,
+  //     base::TickType lower, base::TickType upper, double time_value);
 
   void SetLowerUpper(base::TickType &lower, base::TickType &upper)
   {
@@ -125,10 +130,10 @@ private:
   std::atomic<bool> running_ = {false};
   std::unique_ptr<std::thread> thread_;
 
+  bool future_;
   std::shared_ptr<Model::PricingModel> model_;
   std::shared_ptr<Model::VolatilityModel> vol_model_;
 
-  // base::PriceType spot_ = base::PRICE_UNDEFINED;
   base::TickType tick_ = 0;
   base::TickType lower_ = INT_MAX;
   base::TickType upper_ = INT_MIN;
@@ -136,7 +141,7 @@ private:
   int64_t interval_;
   int64_t calculate_time_;
 
-  MaturityParameterMap parameters_;
+  ParametersMap parameters_;
 };
 
 #endif

@@ -68,6 +68,22 @@ const Instrument* ProductManager::FindSymbol(const std::string& symbol)
   return nullptr;
 }
 
+const std::vector<const Option*> ProductManager::FindOptions(const Instrument *hedge_underlying)
+{
+  std::vector<const Option*> options;
+  std::lock_guard<std::mutex> lck(mtx_);
+  for (const auto& it : instruments_)
+  {
+    if (it.second->Type() == Proto::InstrumentType::Option &&
+        it.second->HedgeUnderlying() == hedge_underlying)
+    {
+      auto *op = base::down_cast<const Option*>((const Instrument*)it.second);
+      options.push_back(op);
+    }
+  }
+  return options;
+}
+
 const std::vector<const Instrument*>
 ProductManager::FindInstruments(const std::function<bool(const Instrument*)> &filter)
 {

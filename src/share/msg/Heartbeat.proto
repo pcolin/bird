@@ -1,6 +1,7 @@
 syntax = "proto3";
 package Proto;
 
+import "Exchange.proto";
 // import "google/protobuf/timestamp.proto";
 
 enum ProcessorType
@@ -14,8 +15,9 @@ enum ProcessorType
 
 message Heartbeat
 {
-  ProcessorType type = 1;
-  string name = 2;
-  uint64 time = 3;
+  Exchange exchange = 1;
+  ProcessorType type = 2;
+  string name = 3;
+  uint64 time = 4;
   // google.protobuf.Timestamp time = 2;
 }

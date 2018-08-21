@@ -32,7 +32,10 @@ void Pricer::OnPrice(const PricePtr &price)
 
 void Pricer::OnTrade(const TradePtr &trade)
 {
-  calc_.OnEvent(trade);
+  if (trade->instrument->Type() == Proto::InstrumentType::Option)
+  {
+    calc_.OnEvent(trade);
+  }
 }
 
 bool Pricer::OnHeartbeat(const std::shared_ptr<Proto::Heartbeat> &heartbeat)

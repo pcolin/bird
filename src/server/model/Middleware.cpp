@@ -155,12 +155,16 @@ std::shared_ptr<Proto::Reply> Middleware::OnOrderRequest(
       }
     }
   }
+  return nullptr;
 }
 
 void Middleware::RunTimer()
 {
   LOG_INF << "Start middleware timer...";
   auto heartbeat = Message::NewProto<Proto::Heartbeat>();
+  Proto::Exchange exchange;
+  Proto::Exchange_Parse(EnvConfig::GetInstance()->GetString(EnvVar::EXCHANGE), &exchange);
+  heartbeat->set_exchange(exchange);
   heartbeat->set_type(Proto::ProcessorType::Middleware);
   while (true)
   {
@@ -286,7 +290,7 @@ void Middleware::RunResponder()
         // LOG_INF << boost::format("type: %1% %2%") % msg->GetTypeName() % msg->ShortDebugString();
         LOG_INF << msg->GetTypeName() << " " << msg->ShortDebugString();
         auto r = dispatcher.OnProtoMessage(msg);
-        if (r != nullptr)
+        if (r)
         {
           reply->set_result(r->result());
           reply->set_error(r->error());
