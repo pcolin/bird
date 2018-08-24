@@ -38,7 +38,7 @@ int main(int argc, char *args[])
         auto info = Message::NewProto<Proto::ServerInfo>();
         info->set_exchange(exchange);
         info->set_info(data, n);
-        info->set_type(static_cast<Proto::ServerInfo::Type>(lvl - Logger::PUBLISH));
+        info->set_type(static_cast<Proto::InfoType>(lvl - Logger::PUBLISH));
         info->set_time(time(NULL));
         Middleware::GetInstance()->Publish(info);
       });

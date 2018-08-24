@@ -12,16 +12,17 @@ Strategy::Strategy(const std::string &name, DeviceManager *dm)
 
 bool Strategy::OnHeartbeat(const std::shared_ptr<Proto::Heartbeat> &heartbeat)
 {
-  auto h = Message::NewProto<Proto::Heartbeat>();
-  h->set_name(name_);
-  // google::protobuf::Timestamp *t = new google::protobuf::Timestamp;
-  // t->set_seconds(time(NULL));
-  // struct timeval tv;
-  // gettimeofday(&tv, NULL);
-  // t->set_seconds(tv.tv_sec);
-  // t->set_nanos(tv.tv_usec * 1000);
-  // h->set_allocated_time(t);
-  h->set_time(time(NULL));
-  Middleware::GetInstance()->Publish(h);
-  return true;
+  // auto h = Message::NewProto<Proto::Heartbeat>();
+  // h->set_type(Proto::ProcessorType::Strategy);
+  // h->set_name(name_);
+  // // google::protobuf::Timestamp *t = new google::protobuf::Timestamp;
+  // // t->set_seconds(time(NULL));
+  // // struct timeval tv;
+  // // gettimeofday(&tv, NULL);
+  // // t->set_seconds(tv.tv_sec);
+  // // t->set_nanos(tv.tv_usec * 1000);
+  // // h->set_allocated_time(t);
+  // h->set_time(time(NULL));
+  // Middleware::GetInstance()->Publish(h);
+  // return true;
 }

@@ -3,16 +3,17 @@ package Proto;
 
 import "Exchange.proto";
 
+enum InfoType
+{
+  INFO = 0;
+  WARN = 1;
+  ERROR = 2;
+}
+
 message ServerInfo
 {
   Exchange exchange = 1;
   string info = 2;
-  enum Type
-  {
-    INFO = 0;
-    WARN = 1;
-    ERROR = 2;
-  }
-  Type type = 3;
+  InfoType type = 3;
   uint64 time = 4;
 }

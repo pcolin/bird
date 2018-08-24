@@ -170,6 +170,7 @@ void Middleware::RunTimer()
   {
     ClusterManager::GetInstance()->OnHeartbeat(heartbeat);
     ClientManager::GetInstance()->OnHeartbeat(heartbeat);
+    Publish(heartbeat);
     std::this_thread::sleep_for(std::chrono::seconds(1));
   }
 }
