@@ -90,7 +90,7 @@ namespace client.Models
                 var err = new Proto.ServerInfo()
                 {
                     Time = (ulong)((DateTime.Now - new DateTime(1970, 1, 1, 8, 0, 0)).TotalSeconds),
-                    Type = Proto.ServerInfo.Types.Type.Error,
+                    Type = Proto.InfoType.Error,
                     Exchange = this.exchange,
                     Info = "Theo calculator stopped(InvalidOperationException)",
                 };

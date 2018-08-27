@@ -512,7 +512,7 @@ namespace client.ViewModels
             {
                 if (order.Price == this.Prices[idx].Price)
                 {
-                    if (OrderManager.IsBid(order))
+                    if (OrderManager.IsBid(order.Side))
                     {
                         var bids = this.Prices[idx].Bids;
                         if (OrderManager.IsInactive(order))
@@ -559,7 +559,7 @@ namespace client.ViewModels
                             {
                                 if (order.Id == asks[i].Id)
                                 {
-                                    this.Prices[idx].BidVolume -= (order.Volume - asks[i].ExecutedVolume);
+                                    this.Prices[idx].AskVolume -= (order.Volume - asks[i].ExecutedVolume);
                                     if (this.Prices[idx].BidVolume == 0 && this.Prices[idx].AskVolume == 0 && this.Prices[idx].MarketBidVolume == 0 && this.Prices[idx].MarketAskVolume == 0)
                                     {
                                         this.Prices.RemoveAt(idx);
@@ -578,7 +578,7 @@ namespace client.ViewModels
                             {
                                 if (order.Id == asks[i].Id)
                                 {
-                                    this.Prices[idx].BidVolume -= (order.ExecutedVolume - asks[i].ExecutedVolume);
+                                    this.Prices[idx].AskVolume -= (order.ExecutedVolume - asks[i].ExecutedVolume);
                                     asks[i] = order;
                                     return;
                                 }
@@ -602,7 +602,7 @@ namespace client.ViewModels
                     {
                         Price = order.Price,
                     };
-                if (OrderManager.IsBid(order))
+                if (OrderManager.IsBid(order.Side))
                 {
                     item.BidVolume = order.Volume - order.ExecutedVolume;
                     item.Bids.Add(order);

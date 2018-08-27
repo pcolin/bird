@@ -24,20 +24,22 @@ namespace client.Models
         {
             socket = new SubscribeSocket();
             socket.Options.TcpNoDelay = true;
-            socket.Options.ReceiveBuffer = 10000;
+            socket.Options.ReceiveBuffer = 100000;
             socket.Connect(address);
         }
 
         public bool Start()
         {
-            running = true;
-            actionThread = new Thread(this.ActionRun);
-            //actionThread.IsBackground = true;
-            actionThread.Start();
-            receiveThread = new Thread(this.ReceiveRun);
-            //receiveThread.IsBackground = true;
-            receiveThread.Start();
-
+            if (!running)
+            {
+                running = true;
+                actionThread = new Thread(this.ActionRun);
+                //actionThread.IsBackground = true;
+                actionThread.Start();
+                receiveThread = new Thread(this.ReceiveRun);
+                //receiveThread.IsBackground = true;
+                receiveThread.Start();
+            }
             return true;
         }
 
@@ -103,7 +105,7 @@ namespace client.Models
                             var err = new Proto.ServerInfo()
                                 {
                                     Time = (ulong)((DateTime.Now - new DateTime(1970, 1, 1, 8, 0, 0)).TotalSeconds),
-                                    Type = Proto.ServerInfo.Types.Type.Warn,
+                                    Type = Proto.InfoType.Warn,
                                     Exchange = this.exchange,
                                     Info = "Lost proxy messages(" + serialNum + ", " + (sn - 1) + ")"
                                 };

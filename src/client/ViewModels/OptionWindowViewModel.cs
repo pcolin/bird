@@ -147,6 +147,8 @@ namespace client.ViewModels
             this.container.Resolve<EventAggregator>().GetEvent<PubSubEvent<Proto.InstrumentReq>>().Subscribe(this.ReceiveInstrumentReq, ThreadOption.BackgroundThread);
             this.container.Resolve<EventAggregator>().GetEvent<PubSubEvent<Proto.Price>>().Subscribe(this.ReceivePrice, ThreadOption.BackgroundThread);
             this.container.Resolve<EventAggregator>().GetEvent<PubSubEvent<Proto.Cash>>().Subscribe(this.ReceiveCash, ThreadOption.BackgroundThread);
+            this.container.Resolve<EventAggregator>().GetEvent<PubSubEvent<Proto.OrderReq>>().Subscribe(this.ReceiveOrderReq, ThreadOption.BackgroundThread);
+            this.container.Resolve<EventAggregator>().GetEvent<PubSubEvent<Proto.PositionReq>>().Subscribe(this.ReceivePositionReq, ThreadOption.BackgroundThread);
             this.container.Resolve<EventAggregator>().GetEvent<PubSubEvent<Proto.DestrikerReq>>().Subscribe(this.ReceiveDestrikerReq, ThreadOption.BackgroundThread);
             this.container.Resolve<EventAggregator>().GetEvent<PubSubEvent<Proto.CreditReq>>().Subscribe(this.ReceiveCreditReq, ThreadOption.BackgroundThread);
             this.container.Resolve<EventAggregator>().GetEvent<PubSubEvent<Proto.StrategySwitchReq>>().Subscribe(this.ReceiveStrategySwitchReq, ThreadOption.BackgroundThread);
@@ -197,7 +199,7 @@ namespace client.ViewModels
 
         private void ReceivePrice(Proto.Price p)
         {
-            if (p != null)
+            if (p.Exchange == this.exchange)
             {
                 var inst = pm.FindId(p.Instrument);
                 OptionUserControlViewModel vm = null;
@@ -205,6 +207,38 @@ namespace client.ViewModels
                 {
                     //this.dispatcher.BeginInvoke(new OptionUserControlViewModel.ReceivePriceDelegate(vm.ReceivePrice), inst, p);
                     this.dispatcher.Invoke((MethodInvoker)delegate { vm.ReceivePrice(inst, p); });
+                }
+            }
+        }
+
+        private void ReceivePositionReq(Proto.PositionReq req)
+        {
+            if (req.Exchange == this.exchange)
+            {
+                foreach (var position in req.Positions)
+                {
+                    var inst = pm.FindId(position.Instrument);
+                    OptionUserControlViewModel vm = null;
+                    if (inst != null && this.viewModels.TryGetValue(inst.HedgeUnderlying, out vm))
+                    {
+                        this.dispatcher.Invoke((MethodInvoker)delegate { vm.ReceivePosition(inst, position); });
+                    }
+                }
+            }
+        }
+
+        private void ReceiveOrderReq(Proto.OrderReq req)
+        {
+            if (req.Exchange == this.exchange)
+            {
+                foreach (var order in req.Orders)
+                {
+                    var inst = pm.FindId(order.Instrument);
+                    OptionUserControlViewModel vm = null;
+                    if (inst != null && this.viewModels.TryGetValue(inst.HedgeUnderlying, out vm))
+                    {
+                        this.dispatcher.Invoke((MethodInvoker)delegate { vm.ReceiveOrder(inst, order); });
+                    }
                 }
             }
         }

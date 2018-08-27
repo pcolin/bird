@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
              xmlns:local="clr-namespace:client.Views"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="888">
@@ -34,10 +35,15 @@
                   HorizontalGridLinesBrush="LightGray"                      
                   VerticalGridLinesBrush="LightGray"
                   SelectionUnit="Cell"
-                  ItemsSource="{Binding Monitors}" >
+                  ItemsSource="{Binding MonitorView}" >
             <DataGrid.Resources>
                 <local:StatusToColorConverter x:Key="StatusToColorConverter" />
             </DataGrid.Resources>
+            <DataGrid.ColumnHeaderStyle>
+                <Style TargetType="DataGridColumnHeader">
+                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                </Style>
+            </DataGrid.ColumnHeaderStyle>
             <DataGrid.Columns>
                 <DataGridTemplateColumn Header="Name">
                     <DataGridTemplateColumn.CellTemplate>
@@ -46,14 +52,34 @@
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
-                <DataGridTextColumn Header="Underlying" Binding="{Binding Underlying}">
+                <DataGridTextColumn Binding="{Binding Underlying}">
+                    <DataGridTextColumn.Header>
+                        <DockPanel LastChildFill="True">
+                            <xctk:DropDownButton BorderThickness="1" Width="18" Height="18" Margin="5, 0, 0, 0" DockPanel.Dock="Right" >
+                                <xctk:DropDownButton.DropDownContent>
+                                    <ListBox Style="{StaticResource CheckBoxListStyle}" Name="ListBoxUnderlyings" DisplayMemberPath="Display"></ListBox>
+                                </xctk:DropDownButton.DropDownContent>
+                            </xctk:DropDownButton>
+                            <TextBlock Text="Underlying" DockPanel.Dock="Left" />
+                        </DockPanel>
+                    </DataGridTextColumn.Header>
                     <DataGridTextColumn.ElementStyle>
                         <Style TargetType="TextBlock">
                             <Setter Property="VerticalAlignment" Value="Center"></Setter>
                         </Style>
                     </DataGridTextColumn.ElementStyle>
                 </DataGridTextColumn>
-                <DataGridTextColumn Header="Type" Binding="{Binding Type}" >
+                <DataGridTextColumn Binding="{Binding Type}" >
+                    <DataGridTextColumn.Header>
+                        <DockPanel LastChildFill="True">
+                            <xctk:DropDownButton BorderThickness="1" Width="18" Height="18" Margin="5, 0, 0, 0" DockPanel.Dock="Right" >
+                                <xctk:DropDownButton.DropDownContent>
+                                    <ListBox Style="{StaticResource CheckBoxListStyle}" Name="ListBoxTypes" DisplayMemberPath="Display"></ListBox>
+                                </xctk:DropDownButton.DropDownContent>
+                            </xctk:DropDownButton>
+                            <TextBlock Text="Type" DockPanel.Dock="Left" />
+                        </DockPanel>
+                    </DataGridTextColumn.Header>
                     <DataGridTextColumn.ElementStyle>
                         <Style TargetType="TextBlock">
                             <Setter Property="VerticalAlignment" Value="Center"></Setter>
@@ -67,7 +93,7 @@
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
-                <DataGridTextColumn Header="Statistics" >
+                <DataGridTextColumn Header="Statistics" CanUserSort="False" >
                     <DataGridTextColumn.Binding>
                         <MultiBinding StringFormat="{}{0}-{1}-{2}-{3}">
                             <Binding Path="RefilledNum"></Binding>
@@ -82,42 +108,42 @@
                         </Style>
                     </DataGridTextColumn.ElementStyle>
                 </DataGridTextColumn>
-                <DataGridTextColumn Header="Delta" Binding="{Binding Delta}" >
+                <DataGridTextColumn Header="Delta" CanUserSort="False" Binding="{Binding Delta, StringFormat={}{0:F2}}" >
                     <DataGridTextColumn.ElementStyle>
                         <Style TargetType="TextBlock">
                             <Setter Property="VerticalAlignment" Value="Center"></Setter>
                         </Style>
                     </DataGridTextColumn.ElementStyle>
                 </DataGridTextColumn>
-                <DataGridTextColumn Header="DeltaLimit" Binding="{Binding DeltaLimit}" >
+                <DataGridTextColumn Header="DeltaLimit" CanUserSort="False" Binding="{Binding DeltaLimit}" >
                     <DataGridTextColumn.ElementStyle>
                         <Style TargetType="TextBlock">
                             <Setter Property="VerticalAlignment" Value="Center"></Setter>
                         </Style>
                     </DataGridTextColumn.ElementStyle>
                 </DataGridTextColumn>
-                <DataGridTextColumn Header="Order" Binding="{Binding OrderNum}" >
+                <DataGridTextColumn Header="Order" CanUserSort="False" Binding="{Binding OrderNum}" >
                     <DataGridTextColumn.ElementStyle>
                         <Style TargetType="TextBlock">
                             <Setter Property="VerticalAlignment" Value="Center"></Setter>
                         </Style>
                     </DataGridTextColumn.ElementStyle>
                 </DataGridTextColumn>
-                <DataGridTextColumn Header="OrderLimit" Binding="{Binding OrderLimit}" >
+                <DataGridTextColumn Header="OrderLimit" CanUserSort="False" Binding="{Binding OrderLimit}" >
                     <DataGridTextColumn.ElementStyle>
                         <Style TargetType="TextBlock">
                             <Setter Property="VerticalAlignment" Value="Center"></Setter>
                         </Style>
                     </DataGridTextColumn.ElementStyle>
                 </DataGridTextColumn>
-                <DataGridTextColumn Header="Trade" Binding="{Binding TradeNum}" >
+                <DataGridTextColumn Header="Trade" CanUserSort="False" Binding="{Binding TradeNum}" >
                     <DataGridTextColumn.ElementStyle>
                         <Style TargetType="TextBlock">
                             <Setter Property="VerticalAlignment" Value="Center"></Setter>
                         </Style>
                     </DataGridTextColumn.ElementStyle>
                 </DataGridTextColumn>
-                <DataGridTextColumn Header="TradeLimit" Binding="{Binding TradeLimit}" >
+                <DataGridTextColumn Header="TradeLimit" CanUserSort="False" Binding="{Binding TradeLimit}" >
                     <DataGridTextColumn.ElementStyle>
                         <Style TargetType="TextBlock">
                             <Setter Property="VerticalAlignment" Value="Center"></Setter>

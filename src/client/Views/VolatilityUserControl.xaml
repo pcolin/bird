@@ -35,6 +35,7 @@
                       CanUserSortColumns="False"
                       CanUserReorderColumns="False"
                       CanUserAddRows="False"
+                      CanUserDeleteRows="False"
                       AutoGenerateColumns="False"
                       SelectedIndex="{Binding SelectedVolatility, Mode=TwoWay}"
                       ItemsSource="{Binding Volatilities}">

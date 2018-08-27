@@ -171,6 +171,8 @@ namespace client.Views
             NewVolatilityWindow(vm.Container);
             NewMessageWindow(vm.Container);
             NewPortfolioWindow(vm.Container);
+            NewOrderWindow(vm.Container);
+            NewTradeWindow(vm.Container);
             NewStrategyWindow(vm.Container);
             NewCreditWindow(vm.Container);
             NewMonitorWindow(vm.Container);
@@ -264,13 +266,51 @@ namespace client.Views
             Thread t = new Thread(() =>
             {
                 PortfolioWindow w = new PortfolioWindow(container);
-                w.DataContext = new PortfolioWindowViewModel(container, w.Dispatcher);
+                //w.DataContext = new PortfolioWindowViewModel(container, w.Dispatcher);
                 if (PlaceWindow(w, "PortfolioWindow"))
                 {
                     w.Show();
                 }
 
                 container.RegisterInstance<PortfolioWindow>(w);
+                w.Closed += (sender2, e2) => w.Dispatcher.InvokeShutdown();
+
+                System.Windows.Threading.Dispatcher.Run();
+            });
+            t.SetApartmentState(ApartmentState.STA);
+            t.Start();
+        }
+
+        private void NewOrderWindow(IUnityContainer container)
+        {
+            Thread t = new Thread(() =>
+            {
+                OrderWindow w = new OrderWindow(container);
+                if (PlaceWindow(w, "OrderWindow"))
+                {
+                    w.Show();
+                }
+
+                container.RegisterInstance<OrderWindow>(w);
+                w.Closed += (sender2, e2) => w.Dispatcher.InvokeShutdown();
+
+                System.Windows.Threading.Dispatcher.Run();
+            });
+            t.SetApartmentState(ApartmentState.STA);
+            t.Start();
+        }
+
+        private void NewTradeWindow(IUnityContainer container)
+        {
+            Thread t = new Thread(() =>
+            {
+                TradeWindow w = new TradeWindow(container);
+                if (PlaceWindow(w, "TradeWindow"))
+                {
+                    w.Show();
+                }
+
+                container.RegisterInstance<TradeWindow>(w);
                 w.Closed += (sender2, e2) => w.Dispatcher.InvokeShutdown();
 
                 System.Windows.Threading.Dispatcher.Run();
@@ -414,6 +454,8 @@ namespace client.Views
                 vm.Container.Resolve<VolatilityWindow>().SaveAndClose(writer);
                 vm.Container.Resolve<MessageWindow>().SaveAndClose(writer);
                 vm.Container.Resolve<PortfolioWindow>().SaveAndClose(writer);
+                vm.Container.Resolve<OrderWindow>().SaveAndClose(writer);
+                vm.Container.Resolve<TradeWindow>().SaveAndClose(writer);
                 vm.Container.Resolve<StrategyWindow>().SaveAndClose(writer);
                 vm.Container.Resolve<CreditWindow>().SaveAndClose(writer);
                 vm.Container.Resolve<MonitorWindow>().SaveAndClose(writer);
@@ -548,11 +590,6 @@ namespace client.Views
 
         static public string Layout = null;
 
-        private void MenuItem_Click(object sender, RoutedEventArgs e)
-        {
-
-        }
-
         private void MenuItemDataGrid_Click(object sender, RoutedEventArgs e)
         {
             DataGrid dg = new DataGrid();
@@ -637,6 +674,22 @@ namespace client.Views
             MainWindowViewModel vm = this.DataContext as MainWindowViewModel;
             TradingWindow w = vm.Container.Resolve<TradingWindow>(vm.Exchange4.ToString());
             ShowWindow(w);
+        }
+
+        private void OrdersMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            ShowWindow<OrderWindow>();
+        }
+
+        private void TradesMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            ShowWindow<TradeWindow>();
+        }
+
+        private void MenuItemDataGridFilter_Click(object sender, RoutedEventArgs e)
+        {
+            FilterWindow w = new FilterWindow();
+            w.Show();
         }
     }
 

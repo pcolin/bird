@@ -2,3 +2,5 @@ build
 src/share/tools
 src/client/bin
 src/client/obj
+src/client/Debug
+src/client/ModelLibrary/Debug

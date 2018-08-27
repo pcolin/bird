@@ -26,6 +26,8 @@ namespace client.Views
         {
             InitializeComponent();
             this.DataContext = viewModel;
+            this.ListBoxUnderlyings.ItemsSource = viewModel.UnderlyingsView;
+            this.ListBoxTypes.ItemsSource = viewModel.TypesView;
         }
     }
 

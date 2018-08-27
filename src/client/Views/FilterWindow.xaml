@@ -1,0 +1,90 @@
+﻿<Window x:Class="client.Views.FilterWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+        x:Name="_window"
+        Title="FilterTest" Height="300" Width="300">
+    <Window.Resources>
+        <Style x:Key="CheckBoxListStyle" TargetType="{x:Type ListBox}">
+            <Setter Property="SelectionMode" Value="Multiple"></Setter>
+            <Setter Property="ItemContainerStyle">
+                <Setter.Value>
+                    <Style TargetType="{x:Type ListBoxItem}">
+                        <Setter Property="Margin" Value="3" />
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="{x:Type ListBoxItem}">
+                                    <CheckBox Focusable="False" IsChecked="{Binding Path=DataContext.IsSelected, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}">
+                                        <ContentPresenter></ContentPresenter>
+                                    </CheckBox>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <!--<DataGridTextColumn x:Key="ExchangeColumn" Binding="{Binding Exchange}" CanUserSort="False">
+            <DataGridTextColumn.HeaderTemplate>
+                <DataTemplate>
+                    <Grid Margin="-1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"></ColumnDefinition>
+                            <ColumnDefinition Width="18"></ColumnDefinition>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="Exchange" HorizontalAlignment="Stretch" />
+                        <xctk:DropDownButton Grid.Column="1" Width="18" Height="18" HorizontalAlignment="Right">
+                            <xctk:DropDownButton.DropDownContent>
+                                <ListBox Style="{StaticResource CheckBoxListStyle}"
+                                                 ItemsSource="{Binding DataContext.SelectedExchanges, Source={x:Reference Name=_window}}" DisplayMemberPath="Item"></ListBox>
+                            </xctk:DropDownButton.DropDownContent>
+                        </xctk:DropDownButton>
+                    </Grid>
+                </DataTemplate>
+            </DataGridTextColumn.HeaderTemplate>
+        </DataGridTextColumn>-->
+    </Window.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition></RowDefinition>
+            <RowDefinition></RowDefinition>
+        </Grid.RowDefinitions>
+        <!--<xctk:CheckListBox DisplayMemberPath="Display" SelectedMemberPath="IsSelected" ItemsSource="{Binding SelectedExchanges}" />-->
+        <CheckBox Grid.Row="1" Content="Test" IsChecked="{Binding IsChecked}" />
+        <!--<ListBox Style="{StaticResource CheckBoxListStyle}" ItemsSource="{Binding ExchangesView}" DisplayMemberPath="Display"></ListBox>-->
+        <DataGrid Name="FilterDataGrid"
+                  Margin="3"
+                  CanUserAddRows="False"
+                  AutoGenerateColumns="False"
+                  GridLinesVisibility="Vertical"
+                  ItemsSource="{Binding ItemViews}">
+            <DataGrid.ColumnHeaderStyle>
+                <Style TargetType="DataGridColumnHeader">
+                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                </Style>
+            </DataGrid.ColumnHeaderStyle>
+            <DataGrid.Columns>
+                <DataGridTextColumn Binding="{Binding Exchange}" CanUserSort="False">
+                    <DataGridTextColumn.Header>
+                        <DockPanel LastChildFill="True">
+                            <xctk:DropDownButton BorderThickness="1" Width="18" Height="18" Margin="5, 0, 0, 0" Click="DropDownButton_Click" DockPanel.Dock="Right" >
+                                <xctk:DropDownButton.DropDownContent>
+                                    <ListBox Style="{StaticResource CheckBoxListStyle}" Name="ListBoxExchanges" DisplayMemberPath="Display"></ListBox>
+                                </xctk:DropDownButton.DropDownContent>
+                            </xctk:DropDownButton>
+                            <TextBlock Text="Exchange" DockPanel.Dock="Left" />
+                        </DockPanel>
+                    </DataGridTextColumn.Header>
+                </DataGridTextColumn>
+                <DataGridTextColumn Header="Option" Binding="{Binding Option}"></DataGridTextColumn>
+                <DataGridTextColumn Header="Type" Binding="{Binding Type}"></DataGridTextColumn>
+            </DataGrid.Columns>
+            <DataGrid.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="Call" Command="{Binding CallCommand}" />
+                    <MenuItem Header="Dce" Command="{Binding ExchangeCommand}" />
+                </ContextMenu>
+            </DataGrid.ContextMenu>
+        </DataGrid>
+    </Grid>
+</Window>

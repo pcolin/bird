@@ -3,6 +3,24 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              ShutdownMode="OnMainWindowClose">
     <Application.Resources>
-         
+        <Style x:Key="CheckBoxListStyle" TargetType="{x:Type ListBox}">
+            <Setter Property="SelectionMode" Value="Multiple"></Setter>
+            <Setter Property="ItemContainerStyle">
+                <Setter.Value>
+                    <Style TargetType="{x:Type ListBoxItem}">
+                        <Setter Property="Margin" Value="3" />
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="{x:Type ListBoxItem}">
+                                    <CheckBox Focusable="False" IsChecked="{Binding Path=DataContext.IsSelected, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}">
+                                        <ContentPresenter></ContentPresenter>
+                                    </CheckBox>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </Application.Resources>
 </Application>

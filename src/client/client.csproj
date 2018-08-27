@@ -210,10 +210,12 @@
     <Compile Include="Models\SSRateManager.cs" />
     <Compile Include="Models\StrategySwitchManager.cs" />
     <Compile Include="Models\TheoCalculator.cs" />
+    <Compile Include="Models\TradeManager.cs" />
     <Compile Include="Models\VolatilityCurveManager.cs" />
     <Compile Include="ViewModels\DimerUserControlViewModel.cs" />
     <Compile Include="ViewModels\ExchangeUserControlViewModel.cs" />
     <Compile Include="ViewModels\ExchangeWindowViewModel.cs" />
+    <Compile Include="ViewModels\FilterItem.cs" />
     <Compile Include="ViewModels\HitterUserControlViewModel.cs" />
     <Compile Include="ViewModels\MainWindowViewModel.cs" />
     <Compile Include="ViewModels\MessageWindowViewModel.cs" />
@@ -221,6 +223,7 @@
     <Compile Include="ViewModels\MonitorWindowViewModel.cs" />
     <Compile Include="ViewModels\OptionUserControlViewModel.cs" />
     <Compile Include="ViewModels\OptionWindowViewModel.cs" />
+    <Compile Include="ViewModels\OrderWindowViewModel.cs" />
     <Compile Include="ViewModels\PortfolioWindowViewModel.cs" />
     <Compile Include="ViewModels\PricerUserControlViewModel.cs" />
     <Compile Include="ViewModels\QuoterUserControlViewModel.cs" />
@@ -228,6 +231,7 @@
     <Compile Include="ViewModels\RateUserControlViewModel.cs" />
     <Compile Include="ViewModels\RateWindowViewModel.cs" />
     <Compile Include="ViewModels\StrategyCreditUserControlViewModel.cs" />
+    <Compile Include="ViewModels\TradeWindowViewModel.cs" />
     <Compile Include="ViewModels\TradingWindowViewModel.cs" />
     <Compile Include="ViewModels\VolatilityUserControlViewModel.cs" />
     <Compile Include="ViewModels\VolatilityWindowViewModel.cs" />
@@ -249,6 +253,9 @@
     </Compile>
     <Compile Include="Views\ExchangeWindow.xaml.cs">
       <DependentUpon>ExchangeWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\FilterWindow.xaml.cs">
+      <DependentUpon>FilterWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\HitterUserControl.xaml.cs">
       <DependentUpon>HitterUserControl.xaml</DependentUpon>
@@ -314,6 +321,9 @@
     </Compile>
     <Compile Include="Views\StrategyWindow.xaml.cs">
       <DependentUpon>StrategyWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\TradeWindow.xaml.cs">
+      <DependentUpon>TradeWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\TradingWindow.xaml.cs">
       <DependentUpon>TradingWindow.xaml</DependentUpon>
@@ -386,6 +396,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\ExchangeWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\FilterWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -470,6 +484,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\StrategyWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\TradeWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

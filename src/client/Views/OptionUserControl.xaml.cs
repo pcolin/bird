@@ -665,6 +665,32 @@ namespace client.Views
         }
     }
 
+
+    public class MultiBoolToColorConverter : IMultiValueConverter
+    {
+        public Brush Brush1 { get; set; }
+        public Brush Brush2 { get; set; }
+        public Brush Brush3 { get; set; }
+
+        public object Convert(object[] values, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            if ((bool)values[0])
+            {
+                return Brush1;
+            }
+            else if ((bool)values[1])
+            {
+                return Brush2;
+            }
+            return Brush3;
+        }
+
+        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, System.Globalization.CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
     public class PositionColorConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
@@ -757,6 +783,82 @@ namespace client.Views
         }
     }
 
+    public class TheoCrossFontWeightConverter : IMultiValueConverter
+    {
+        public object Convert(object[] values, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            if (values[0] is double && values[1] is double && values[2] is double)
+            {
+                double theo = (double)values[0];
+                double bid = (double)values[1];
+                double ask = (double)values[2];
+
+                if (bid > 0 && ask > 0)
+                {
+                    if (theo < bid || theo > ask)
+                    {
+                        return FontWeights.Bold;
+                    }
+                }
+            }
+            return FontWeights.Normal;
+        }
+
+        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, System.Globalization.CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    public class PricesToColorMultiConverter : IMultiValueConverter
+    {
+        public Brush DefaultBrush { get; set; }
+        public Brush WarningBrush { get; set; }
+
+        public object Convert(object[] values, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            if (values[0] is double && values[1] is double)
+            {
+                double value1 = (double)values[0];
+                double value2 = (double)values[1];
+
+                if (value1 == value2 && value1 > 0)
+                {
+                    return WarningBrush;
+                }
+            }
+            return DefaultBrush;
+        }
+
+        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, System.Globalization.CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    public class PricesToFontWeightMultiConverter : IMultiValueConverter
+    {
+        public object Convert(object[] values, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            if (values[0] is double && values[1] is double)
+            {
+                double value1 = (double)values[0];
+                double value2 = (double)values[1];
+
+                if (value1 == value2 && value1 > 0)
+                {
+                    return FontWeights.Bold;
+                }
+            }
+            return FontWeights.Normal;
+        }
+
+        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, System.Globalization.CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
     public class NetToColorMultiConverter : IMultiValueConverter
     {
         public object Convert(object[] values, Type targetType, object parameter, System.Globalization.CultureInfo culture)
@@ -809,6 +911,30 @@ namespace client.Views
                     }
                     return (value * 100).ToString(DefaultFormat);
                 }
+            }
+            return null;
+        }
+
+        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, System.Globalization.CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    public class WarningPositionToColorMultiConverter : IMultiValueConverter
+    {
+        public object Convert(object[] values, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            int value1 = (int)values[0];
+            int value2 = (int)values[1];
+            
+            if (value1 >= value2 * 0.8)
+            {
+                return Brushes.DarkRed;
+            }
+            else if (value1 >= value2 * 0.5)
+            {
+                return Brushes.Orange;
             }
             return null;
         }

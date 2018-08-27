@@ -24,20 +24,29 @@ namespace Proto {
     static ServerReflection() {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
-            "CgxTZXJ2ZXIucHJvdG8SBVByb3RvGg5FeGNoYW5nZS5wcm90byKYAQoKU2Vy",
-            "dmVySW5mbxIhCghleGNoYW5nZRgBIAEoDjIPLlByb3RvLkV4Y2hhbmdlEgwK",
-            "BGluZm8YAiABKAkSJAoEdHlwZRgDIAEoDjIWLlByb3RvLlNlcnZlckluZm8u",
-            "VHlwZRIMCgR0aW1lGAQgASgEIiUKBFR5cGUSCAoESU5GTxAAEggKBFdBUk4Q",
-            "ARIJCgVFUlJPUhACYgZwcm90bzM="));
+            "CgxTZXJ2ZXIucHJvdG8SBVByb3RvGg5FeGNoYW5nZS5wcm90byJqCgpTZXJ2",
+            "ZXJJbmZvEiEKCGV4Y2hhbmdlGAEgASgOMg8uUHJvdG8uRXhjaGFuZ2USDAoE",
+            "aW5mbxgCIAEoCRIdCgR0eXBlGAMgASgOMg8uUHJvdG8uSW5mb1R5cGUSDAoE",
+            "dGltZRgEIAEoBCopCghJbmZvVHlwZRIICgRJTkZPEAASCAoEV0FSThABEgkK",
+            "BUVSUk9SEAJiBnByb3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Proto.ExchangeReflection.Descriptor, },
-          new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::Proto.ServerInfo), global::Proto.ServerInfo.Parser, new[]{ "Exchange", "Info", "Type", "Time" }, null, new[]{ typeof(global::Proto.ServerInfo.Types.Type) }, null)
+          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Proto.InfoType), }, new pbr::GeneratedClrTypeInfo[] {
+            new pbr::GeneratedClrTypeInfo(typeof(global::Proto.ServerInfo), global::Proto.ServerInfo.Parser, new[]{ "Exchange", "Info", "Type", "Time" }, null, null, null)
           }));
     }
     #endregion
 
   }
+  #region Enums
+  public enum InfoType {
+    [pbr::OriginalName("INFO")] Info = 0,
+    [pbr::OriginalName("WARN")] Warn = 1,
+    [pbr::OriginalName("ERROR")] Error = 2,
+  }
+
+  #endregion
+
   #region Messages
   public sealed partial class ServerInfo : pb::IMessage<ServerInfo> {
     private static readonly pb::MessageParser<ServerInfo> _parser = new pb::MessageParser<ServerInfo>(() => new ServerInfo());
@@ -100,9 +109,9 @@ namespace Proto {
 
     /// <summary>Field number for the "type" field.</summary>
     public const int TypeFieldNumber = 3;
-    private global::Proto.ServerInfo.Types.Type type_ = 0;
+    private global::Proto.InfoType type_ = 0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::Proto.ServerInfo.Types.Type Type {
+    public global::Proto.InfoType Type {
       get { return type_; }
       set {
         type_ = value;
@@ -239,7 +248,7 @@ namespace Proto {
             break;
           }
           case 24: {
-            type_ = (global::Proto.ServerInfo.Types.Type) input.ReadEnum();
+            type_ = (global::Proto.InfoType) input.ReadEnum();
             break;
           }
           case 32: {
@@ -249,19 +258,6 @@ namespace Proto {
         }
       }
     }
-
-    #region Nested types
-    /// <summary>Container for nested types declared in the ServerInfo message type.</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public static partial class Types {
-      public enum Type {
-        [pbr::OriginalName("INFO")] Info = 0,
-        [pbr::OriginalName("WARN")] Warn = 1,
-        [pbr::OriginalName("ERROR")] Error = 2,
-      }
-
-    }
-    #endregion
 
   }
 

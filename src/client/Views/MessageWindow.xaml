@@ -1,12 +1,14 @@
 ﻿<Window x:Class="client.Views.MessageWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         xmlns:local="clr-namespace:client.Views"
         Icon="/Images/bird_32x32.ico"
         Title="Messages" Height="300" Width="400"
+        Loaded="Window_Loaded"
         Closing="Window_Closing">
     <Grid>
-        <ListView Margin="3" ItemsSource="{Binding Messages}">
+        <ListView Margin="3" ItemsSource="{Binding MessageView}">
             <ListView.Resources>
                 <local:MessageTimeConverter x:Key="MessageTimeConverter" />
                 
@@ -17,7 +19,7 @@
                 <Style x:Key="ErrorStyle" TargetType="{x:Type ListViewItem}">
                     <Setter Property="Foreground" Value="Red" />
                     <EventSetter Event="MouseDoubleClick" Handler="ListViewItem_MouseDoubleClick" />
-                </Style>                       
+                </Style>                
             </ListView.Resources>
             <ListView.ItemsPanel>
                 <ItemsPanelTemplate>
@@ -29,12 +31,39 @@
             </ListView.ItemContainerStyleSelector>
             <ListView.View>
                 <GridView>
+                    <GridView.ColumnHeaderContainerStyle>
+                        <Style TargetType="GridViewColumnHeader">
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                        </Style>
+                    </GridView.ColumnHeaderContainerStyle>
                     <GridView.Columns>
                         <GridViewColumn DisplayMemberBinding="{Binding Path=Time, Converter={StaticResource MessageTimeConverter}}" >
                             <GridViewColumnHeader HorizontalContentAlignment="Left">Time</GridViewColumnHeader>
                         </GridViewColumn>
-                        <GridViewColumn Header="Type" DisplayMemberBinding="{Binding Path=Type}"></GridViewColumn>
-                        <GridViewColumn Header="Exchange" DisplayMemberBinding="{Binding Path=Exchange}"></GridViewColumn>
+                        <GridViewColumn DisplayMemberBinding="{Binding Path=Type}">
+                            <GridViewColumn.Header>
+                                <DockPanel LastChildFill="True">
+                                    <xctk:DropDownButton BorderThickness="1" Width="18" Height="18" Margin="5,0,0,0" DockPanel.Dock="Right">
+                                        <xctk:DropDownButton.DropDownContent>
+                                            <ListBox Style="{StaticResource CheckBoxListStyle}" Name="ListBoxTypes" DisplayMemberPath="Display"></ListBox>
+                                        </xctk:DropDownButton.DropDownContent>
+                                    </xctk:DropDownButton>
+                                    <TextBlock Text="Type" DockPanel.Dock="Left" />
+                                </DockPanel>
+                            </GridViewColumn.Header>
+                        </GridViewColumn>
+                        <GridViewColumn DisplayMemberBinding="{Binding Path=Exchange}">
+                            <GridViewColumn.Header>
+                                <DockPanel LastChildFill="True">
+                                    <xctk:DropDownButton BorderThickness="1" Width="18" Height="18" Margin="5,0,0,0" DockPanel.Dock="Right">
+                                        <xctk:DropDownButton.DropDownContent>
+                                            <ListBox Style="{StaticResource CheckBoxListStyle}" Name="ListBoxExchanges" DisplayMemberPath="Display"></ListBox>
+                                        </xctk:DropDownButton.DropDownContent>
+                                    </xctk:DropDownButton>
+                                    <TextBlock Text="Exchange" DockPanel.Dock="Left" />
+                                </DockPanel>
+                            </GridViewColumn.Header>
+                        </GridViewColumn>
                         <GridViewColumn DisplayMemberBinding="{Binding Path=Info}" >
                             <GridViewColumnHeader HorizontalContentAlignment="Left">Message</GridViewColumnHeader>
                         </GridViewColumn>

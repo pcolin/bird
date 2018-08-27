@@ -139,13 +139,39 @@ namespace client.ViewModels
             //var qm = this.container.Resolve<QuoterManager>(exchange.ToString());
             var cm = this.container.Resolve<CreditManager>(exchange.ToString());
             var sm = this.container.Resolve<StrategySwitchManager>(exchange.ToString());
+            var tc = this.container.Resolve<TheoCalculator>(exchange.ToString());
             List<OptionPairItem> optionPairItems = new List<OptionPairItem>();
             List<OptionPairItem> dominantOptionPairItems = new List<OptionPairItem>();
             this.optionItems = new Dictionary<Option, OptionItem>();
-            //List<OptionItem> optionItems = new List<OptionItem>();
             var options = products.GetOptionsByHedgeUnderlying(hedgeUnderlying);
             if (options != null)
             {
+                var orders = new Dictionary<string, Tuple<List<Proto.Order>,List<Proto.Order>>>();
+                var om = this.container.Resolve<OrderManager>(exchange.ToString());
+                if (om != null)
+                {
+                    foreach(var ord in om.GetOrders())
+                    {
+                        Tuple<List<Proto.Order>, List<Proto.Order>> t = null;
+                        if (orders.TryGetValue(ord.Instrument, out t) == false)
+                        {
+                            t = Tuple.Create(new List<Proto.Order>(), new List<Proto.Order>());
+                            orders.Add(ord.Instrument, t);
+                        }
+                        if (OrderManager.IsInactive(ord) == false)
+                        {
+                            if (OrderManager.IsBid(ord.Side))
+                            {
+                                t.Item1.Add(ord);
+                            }
+                            else
+                            {
+                                t.Item2.Add(ord);
+                            }
+                        }
+                    }
+                }
+
                 var ret = options.OrderBy(x => x.Underlying.Id).ThenBy(x => x.Strike).ThenBy(x => x.OptionType);
                 Option call = null;
                 DateTime maturity = DateTime.MinValue;
@@ -177,14 +203,36 @@ namespace client.ViewModels
                                     Status = call.Status,
                                     Destriker = dm.GetDestriker(call.Id),
                                 };
+                            Proto.Price price = tc.GetPrice(call);
+                            if (price != null)
+                            {
+                                ReceiveOptionPrice(callItem, price);
+                            }
+                            Tuple<List<Proto.Order>, List<Proto.Order>> t = null;
+                            if (orders.TryGetValue(call.Id, out t))
+                            {
+                                callItem.Bids = (from order in t.Item1 orderby order.Price descending select order).ToList();
+                                callItem.Asks = (from order in t.Item2 orderby order.Price ascending select order).ToList();
+                            }
+                            else
+                            {
+                                callItem.Bids = new List<Proto.Order>();
+                                callItem.Asks = new List<Proto.Order>();
+                            }
+                            GreeksData greeks = tc.GetGreeks(call);
+                            if (greeks != null)
+                            {
+                                ReceiveGreeks(callItem, greeks);
+                            }
+                            ImpliedVolatilityData iv = tc.GetIV(call);
+                            if (iv != null)
+                            {
+                                ReceiveIV(callItem, iv);
+                            }
                             Proto.Position p = null;
                             if (positions.GetPosition(call.Id, out p))
                             {
-                                callItem.Position = p.TotalLong - p.TotalShort;
-                                callItem.LongPosition = p.TotalLong;
-                                callItem.ShortPosition = p.TotalShort;
-                                callItem.AvailableLongPosition = p.LiquidLong;
-                                callItem.AvailableShortPosition = p.LiquidShort;
+                                ReceiveOptionPosition(callItem, p);
                             }
                             double credit = 0;
                             if (quoterCredits.TryGetValue(call.Id, out credit))
@@ -236,14 +284,34 @@ namespace client.ViewModels
                                     Status = call.Status,
                                     Destriker = dm.GetDestriker(inst.Id),
                                 };
+                            price = tc.GetPrice(inst);
+                            if (price != null)
+                            {
+                                ReceiveOptionPrice(putItem, price);
+                            }
+                            if (orders.TryGetValue(inst.Id, out t))
+                            {
+                                putItem.Bids = (from order in t.Item1 orderby order.Price descending select order).ToList();
+                                putItem.Asks = (from order in t.Item2 orderby order.Price ascending select order).ToList();
+                            }
+                            else
+                            {
+                                putItem.Bids = new List<Proto.Order>();
+                                putItem.Asks = new List<Proto.Order>();
+                            }
+                            greeks = tc.GetGreeks(inst);
+                            if (greeks != null)
+                            {
+                                ReceiveGreeks(putItem, greeks);
+                            }
+                            iv = tc.GetIV(inst);
+                            if (iv != null)
+                            {
+                                ReceiveIV(putItem, iv);
+                            }
                             if (positions.GetPosition(inst.Id, out p))
                             {
-                                putItem.Position = p.TotalLong - p.TotalShort;
-                                putItem.LongPosition = p.TotalLong;
-                                putItem.ShortPosition = p.TotalShort;
-                                putItem.AvailableLongPosition = p.LiquidLong;
-                                putItem.AvailableShortPosition = p.LiquidShort;
-                                putItem.ChangedPosition = putItem.Position - (p.YesterdayLong - p.YesterdayShort);
+                                ReceiveOptionPosition(putItem, p);
                             }
                             if (quoterCredits.TryGetValue(call.Id, out credit))
                             {
@@ -484,28 +552,7 @@ namespace client.ViewModels
                 OptionItem item = null;
                 if (this.optionItems.TryGetValue(inst as Option, out item))
                 {
-                    if (price.Bids.Count > 0)
-                    {
-                        item.MarketBidPrice = price.Bids[0].Price;
-                        item.MarketBidVolume = price.Bids[0].Volume;
-                    }
-                    else
-                    {
-                        item.MarketBidPrice = 0;
-                        item.MarketBidVolume = 0;
-                    }
-                    if (price.Asks.Count > 0)
-                    {
-                        item.MarketAskPrice = price.Asks[0].Price;
-                        item.MarketAskVolume = price.Asks[0].Volume;
-                    }
-                    else
-                    {
-                        item.MarketAskPrice = 0;
-                        item.MarketAskVolume = 0;
-                    }
-                    item.LastPrice = price.Last.Price;
-                    item.LastVolume = price.Last.Volume;
+                    ReceiveOptionPrice(item, price);
                 }
             }
             else if (inst.HedgeUnderlying == inst)
@@ -514,30 +561,7 @@ namespace client.ViewModels
                 {
                     if (kvp.Value.Underlying == inst)
                     {
-                        if (price.Bids.Count > 0)
-                        {
-                            kvp.Value.MarketBidPrice = price.Bids[0].Price;
-                            kvp.Value.MarketBidVolume = price.Bids[0].Volume;
-                        }
-                        else
-                        {
-                            kvp.Value.MarketBidPrice = 0;
-                            kvp.Value.MarketBidVolume = 0;
-                        }
-                        if (price.Asks.Count > 0)
-                        {
-                            kvp.Value.MarketAskPrice = price.Asks[0].Price;
-                            kvp.Value.MarketAskVolume = price.Asks[0].Volume;
-                        }
-                        else
-                        {
-                            kvp.Value.MarketAskPrice = 0;
-                            kvp.Value.MarketAskVolume = 0;
-                        }
-                        kvp.Value.LastPrice = price.Last.Price;
-                        kvp.Value.LastVolume = price.Last.Volume;
-                        kvp.Value.PreClose = price.PreClose;
-                        kvp.Value.PreSettlement = price.PreSettlement;
+                        ReceiveUnderlyingPrice(kvp.Value, price);
                     }
 
                     var ssr = ssrateManager.GetSSRate(inst.Id, kvp.Value.Maturity);
@@ -567,33 +591,91 @@ namespace client.ViewModels
                         if (newAtmIdx != -1) this.options[newAtmIdx].IsAtmOption = true;
                     }
                 }
+            }
+            else
+            {
                 UnderlyingItem item = null;
                 if (this.underlyingItems.TryGetValue(inst, out item))
                 {
-                    if (price.Bids.Count > 0)
-                    {
-                        item.MarketBidPrice = price.Bids[0].Price;
-                        item.MarketBidVolume = price.Bids[0].Volume;
-                    }
-                    else
-                    {
-                        item.MarketBidPrice = 0;
-                        item.MarketBidVolume = 0;
-                    }
-                    if (price.Asks.Count > 0)
-                    {
-                        item.MarketAskPrice = price.Asks[0].Price;
-                        item.MarketAskVolume = price.Asks[0].Volume;
-                    }
-                    else
-                    {
-                        item.MarketAskPrice = 0;
-                        item.MarketAskVolume = 0;
-                    }
-                    item.LastPrice = price.Last.Price;
-                    item.LastVolume = price.Last.Volume;
-                    item.PreClose = price.PreClose;
-                    item.PreSettlement = price.PreSettlement;
+                    ReceiveUnderlyingPrice(item, price);
+                }
+            }
+        }
+
+        private void ReceiveOptionPrice(OptionItem item, Proto.Price price)
+        {
+            if (price.Bids.Count > 0)
+            {
+                item.MarketBidPrice = price.Bids[0].Price;
+                item.MarketBidVolume = price.Bids[0].Volume;
+            }
+            else
+            {
+                item.MarketBidPrice = 0;
+                item.MarketBidVolume = 0;
+            }
+            if (price.Asks.Count > 0)
+            {
+                item.MarketAskPrice = price.Asks[0].Price;
+                item.MarketAskVolume = price.Asks[0].Volume;
+            }
+            else
+            {
+                item.MarketAskPrice = 0;
+                item.MarketAskVolume = 0;
+            }
+            item.LastPrice = price.Last.Price;
+            item.LastVolume = price.Last.Volume;
+        }
+
+        private void ReceiveUnderlyingPrice(UnderlyingItem item, Proto.Price price)
+        {
+            if (price.Bids.Count > 0)
+            {
+                item.MarketBidPrice = price.Bids[0].Price;
+                item.MarketBidVolume = price.Bids[0].Volume;
+            }
+            else
+            {
+                item.MarketBidPrice = 0;
+                item.MarketBidVolume = 0;
+            }
+            if (price.Asks.Count > 0)
+            {
+                item.MarketAskPrice = price.Asks[0].Price;
+                item.MarketAskVolume = price.Asks[0].Volume;
+            }
+            else
+            {
+                item.MarketAskPrice = 0;
+                item.MarketAskVolume = 0;
+            }
+            item.LastPrice = price.Last.Price;
+            item.LastVolume = price.Last.Volume;
+            item.PreClose = price.PreClose;
+            item.PreSettlement = price.PreSettlement;
+        }
+
+        public void ReceiveOrder(Instrument inst, Proto.Order order)
+        {
+            if (inst.Type == Proto.InstrumentType.Option)
+            {
+                OptionItem item = null;
+                if (this.optionItems.TryGetValue(inst as Option, out item))
+                {
+                    item.ReceiveOrder(order);
+                }
+            }
+        }
+
+        public void ReceivePosition(Instrument inst, Proto.Position position)
+        {
+            if (inst.Type == Proto.InstrumentType.Option)
+            {
+                OptionItem item = null;
+                if (this.optionItems.TryGetValue(inst as Option, out item))
+                {
+                    ReceiveOptionPosition(item, position);
                 }
             }
             else
@@ -601,22 +683,38 @@ namespace client.ViewModels
                 UnderlyingItem item = null;
                 if (this.underlyingItems.TryGetValue(inst, out item))
                 {
-                    if (price.Bids.Count > 0)
-                    {
-                        item.MarketBidPrice = price.Bids[0].Price;
-                        item.MarketBidVolume = price.Bids[0].Volume;
-                    }
-                    if (price.Asks.Count > 0)
-                    {
-                        item.MarketAskPrice = price.Asks[0].Price;
-                        item.MarketAskVolume = price.Asks[0].Volume;
-                    }
-                    item.LastPrice = price.Last.Price;
-                    item.LastVolume = price.Last.Volume;
-                    item.PreClose = price.PreClose;
-                    item.PreSettlement = price.PreSettlement;
+                    item.Position = position.TotalLong - position.TotalShort;
                 }
             }
+        }
+
+        private void ReceiveOptionPosition(OptionItem item, Proto.Position position)
+        {
+            UnderlyingItem underlyingItem = null;
+            if (this.underlyingItems.TryGetValue(item.Option.Underlying, out underlyingItem))
+            {
+                int changedLong = position.TotalLong - item.LongPosition;
+                int changedShort = position.TotalShort - item.ShortPosition;
+                if (item.Option.OptionType == Proto.OptionType.Call)
+                {
+                    underlyingItem.BullPosition += changedLong;
+                    underlyingItem.BearPosition += changedShort;
+                }
+                else
+                {
+                    underlyingItem.BullPosition += changedShort;
+                    underlyingItem.BearPosition += changedLong;
+                }
+                underlyingItem.LongPosition += changedLong;
+                underlyingItem.ShortPosition += changedShort;
+            }
+
+            item.Position = position.TotalLong - position.TotalShort;
+            item.LongPosition = position.TotalLong;
+            item.ShortPosition = position.TotalShort;
+            item.AvailableLongPosition = position.LiquidLong;
+            item.AvailableShortPosition = position.LiquidShort;
+            item.ChangedPosition = item.Position - (position.YesterdayLong - position.YesterdayShort);
         }
 
         public void ReceiveGreeks(GreeksData greeks)
@@ -624,20 +722,25 @@ namespace client.ViewModels
             OptionItem item = null;
             if (this.optionItems.TryGetValue(greeks.Option, out item))
             {
-                item.Theo = greeks.Greeks.theo;
-                item.Volatility = greeks.Greeks.vol;
-                item.Delta = greeks.Greeks.delta;
-                item.Gamma = greeks.Greeks.gamma;
-                item.Vega = greeks.Greeks.vega;
-                if (greeks.Option.OptionType == Proto.OptionType.Call)
-                {
-                    item.SkewSensi = greeks.SkewSensi;
-                    item.ConvexSensi = greeks.CallConvexSensi * 1000;
-                }
-                else
-                {
-                    item.ConvexSensi = greeks.PutConvexSensi * 1000;
-                }
+                ReceiveGreeks(item, greeks);
+            }
+        }
+
+        private void ReceiveGreeks(OptionItem item, GreeksData greeks)
+        {
+            item.Theo = greeks.Greeks.theo;
+            item.Volatility = greeks.Greeks.vol;
+            item.Delta = greeks.Greeks.delta;
+            item.Gamma = greeks.Greeks.gamma;
+            item.Vega = greeks.Greeks.vega;
+            if (greeks.Option.OptionType == Proto.OptionType.Call)
+            {
+                item.SkewSensi = greeks.SkewSensi;
+                item.ConvexSensi = greeks.CallConvexSensi * 1000;
+            }
+            else
+            {
+                item.ConvexSensi = greeks.PutConvexSensi * 1000;
             }
         }
 
@@ -646,10 +749,15 @@ namespace client.ViewModels
             OptionItem item = null;
             if (this.optionItems.TryGetValue(data.Option, out item))
             {
-                item.ImpliedVol = data.LastIV;
-                item.BidVol = data.BidIV;
-                item.AskVol = data.AskIV;
+                ReceiveIV(item, data);
             }
+        }
+
+        private void ReceiveIV(OptionItem item, ImpliedVolatilityData data)
+        {
+            item.ImpliedVol = data.LastIV;
+            item.BidVol = data.BidIV;
+            item.AskVol = data.AskIV;
         }
 
         public void SetStrategySwitch(HashSet<OptionItem>[] items)
@@ -1020,6 +1128,62 @@ namespace client.ViewModels
             get { return position; }
             set { SetProperty(ref position, value); }
         }
+
+        private int bullPosition;
+        public int BullPosition
+        {
+            get { return bullPosition; }
+            set { SetProperty(ref bullPosition, value); }
+        }
+
+        private int bullLimit;
+        public int BullLimit
+        {
+            get { return bullLimit; }
+            set { SetProperty(ref bullLimit, value); }
+        }        
+
+        private int bearPosition;
+        public int BearPosition
+        {
+            get { return bearPosition; }
+            set { SetProperty(ref bearPosition, value); }
+        }
+
+        private int bearLimit;
+        public int BearLimit
+        {
+            get { return bearLimit; }
+            set { SetProperty(ref bearLimit, value); }
+        }        
+
+        private int longPosition;
+        public int LongPosition
+        {
+            get { return longPosition; }
+            set { SetProperty(ref longPosition, value); }
+        }
+
+        private int longLimit;
+        public int LongLimit
+        {
+            get { return longLimit; }
+            set { SetProperty(ref longLimit, value); }
+        }        
+
+        private int shortPosition;
+        public int ShortPosition
+        {
+            get { return shortPosition; }
+            set { SetProperty(ref shortPosition, value); }
+        }
+
+        private int shortLimit;
+        public int ShortLimit
+        {
+            get { return shortLimit; }
+            set { SetProperty(ref shortLimit, value); }
+        }        
     }
 
     public class OptionPairItem : BindableBase
@@ -1040,6 +1204,162 @@ namespace client.ViewModels
 
     public class OptionItem : BindableBase
     {
+        public void ReceiveOrder(Proto.Order order)
+        {
+            if (OrderManager.IsInactive(order))
+            {
+                if (OrderManager.IsBid(order.Side))
+                {
+                    for (int i = 0; i < Bids.Count && order.Price <= Bids[i].Price; ++i)
+                    {
+                        if (order.Id == Bids[i].Id)
+                        {
+                            Bids.RemoveAt(i);
+                            if (i == 0)
+                            {
+                                BestBidPrice = (i < Bids.Count) ? Bids[i].Price : 0;
+                            }
+
+                            if (BidOrderID == order.ExchangeId)
+                            {
+                                for (int j = i; j < Bids.Count && order.Price <= Bids[j].Price; ++j)
+                                {
+                                    if (OrderManager.IsQuoter(Bids[j]))
+                                    {
+                                        BidOrderID = Bids[j].ExchangeId;
+                                        BidPrice = Bids[j].Price;
+                                        BidVolume = Bids[j].Volume - Bids[j].ExecutedVolume;
+                                        return;
+                                    }
+                                }
+                                BidOrderID = null;
+                                BidPrice = 0;
+                                BidVolume = 0;
+                            }
+                            return;
+                        }
+                    }
+                }
+                else
+                {
+                    for (int i = 0; i < Asks.Count && order.Price >= Asks[i].Price; ++i)
+                    {
+                        if (order.Id == Asks[i].Id)
+                        {
+                            Asks.RemoveAt(i);
+                            if (i == 0)
+                            {
+                                BestAskPrice = (i < Asks.Count) ? Asks[i].Price : 0;
+                            }
+
+                            if (AskOrderID == order.ExchangeId)
+                            {
+                                for (int j = i; j < Asks.Count && order.Price >= Asks[j].Price; ++j)
+                                {
+                                    if (OrderManager.IsQuoter(Asks[j]))
+                                    {
+                                        AskOrderID = Asks[j].ExchangeId;
+                                        AskPrice = Asks[j].Price;
+                                        AskVolume = Asks[j].Volume - Asks[j].ExecutedVolume;
+                                        return;
+                                    }
+                                }
+                                AskOrderID = null;
+                                AskPrice = 0;
+                                AskVolume = 0;
+                            }
+                            return;
+                        }
+                    }
+                }
+            }
+            else if (order.Status > Proto.OrderStatus.Submitted)
+            {
+                if (OrderManager.IsBid(order.Side))
+                {
+                    for (int i = 0; i < Bids.Count; ++i)
+                    {
+                        if (order.Id == Bids[i].Id)
+                        {
+                            Bids[i] = order;
+                            if (BidOrderID == order.ExchangeId)
+                            {
+                                BidVolume = order.Volume - order.ExecutedVolume;
+                            }
+                            return;
+                        }
+                        else if (order.Price >= Bids[i].Price)
+                        {
+                            Bids.Insert(i, order);
+                            if (i == 0)
+                            {
+                                BestBidPrice = order.Price;
+                            }
+                            if (BidVolume == 0 && OrderManager.IsQuoter(order))
+                            {
+                                BidOrderID = order.ExchangeId;
+                                BidPrice = order.Price;
+                                BidVolume = order.Volume - order.ExecutedVolume;
+                            }
+                            return;
+                        }
+                    }
+                    Bids.Add(order);
+                    if (Bids.Count == 1)
+                    {
+                        BestBidPrice = order.Price;
+                    }
+                    if (BidVolume == 0 && OrderManager.IsQuoter(order))
+                    {
+                        BidOrderID = order.ExchangeId;
+                        BidPrice = order.Price;
+                        BidVolume = order.Volume - order.ExecutedVolume;
+                    }
+                }
+                else
+                {
+                    for (int i = 0; i < Asks.Count; ++i)
+                    {
+                        if (order.Id == Asks[i].Id)
+                        {
+                            Asks[i] = order;
+                            if (AskOrderID == order.ExchangeId)
+                            {
+                                AskVolume = order.Volume - order.ExecutedVolume;
+                            }
+                            return;
+                        }
+                        else if (order.Price <= Asks[i].Price)
+                        {
+                            Asks.Insert(i, order);
+                            if (i == 0)
+                            {
+                                BestAskPrice = order.Price;
+                            }
+                            if (AskVolume == 0 && OrderManager.IsQuoter(order))
+                            {
+                                AskOrderID = order.ExchangeId;
+                                AskPrice = order.Price;
+                                AskVolume = order.Volume - order.ExecutedVolume;
+                            }
+                            return;
+                        }
+                    }
+                    Asks.Add(order);
+                    if (Asks.Count == 1)
+                    {
+                        BestAskPrice = order.Price;
+                    }
+                    if (AskVolume == 0 && OrderManager.IsQuoter(order))
+                    {
+                        AskOrderID = order.ExchangeId;
+                        AskPrice = order.Price;
+                        AskVolume = order.Volume - order.ExecutedVolume;
+                    }
+                }
+            }
+        }
+
         public Option Option { get; set; }
 
         private Proto.InstrumentStatus status;
@@ -1138,6 +1458,13 @@ namespace client.ViewModels
         {
             get { return enquiryResponseOn; }
             set { SetProperty(ref enquiryResponseOn, value); }
+        }
+
+        private double bestBidPrice;
+        public double BestBidPrice
+        {
+            get { return bestBidPrice; }
+            set { SetProperty(ref bestBidPrice, value); }
         }        
 
         private double bidPrice;
@@ -1145,7 +1472,7 @@ namespace client.ViewModels
         {
             get { return bidPrice; }
             set { SetProperty(ref bidPrice, value); }
-        }
+        }        
 
         private int bidVolume;
         public int BidVolume
@@ -1167,6 +1494,13 @@ namespace client.ViewModels
             get { return marketBidVolume; }
             set { SetProperty(ref marketBidVolume, value); }
         }
+
+        private double bestAskPrice;
+        public double BestAskPrice
+        {
+            get { return bestAskPrice; }
+            set { SetProperty(ref bestAskPrice, value); }
+        }        
 
         private double askPrice;
         public double AskPrice
@@ -1348,8 +1682,57 @@ namespace client.ViewModels
         {
             get { return convexSensi; }
             set { SetProperty(ref convexSensi, value); }
-        }        
-        
+        }
+
+        private List<Proto.Order> bids;
+        public List<Proto.Order> Bids
+        {
+            get { return bids; }
+            set
+            {
+                bids = value;
+                if (value != null && value.Count > 0)
+                {
+                    BestBidPrice = value[0].Price;
+                    foreach (var ord in value)
+                    {
+                        if (OrderManager.IsQuoter(ord) && ord.Status > Proto.OrderStatus.Submitted)
+                        {
+                            BidOrderID = ord.ExchangeId;
+                            BidPrice = ord.Price;
+                            BidVolume = ord.Volume - ord.ExecutedVolume;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+
+        private List<Proto.Order> asks;
+        public List<Proto.Order> Asks
+        {
+            get { return asks; }
+            set
+            {
+                asks = value;
+                if (value != null && value.Count > 0)
+                {
+                    BestAskPrice = value[0].Price;
+                    foreach (var ord in value)
+                    {
+                        if (OrderManager.IsQuoter(ord) && ord.Status > Proto.OrderStatus.Submitted)
+                        {
+                            AskOrderID = ord.ExchangeId;
+                            AskPrice = ord.Price;
+                            AskVolume = ord.Volume - ord.ExecutedVolume;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+                
         //public OptionItem()
         //{
         //    string symbol = this.CallOption.Symbol;

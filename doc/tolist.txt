@@ -1,0 +1,2 @@
+1.quoter的requote需要进一步设计
+2.CtpTraderApi::CancelOrder在OrderManager里可能找不到local状态的单，导致order直接completed

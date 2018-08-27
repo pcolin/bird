@@ -5,9 +5,11 @@ using Prism.Mvvm;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Data;
 using System.Windows.Forms;
 using System.Windows.Threading;
 
@@ -34,12 +36,49 @@ namespace client.ViewModels
             set { SetProperty(ref exchange, value); }
         }
 
+        public ICollectionView MonitorView { get; set; }
+
         private ObservableCollection<MonitorItem> monitors;
         public ObservableCollection<MonitorItem> Monitors
         {
             get { return monitors; }
-            set { SetProperty(ref monitors, value); }
+            set
+            {
+                if (SetProperty(ref monitors, value))
+                {
+                    MonitorView = CollectionViewSource.GetDefaultView(value);
+                    MonitorView.Filter = this.Filter;
+                }
+            }
         }
+
+        public ICollectionView UnderlyingsView { get; set; }
+        private ObservableCollection<FilterItem<string>> underlyings;
+        private ObservableCollection<FilterItem<string>> Underlyings
+        {
+            get { return underlyings; }
+            set
+            {
+                if (SetProperty(ref underlyings, value))
+                {
+                    UnderlyingsView = CollectionViewSource.GetDefaultView(value);
+                }
+            }
+        }
+
+        public ICollectionView TypesView { get; set; }
+        private ObservableCollection<FilterItem<Proto.StrategyType>> types;
+        private ObservableCollection<FilterItem<Proto.StrategyType>> Types
+        {
+            get { return types; }
+            set
+            {
+                if (SetProperty(ref types, value))
+                {
+                    TypesView = CollectionViewSource.GetDefaultView(value);
+                }
+            }
+        }        
 
         public MonitorUserControlViewModel(Proto.Exchange exchange, IUnityContainer container, Dispatcher dispatcher)
         {
@@ -47,7 +86,7 @@ namespace client.ViewModels
             this.container = container;
             this.dispatcher = dispatcher;
 
-            this.monitors = new ObservableCollection<MonitorItem>();
+            var monitors = new ObservableCollection<MonitorItem>();
             this.items = new Dictionary<string, MonitorItem>[]
                 {
                     new Dictionary<string, MonitorItem>(),
@@ -59,6 +98,7 @@ namespace client.ViewModels
             var sm = this.container.Resolve<StrategySwitchManager>(exchange.ToString());
             if (qm != null && sm != null)
             {
+                SortedSet<string> underlyings = new SortedSet<string>();
                 var quoters = qm.GetQuoters();
                 foreach (var q in quoters.OrderBy(x => x.Name))
                 {
@@ -77,9 +117,30 @@ namespace client.ViewModels
                             OrderLimit = q.OrderLimit,
                             TradeLimit = q.TradeLimit,
                         };
-                    this.monitors.Add(item);
+                    monitors.Add(item);
                     items[(int)Proto.StrategyType.Quoter][q.Name] = item;
+                    underlyings.Add(q.Underlying);
                 }
+
+                this.Monitors = monitors;
+
+                var filterUnderlyings = new ObservableCollection<FilterItem<string>>();
+                filterUnderlyings.Add(new FilterItem<string>(this.FilterUnderlying));
+                Func<string, string> underlyingFunc = u => u;
+                foreach (var underlying in underlyings)
+                {
+                    filterUnderlyings.Add(new FilterItem<string>(this.FilterUnderlying, underlyingFunc, underlying));
+                }
+                this.Underlyings = filterUnderlyings;
+
+                var types = new ObservableCollection<FilterItem<Proto.StrategyType>>();
+                types.Add(new FilterItem<Proto.StrategyType>(this.FilterStrategyType));
+                Func<Proto.StrategyType, string> typeFunc = t => t.ToString();
+                types.Add(new FilterItem<Proto.StrategyType>(this.FilterStrategyType, typeFunc, Proto.StrategyType.Quoter));
+                types.Add(new FilterItem<Proto.StrategyType>(this.FilterStrategyType, typeFunc, Proto.StrategyType.Hitter));
+                types.Add(new FilterItem<Proto.StrategyType>(this.FilterStrategyType, typeFunc, Proto.StrategyType.Dimer));
+                types.Add(new FilterItem<Proto.StrategyType>(this.FilterStrategyType, typeFunc, Proto.StrategyType.DummyQuoter));
+                this.Types = types;
 
                 PlayActiveCommand = new DelegateCommand(this.PlayActiveExecute);
                 PlayAllCommand = new DelegateCommand(this.PlayAllExecute);
@@ -316,9 +377,87 @@ namespace client.ViewModels
             timer.Stop();
         }
 
+        private bool Filter(object item)
+        {
+            var it = item as MonitorItem;
+            return !(excludedUnderlyings.Contains(it.Underlying) || excludedStrategyTypes.Contains(it.Type));
+        }
+
+        private void FilterUnderlying(bool selected, bool all, string underlying)
+        {
+            if (selected)
+            {
+                if (all)
+                {
+                    this.excludedUnderlyings.Clear();
+                    for (int i = 1; i < this.Underlyings.Count; ++i)
+                    {
+                        this.Underlyings[i].SetIsSelected(true);
+                    }
+                }
+                else
+                {
+                    // this.Underlyings[0].SetIsSelected(true);
+                    this.excludedUnderlyings.Remove(underlying);
+                }
+            }
+            else if (all)
+            {
+                for (int i = 1; i < this.Underlyings.Count; ++i)
+                {
+                    this.Underlyings[i].SetIsSelected(false);
+                    this.excludedUnderlyings.Add(this.Underlyings[i].Item);
+                }
+            }
+            else
+            {
+                this.Underlyings[0].SetIsSelected(false);
+                this.excludedUnderlyings.Add(underlying);
+            }
+            UnderlyingsView.Refresh();
+            MonitorView.Refresh();
+        }
+
+        private void FilterStrategyType(bool selected, bool all, Proto.StrategyType type)
+        {
+            if (selected)
+            {
+                if (all)
+                {
+                    this.excludedStrategyTypes.Clear();
+                    for (int i = 1; i < this.Types.Count; ++i)
+                    {
+                        this.Types[i].SetIsSelected(true);
+                    }
+                }
+                else
+                {
+                    this.excludedStrategyTypes.Remove(type);
+                }
+                this.excludedStrategyTypes.Remove(type);
+            }
+            else if (all)
+            {
+                for (int i = 1; i < this.Types.Count; ++i)
+                {
+                    this.Types[i].SetIsSelected(false);
+                    this.excludedStrategyTypes.Add(this.Types[i].Item);
+                }
+            }
+            else
+            {
+                this.Types[0].SetIsSelected(false);
+                this.excludedStrategyTypes.Add(type);
+            }
+            TypesView.Refresh();
+            MonitorView.Refresh();
+        }
+
         private IUnityContainer container;
         private Dispatcher dispatcher;
         private Dictionary<string, MonitorItem>[] items;
+        private HashSet<string> excludedUnderlyings = new HashSet<string>();
+        private HashSet<Proto.StrategyType> excludedStrategyTypes = new HashSet<Proto.StrategyType>();
         private DispatcherTimer timer;
     }
 

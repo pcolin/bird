@@ -52,7 +52,7 @@
                 <DataGridTextColumn Header="Interval(s)" Binding="{Binding Interval}"></DataGridTextColumn>
                 <DataGridComboBoxColumn Header="SpotTheoType" ItemsSource="{Binding Source={StaticResource GetTheoTypes}}" SelectedItemBinding="{Binding UnderlyingTheoType, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                 <DataGridTextColumn Header="MaxTickChange" Binding="{Binding MaxTickChange, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"></DataGridTextColumn>
-                <DataGridTextColumn Header="Elastic" Binding="{Binding Elastic, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"></DataGridTextColumn>
+                <DataGridTextColumn Header="Elastic(M)" Binding="{Binding Elastic, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"></DataGridTextColumn>
                 <DataGridTextColumn Header="ElasticLimit" Binding="{Binding ElasticLimit, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"></DataGridTextColumn>
             </DataGrid.Columns>
             <DataGrid.ContextMenu>

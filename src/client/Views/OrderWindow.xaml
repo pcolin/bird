@@ -2,11 +2,131 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
-        Title="Orders" Height="600" Width="800">
+        xmlns:local="clr-namespace:client.Views"
+        Icon="/Images/bird_32x32.ico"
+        Title="Orders" Height="600" Width="800"
+        Initialized="Window_Initialized"
+        Closing="Window_Closing">
     <Grid>
-        <xctk:WatermarkPasswordBox VerticalAlignment="Center" HorizontalAlignment="Center" Password="colin"/>
-        <!--<xctk:SplitButton HorizontalAlignment="Center" VerticalAlignment="Center" Content="Hello">
-            
-        </xctk:SplitButton>-->
+        <DataGrid Name="OrderDataGrid"
+                  AutoGenerateColumns="False"
+                  CanUserAddRows="False"
+                  CanUserSortColumns="False"
+                  IsReadOnly="True"
+                  RowHeaderWidth="0"
+                  HorizontalGridLinesBrush="LightGray"                      
+                  VerticalGridLinesBrush="LightGray"
+                  SelectedItem="{Binding SelectedItem, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                  ItemsSource="{Binding Items}">
+            <DataGrid.ColumnHeaderStyle>
+                <Style TargetType="DataGridColumnHeader">
+                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                </Style>
+            </DataGrid.ColumnHeaderStyle>
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Time" Binding="{Binding Time, StringFormat={}{0:H:mm:ss.fff}}"></DataGridTextColumn>
+                <DataGridTextColumn Binding="{Binding Instrument.Exchange}">
+                    <DataGridTextColumn.Header>
+                        <DockPanel LastChildFill="True">
+                            <xctk:DropDownButton BorderThickness="1" Width="18" Height="18" Margin="5, 0, 0, 0" DockPanel.Dock="Right" >
+                                <xctk:DropDownButton.DropDownContent>
+                                    <ListBox Style="{StaticResource CheckBoxListStyle}" Name="ListBoxExchanges" DisplayMemberPath="Display"></ListBox>
+                                </xctk:DropDownButton.DropDownContent>
+                            </xctk:DropDownButton>
+                            <TextBlock Text="Exchange" DockPanel.Dock="Left" />
+                        </DockPanel>
+                    </DataGridTextColumn.Header>
+                </DataGridTextColumn>
+                <DataGridTextColumn Binding="{Binding Instrument.Id}">
+                    <DataGridTextColumn.Header>
+                        <DockPanel LastChildFill="True">
+                            <xctk:DropDownButton BorderThickness="1" Width="18" Height="18" Margin="5, 0, 0, 0" DockPanel.Dock="Right" >
+                                <xctk:DropDownButton.DropDownContent>
+                                    <ListBox Style="{StaticResource CheckBoxListStyle}" Name="ListBoxInstruments" DisplayMemberPath="Display"></ListBox>
+                                </xctk:DropDownButton.DropDownContent>
+                            </xctk:DropDownButton>
+                            <TextBlock Text="Instrument" DockPanel.Dock="Left" />
+                        </DockPanel>
+                    </DataGridTextColumn.Header>
+                </DataGridTextColumn>
+                <DataGridTextColumn Binding="{Binding Side}">
+                    <DataGridTextColumn.Header>
+                        <DockPanel LastChildFill="True">
+                            <xctk:DropDownButton BorderThickness="1" Width="18" Height="18" Margin="5, 0, 0, 0" DockPanel.Dock="Right" >
+                                <xctk:DropDownButton.DropDownContent>
+                                    <ListBox Style="{StaticResource CheckBoxListStyle}" Name="ListBoxSides" DisplayMemberPath="Display"></ListBox>
+                                </xctk:DropDownButton.DropDownContent>
+                            </xctk:DropDownButton>
+                            <TextBlock Text="Side" DockPanel.Dock="Left" />
+                        </DockPanel>
+                    </DataGridTextColumn.Header>
+                </DataGridTextColumn>
+                <DataGridTextColumn Header="Price" Binding="{Binding Price}"></DataGridTextColumn>
+                <DataGridTextColumn Header="Volume" Binding="{Binding Volume}"></DataGridTextColumn>
+                <DataGridTextColumn Header="TradedVolume" Binding="{Binding ExecutedVolume}"></DataGridTextColumn>
+                <DataGridTextColumn Binding="{Binding Status}">
+                    <DataGridTextColumn.Header>
+                        <DockPanel LastChildFill="True">
+                            <xctk:DropDownButton BorderThickness="1" Width="18" Height="18" Margin="5, 0, 0, 0" DockPanel.Dock="Right" >
+                                <xctk:DropDownButton.DropDownContent>
+                                    <ListBox Style="{StaticResource CheckBoxListStyle}" Name="ListBoxStatuses" DisplayMemberPath="Display"></ListBox>
+                                </xctk:DropDownButton.DropDownContent>
+                            </xctk:DropDownButton>
+                            <TextBlock Text="Status" DockPanel.Dock="Left" />
+                        </DockPanel>
+                    </DataGridTextColumn.Header>
+                </DataGridTextColumn>
+                <DataGridTextColumn Binding="{Binding Strategy}">
+                    <DataGridTextColumn.Header>
+                        <DockPanel LastChildFill="True">
+                            <xctk:DropDownButton BorderThickness="1" Width="18" Height="18" Margin="5, 0, 0, 0" DockPanel.Dock="Right" >
+                                <xctk:DropDownButton.DropDownContent>
+                                    <ListBox Style="{StaticResource CheckBoxListStyle}" Name="ListBoxStrategies" DisplayMemberPath="Display"></ListBox>
+                                </xctk:DropDownButton.DropDownContent>
+                            </xctk:DropDownButton>
+                            <TextBlock Text="Strategy" DockPanel.Dock="Left" />
+                        </DockPanel>
+                    </DataGridTextColumn.Header>
+                </DataGridTextColumn>
+                <DataGridTextColumn Header="ID" Binding="{Binding ID}"></DataGridTextColumn>
+                <DataGridTextColumn Header="ExchangeID" Binding="{Binding ExchangeID}"></DataGridTextColumn>
+                <DataGridTextColumn Binding="{Binding Instrument.HedgeUnderlying.Id}">
+                    <DataGridTextColumn.Header>
+                        <DockPanel LastChildFill="True">
+                            <xctk:DropDownButton BorderThickness="1" Width="18" Height="18" Margin="5, 0, 0, 0" DockPanel.Dock="Right" >
+                                <xctk:DropDownButton.DropDownContent>
+                                    <ListBox Style="{StaticResource CheckBoxListStyle}" Name="ListBoxUnderlyings" DisplayMemberPath="Display"></ListBox>
+                                </xctk:DropDownButton.DropDownContent>
+                            </xctk:DropDownButton>
+                            <TextBlock Text="Underlying" DockPanel.Dock="Left" />
+                        </DockPanel>
+                    </DataGridTextColumn.Header>
+                </DataGridTextColumn>
+                <DataGridTextColumn Binding="{Binding Type}">
+                    <DataGridTextColumn.Header>
+                        <DockPanel LastChildFill="True">
+                            <xctk:DropDownButton BorderThickness="1" Width="18" Height="18" Margin="5, 0, 0, 0" DockPanel.Dock="Right" >
+                                <xctk:DropDownButton.DropDownContent>
+                                    <ListBox Style="{StaticResource CheckBoxListStyle}" Name="ListBoxTypes" DisplayMemberPath="Display"></ListBox>
+                                </xctk:DropDownButton.DropDownContent>
+                            </xctk:DropDownButton>
+                            <TextBlock Text="Type" DockPanel.Dock="Left" />
+                        </DockPanel>
+                    </DataGridTextColumn.Header>
+                </DataGridTextColumn>
+                <DataGridTextColumn Header="Note" Binding="{Binding Note}"></DataGridTextColumn>
+                <DataGridTextColumn Header="Latency" Binding="{Binding Latency}"></DataGridTextColumn>
+            </DataGrid.Columns>
+            <DataGrid.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="Cancel" Command="{Binding CancelCommand}" />
+                    <MenuItem Header="Cancel All" Command="{Binding CancelAllCommand}" />
+                    <Separator></Separator>
+                    <MenuItem Header="Export" IsEnabled="False" Click="ExportMenuItem_Click" />
+                    <Separator></Separator>
+                    <MenuItem Header="Setting..." Click="SettingMenuItem_Click" />
+                </ContextMenu>
+            </DataGrid.ContextMenu>
+        </DataGrid>
     </Grid>
 </Window>

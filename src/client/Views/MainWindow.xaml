@@ -69,8 +69,8 @@
                     </MenuItem>
                 </MenuItem>
                 <MenuItem Header="Portfolios" Click="PortfoliosMenuItem_Click"></MenuItem>
-                <MenuItem Header="Orders"></MenuItem>
-                <MenuItem Header="Trades"></MenuItem>
+                <MenuItem Header="Orders" Click="OrdersMenuItem_Click"></MenuItem>
+                <MenuItem Header="Trades" Click="TradesMenuItem_Click"></MenuItem>
                 <Separator></Separator>
                 <MenuItem Header="Trading">
                     <MenuItem Header="{Binding Exchange1}"
@@ -97,12 +97,19 @@
             </MenuItem>
             <MenuItem Header="TEST">
                 <MenuItem Header="DataGridComboBoxColumn" Click="MenuItemDataGrid_Click" />
+                <MenuItem Header="DataGridFilter" Click="MenuItemDataGridFilter_Click" />
             </MenuItem>
         </Menu>
         <ToolBarTray Grid.Row="1">
             <ToolBar>
-                <Button>Layout</Button>
-                <Button>Credit</Button>
+                <Button Click="MessagesMenuItem_Click">Message</Button>
+                <GridSplitter Width="2"></GridSplitter>
+                <Button Click="StrategyMenuItem_Click">Strategy</Button>
+                <Button Click="CreditMenuItem_Click">Credit</Button>
+                <Button Click="VolatilityMenuItem_Click">Volatility</Button>
+                <GridSplitter Width="2"></GridSplitter>
+                <Button Click="OrdersMenuItem_Click">Order</Button>
+                <Button Click="TradesMenuItem_Click">Trade</Button>
             </ToolBar>
         </ToolBarTray>
         <StatusBar Grid.Row="2">
@@ -114,6 +121,7 @@
                             <ColumnDefinition Width="Auto"></ColumnDefinition>
                             <ColumnDefinition Width="Auto"></ColumnDefinition>
                             <ColumnDefinition Width="Auto"></ColumnDefinition>
+                            <ColumnDefinition></ColumnDefinition>
                         </Grid.ColumnDefinitions>
                     </Grid>
                 </ItemsPanelTemplate>
@@ -135,6 +143,9 @@
                 <TextBlock Text="{Binding Exchange4}" FontWeight="ExtraBold"
                            Foreground="{Binding Exchange4Status, Converter={StaticResource StatusColorConverter}}"
                            Visibility="{Binding Exchange4Visible, Converter={StaticResource VisibilityConverter}}"></TextBlock>
+            </StatusBarItem>
+            <StatusBarItem Grid.Column="4" HorizontalAlignment="Right">
+                <TextBlock Text="{Binding Time, StringFormat='yyyy-MM-dd HH:mm:ss'}" FontWeight="ExtraBold" Foreground="Red"/>
             </StatusBarItem>
         </StatusBar>
     </Grid>

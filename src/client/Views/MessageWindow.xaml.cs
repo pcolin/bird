@@ -37,6 +37,15 @@ namespace client.Views
                 });
         }
 
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            var vm = this.DataContext as client.ViewModels.MessageWindowViewModel;
+            //vm.Exchanges.Add(new ViewModels.FilterItem<Exchange>(vm.FilterExchange, true, Proto.Exchange.Dce));
+            this.ListBoxTypes.ItemsSource = vm.TypesView;
+            this.ListBoxExchanges.ItemsSource = vm.ExchangesView;
+            //this.ListBoxExchanges.ItemsSource = (this.DataContext as client.ViewModels.MessageWindowViewModel).Exchanges;
+        }
+
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             if (close == false)
@@ -85,7 +94,7 @@ namespace client.Views
         {
             ServerInfo info = (ServerInfo)item;
 
-            if (info.Type == ServerInfo.Types.Type.Info)
+            if (info.Type == Proto.InfoType.Info)
             {
                 return DefaultStyle;
             }

@@ -12,6 +12,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using System.Windows.Threading;
 using System.Xml;
 
 namespace client.ViewModels
@@ -232,6 +233,13 @@ namespace client.ViewModels
             }
         }
 
+        private DateTime time;
+        public DateTime Time
+        {
+            get { return time; }
+            set { SetProperty(ref time, value); }
+        }        
+
         private string user = "colin";
         public string User
         {
@@ -263,6 +271,10 @@ namespace client.ViewModels
             ConfirmationRequest = new InteractionRequest<IConfirmation>();
             //this.serverService = service;
             this.container = container;
+            this.timer = new DispatcherTimer();
+            this.timer.Interval = TimeSpan.FromSeconds(1);
+            this.timer.Tick += new EventHandler(TimerTick);
+            this.timer.Start();
         }
 
         //private void InitializeExecute()
@@ -348,8 +360,7 @@ namespace client.ViewModels
                 NotificationRequest.Raise(new Notification { Content = "Load config exception: " + e.Message, Title = "Error" });
             }
 
-            this.container.RegisterInstance<EventAggregator>(new EventAggregator());
-
+            //this.container.RegisterInstance<EventAggregator>(new EventAggregator());
             //InitializeWindows();
         }
 
@@ -439,6 +450,7 @@ namespace client.ViewModels
                     exchanges.Add(this.exchange1);
                     IsExchange1Logined = true;
                     Exchange1Status = ConnectStatus.Connected;
+                    lastHeartbeatTimes[this.exchange1] = DateTime.Now;
                 }
             }
 
@@ -449,6 +461,7 @@ namespace client.ViewModels
                     exchanges.Add(this.exchange2);
                     IsExchange2Logined = true;
                     Exchange2Status = ConnectStatus.Connected;
+                    lastHeartbeatTimes[this.exchange2] = DateTime.Now;
                 }
             }
 
@@ -459,6 +472,7 @@ namespace client.ViewModels
                     exchanges.Add(this.exchange3);
                     IsExchange3Logined = true;
                     Exchange3Status = ConnectStatus.Connected;
+                    lastHeartbeatTimes[this.exchange3] = DateTime.Now;
                 }
             }
 
@@ -469,11 +483,19 @@ namespace client.ViewModels
                     exchanges.Add(this.exchange4);
                     IsExchange4Logined = true;
                     Exchange4Status = ConnectStatus.Connected;
+                    lastHeartbeatTimes[this.exchange4] = DateTime.Now;
                 }
             }
             if (exchanges.Count > 0)
             {
                 this.container.Resolve<EventAggregator>().GetEvent<PubSubEvent<List<Proto.Exchange>>>().Publish(exchanges);
+
+                this.container.Resolve<EventAggregator>().GetEvent<PubSubEvent<Proto.Heartbeat>>().Subscribe(this.ReceiveHeartbeat, ThreadOption.BackgroundThread);
+
+                //heartbeatTimer = new DispatcherTimer();
+                //heartbeatTimer.Interval = this.interval;
+                //heartbeatTimer.Tick += heartbeatTimer_Tick;
+                //heartbeatTimer.Start();
             }
         }
 
@@ -698,18 +720,106 @@ namespace client.ViewModels
                    Exchange3Status == ConnectStatus.Connected || exchange4Status == ConnectStatus.Connected;
         }
 
-        //private bool TryParse(string name, out Proto.Exchange exchange)
+        private void ReceiveHeartbeat(Proto.Heartbeat heartbeat)
+        {
+            if (heartbeat.Type == Proto.ProcessorType.Middleware && this.lastHeartbeatTimes.ContainsKey(heartbeat.Exchange))
+            {
+                this.lastHeartbeatTimes[heartbeat.Exchange] = DateTime.Now;
+                //if (heartbeat.Exchange == this.Exchange1)
+                //{
+                //    this.Exchange1Status = ConnectStatus.Disconnected;
+                //}
+                //else if (heartbeat.Exchange == this.Exchange2)
+                //{
+                //    this.Exchange2Status = ConnectStatus.Disconnected;
+                //}
+                //else if (heartbeat.Exchange == this.Exchange3)
+                //{
+                //    this.Exchange3Status = ConnectStatus.Disconnected;
+                //}
+                //else if (heartbeat.Exchange == this.Exchange4)
+                //{
+                //    this.Exchange4Status = ConnectStatus.Disconnected;
+                //}
+            }
+        }
+
+        void TimerTick(object sender, EventArgs e)
+        {
+            this.Time = DateTime.Now;
+            foreach (var kvp in lastHeartbeatTimes)
+            {
+                if (this.time - kvp.Value > interval)
+                {
+                    var err = new Proto.ServerInfo()
+                    {
+                        Time = (ulong)((DateTime.Now - new DateTime(1970, 1, 1, 8, 0, 0)).TotalSeconds),
+                        Type = Proto.InfoType.Warn,
+                        Exchange = kvp.Key,
+                        Info = "Server heartbeat lost for " + this.interval.TotalSeconds + 's',
+                    };
+                    if (kvp.Key == this.Exchange1)
+                    {
+                        if (this.Exchange1Status == ConnectStatus.Connected)
+                        {
+                            this.Exchange1Status = ConnectStatus.Disconnected;
+                            this.container.Resolve<EventAggregator>().GetEvent<PubSubEvent<Proto.ServerInfo>>().Publish(err);
+                        }
+                    }
+                    else if (kvp.Key == this.Exchange2)
+                    {
+                        if (this.Exchange2Status == ConnectStatus.Connected)
+                        {
+                            this.Exchange2Status = ConnectStatus.Disconnected;
+                            this.container.Resolve<EventAggregator>().GetEvent<PubSubEvent<Proto.ServerInfo>>().Publish(err);
+                        }
+                    }
+                    else if (kvp.Key == this.Exchange3)
+                    {
+                        if (this.Exchange3Status == ConnectStatus.Connected)
+                        {
+                            this.Exchange3Status = ConnectStatus.Disconnected;
+                            this.container.Resolve<EventAggregator>().GetEvent<PubSubEvent<Proto.ServerInfo>>().Publish(err);
+                        }
+                    }
+                    else if (kvp.Key == this.Exchange4)
+                    {
+                        if (this.Exchange4Status == ConnectStatus.Connected)
+                        {
+                            this.Exchange4Status = ConnectStatus.Disconnected;
+                            this.container.Resolve<EventAggregator>().GetEvent<PubSubEvent<Proto.ServerInfo>>().Publish(err);
+                        }
+                    }
+                }
+            }
+        }
+
+        //void heartbeatTimer_Tick(object sender, EventArgs e)
         //{
-        //    //if (name == "DCE")
-        //    //{
-        //    //    exchange = Proto.Exchange.De;
-        //    //}
-        //    //else if (name == "CZCE")
-        //    //{
-        //    //    exchange = Proto.Exchange.Ze;
-        //    //}
-        //    //else if (name == "SH)
-        //    return false;
+        //    //throw new NotImplementedException();
+        //    var now = DateTime.Now;
+        //    foreach (var kvp in lastHeartbeatTimes)
+        //    {
+        //        if (now - kvp.Value > interval)
+        //        {
+        //            if (kvp.Key == this.Exchange1)
+        //            {
+        //                this.Exchange1Status = ConnectStatus.Disconnected;
+        //            }
+        //            else if (kvp.Key == this.Exchange2)
+        //            {
+        //                this.Exchange2Status = ConnectStatus.Disconnected;
+        //            }
+        //            else if (kvp.Key == this.Exchange3)
+        //            {
+        //                this.Exchange3Status = ConnectStatus.Disconnected;
+        //            }
+        //            else if (kvp.Key == this.Exchange4)
+        //            {
+        //                this.Exchange4Status = ConnectStatus.Disconnected;
+        //            }
+        //        }
+        //    }
         //}
 
         public IUnityContainer Container
@@ -717,6 +827,11 @@ namespace client.ViewModels
             get { return this.container; }
         }
         IUnityContainer container;
+
+        DispatcherTimer timer;
+        //DispatcherTimer heartbeatTimer;
+        TimeSpan interval = TimeSpan.FromSeconds(10);
+        Dictionary<Proto.Exchange, DateTime> lastHeartbeatTimes = new Dictionary<Proto.Exchange,DateTime>();
         //private Dictionary<Exchange, ServerService> servers;
         //private Dictionary<Exchange, ProxyService> proxies;
         //private Dictionary<Exchange, DatabaseService> databases;

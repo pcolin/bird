@@ -25,21 +25,23 @@ namespace Proto {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
             "Cg5Qb3NpdGlvbi5wcm90bxIFUHJvdG8aDkV4Y2hhbmdlLnByb3RvGg1SZXF1",
-            "ZXN0LnByb3RvGgtSZXBseS5wcm90byLUAQoIUG9zaXRpb24SEgoKaW5zdHJ1",
+            "ZXN0LnByb3RvGgtSZXBseS5wcm90byKTAgoIUG9zaXRpb24SEgoKaW5zdHJ1",
             "bWVudBgBIAEoCRIhCghleGNoYW5nZRgCIAEoDjIPLlByb3RvLkV4Y2hhbmdl",
-            "EhIKCnRvdGFsX2xvbmcYAyABKAUSEwoLbGlxdWlkX2xvbmcYBCABKAUSFgoO",
-            "eWVzdGVyZGF5X2xvbmcYBSABKAUSEwoLdG90YWxfc2hvcnQYBiABKAUSFAoM",
-            "bGlxdWlkX3Nob3J0GAcgASgFEhcKD3llc3RlcmRheV9zaG9ydBgIIAEoBRIM",
-            "CgR0aW1lGAkgASgEIpgBCgtQb3NpdGlvblJlcRIgCgR0eXBlGAEgASgOMhIu",
-            "UHJvdG8uUmVxdWVzdFR5cGUSIQoIZXhjaGFuZ2UYAiABKA4yDy5Qcm90by5F",
-            "eGNoYW5nZRISCgppbnN0cnVtZW50GAMgASgJEgwKBHVzZXIYBCABKAkSIgoJ",
-            "cG9zaXRpb25zGAUgAygLMg8uUHJvdG8uUG9zaXRpb24iTwoLUG9zaXRpb25S",
-            "ZXASHAoGcmVzdWx0GAEgASgLMgwuUHJvdG8uUmVwbHkSIgoJcG9zaXRpb25z",
-            "GAIgAygLMg8uUHJvdG8uUG9zaXRpb25iBnByb3RvMw=="));
+            "EhIKCnRvdGFsX2xvbmcYAyABKAUSEwoLbGlxdWlkX2xvbmcYBCABKAUSHQoV",
+            "bGlxdWlkX3llc3RlcmRheV9sb25nGAUgASgFEhYKDnllc3RlcmRheV9sb25n",
+            "GAYgASgFEhMKC3RvdGFsX3Nob3J0GAcgASgFEhQKDGxpcXVpZF9zaG9ydBgI",
+            "IAEoBRIeChZsaXF1aWRfeWVzdGVyZGF5X3Nob3J0GAkgASgFEhcKD3llc3Rl",
+            "cmRheV9zaG9ydBgKIAEoBRIMCgR0aW1lGAsgASgEIpgBCgtQb3NpdGlvblJl",
+            "cRIgCgR0eXBlGAEgASgOMhIuUHJvdG8uUmVxdWVzdFR5cGUSIQoIZXhjaGFu",
+            "Z2UYAiABKA4yDy5Qcm90by5FeGNoYW5nZRISCgppbnN0cnVtZW50GAMgASgJ",
+            "EgwKBHVzZXIYBCABKAkSIgoJcG9zaXRpb25zGAUgAygLMg8uUHJvdG8uUG9z",
+            "aXRpb24iTwoLUG9zaXRpb25SZXASHAoGcmVzdWx0GAEgASgLMgwuUHJvdG8u",
+            "UmVwbHkSIgoJcG9zaXRpb25zGAIgAygLMg8uUHJvdG8uUG9zaXRpb25iBnBy",
+            "b3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Proto.ExchangeReflection.Descriptor, global::Proto.RequestReflection.Descriptor, global::Proto.ReplyReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::Proto.Position), global::Proto.Position.Parser, new[]{ "Instrument", "Exchange", "TotalLong", "LiquidLong", "YesterdayLong", "TotalShort", "LiquidShort", "YesterdayShort", "Time" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Proto.Position), global::Proto.Position.Parser, new[]{ "Instrument", "Exchange", "TotalLong", "LiquidLong", "LiquidYesterdayLong", "YesterdayLong", "TotalShort", "LiquidShort", "LiquidYesterdayShort", "YesterdayShort", "Time" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Proto.PositionReq), global::Proto.PositionReq.Parser, new[]{ "Type", "Exchange", "Instrument", "User", "Positions" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Proto.PositionRep), global::Proto.PositionRep.Parser, new[]{ "Result", "Positions" }, null, null, null)
           }));
@@ -77,9 +79,11 @@ namespace Proto {
       exchange_ = other.exchange_;
       totalLong_ = other.totalLong_;
       liquidLong_ = other.liquidLong_;
+      liquidYesterdayLong_ = other.liquidYesterdayLong_;
       yesterdayLong_ = other.yesterdayLong_;
       totalShort_ = other.totalShort_;
       liquidShort_ = other.liquidShort_;
+      liquidYesterdayShort_ = other.liquidYesterdayShort_;
       yesterdayShort_ = other.yesterdayShort_;
       time_ = other.time_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
@@ -134,8 +138,19 @@ namespace Proto {
       }
     }
 
+    /// <summary>Field number for the "liquid_yesterday_long" field.</summary>
+    public const int LiquidYesterdayLongFieldNumber = 5;
+    private int liquidYesterdayLong_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int LiquidYesterdayLong {
+      get { return liquidYesterdayLong_; }
+      set {
+        liquidYesterdayLong_ = value;
+      }
+    }
+
     /// <summary>Field number for the "yesterday_long" field.</summary>
-    public const int YesterdayLongFieldNumber = 5;
+    public const int YesterdayLongFieldNumber = 6;
     private int yesterdayLong_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int YesterdayLong {
@@ -146,7 +161,7 @@ namespace Proto {
     }
 
     /// <summary>Field number for the "total_short" field.</summary>
-    public const int TotalShortFieldNumber = 6;
+    public const int TotalShortFieldNumber = 7;
     private int totalShort_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int TotalShort {
@@ -157,7 +172,7 @@ namespace Proto {
     }
 
     /// <summary>Field number for the "liquid_short" field.</summary>
-    public const int LiquidShortFieldNumber = 7;
+    public const int LiquidShortFieldNumber = 8;
     private int liquidShort_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int LiquidShort {
@@ -167,8 +182,19 @@ namespace Proto {
       }
     }
 
+    /// <summary>Field number for the "liquid_yesterday_short" field.</summary>
+    public const int LiquidYesterdayShortFieldNumber = 9;
+    private int liquidYesterdayShort_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int LiquidYesterdayShort {
+      get { return liquidYesterdayShort_; }
+      set {
+        liquidYesterdayShort_ = value;
+      }
+    }
+
     /// <summary>Field number for the "yesterday_short" field.</summary>
-    public const int YesterdayShortFieldNumber = 8;
+    public const int YesterdayShortFieldNumber = 10;
     private int yesterdayShort_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int YesterdayShort {
@@ -179,7 +205,7 @@ namespace Proto {
     }
 
     /// <summary>Field number for the "time" field.</summary>
-    public const int TimeFieldNumber = 9;
+    public const int TimeFieldNumber = 11;
     private ulong time_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public ulong Time {
@@ -206,9 +232,11 @@ namespace Proto {
       if (Exchange != other.Exchange) return false;
       if (TotalLong != other.TotalLong) return false;
       if (LiquidLong != other.LiquidLong) return false;
+      if (LiquidYesterdayLong != other.LiquidYesterdayLong) return false;
       if (YesterdayLong != other.YesterdayLong) return false;
       if (TotalShort != other.TotalShort) return false;
       if (LiquidShort != other.LiquidShort) return false;
+      if (LiquidYesterdayShort != other.LiquidYesterdayShort) return false;
       if (YesterdayShort != other.YesterdayShort) return false;
       if (Time != other.Time) return false;
       return Equals(_unknownFields, other._unknownFields);
@@ -221,9 +249,11 @@ namespace Proto {
       if (Exchange != 0) hash ^= Exchange.GetHashCode();
       if (TotalLong != 0) hash ^= TotalLong.GetHashCode();
       if (LiquidLong != 0) hash ^= LiquidLong.GetHashCode();
+      if (LiquidYesterdayLong != 0) hash ^= LiquidYesterdayLong.GetHashCode();
       if (YesterdayLong != 0) hash ^= YesterdayLong.GetHashCode();
       if (TotalShort != 0) hash ^= TotalShort.GetHashCode();
       if (LiquidShort != 0) hash ^= LiquidShort.GetHashCode();
+      if (LiquidYesterdayShort != 0) hash ^= LiquidYesterdayShort.GetHashCode();
       if (YesterdayShort != 0) hash ^= YesterdayShort.GetHashCode();
       if (Time != 0UL) hash ^= Time.GetHashCode();
       if (_unknownFields != null) {
@@ -255,24 +285,32 @@ namespace Proto {
         output.WriteRawTag(32);
         output.WriteInt32(LiquidLong);
       }
-      if (YesterdayLong != 0) {
+      if (LiquidYesterdayLong != 0) {
         output.WriteRawTag(40);
+        output.WriteInt32(LiquidYesterdayLong);
+      }
+      if (YesterdayLong != 0) {
+        output.WriteRawTag(48);
         output.WriteInt32(YesterdayLong);
       }
       if (TotalShort != 0) {
-        output.WriteRawTag(48);
+        output.WriteRawTag(56);
         output.WriteInt32(TotalShort);
       }
       if (LiquidShort != 0) {
-        output.WriteRawTag(56);
+        output.WriteRawTag(64);
         output.WriteInt32(LiquidShort);
       }
+      if (LiquidYesterdayShort != 0) {
+        output.WriteRawTag(72);
+        output.WriteInt32(LiquidYesterdayShort);
+      }
       if (YesterdayShort != 0) {
-        output.WriteRawTag(64);
+        output.WriteRawTag(80);
         output.WriteInt32(YesterdayShort);
       }
       if (Time != 0UL) {
-        output.WriteRawTag(72);
+        output.WriteRawTag(88);
         output.WriteUInt64(Time);
       }
       if (_unknownFields != null) {
@@ -295,6 +333,9 @@ namespace Proto {
       if (LiquidLong != 0) {
         size += 1 + pb::CodedOutputStream.ComputeInt32Size(LiquidLong);
       }
+      if (LiquidYesterdayLong != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(LiquidYesterdayLong);
+      }
       if (YesterdayLong != 0) {
         size += 1 + pb::CodedOutputStream.ComputeInt32Size(YesterdayLong);
       }
@@ -303,6 +344,9 @@ namespace Proto {
       }
       if (LiquidShort != 0) {
         size += 1 + pb::CodedOutputStream.ComputeInt32Size(LiquidShort);
+      }
+      if (LiquidYesterdayShort != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(LiquidYesterdayShort);
       }
       if (YesterdayShort != 0) {
         size += 1 + pb::CodedOutputStream.ComputeInt32Size(YesterdayShort);
@@ -333,6 +377,9 @@ namespace Proto {
       if (other.LiquidLong != 0) {
         LiquidLong = other.LiquidLong;
       }
+      if (other.LiquidYesterdayLong != 0) {
+        LiquidYesterdayLong = other.LiquidYesterdayLong;
+      }
       if (other.YesterdayLong != 0) {
         YesterdayLong = other.YesterdayLong;
       }
@@ -341,6 +388,9 @@ namespace Proto {
       }
       if (other.LiquidShort != 0) {
         LiquidShort = other.LiquidShort;
+      }
+      if (other.LiquidYesterdayShort != 0) {
+        LiquidYesterdayShort = other.LiquidYesterdayShort;
       }
       if (other.YesterdayShort != 0) {
         YesterdayShort = other.YesterdayShort;
@@ -376,22 +426,30 @@ namespace Proto {
             break;
           }
           case 40: {
-            YesterdayLong = input.ReadInt32();
+            LiquidYesterdayLong = input.ReadInt32();
             break;
           }
           case 48: {
-            TotalShort = input.ReadInt32();
+            YesterdayLong = input.ReadInt32();
             break;
           }
           case 56: {
-            LiquidShort = input.ReadInt32();
+            TotalShort = input.ReadInt32();
             break;
           }
           case 64: {
-            YesterdayShort = input.ReadInt32();
+            LiquidShort = input.ReadInt32();
             break;
           }
           case 72: {
+            LiquidYesterdayShort = input.ReadInt32();
+            break;
+          }
+          case 80: {
+            YesterdayShort = input.ReadInt32();
+            break;
+          }
+          case 88: {
             Time = input.ReadUInt64();
             break;
           }

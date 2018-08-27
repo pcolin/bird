@@ -24,15 +24,16 @@ namespace Proto {
     static HeartbeatReflection() {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
-            "Cg9IZWFydGJlYXQucHJvdG8SBVByb3RvIksKCUhlYXJ0YmVhdBIiCgR0eXBl",
-            "GAEgASgOMhQuUHJvdG8uUHJvY2Vzc29yVHlwZRIMCgRuYW1lGAIgASgJEgwK",
-            "BHRpbWUYAyABKAQqUAoNUHJvY2Vzc29yVHlwZRIOCgpNaWRkbGV3YXJlEAAS",
-            "CwoHTW9uaXRvchABEgsKB1ByaWNpbmcQAhIMCghTdHJhdGVneRADEgcKA0dV",
-            "SRAEYgZwcm90bzM="));
+            "Cg9IZWFydGJlYXQucHJvdG8SBVByb3RvGg5FeGNoYW5nZS5wcm90byJuCglI",
+            "ZWFydGJlYXQSIQoIZXhjaGFuZ2UYASABKA4yDy5Qcm90by5FeGNoYW5nZRIi",
+            "CgR0eXBlGAIgASgOMhQuUHJvdG8uUHJvY2Vzc29yVHlwZRIMCgRuYW1lGAMg",
+            "ASgJEgwKBHRpbWUYBCABKAQqUAoNUHJvY2Vzc29yVHlwZRIOCgpNaWRkbGV3",
+            "YXJlEAASCwoHTW9uaXRvchABEgsKB1ByaWNpbmcQAhIMCghTdHJhdGVneRAD",
+            "EgcKA0dVSRAEYgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
-          new pbr::FileDescriptor[] { },
+          new pbr::FileDescriptor[] { global::Proto.ExchangeReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Proto.ProcessorType), }, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::Proto.Heartbeat), global::Proto.Heartbeat.Parser, new[]{ "Type", "Name", "Time" }, null, null, null)
+            new pbr::GeneratedClrTypeInfo(typeof(global::Proto.Heartbeat), global::Proto.Heartbeat.Parser, new[]{ "Exchange", "Type", "Name", "Time" }, null, null, null)
           }));
     }
     #endregion
@@ -75,6 +76,7 @@ namespace Proto {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public Heartbeat(Heartbeat other) : this() {
+      exchange_ = other.exchange_;
       type_ = other.type_;
       name_ = other.name_;
       time_ = other.time_;
@@ -86,8 +88,19 @@ namespace Proto {
       return new Heartbeat(this);
     }
 
+    /// <summary>Field number for the "exchange" field.</summary>
+    public const int ExchangeFieldNumber = 1;
+    private global::Proto.Exchange exchange_ = 0;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::Proto.Exchange Exchange {
+      get { return exchange_; }
+      set {
+        exchange_ = value;
+      }
+    }
+
     /// <summary>Field number for the "type" field.</summary>
-    public const int TypeFieldNumber = 1;
+    public const int TypeFieldNumber = 2;
     private global::Proto.ProcessorType type_ = 0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Proto.ProcessorType Type {
@@ -98,7 +111,7 @@ namespace Proto {
     }
 
     /// <summary>Field number for the "name" field.</summary>
-    public const int NameFieldNumber = 2;
+    public const int NameFieldNumber = 3;
     private string name_ = "";
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string Name {
@@ -109,7 +122,7 @@ namespace Proto {
     }
 
     /// <summary>Field number for the "time" field.</summary>
-    public const int TimeFieldNumber = 3;
+    public const int TimeFieldNumber = 4;
     private ulong time_;
     /// <summary>
     /// google.protobuf.Timestamp time = 2;
@@ -135,6 +148,7 @@ namespace Proto {
       if (ReferenceEquals(other, this)) {
         return true;
       }
+      if (Exchange != other.Exchange) return false;
       if (Type != other.Type) return false;
       if (Name != other.Name) return false;
       if (Time != other.Time) return false;
@@ -144,6 +158,7 @@ namespace Proto {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
+      if (Exchange != 0) hash ^= Exchange.GetHashCode();
       if (Type != 0) hash ^= Type.GetHashCode();
       if (Name.Length != 0) hash ^= Name.GetHashCode();
       if (Time != 0UL) hash ^= Time.GetHashCode();
@@ -160,16 +175,20 @@ namespace Proto {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      if (Type != 0) {
+      if (Exchange != 0) {
         output.WriteRawTag(8);
+        output.WriteEnum((int) Exchange);
+      }
+      if (Type != 0) {
+        output.WriteRawTag(16);
         output.WriteEnum((int) Type);
       }
       if (Name.Length != 0) {
-        output.WriteRawTag(18);
+        output.WriteRawTag(26);
         output.WriteString(Name);
       }
       if (Time != 0UL) {
-        output.WriteRawTag(24);
+        output.WriteRawTag(32);
         output.WriteUInt64(Time);
       }
       if (_unknownFields != null) {
@@ -180,6 +199,9 @@ namespace Proto {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
+      if (Exchange != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Exchange);
+      }
       if (Type != 0) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Type);
       }
@@ -199,6 +221,9 @@ namespace Proto {
     public void MergeFrom(Heartbeat other) {
       if (other == null) {
         return;
+      }
+      if (other.Exchange != 0) {
+        Exchange = other.Exchange;
       }
       if (other.Type != 0) {
         Type = other.Type;
@@ -221,14 +246,18 @@ namespace Proto {
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
           case 8: {
+            exchange_ = (global::Proto.Exchange) input.ReadEnum();
+            break;
+          }
+          case 16: {
             type_ = (global::Proto.ProcessorType) input.ReadEnum();
             break;
           }
-          case 18: {
+          case 26: {
             Name = input.ReadString();
             break;
           }
-          case 24: {
+          case 32: {
             Time = input.ReadUInt64();
             break;
           }
