@@ -26,7 +26,14 @@ namespace client.Views
         {
             Formats = new Dictionary<int, string>();
             InitializeComponent();
-            this.DataContext = new TradeWindowViewModel(container, this.Dispatcher);
+            var viewModel = new TradeWindowViewModel(container, this.Dispatcher);
+            this.DataContext = viewModel;
+            this.ListBoxExchanges.ItemsSource = viewModel.ExchangesView;
+            this.ListBoxInstruments.ItemsSource = viewModel.InstrumentsView;
+            this.ListBoxUnderlyings.ItemsSource = viewModel.UnderlyingsView;
+            this.ListBoxSides.ItemsSource = viewModel.SidesView;
+            this.ListBoxStrategies.ItemsSource = viewModel.StrategiesView;
+            this.ListBoxTypes.ItemsSource = viewModel.TypesView;
         }
 
         public void SaveAndClose(XmlWriter writer)

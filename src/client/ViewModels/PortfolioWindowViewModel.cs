@@ -38,6 +38,7 @@ namespace client.ViewModels
             this.portfolios = new Dictionary<Proto.Exchange,Dictionary<Instrument,PortfolioItem>>();
             PortfolioItem root = new PortfolioItem()
                 {
+                    ItemType = PortfolioItemType.Portfolio,
                     Name = "Portfolio",
                     Children = new List<PortfolioItem>(),
                     Index = index++,
@@ -51,13 +52,15 @@ namespace client.ViewModels
             {
                 var pm = this.container.Resolve<ProductManager>(exchange.ToString());
                 var positionManager = this.container.Resolve<PositionManager>(exchange.ToString());
+                var tradeManager = this.container.Resolve<TradeManager>(exchange.ToString());
                 var ssrateManager = this.container.Resolve<SSRateManager>(exchange.ToString());
-                if (pm != null && positionManager != null)
+                if (pm != null && positionManager != null && tradeManager != null)
                 {
                     var items = new Dictionary<Instrument, PortfolioItem>();
                     this.portfolios.Add(exchange, items);
                     PortfolioItem exchangeItem = new PortfolioItem()
                     {
+                        ItemType = PortfolioItemType.Exchange,
                         Name = exchange.ToString(),
                         Parent = root,
                         Children = new List<PortfolioItem>(),
@@ -70,6 +73,7 @@ namespace client.ViewModels
                     {
                         PortfolioItem hedgeUnderlyingItem = new PortfolioItem()
                         {
+                            ItemType = PortfolioItemType.Underlying,
                             Name = hedgeUnderlying.Id,
                             Parent = exchangeItem,
                             Children = new List<PortfolioItem>(),
@@ -82,6 +86,7 @@ namespace client.ViewModels
                         {
                             PortfolioItem maturityItem = new PortfolioItem()
                             {
+                                ItemType = PortfolioItemType.Maturity,
                                 Parent = hedgeUnderlyingItem,
                                 Children = new List<PortfolioItem>(),
                                 Index = -1,
@@ -89,11 +94,32 @@ namespace client.ViewModels
                             hedgeUnderlyingItem.Children.Add(maturityItem);
                             PortfolioItem underlyingItem = new PortfolioItem(underlying)
                             {
+                                ItemType = PortfolioItemType.Instrument,
                                 Parent = maturityItem,
                                 Contract = underlying,
                                 Name = underlying.Id,
                                 Index = -1,
+                                Turnover = tradeManager.GetTurnover(underlying.Id),
                             };
+
+                            var trades = tradeManager.GetTrades(underlying.Id);
+                            if (trades.Count() > 0)
+                            {
+                                int turnover = 0;
+                                double fee = 0;
+                                foreach (var t in tradeManager.GetTrades(underlying.Id))
+                                {
+                                    turnover += t.Volume;
+                                    fee += TradeManager.GetFee(underlying, t);
+                                }
+                                underlyingItem.Turnover = turnover;
+                                underlyingItem.Fee += fee;
+                                maturityItem.Fee += fee;
+                                hedgeUnderlyingItem.Fee += fee;
+                                exchangeItem.Fee += fee;
+                                root.Fee += fee;
+                            }
+
                             Proto.Position p = null;
                             if (positionManager.GetPosition(underlying.Id, out p))
                             {
@@ -113,6 +139,7 @@ namespace client.ViewModels
                                 {
                                     PortfolioItem optionItem = new PortfolioItem(option)
                                     {
+                                        ItemType = PortfolioItemType.Instrument,
                                         Parent = maturityItem,
                                         Contract = option,
                                         Name = option.Id,
@@ -125,6 +152,28 @@ namespace client.ViewModels
                                     optionItem.SSRate = underlyingItem.SSRate;
                                     items.Add(option, optionItem);
                                     maturityItem.Children.Add(optionItem);
+
+                                    trades = tradeManager.GetTrades(option.Id);
+                                    if (trades.Count() > 0)
+                                    {
+                                        int turnover = 0;
+                                        double fee = 0;
+                                        foreach (var t in trades)
+                                        {
+                                            turnover += t.Volume;
+                                            fee += TradeManager.GetFee(option, t);
+                                        }
+                                        optionItem.Turnover = turnover;
+                                        optionItem.Fee = fee;
+                                        maturityItem.Turnover += optionItem.Turnover;
+                                        maturityItem.Fee += fee;
+                                        hedgeUnderlyingItem.Turnover += optionItem.Turnover;
+                                        hedgeUnderlyingItem.Fee += fee;
+                                        exchangeItem.Turnover += optionItem.Turnover;
+                                        exchangeItem.Fee += fee;
+                                        root.Turnover += optionItem.Turnover;
+                                        root.Fee += fee;
+                                    }
                                 }
                             }
                             else
@@ -139,6 +188,7 @@ namespace client.ViewModels
 
 
             this.container.Resolve<EventAggregator>().GetEvent<PubSubEvent<Proto.Price>>().Subscribe(this.ReceivePrice, ThreadOption.BackgroundThread);
+            this.container.Resolve<EventAggregator>().GetEvent<PubSubEvent<Proto.Trade>>().Subscribe(this.ReceiveTrade, ThreadOption.BackgroundThread);
             this.container.Resolve<EventAggregator>().GetEvent<GreeksEvent>().Subscribe(this.ReceiveGreeks, ThreadOption.BackgroundThread);
         }
 
@@ -225,7 +275,49 @@ namespace client.ViewModels
                             parent = parent.Parent;
                         }
                         item.MarketValue += marketValueDiff;
+
+                        if (instrument.Type == Proto.InstrumentType.Option)
+                        {
+                            int volumeDiff = price.Volume - item.Volume;
+                            parent = item.Parent;
+                            while (parent != null)
+                            {
+                                parent.Volume += volumeDiff;
+                                parent = parent.Parent;
+                            }
+                        }
+                        item.Volume = price.Volume;
                     });
+                }
+            }
+        }
+
+        void ReceiveTrade(Proto.Trade trade)
+        {
+             Dictionary<Instrument, PortfolioItem> items = null;
+            if (this.portfolios.TryGetValue(trade.Exchange, out items))
+            {
+                var pm = this.container.Resolve<ProductManager>(trade.Exchange.ToString());
+                var instrument = pm.FindId(trade.Instrument);
+                PortfolioItem item = null;
+                if (items.TryGetValue(instrument, out item))
+                {
+                    this.dispatcher.BeginInvoke((MethodInvoker)delegate
+                        {
+                            double fee = TradeManager.GetFee(instrument, trade);
+                            var parent = item.Parent;
+                            while (parent != null)
+                            {
+                                if (instrument.Type == Proto.InstrumentType.Option)
+                                {
+                                    parent.Turnover += trade.Volume;
+                                }
+                                parent.Fee += fee;
+                                parent = parent.Parent;
+                            }
+                            item.Turnover += trade.Volume;
+                            item.Fee += fee;
+                        });
                 }
             }
         }
@@ -330,8 +422,9 @@ namespace client.ViewModels
         Dictionary<Proto.Exchange, Dictionary<Instrument, PortfolioItem>> portfolios;
     }
 
-    enum PortfolioType
+    enum PortfolioItemType
     {
+        Portfolio,
         Exchange,
         Underlying,
         Maturity,
@@ -386,6 +479,7 @@ namespace client.ViewModels
         public string Type { get; private set; }
         public string Multiple { get; private set; }
 
+        public PortfolioItemType ItemType { get; set; }
         public int Index { get; set; }
 
         private bool isExpanded;
@@ -461,6 +555,20 @@ namespace client.ViewModels
             get { return last; }
             set { SetProperty(ref last, value); }
         }
+
+        private int volume;
+        public int Volume
+        {
+            get { return volume; }
+            set { SetProperty(ref volume, value); }
+        }
+
+        private int turnover;
+        public int Turnover
+        {
+            get { return turnover; }
+            set { SetProperty(ref turnover, value); }
+        }        
 
         private double preSettlement;
         public double PreSettlement

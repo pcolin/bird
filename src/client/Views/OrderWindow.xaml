@@ -17,7 +17,7 @@
                   HorizontalGridLinesBrush="LightGray"                      
                   VerticalGridLinesBrush="LightGray"
                   SelectedItem="{Binding SelectedItem, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                  ItemsSource="{Binding Items}">
+                  ItemsSource="{Binding OrderView}">
             <DataGrid.ColumnHeaderStyle>
                 <Style TargetType="DataGridColumnHeader">
                     <Setter Property="HorizontalContentAlignment" Value="Stretch" />

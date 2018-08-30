@@ -20,6 +20,8 @@ namespace client.ViewModels
     {
         public OrderWindowViewModel(IUnityContainer container, Dispatcher dispatcher)
         {
+            this.Items = new RangeObservableCollection<OrderItem>();
+
             var exchanges = new ObservableCollection<FilterItem<Proto.Exchange>>();
             exchanges.Add(new FilterItem<Proto.Exchange>(this.FilterExchange));
             this.Exchanges = exchanges;
@@ -69,8 +71,6 @@ namespace client.ViewModels
             }
             this.Types = types;
 
-            this.Items = new RangeObservableCollection<OrderItem>();
-
             this.container = container;
             this.dispatcher = dispatcher;
             this.CancelCommand = new DelegateCommand(this.CancelExecute, this.CanCancel);
@@ -84,9 +84,8 @@ namespace client.ViewModels
         public DelegateCommand CancelAllCommand { get; set; }
 
         public ICollectionView OrderView { get; set; }
-
         private RangeObservableCollection<OrderItem> items;
-        public RangeObservableCollection<OrderItem> Items
+        private RangeObservableCollection<OrderItem> Items
         {
             get { return items; }
             set
@@ -223,34 +222,38 @@ namespace client.ViewModels
                     orders.AddRange(om.GetOrders());
                     this.productManagers[exchange] = pm;
 
-                    this.Exchanges.Add(new FilterItem<Proto.Exchange>(this.FilterExchange, x => x.ToString(), exchange));
-                    foreach (var underlying in pm.GetUnderlyings().OrderBy(x => x.Id))
-                    {
-                        this.Underlyings.Add(new FilterItem<Instrument>(this.FilterUnderlying, x => x.Id, underlying));
-                        this.Instruments.Add(new FilterItem<Instrument>(this.FilterInstrument, x => x.Id, underlying));
-                        foreach (var option in pm.GetOptions(underlying).OrderBy(x => x.Id))
+                    this.dispatcher.Invoke((MethodInvoker)delegate
                         {
-                            this.Instruments.Add(new FilterItem<Instrument>(this.FilterInstrument, x => x.Id, option));
-                        }
-                    }
+                            this.Exchanges.Add(new FilterItem<Proto.Exchange>(this.FilterExchange, x => x.ToString(), exchange));
+                            foreach (var underlying in pm.GetUnderlyings().OrderBy(x => x.Id))
+                            {
+                                this.Underlyings.Add(new FilterItem<Instrument>(this.FilterUnderlying, x => x.Id, underlying));
+                                this.Instruments.Add(new FilterItem<Instrument>(this.FilterInstrument, x => x.Id, underlying));
+                                foreach (var option in pm.GetOptions(underlying).OrderBy(x => x.Id))
+                                {
+                                    this.Instruments.Add(new FilterItem<Instrument>(this.FilterInstrument, x => x.Id, option));
+                                }
+                            }
+                        });
                 }
             }
 
-            var items = new RangeObservableCollection<OrderItem>();
             this.orders = new Dictionary<ulong, OrderItem>();
             //var sortedOrders = from order in orders orderby order.Time ascending select order;
-            foreach (var order in orders.OrderBy(x => x.Time))
-            {
-                var inst = productManagers[order.Exchange].FindId(order.Instrument);
-                if (inst != null)
+            this.dispatcher.Invoke((MethodInvoker)delegate
                 {
-                    var item = new OrderItem(inst, order);
-                    this.orders.Add(order.Id, item);
-                    this.Items.Add(item);
-                }
-            }
+                    foreach (var order in orders.OrderBy(x => x.Time))
+                    {
+                        var inst = productManagers[order.Exchange].FindId(order.Instrument);
+                        if (inst != null)
+                        {
+                            var item = new OrderItem(inst, order);
+                            this.orders.Add(order.Id, item);
+                            this.Items.Add(item);
+                        }
+                    }
+                });
 
-            //this.Items = items;
             this.container.Resolve<EventAggregator>().GetEvent<PubSubEvent<Proto.OrderReq>>().Subscribe(this.ReceiveOrders, ThreadOption.BackgroundThread);
         }
 
@@ -480,7 +483,7 @@ namespace client.ViewModels
                 for (int i = 1; i < this.Sides.Count; ++i)
                 {
                     this.Sides[i].SetIsSelected(false);
-                    this.excludedSides.Add(side);
+                    this.excludedSides.Add(this.Sides[i].Item);
                 }
             }
             else
@@ -514,7 +517,7 @@ namespace client.ViewModels
                 for (int i = 1; i < this.Statuses.Count; ++i)
                 {
                     this.Statuses[i].SetIsSelected(false);
-                    this.excludedStatuses.Add(status);
+                    this.excludedStatuses.Add(this.Statuses[i].Item);
                 }
             }
             else
@@ -548,7 +551,7 @@ namespace client.ViewModels
                 for (int i = 1; i < this.Strategies.Count; ++i)
                 {
                     this.Strategies[i].SetIsSelected(false);
-                    this.excludedStrategies.Add(strategy);
+                    this.excludedStrategies.Add(this.Strategies[i].Item);
                 }
             }
             else
@@ -582,7 +585,7 @@ namespace client.ViewModels
                 for (int i = 1; i < this.Types.Count; ++i)
                 {
                     this.Types[i].SetIsSelected(false);
-                    this.excludedTypes.Add(type);
+                    this.excludedTypes.Add(this.Types[i].Item);
                 }
             }
             else

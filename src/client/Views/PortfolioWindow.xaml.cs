@@ -66,6 +66,19 @@ namespace client.Views
             /// load layout
             MainWindow.LoadDataGridLayout("Portfolio.xml", this.PortfolioDataGrid, this.Formats);
         }
+
+        private void PortfolioDataGrid_LoadingRow(object sender, DataGridRowEventArgs e)
+        {
+            PortfolioItem item = (PortfolioItem)e.Row.DataContext;
+            if (item.ItemType == PortfolioItemType.Exchange)
+            {
+                e.Row.Background = Brushes.LightCyan;
+            }
+            else if (item.ItemType == PortfolioItemType.Underlying)
+            {
+                e.Row.Background = Brushes.Wheat;
+            }
+        }
     }
 
     /// <summary>
@@ -99,6 +112,41 @@ namespace client.Views
         public object ConvertBack(object o, Type type, object parameter, CultureInfo culture)
         {
             throw new NotSupportedException();
+        }
+    }
+
+    internal class TurnoverRatioToStringMultiConverter : IMultiValueConverter
+    {
+        public string DefaultFormat { get; set; }
+
+        public object Convert(object[] values, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            if (values[0] is int && values[1] is int)
+            {
+                int value1 = (int)values[0];
+                int value2 = (int)values[1];
+                if (value2 != 0)
+                {
+                    double value = (double)value1 / value2;
+                    Dictionary<int, string> formats = values[3] as Dictionary<int, string>;
+                    if (formats != null)
+                    {
+                        int index = (int)values[2];
+                        string format = null;
+                        if (formats.TryGetValue(index, out format))
+                        {
+                            return (value * 100).ToString(format);
+                        }
+                    }
+                    return (value * 100).ToString(DefaultFormat);
+                }
+            }
+            return null;
+        }
+
+        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, System.Globalization.CultureInfo culture)
+        {
+            throw new NotImplementedException();
         }
     }
 }

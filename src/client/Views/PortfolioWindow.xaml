@@ -16,11 +16,13 @@
                   VerticalGridLinesBrush="LightGray"
                   SelectionUnit="CellOrRowHeader"
                   FrozenColumnCount="1"
+                  LoadingRow="PortfolioDataGrid_LoadingRow"
                   ItemsSource="{Binding Display}">
             <DataGrid.Resources>
                 <local:LevelToIndentConverter x:Key="LevelToIndentConverter" />
                 <local:CanExpandConverter x:Key="CanExpandConverter" />
                 <local:DoubleToStringMultiConverter DefaultFormat="N0" x:Key="PortfolioDoubleConverter" />
+                <local:TurnoverRatioToStringMultiConverter DefaultFormat="N2" x:Key="TurnoverRatioToStringMultiConverter" />
                 <local:PercentDoubleToStringMultiConverter DefaultFormat="N0" x:Key="PortfolioPercentDoubleConverter" />
                 <Style x:Key="ExpandCollapseToggleStyle" TargetType="{x:Type ToggleButton}">
                     <Setter Property="Focusable" Value="False"/>
@@ -411,6 +413,16 @@
                     <DataGridTextColumn.Binding>
                         <MultiBinding Converter="{StaticResource PortfolioDoubleConverter}">
                             <Binding Path="MarketValue" />
+                            <Binding Path="Column.DisplayIndex" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGridCell}}" />
+                            <Binding Path="Formats" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type Window}}" />
+                        </MultiBinding>
+                    </DataGridTextColumn.Binding>
+                </DataGridTextColumn>
+                <DataGridTextColumn Header="Turnover(%)">
+                    <DataGridTextColumn.Binding>
+                        <MultiBinding Converter="{StaticResource TurnoverRatioToStringMultiConverter}">
+                            <Binding Path="Turnover" />
+                            <Binding Path="Volume" />
                             <Binding Path="Column.DisplayIndex" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGridCell}}" />
                             <Binding Path="Formats" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type Window}}" />
                         </MultiBinding>
