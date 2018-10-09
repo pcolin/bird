@@ -280,7 +280,12 @@ void Quoter::OnOrder(const OrderPtr &order)
             if (order->IsInactive())
             {
               itr->second->bid_canceling = false;
-              if (Check(itr->first, it->second->multiplier, itr->second))
+              if (order->status == Proto::OrderStatus::Rejected)
+              {
+                /// stop requote when order is rejected untill replay
+                itr->second->refill_times = quoter_->refill_times();
+              }
+              else if (Check(itr->first, it->second->multiplier, itr->second))
               {
                 Requote(itr->first, it->second->price, it->second->multiplier, itr->second);
               }
@@ -297,7 +302,12 @@ void Quoter::OnOrder(const OrderPtr &order)
             if (order->IsInactive())
             {
               itr->second->ask_canceling = false;
-              if (Check(itr->first, it->second->multiplier, itr->second))
+              if (order->status == Proto::OrderStatus::Rejected)
+              {
+                /// stop requote when order is rejected untill replay
+                itr->second->refill_times = quoter_->refill_times();
+              }
+              else if (Check(itr->first, it->second->multiplier, itr->second))
               {
                 Requote(itr->first, it->second->price, it->second->multiplier, itr->second);
               }
