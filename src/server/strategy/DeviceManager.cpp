@@ -7,30 +7,27 @@
 #include "ClusterManager.h"
 #include "config/EnvConfig.h"
 #include "base/logger/Logging.h"
-
-#include <boost/format.hpp>
+#include "boost/format.hpp"
 
 DeviceManager::DeviceManager(const Instrument *underlying)
-  : underlying_(underlying), theo_(underlying),
-    underlying_prices_(EnvConfig::GetInstance()->GetInt32(EnvVar::UL_PRICE_CHECK_NUM, 5)),
-    sequencer_(&strategy_), rb_(&sequencer_), barrier_(sequencer_.NewBarrier(sequences_))
-{}
+    : underlying_(underlying),
+      theo_(underlying),
+      underlying_prices_(EnvConfig::GetInstance()->GetInt32(EnvVar::UL_PRICE_CHECK_NUM, 5)),
+      sequencer_(&strategy_),
+      rb_(&sequencer_),
+      barrier_(sequencer_.NewBarrier(sequences_)) {}
 
-DeviceManager::~DeviceManager()
-{
-  if (barrier_)
-  {
+DeviceManager::~DeviceManager() {
+  if (barrier_) {
     delete barrier_;
     barrier_ = nullptr;
   }
 }
 
-void DeviceManager::Init()
-{
+void DeviceManager::Init() {
   /// initialize pricer
   auto pricer = ClusterManager::GetInstance()->FindPricer(underlying_);
-  if (pricer)
-  {
+  if (pricer) {
     theo_.SetParameter(pricer->theo_type(), pricer->elastic(), pricer->elastic_limit());
 
     std::unique_ptr<Strategy> strategy(new Pricer(pricer->name(), this));
@@ -41,8 +38,7 @@ void DeviceManager::Init()
 
   /// initialize quoter
   auto quoters = ClusterManager::GetInstance()->FindQuoters(underlying_);
-  for (auto &quoter : quoters)
-  {
+  for (auto &quoter : quoters) {
     std::unique_ptr<Strategy> strategy(new Quoter(quoter->name(), this));
     auto d = std::make_shared<StrategyDevice>(strategy, rb_, barrier_);
     devices_.emplace(quoter->name(), std::move(d));
@@ -61,39 +57,32 @@ void DeviceManager::Init()
   monitor_->Start();
 }
 
-void DeviceManager::Publish(PricePtr &price)
-{
+void DeviceManager::Publish(PricePtr &price) {
   // int64_t seq = rb_.Next();
   // rb_.Get(seq) = std::move(price);
   // rb_.Publish(seq);
 
   /// add adjusted price to be done...
-  if (price->instrument == underlying_)
-  {
+  if (price->instrument == underlying_) {
     double delta = 0; /// Get delta to be done...
     theo_.ApplyElastic(price, delta);
     double theo = theo_.Get();
-    if (underlying_prices_.size() > 0)
-    {
+    if (underlying_prices_.size() > 0) {
       double min = theo, max = theo;
-      for (double p : underlying_prices_)
-      {
+      for (double p : underlying_prices_) {
         if (p < min)
           min = p;
         else if (p > max)
           max = p;
       }
-      if (underlying_->ConvertToTick(max - min) > warn_tick_change_)
-      {
+      if (underlying_->ConvertToTick(max - min) > warn_tick_change_) {
         LOG_ERR << boost::format("%1% theo price warning: min(%2%), max(%3%)") %
-          underlying_->Id() % min % max;
+                   underlying_->Id() % min % max;
         normal_ = false;
-      }
-      else if (normal_ == false)
-      {
+      } else if (normal_ == false) {
         normal_ = true;
         LOG_PUB << boost::format("%1% theo price is normal now: min(%2%), max(%3%)") %
-          underlying_->Id() % min % max;
+                   underlying_->Id() % min % max;
       }
     }
     underlying_prices_.push_back(theo);
@@ -102,93 +91,70 @@ void DeviceManager::Publish(PricePtr &price)
   Publish<PricePtr>(price);
 }
 
-void DeviceManager::Start(const std::string& name)
-{
+void DeviceManager::Start(const std::string& name) {
   auto it = devices_.find(name);
-  if (it != devices_.end())
-  {
+  if (it != devices_.end()) {
     it->second->Start();
   }
 }
 
-void DeviceManager::StartAll()
-{
-  for (auto &it : devices_)
-  {
+void DeviceManager::StartAll() {
+  for (auto &it : devices_) {
     it.second->Start();
   }
 }
 
-void DeviceManager::Stop(const std::string& name, const std::string &reason)
-{
+void DeviceManager::Stop(const std::string& name, const std::string &reason) {
   auto it = devices_.find(name);
-  if (it != devices_.end())
-  {
+  if (it != devices_.end()) {
     it->second->Stop(reason);
   }
 }
 
-void DeviceManager::StopAll(const std::string &reason)
-{
-  for (auto &it : devices_)
-  {
+void DeviceManager::StopAll(const std::string &reason) {
+  for (auto &it : devices_) {
     it.second->Stop(reason);
   }
 }
 
-std::shared_ptr<StrategyDevice> DeviceManager::Find(const std::string &name) const
-{
+std::shared_ptr<StrategyDevice> DeviceManager::Find(const std::string &name) const {
   auto it = devices_.find(name);
   return it != devices_.end() ? it->second : nullptr;
 }
 
-void DeviceManager::Remove(const std::string &name)
-{
+void DeviceManager::Remove(const std::string &name) {
   auto it = devices_.find(name);
-  if (it != devices_.end())
-  {
-    if (it->second->IsRunning())
-    {
+  if (it != devices_.end()) {
+    if (it->second->IsRunning()) {
       it->second->Stop("delete quoter");
     }
     devices_.erase(it);
   }
 }
 
-void DeviceManager::OnStrategyOperate(const std::string &user, const Proto::StrategyOperate &op)
-{
+void DeviceManager::OnStrategyOperate(const std::string &user, const Proto::StrategyOperate &op) {
   bool publish = false;
   auto sd = Find(op.name());
-  if (sd)
-  {
-    if (sd->IsRunning())
-    {
-      if (op.operate() == Proto::StrategyOperation::Stop)
-      {
+  if (sd) {
+    if (sd->IsRunning()) {
+      if (op.operate() == Proto::StrategyOperation::Stop) {
         sd->Stop(user + " stop");
-      }
-      else if (op.operate() == Proto::StrategyOperation::Start)
-      {
+      } else if (op.operate() == Proto::StrategyOperation::Start) {
         auto copy = Message::NewProto<Proto::StrategyOperate>();
         copy->CopyFrom(op);
         Publish(copy);
       }
-    }
-    else if (op.operate() == Proto::StrategyOperation::Start)
-    {
-      if (!pricer_->IsRunning())
-      {
+    } else if (op.operate() == Proto::StrategyOperation::Start) {
+      if (!pricer_->IsRunning()) {
         pricer_->Start();
       }
       sd->Start();
     }
-  }
-  else
-  {
+  } else {
     LOG_ERR << "Can't find strategy " << op.name();
   }
   LOG_PUB << boost::format("%1% %2% %3%") % user % Proto::StrategyOperation_Name(op.operate()) %
-    op.name() ;
+             op.name() ;
   // if (publish) Publish(msg);
 }
 
@@ -248,19 +214,15 @@ void DeviceManager::OnStrategyOperate(const std::string &user, const Proto::Stra
 //   }
 // }
 
-bool DeviceManager::IsStrategyRunning(const std::string &name) const
-{
+bool DeviceManager::IsStrategyRunning(const std::string &name) const {
   auto it = devices_.find(name);
   return it != devices_.end() && it->second->IsRunning();
 }
 
-bool DeviceManager::IsStrategiesRunning() const
-{
+bool DeviceManager::IsStrategiesRunning() const {
   // int cnt = 0;
-  for (auto &it : devices_)
-  {
-    if (it.second->IsRunning())
-    {
+  for (auto &it : devices_) {
+    if (it.second->IsRunning()) {
       return true;
       // ++cnt;
       // LOG_INF << it.second->Name() << " is running...";
@@ -271,8 +233,7 @@ bool DeviceManager::IsStrategiesRunning() const
   // return cnt > 0;
 }
 
-void DeviceManager::UpdatePricer(const Proto::Pricer &pricer)
-{
+void DeviceManager::UpdatePricer(const Proto::Pricer &pricer) {
   theo_.SetParameter(pricer.theo_type(), pricer.elastic(), pricer.elastic_limit());
 }
 

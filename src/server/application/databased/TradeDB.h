@@ -1,23 +1,22 @@
 #ifndef DATABASED_TRADE_DB_H
 #define DATABASED_TRADE_DB_H
 
+#include <vector>
+#include <thread>
+#include <mutex>
 #include "DbBase.h"
 #include "InstrumentDB.h"
 #include "ExchangeParameterDB.h"
 #include "base/concurrency/blockingconcurrentqueue.h"
 #include "Trade.pb.h"
 
-#include <vector>
-#include <thread>
-#include <mutex>
-
-class TradeDB : public DbBase
-{
+class TradeDB : public DbBase {
   typedef std::vector<std::shared_ptr<Proto::Trade>> TradeArray;
-public:
+
+ public:
   TradeDB(ConcurrentSqliteDB &db, InstrumentDB &instrument_db, ExchangeParameterDB &exchange_db);
 
-private:
+ private:
   virtual void RefreshCache() override;
   virtual void RegisterCallback(base::ProtoMessageDispatcher<base::ProtoMessagePtr> &dispatcher);
 
@@ -32,10 +31,10 @@ private:
   TradeArray trades_;
   std::mutex mtx_;
 
-  const int capacity_ = 128;
+  const int kCapacity = 128;
   moodycamel::BlockingConcurrentQueue<std::shared_ptr<Proto::Trade>> requests_;
   std::thread thread_;
   InstrumentDB &instrument_db_;
 };
 
-#endif
+#endif // DATABASED_TRADE_DB_H

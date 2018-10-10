@@ -7,8 +7,7 @@
 #include "Quoter.pb.h"
 
 class TraderApi;
-class Quoter : public Strategy
-{
+class Quoter : public Strategy {
   // typedef std::tuple<OrderPtr, OrderPtr, bool> OrderTuple;
   typedef std::tuple<OrderPtr, bool> OrderTuple;
   struct Parameter
@@ -39,7 +38,7 @@ class Quoter : public Strategy
     std::unordered_map<const Instrument*, ParameterPtr> parameters;
   };
 
-public:
+ public:
   Quoter(const std::string &name, DeviceManager *dm);
 
   virtual void OnStart() override;
@@ -52,7 +51,7 @@ protected:
   virtual void OnTrade(const TradePtr &trade) override;
   virtual bool OnHeartbeat(const std::shared_ptr<Proto::Heartbeat> &heartbeat) override;
 
-private:
+ private:
   bool OnSSRate(const std::shared_ptr<Proto::SSRate> &msg);
   bool OnCredit(const std::shared_ptr<Proto::Credit> &msg);
   bool OnQuoterSpec(const std::shared_ptr<Proto::QuoterSpec> &msg);
@@ -63,9 +62,9 @@ private:
   bool Check(const Instrument *inst, double multiplier, ParameterPtr &parameter);
   void Requote(const Instrument *inst, double spot, double multiplier, ParameterPtr &parameter);
   bool GetBidPrice(const Instrument *inst, double theo, double multiplier, double credit,
-      double &price);
+                   double &price);
   bool GetAskPrice(const Instrument *inst, double theo, double multiplier, double credit,
-      double &price);
+                   double &price);
   // bool GetBidAskPrice(const Instrument *inst, double theo, double multiplier, double credit,
   //     double &bid_price, double &ask_price);
   bool IsBidAdjusted(const OrderPtr &bid, double theo, double multiplier, double credit);
@@ -95,4 +94,4 @@ private:
   double delta_;
 };
 
-#endif
+#endif // STRATEGY_QUOTER_H

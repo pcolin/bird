@@ -1,21 +1,19 @@
 #ifndef MODEL_TRADE_MANAGER_H
 #define MODEL_TRADE_MANAGER_H
 
-#include "Trade.h"
-
 #include <unordered_map>
 #include <mutex>
+#include "Trade.h"
 
-class TradeManager
-{
-public:
+class TradeManager {
+ public:
   static TradeManager* GetInstance();
   ~TradeManager() {}
 
   void Init();
   void OnTrade(const TradePtr &trade);
 
-private:
+ private:
   TradeManager() {}
 
   typedef std::unordered_multimap<std::string, TradePtr> TradeMap;
@@ -23,4 +21,4 @@ private:
   std::mutex mtx_;
 };
 
-#endif
+#endif // MODEL_TRADE_MANAGER_H

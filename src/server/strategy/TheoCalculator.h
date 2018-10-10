@@ -1,6 +1,7 @@
 #ifndef STRATEGY_THEO_CALCULATOR_H
 #define STRATEGY_THEO_CALCULATOR_H
 
+#include <thread>
 #include "DeviceManager.h"
 #include "PricingModel.h"
 #include "VolatilityModel.h"
@@ -16,10 +17,7 @@
 #include "model/Option.h"
 #include "boost/variant.hpp"
 
-#include <thread>
-
-class TheoCalculator
-{
+class TheoCalculator {
   typedef boost::variant<PricePtr,
                          TradePtr,
                          std::shared_ptr<Proto::Heartbeat>,
@@ -39,14 +37,15 @@ class TheoCalculator
     std::vector<std::array<const Option*, 2>> options;
   };
   typedef std::map<boost::gregorian::date, Parameters> ParametersMap;
-public:
+
+ public:
   TheoCalculator(const std::string &name, DeviceManager *dm);
 
   void Start();
   void Stop();
 
   template<class E> bool OnEvent(const E& e) { return running_ && events_.enqueue(e); }
-private:
+ private:
   bool Initialize(const std::shared_ptr<Proto::Pricer> &spec);
 
   void OnPrice(const PricePtr &price);
@@ -61,65 +60,38 @@ private:
   // int64_t RecalculateAll();
   void Recalculate(ParametersMap::value_type &value, base::TickType lower, base::TickType upper);
   void CalculateAndPublish(const Option *call, const Option *put, Parameters &p,
-      double time_value, base::TickType lower, base::TickType upper);
+                           double time_value, base::TickType lower, base::TickType upper);
   void CalculateAndPublish(const Option *option, Parameters &p,
-      double time_value, base::TickType lower, base::TickType upper);
+                           double time_value, base::TickType lower, base::TickType upper);
   // TheoMatrixPtr CalculateTheo(const Option* op, const std::shared_ptr<Parameter> &param,
   //     base::TickType lower, base::TickType upper, double time_value);
 
-  void SetLowerUpper(base::TickType &lower, base::TickType &upper)
-  {
+  void SetLowerUpper(base::TickType &lower, base::TickType &upper) {
     lower = std::max(1, tick_ - TheoMatrix::DEPTH);
     upper = tick_ + TheoMatrix::DEPTH;
   }
 
-private:
-  class EventVisitor : public boost::static_visitor<void>
-  {
-  public:
+ private:
+  class EventVisitor : public boost::static_visitor<void> {
+   public:
     EventVisitor(TheoCalculator *calculator) : calculator_(calculator) {}
 
-    void operator()(const PricePtr &p) const
-    {
-      calculator_->OnPrice(p);
-    }
-
-    void operator()(const TradePtr &t) const
-    {
-      calculator_->OnTrade(t);
-    }
-
-    void operator()(const std::shared_ptr<Proto::Heartbeat> &h)
-    {
-      calculator_->OnHeartbeat(h);
-    }
-
-    void operator()(const std::shared_ptr<Proto::Pricer> &spec)
-    {
-      calculator_->OnPricer(spec);
-    }
-
-    void operator()(const std::shared_ptr<Proto::ExchangeParameterReq> &req)
-    {
+    void operator()(const PricePtr &p) const { calculator_->OnPrice(p); }
+    void operator()(const TradePtr &t) const { calculator_->OnTrade(t); }
+    void operator()(const std::shared_ptr<Proto::Heartbeat> &h) { calculator_->OnHeartbeat(h); }
+    void operator()(const std::shared_ptr<Proto::Pricer> &spec) { calculator_->OnPricer(spec); }
+    void operator()(const std::shared_ptr<Proto::ExchangeParameterReq> &req) {
       calculator_->OnExchangeParameter(req);
     }
-
-    void operator()(const std::shared_ptr<Proto::InterestRateReq> &req)
-    {
+    void operator()(const std::shared_ptr<Proto::InterestRateReq> &req) {
       calculator_->OnInterestRate(req);
     }
-
-    void operator()(const std::shared_ptr<Proto::SSRate> &ssr)
-    {
-      calculator_->OnSSRate(ssr);
-    }
-
-    void operator()(const std::shared_ptr<Proto::VolatilityCurve> &vc)
-    {
+    void operator()(const std::shared_ptr<Proto::SSRate> &ssr) { calculator_->OnSSRate(ssr); }
+    void operator()(const std::shared_ptr<Proto::VolatilityCurve> &vc) {
       calculator_->OnVolatilityCurve(vc);
     }
 
-  private:
+   private:
     TheoCalculator *calculator_;
   } visitor_;
 
@@ -144,4 +116,4 @@ private:
   ParametersMap parameters_;
 };
 
-#endif
+#endif // STRATEGY_THEO_CALCULATOR_H

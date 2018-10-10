@@ -1,75 +1,67 @@
 #ifndef MODEL_MESSAGE_H
 #define MODEL_MESSAGE_H
 
-#include "base/common/Types.h"
-#include "base/common/Time.h"
-#include "base/memory/MemoryPool.h"
 #include <mutex>
 #include <memory>
 #include <cassert>
+#include "base/common/Types.h"
+#include "base/common/Time.h"
+#include "base/memory/MemoryPool.h"
 
-enum class MsgType : int8_t
-{
+enum class MsgType : int8_t {
   Price = 0,
   TheoMatrix = 1,
   Order = 2,
   Trade = 3,
 };
 
-struct MsgHeader
-{
+struct MsgHeader {
   MsgType type;
   int32_t interval[3];
   int64_t time;
 
   MsgHeader(MsgType t) : type(t) {}
   void SetTime() { time = base::Now(); }
-  void SetInterval(int idx)
-  {
+  void SetInterval(int idx) {
     assert(idx < 3);
     interval[idx] = static_cast<int32_t>(base::Now() - time);
   }
 };
 
 template<class T>
-class MessageFactory
-{
-public:
+class MessageFactory {
+ public:
   // ~MessageFactory()
   // {
   //   std::cout << "~MessageFactory" << std::endl;
   // }
-
-  std::shared_ptr<T> Allocate()
-  {
+  std::shared_ptr<T> Allocate() {
     T *t = nullptr;
     {
       std::lock_guard<std::mutex> lck(mtx_);
       t = pool_.newElement();
     }
     assert(t);
-    return std::shared_ptr<T>(t, [this](T *p)
-        {
+    return std::shared_ptr<T>(t, [this](T *p) {
           std::lock_guard<std::mutex> lck(mtx_);
           pool_.deleteElement(p);
         });
   }
 
-  std::shared_ptr<T> Allocate(const std::shared_ptr<T> &pt)
-  {
+  std::shared_ptr<T> Allocate(const std::shared_ptr<T> &pt) {
     T *t = nullptr;
     {
       std::lock_guard<std::mutex> lck(mtx_);
       t = pool_.newElement(*pt);
     }
     assert(t);
-    return std::shared_ptr<T>(t, [this](T *p)
-        {
+    return std::shared_ptr<T>(t, [this](T *p) {
           std::lock_guard<std::mutex> lck(mtx_);
           pool_.deleteElement(p);
         });
   }
-private:
+
+ private:
   MemoryPool<T, 1024*sizeof(T)> pool_;
   std::mutex mtx_;
 };
@@ -82,17 +74,15 @@ class Order;
 //   class Order;
 // }
 class Trade;
-class Message
-{
-public:
+class Message {
+ public:
   static std::shared_ptr<Price> NewPrice();
   static std::shared_ptr<TheoMatrix> NewTheoMatrix();
   static std::shared_ptr<Order> NewOrder();
   static std::shared_ptr<Order> NewOrder(const std::shared_ptr<Order> &ord);
   // static std::shared_ptr<Order> NewOrder(const Proto::Order &ord);
   static std::shared_ptr<Trade> NewTrade();
-  template<class T> static std::shared_ptr<T> NewProto()
-  {
+  template<class T> static std::shared_ptr<T> NewProto() {
     static MessageFactory<T> factory;
     return factory.Allocate();
   }
@@ -100,4 +90,4 @@ public:
   // static int64_t GetTime();
 };
 
-#endif
+#endif // MODEL_MESSAGE_H

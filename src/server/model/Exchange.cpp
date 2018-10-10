@@ -1,38 +1,32 @@
 #include "Exchange.h"
+#include "boost/format.hpp"
 #include "config/EnvConfig.h"
 #include "base/logger/Logging.h"
-#include "boost/format.hpp"
 
 using namespace boost::gregorian;
 
-void Exchange::OnExchangeParameter(const Proto::ExchangeParameter &param)
-{
+void Exchange::OnExchangeParameter(const Proto::ExchangeParameter &param) {
   LOG_INF << "Update exchange parameter: " << param.ShortDebugString();
 
   std::ostringstream oss;
-  auto ParseSessionFunc = [&](const auto &proto_sessions, auto &sessions, int32_t &seconds)
-  {
+  auto ParseSessionFunc = [&](const auto &proto_sessions, auto &sessions, int32_t &seconds) {
     static const auto NIGHT_SESSION_TIME = boost::posix_time::duration_from_string(
         EnvConfig::GetInstance()->GetString(EnvVar::NIGHT_SESSION_TIME, "23:59:59.0"));
     sessions.clear();
     seconds = 0;
-    for (auto &s : proto_sessions)
-    {
+    for (auto &s : proto_sessions) {
       auto d = trading_day_;
       auto begin_time = boost::posix_time::duration_from_string(s.begin());
-      if (begin_time >= NIGHT_SESSION_TIME)
-      {
-        do
-        {
+      if (begin_time >= NIGHT_SESSION_TIME) {
+        do {
           d -= date_duration(1);
         } while (d.day_of_week() == Saturday || d.day_of_week() == Sunday ||
-            holidays_.find(d) != holidays_.end());
+                 holidays_.find(d) != holidays_.end());
       }
       boost::posix_time::ptime begin(d, begin_time);
 
       auto end_time = boost::posix_time::duration_from_string(s.end());
-      if (begin_time > end_time)
-      {
+      if (begin_time > end_time) {
         d += boost::gregorian::date_duration(1);
       }
       boost::posix_time::ptime end(d, end_time);
@@ -45,18 +39,15 @@ void Exchange::OnExchangeParameter(const Proto::ExchangeParameter &param)
   };
 
   std::lock_guard<std::mutex> lck(mtx_);
-  if (param.trading_day().empty() == false)
-  {
+  if (param.trading_day().empty() == false) {
     trading_day_ = boost::gregorian::from_undelimited_string(param.trading_day());
     LOG_INF << Proto::Exchange_Name(param.exchange()) << " trading day: " << param.trading_day();
   }
 
   holidays_.clear();
-  for (auto &h : param.holidays())
-  {
+  for (auto &h : param.holidays()) {
     auto d = boost::gregorian::from_undelimited_string(h.date());
-    if (d.is_special() == false)
-    {
+    if (d.is_special() == false) {
       holidays_.emplace(d, h.weight());
       LOG_INF << boost::format("Add holiday %1% with weight %2%") % h.date() % h.weight();
     }
@@ -71,32 +62,25 @@ void Exchange::OnExchangeParameter(const Proto::ExchangeParameter &param)
   days_to_maturity_.clear();
 }
 
-double Exchange::GetTimeValue(const boost::gregorian::date &maturity)
-{
+double Exchange::GetTimeValue(const boost::gregorian::date &maturity) {
   double trading_days = 0;
   double fraction = 0;
 
   std::lock_guard<std::mutex> lck(mtx_);
   auto it = days_to_maturity_.find(maturity);
-  if (it != days_to_maturity_.end())
-  {
+  if (it != days_to_maturity_.end()) {
     trading_days = it->second;
-  }
-  else
-  {
+  } else {
     int32_t days = 0;
-    for (auto d = trading_day_ + date_duration(1); d <= maturity; d += date_duration(1))
-    {
+    for (auto d = trading_day_ + date_duration(1); d <= maturity; d += date_duration(1)) {
       if (d.day_of_week() != Saturday && d.day_of_week() != Sunday) ++days;
     }
 
     double holidays = 0;
     auto lower = holidays_.lower_bound(trading_day_);
-    if (lower != holidays_.end())
-    {
+    if (lower != holidays_.end()) {
       auto upper = holidays_.upper_bound(maturity);
-      for (auto itr = lower; itr != upper; ++itr)
-      {
+      for (auto itr = lower; itr != upper; ++itr) {
         if (itr->first.day_of_week() != Saturday && itr->first.day_of_week() != Sunday)
           holidays += (1 - itr->second);
       }
@@ -104,51 +88,42 @@ double Exchange::GetTimeValue(const boost::gregorian::date &maturity)
 
     trading_days = days - holidays;
     LOG_INF << boost::format("Days to maturity(%1%): days(%2%), holidays(%3%)") %
-      to_iso_string(maturity) % days % holidays;
+               to_iso_string(maturity) % days % holidays;
     days_to_maturity_.emplace(maturity, trading_days);
   }
 
   auto now = boost::posix_time::second_clock::local_time();
-  auto FractionFunc = [&](const auto &sessions, int32_t seconds)
-  {
-    for (auto it = sessions.rbegin(); it != sessions.rend() && now < it->second; ++it)
-    {
+  auto FractionFunc = [&](const auto &sessions, int32_t seconds) {
+    for (auto it = sessions.rbegin(); it != sessions.rend() && now < it->second; ++it) {
       double tmp = static_cast<double>((it->second - std::max(now, it->first)).total_seconds()) /
-        seconds;
+                   seconds;
       fraction += (tmp - std::floor(tmp));
     }
   };
-  if (trading_day_ < maturity)
+  if (trading_day_ < maturity) {
     FractionFunc(sessions_, session_seconds_);
-  else
+  } else {
     FractionFunc(maturity_sessions_, maturity_session_seconds_);
+  }
 
-  double ret = (trading_days + fraction) / AnnualTradingDays;
+  double ret = (trading_days + fraction) / kAnnualTradingDays;
   LOG_INF << boost::format("Time value(%1%) : %2%, trading_days(%3%), fraction(%4%)") %
-    to_iso_string(maturity) % ret % trading_days % fraction;
+             to_iso_string(maturity) % ret % trading_days % fraction;
   return ret;
 }
 
-bool Exchange::IsTradingTime(const boost::gregorian::date &maturity)
-{
+bool Exchange::IsTradingTime(const boost::gregorian::date &maturity) {
   auto now = boost::posix_time::second_clock::local_time();
   std::lock_guard<std::mutex> lck(mtx_);
-  if (trading_day_ < maturity)
-  {
-    for (auto &session : sessions_)
-    {
-      if (now >= session.first && now <= session.second)
-      {
+  if (trading_day_ < maturity) {
+    for (auto &session : sessions_) {
+      if (now >= session.first && now <= session.second) {
         return true;
       }
     }
-  }
-  else
-  {
-    for (auto &session : maturity_sessions_)
-    {
-      if (now >= session.first && now <= session.second)
-      {
+  } else {
+    for (auto &session : maturity_sessions_) {
+      if (now >= session.first && now <= session.second) {
         return true;
       }
     }

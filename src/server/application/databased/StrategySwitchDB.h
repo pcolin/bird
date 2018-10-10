@@ -1,18 +1,18 @@
 #ifndef DATABASED_STRATEGY_SWITCH_DB_H
 #define DATABASED_STRATEGY_SWITCH_DB_H
 
+#include <unordered_map>
 #include "DbBase.h"
 #include "InstrumentDB.h"
 #include "Strategy.pb.h"
 
-#include <unordered_map>
-
 class StrategySwitchDB : public DbBase
 {
+ public:
   typedef std::unordered_map<std::string, std::shared_ptr<Proto::StrategySwitch>> SwitchMap;
-public:
-  StrategySwitchDB(ConcurrentSqliteDB &db, const std::string &table_name,
-      InstrumentDB &instrument_db);
+  StrategySwitchDB(ConcurrentSqliteDB &db,
+                   const std::string &table_name,
+                   InstrumentDB &instrument_db);
 
 private:
   virtual void RefreshCache() override;
@@ -26,4 +26,4 @@ private:
   std::vector<SwitchMap> switches_;
 };
 
-#endif
+#endif // DATABASED_STRATEGY_SWITCH_DB_H

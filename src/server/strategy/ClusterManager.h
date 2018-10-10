@@ -1,6 +1,8 @@
 #ifndef STRATEGY_CLUSTER_MANAGER_H
 #define STRATEGY_CLUSTER_MANAGER_H
 
+#include <unordered_map>
+#include <memory>
 #include "Heartbeat.pb.h"
 #include "Reply.pb.h"
 #include "Cash.pb.h"
@@ -10,14 +12,13 @@
 #include "DeviceManager.h"
 #include "model/Instrument.h"
 
-#include <unordered_map>
-#include <memory>
-// #include <boost/gre
-
-class ClusterManager
-{
+class ClusterManager {
   typedef std::shared_ptr<Proto::Reply> ProtoReplyPtr;
-public:
+  typedef std::unordered_map<std::string,
+          std::map<boost::gregorian::date, std::shared_ptr<Proto::Credit>>> CreditMap;
+  typedef std::unordered_map<std::string, std::shared_ptr<Proto::StrategySwitch>> SwitchMap;
+
+ public:
   static ClusterManager* GetInstance();
   ~ClusterManager();
 
@@ -30,10 +31,10 @@ public:
   std::shared_ptr<Proto::Pricer> FindPricer(const Instrument *underlying);
   std::shared_ptr<Proto::QuoterSpec> FindQuoter(const std::string &name);
   std::vector<std::shared_ptr<Proto::QuoterSpec>> FindQuoters(const Instrument *underlying);
-  std::vector<std::shared_ptr<Proto::Credit>> FindCredits(
-      Proto::StrategyType strategy, const Instrument *underlying);
-  std::shared_ptr<Proto::StrategySwitch> FindStrategySwitch(
-      Proto::StrategyType strategy, const Instrument* op);
+  std::vector<std::shared_ptr<Proto::Credit>> FindCredits(Proto::StrategyType strategy,
+                                                          const Instrument *underlying);
+  std::shared_ptr<Proto::StrategySwitch> FindStrategySwitch(Proto::StrategyType strategy,
+                                                            const Instrument* op);
 
   void OnHeartbeat(const std::shared_ptr<Proto::Heartbeat> &heartbeat);
   void OnInstrumentReq(const std::shared_ptr<Proto::InstrumentReq> &req);
@@ -46,10 +47,8 @@ public:
   ProtoReplyPtr OnStrategySwitchReq(const std::shared_ptr<Proto::StrategySwitchReq> &req);
   ProtoReplyPtr OnStrategyOperateReq(const std::shared_ptr<Proto::StrategyOperateReq> &req);
 
-  template<class Type> void Publish(const Type &msg)
-  {
-    for (auto &it : devices_)
-    {
+  template<class Type> void Publish(const Type &msg) {
+    for (auto &it : devices_) {
       it.second->Publish(msg);
     }
   }
@@ -57,7 +56,7 @@ public:
   bool IsStrategiesRunning() const;
   void StopAll(const std::string &reason);
 
-private:
+ private:
   ClusterManager();
 
   std::unordered_map<const Instrument*, DeviceManager*> devices_;
@@ -65,12 +64,9 @@ private:
   std::unordered_map<std::string, std::shared_ptr<Proto::Pricer>> pricers_;
   std::mutex pricer_mtx_;
 
-  typedef std::unordered_map<std::string,
-          std::map<boost::gregorian::date, std::shared_ptr<Proto::Credit>>> CreditMap;
   std::vector<CreditMap> credits_;
   std::mutex credit_mtx_;
 
-  typedef std::unordered_map<std::string, std::shared_ptr<Proto::StrategySwitch>> SwitchMap;
   std::vector<SwitchMap> switches_;
   std::mutex switch_mtx_;
 
@@ -78,4 +74,4 @@ private:
   std::mutex quoter_mtx_;
 };
 
-#endif
+#endif // STRATEGY_CLUSTER_MANAGER_H

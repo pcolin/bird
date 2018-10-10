@@ -1,22 +1,20 @@
 #ifndef DATABASED_INSTRUMENT_DB_H
 #define DATABASED_INSTRUMENT_DB_H
 
+#include <unordered_map>
 #include "DbBase.h"
 #include "ExchangeParameterDB.h"
 #include "Instrument.pb.h"
 
-#include <unordered_map>
-
-class InstrumentDB : public DbBase
-{
+class InstrumentDB : public DbBase {
+ public:
   typedef std::unordered_map<std::string, std::shared_ptr<Proto::Instrument>> InstrumentMap;
-public:
   InstrumentDB(ConcurrentSqliteDB &db, const std::string &table_name, ExchangeParameterDB &exch);
   std::shared_ptr<Proto::Instrument> FindOption(const std::string &id);
   std::shared_ptr<Proto::Instrument> FindUnderlying(const std::string &id);
   std::shared_ptr<Proto::Instrument> FindInstrument(const std::string &id);
 
-private:
+ private:
   virtual void RefreshCache() override;
   virtual void RegisterCallback(base::ProtoMessageDispatcher<base::ProtoMessagePtr> &dispatcher);
 
@@ -32,4 +30,4 @@ private:
   InstrumentMap options_;
 };
 
-#endif
+#endif // DATABASED_INSTRUMENT_DB_H

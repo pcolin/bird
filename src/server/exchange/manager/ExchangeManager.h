@@ -5,20 +5,19 @@
 #include "TraderApi.h"
 #include "MdApi.h"
 
-class ExchangeManager
-{
-  public:
-    static ExchangeManager* GetInstance();
-    ~ExchangeManager();
+class ExchangeManager {
+ public:
+  static ExchangeManager* GetInstance();
+  ~ExchangeManager();
 
-    void Init();
-    TraderApi* GetTraderApi() { return trader_; }
+  void Init();
+  TraderApi* GetTraderApi() { return trader_; }
 
-  private:
-    ExchangeManager() {}
+ private:
+  ExchangeManager() {}
 
-    TraderApi *trader_ = nullptr;
-    MdApi *md_;
+  TraderApi* trader_ = nullptr;
+  MdApi* md_;
 };
 
-#endif
+#endif // EXCHANGE_MANAGER_H

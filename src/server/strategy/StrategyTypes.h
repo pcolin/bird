@@ -15,4 +15,4 @@ typedef boost::variant<PricePtr, TheoMatrixPtr, OrderPtr, TradePtr, ProtoMessage
 typedef base::RingBuffer<Event, BUFFER_SIZE> StrategyRingBuffer;
 // typedef BatchEventProcessor<StrategyRingBuffer> StrategyEventProcessor;
 
-#endif
+#endif // STRATEGY_STRATEGY_TYPES_H

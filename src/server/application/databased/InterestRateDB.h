@@ -1,18 +1,16 @@
 #ifndef DATABASED_INTEREST_RATE_DB_H
 #define DATABASED_INTEREST_RATE_DB_H
 
+#include <unordered_map>
 #include "DbBase.h"
 #include "InterestRate.pb.h"
 
-#include <unordered_map>
-
-class InterestRateDB : public DbBase
-{
+class InterestRateDB : public DbBase {
+ public:
   typedef std::unordered_map<int32_t, double> InterestRateMap;
-public:
   InterestRateDB(ConcurrentSqliteDB &db, const std::string &table_name);
 
-private:
+ private:
   virtual void RefreshCache() override;
   virtual void RegisterCallback(base::ProtoMessageDispatcher<base::ProtoMessagePtr> &dispatcher);
 
@@ -23,4 +21,4 @@ private:
   InterestRateMap cache_;
 };
 
-#endif
+#endif // DATABASED_INTEREST_RATE_DB_H

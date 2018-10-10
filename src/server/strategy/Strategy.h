@@ -5,9 +5,8 @@
 #include "Heartbeat.pb.h"
 #include "base/common/ProtoMessageDispatcher.h"
 
-class Strategy
-{
-public:
+class Strategy {
+ public:
   Strategy(const std::string &name, DeviceManager *dm);
   virtual ~Strategy() {}
 
@@ -19,14 +18,13 @@ public:
   const Instrument* Underlying() const { return dm_->GetUnderlying(); }
   const std::string& UnderlyingId() const { return dm_->GetUnderlying()->Id(); }
 
-  void OnEvent(const Event &e, int64_t seq, bool last)
-  {
+  void OnEvent(const Event &e, int64_t seq, bool last) {
     boost::apply_visitor(visitor_, e);
     // if (last)
     //   OnLastEvent();
   }
 
-protected:
+ protected:
   virtual void OnPrice(const PricePtr &price) {}
   virtual void OnTheoMatrix(const TheoMatrixPtr &theo) {}
   virtual void OnOrder(const OrderPtr &order) {}
@@ -41,37 +39,28 @@ protected:
   DeviceManager *dm_;
   base::ProtoMessageDispatcher<bool> dispatcher_;
 
-private:
-
-  class EventVisitor : public boost::static_visitor<void>
-  {
-  public:
+ private:
+  class EventVisitor : public boost::static_visitor<void> {
+   public:
     EventVisitor(Strategy *s) : s_(s) {}
 
-    void operator()(const PricePtr &price) const
-    {
-      s_->OnPrice(price);
-    }
-    void operator()(const TheoMatrixPtr &theo) const
-    {
+    void operator()(const PricePtr &price) const { s_->OnPrice(price); }
+    void operator()(const TheoMatrixPtr &theo) const {
       s_->OnTheoMatrix(theo);
     }
-    void operator()(const OrderPtr &order) const
-    {
+    void operator()(const OrderPtr &order) const {
       s_->OnOrder(order);
     }
-    void operator()(const TradePtr &trade) const
-    {
+    void operator()(const TradePtr &trade) const {
       s_->OnTrade(trade);
     }
-    void operator()(const ProtoMessagePtr &message) const
-    {
+    void operator()(const ProtoMessagePtr &message) const {
       s_->OnProtoMessage(message);
     }
 
-  private:
+   private:
     Strategy *s_;
   } visitor_;
 };
 
-#endif
+#endif // STRATEGY_STRATEGY_H

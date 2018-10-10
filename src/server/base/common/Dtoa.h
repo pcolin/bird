@@ -35,8 +35,7 @@ struct DiyFp {
     if (biased_e != 0) {
       f = significand + kDpHiddenBit;
       e = biased_e - kDpExponentBias;
-    }
-    else {
+    } else {
       f = significand;
       e = kDpMinExponent + 1;
     }
@@ -211,8 +210,8 @@ inline DiyFp GetCachedPower(int e, int* K) {
 
 inline void GrisuRound(char* buffer, int len, uint64_t delta, uint64_t rest, uint64_t ten_kappa, uint64_t wp_w) {
   while (rest < wp_w && delta - rest >= ten_kappa &&
-      (rest + ten_kappa < wp_w ||  /// closer
-       wp_w - rest > rest + ten_kappa - wp_w)) {
+         (rest + ten_kappa < wp_w ||  /// closer
+          wp_w - rest > rest + ten_kappa - wp_w)) {
     buffer[len - 1]--;
     rest += ten_kappa;
   }
@@ -336,14 +335,12 @@ inline int WriteExponent(int K, char* buffer) {
     *buffer++ = d[0];
     *buffer++ = d[1];
     ret += 3;
-  }
-  else if (K >= 10) {
+  } else if (K >= 10) {
     const char* d = GetDigitsLut() + K * 2;
     *buffer++ = d[0];
     *buffer++ = d[1];
     ret += 2;
-  }
-  else {
+  } else {
     *buffer++ = '0' + static_cast<char>(K);
     ++ret;
   }
@@ -363,14 +360,12 @@ inline void Prettify(char* buffer, int &length, int k) {
     buffer[kk + 1] = '0';
     buffer[kk + 2] = '\0';
     length += k + 2;
-  }
-  else if (0 < kk && kk <= 21) {
+  } else if (0 < kk && kk <= 21) {
     // 1234e-2 -> 12.34
     std::memmove(&buffer[kk + 1], &buffer[kk], length - kk);
     buffer[kk] = '.';
     buffer[++length] = '\0';
-  }
-  else if (-6 < kk && kk <= 0) {
+  } else if (-6 < kk && kk <= 0) {
     // 1234e-6 -> 0.001234
     const int offset = 2 - kk;
     std::memmove(&buffer[offset], &buffer[0], length);
@@ -380,13 +375,11 @@ inline void Prettify(char* buffer, int &length, int k) {
       buffer[i] = '0';
     length += offset;
     buffer[length] = '\0';
-  }
-  else if (length == 1) {
+  } else if (length == 1) {
     // 1e30
     buffer[1] = 'e';
     length += WriteExponent(kk - 1, &buffer[2]) + 1;
-  }
-  else {
+  } else {
     // 1234e30 -> 1.234e33
     std::memmove(&buffer[2], &buffer[1], length - 1);
     buffer[1] = '.';
@@ -396,16 +389,13 @@ inline void Prettify(char* buffer, int &length, int k) {
 }
 
 inline int dtoa_milo(double value, char* buffer) {
-  if (unlikely(isnan(value)))
-  {
+  if (unlikely(isnan(value))) {
     buffer[0] = 'N';
     buffer[1] = 'a';
     buffer[2] = 'N';
     buffer[3] = '\0';
     return 3;
-  }
-  else if (unlikely(isinf(value)))
-  {
+  } else if (unlikely(isinf(value))) {
     buffer[0] = 'i';
     buffer[1] = 'n';
     buffer[2] = 'f';
@@ -418,8 +408,7 @@ inline int dtoa_milo(double value, char* buffer) {
     buffer[2] = '0';
     buffer[3] = '\0';
     return 3;
-  }
-  else {
+  } else {
     if (value < 0) {
       *buffer++ = '-';
       value = -value;

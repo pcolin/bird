@@ -6,38 +6,30 @@
 #include "LogStream.h"
 #include "CountDownLatch.h"
 
-namespace base
-{
+namespace base {
 
-class AsyncLogging : boost::noncopyable
-{
+class AsyncLogging : boost::noncopyable {
  public:
-
   AsyncLogging(const std::string& path,
                const std::string& name,
                int flushInterval = 3);
 
-  ~AsyncLogging()
-  {
-    if (running_)
-    {
+  ~AsyncLogging() {
+    if (running_) {
       stop();
     }
   }
 
   void append(const char* logline, int len);
 
-  void start()
-  {
+  void start() {
     running_ = true;
     thread_ = std::make_unique<std::thread>(std::bind(&AsyncLogging::threadFunc, this));
     latch_.wait();
   }
 
-  void stop()
-  {
-    if (thread_)
-    {
+  void stop() {
+    if (thread_) {
       running_ = false;
       cond_.notify_all();
       thread_->join();
@@ -45,7 +37,6 @@ class AsyncLogging : boost::noncopyable
   }
 
  private:
-
   // declare but not define, prevent compiler-synthesized functions
   AsyncLogging(const base::AsyncLogging&);  // ptr_container
   void operator=(const base::AsyncLogging&);  // ptr_container
@@ -68,5 +59,6 @@ class AsyncLogging : boost::noncopyable
   BufferVector buffers_;
 };
 
-}
+} // namespace base
+
 #endif  // BASE_ASYNCLOGGING_H

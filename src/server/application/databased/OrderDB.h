@@ -1,23 +1,21 @@
 #ifndef DATABASED_ORDER_DB_H
 #define DATABASED_ORDER_DB_H
 
+#include <unordered_map>
+#include <thread>
+#include <mutex>
 #include "DbBase.h"
 #include "InstrumentDB.h"
 #include "ExchangeParameterDB.h"
 #include "base/concurrency/blockingconcurrentqueue.h"
 #include "Order.pb.h"
 
-#include <unordered_map>
-#include <thread>
-#include <mutex>
-
-class OrderDB : public DbBase
-{
+class OrderDB : public DbBase {
+ public:
   typedef std::unordered_map<size_t, std::shared_ptr<Proto::Order>> OrderMap;
-public:
   OrderDB(ConcurrentSqliteDB &db, InstrumentDB &instrument_db, ExchangeParameterDB &exchange_db);
 
-private:
+ private:
   virtual void RefreshCache() override;
   virtual void RegisterCallback(base::ProtoMessageDispatcher<base::ProtoMessagePtr> &dispatcher);
 
@@ -31,10 +29,10 @@ private:
   OrderMap orders_;
   std::mutex mtx_;
 
-  const int capacity_ = 128;
+  const int kCapacity = 128;
   moodycamel::BlockingConcurrentQueue<std::shared_ptr<Proto::OrderReq>> requests_;
   std::thread thread_;
   InstrumentDB &instrument_db_;
 };
 
-#endif
+#endif // DATABASED_ORDER_DB_H

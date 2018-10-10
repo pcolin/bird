@@ -1,20 +1,19 @@
 #ifndef DATABASED_USER_DB_H
 #define DATABASED_USER_DB_H
 
+#include <unordered_map>
+#include <tuple>
 #include "DbBase.h"
 #include "Login.pb.h"
 
-#include <unordered_map>
-#include <tuple>
-
-class UserDB : public DbBase
-{
+class UserDB : public DbBase {
   typedef std::unordered_map<std::string, std::tuple<std::string, Proto::Role>> UserMap;
-public:
+
+ public:
   UserDB(ConcurrentSqliteDB &db, const std::string &table_name);
   virtual ~UserDB() {}
 
-private:
+ private:
   virtual void RefreshCache() override;
   virtual void RegisterCallback(base::ProtoMessageDispatcher<base::ProtoMessagePtr> &dispatcher);
 
@@ -25,4 +24,4 @@ private:
   UserMap cache_;
 };
 
-#endif
+#endif // DATABASED_USER_DB_H

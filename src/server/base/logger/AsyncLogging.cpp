@@ -1,43 +1,32 @@
+#include <stdio.h>
 #include "AsyncLogging.h"
 #include "LogFile.h"
 #include "Timestamp.h"
 
-#include <stdio.h>
-
 using namespace base;
 
-AsyncLogging::AsyncLogging(const std::string& path,
-                           const std::string& name,
-                           int flushInterval)
-  : flushInterval_(flushInterval),
-    running_(false),
-    filename_(path + name),
-    latch_(1),
-    currentBuffer_(new Buffer),
-    nextBuffer_(new Buffer)
-{
+AsyncLogging::AsyncLogging(const std::string& path, const std::string& name, int flushInterval)
+    : flushInterval_(flushInterval),
+      running_(false),
+      filename_(path + name),
+      latch_(1),
+      currentBuffer_(new Buffer),
+      nextBuffer_(new Buffer) {
   currentBuffer_->bzero();
   nextBuffer_->bzero();
   buffers_.reserve(16);
 }
 
-void AsyncLogging::append(const char* logline, int len)
-{
+void AsyncLogging::append(const char* logline, int len) {
   std::unique_lock<std::mutex> lock(mutex_);
-  if (currentBuffer_->avail() > len)
-  {
+  if (currentBuffer_->avail() > len) {
     currentBuffer_->append(logline, len);
-  }
-  else
-  {
+  } else {
     buffers_.push_back(std::move(currentBuffer_));
 
-    if (nextBuffer_)
-    {
+    if (nextBuffer_) {
       currentBuffer_ = std::move(nextBuffer_);
-    }
-    else
-    {
+    } else {
       currentBuffer_.reset(new Buffer); // Rarely happens
     }
     currentBuffer_->append(logline, len);
@@ -45,8 +34,7 @@ void AsyncLogging::append(const char* logline, int len)
   }
 }
 
-void AsyncLogging::threadFunc()
-{
+void AsyncLogging::threadFunc() {
   assert(running_ == true);
   latch_.countDown();
   LogFile output(filename_);
@@ -56,31 +44,27 @@ void AsyncLogging::threadFunc()
   newBuffer2->bzero();
   BufferVector buffersToWrite;
   buffersToWrite.reserve(16);
-  while (running_)
-  {
+  while (running_) {
     assert(newBuffer1 && newBuffer1->length() == 0);
     assert(newBuffer2 && newBuffer2->length() == 0);
     assert(buffersToWrite.empty());
 
     {
       std::unique_lock<std::mutex> lock(mutex_);
-      if (buffers_.empty())  // unusual usage!
-      {
+      if (buffers_.empty()) { // unusual usage!
         cond_.wait_for(lock, std::chrono::seconds(flushInterval_));
       }
       buffers_.push_back(std::move(currentBuffer_));
       currentBuffer_ = std::move(newBuffer1);
       buffersToWrite.swap(buffers_);
-      if (!nextBuffer_)
-      {
+      if (!nextBuffer_) {
         nextBuffer_ = std::move(newBuffer2);
       }
     }
 
     assert(!buffersToWrite.empty());
 
-    if (buffersToWrite.size() > 25)
-    {
+    if (buffersToWrite.size() > 25) {
       char buf[256];
       snprintf(buf, sizeof buf, "Dropped log messages at %s, %zd larger buffers\n",
                Timestamp::now().toFormattedString().c_str(),
@@ -90,27 +74,23 @@ void AsyncLogging::threadFunc()
       buffersToWrite.erase(buffersToWrite.begin()+2, buffersToWrite.end());
     }
 
-    for (size_t i = 0; i < buffersToWrite.size(); ++i)
-    {
+    for (size_t i = 0; i < buffersToWrite.size(); ++i) {
       // FIXME: use unbuffered stdio FILE ? or use ::writev ?
       output.append(buffersToWrite[i]->data(), buffersToWrite[i]->length());
     }
 
-    if (buffersToWrite.size() > 2)
-    {
+    if (buffersToWrite.size() > 2) {
       // drop non-bzero-ed buffers, avoid trashing
       buffersToWrite.resize(2);
     }
 
-    if (!newBuffer1)
-    {
+    if (!newBuffer1) {
       assert(!buffersToWrite.empty());
       newBuffer1 = std::move(buffersToWrite[0]);
       newBuffer1->reset();
     }
 
-    if (!newBuffer2)
-    {
+    if (!newBuffer2) {
       assert(!buffersToWrite.empty());
       newBuffer2 = std::move(buffersToWrite[1]);
       newBuffer2->reset();
@@ -121,4 +101,3 @@ void AsyncLogging::threadFunc()
   }
   output.flush();
 }
-

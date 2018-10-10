@@ -1,20 +1,20 @@
 #ifndef DATABASED_SSRATE_DB_H
 #define DATABASED_SSRATE_DB_H
 
+#include <unordered_map>
 #include "DbBase.h"
 #include "InstrumentDB.h"
 #include "ExchangeParameterDB.h"
 #include "SSRate.pb.h"
 
-#include <unordered_map>
+class SSRateDB : public DbBase {
+ public:
+  SSRateDB(ConcurrentSqliteDB &db,
+           const std::string &table_name,
+           InstrumentDB &instrument_db,
+           ExchangeParameterDB &exchange_db);
 
-class SSRateDB : public DbBase
-{
-public:
-  SSRateDB(ConcurrentSqliteDB &db, const std::string &table_name, InstrumentDB &instrument_db,
-      ExchangeParameterDB &exchange_db);
-
-private:
+ private:
   virtual void RefreshCache() override;
   virtual void RegisterCallback(base::ProtoMessageDispatcher<base::ProtoMessagePtr> &dispatcher);
 
@@ -28,4 +28,4 @@ private:
   std::string trading_day_;
 };
 
-#endif
+#endif // DATABASED_SSRATE_DB_H

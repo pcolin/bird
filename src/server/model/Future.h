@@ -3,13 +3,12 @@
 
 #include "Instrument.h"
 
-class Future : public Instrument
-{
-  public:
-    Future() : Instrument(Proto::InstrumentType::Future) {}
+class Future : public Instrument {
+ public:
+  Future() : Instrument(Proto::InstrumentType::Future) {}
 
-    // std::shared_ptr<Proto::Instrument> Serialize() const;
-    // void Serialize(Proto::Instrument *inst) const;
+  // std::shared_ptr<Proto::Instrument> Serialize() const;
+  // void Serialize(Proto::Instrument *inst) const;
 };
 
-#endif
+#endif // MODEL_FUTURE_H

@@ -1,17 +1,15 @@
 #ifndef MODEL_EXCHANGE_H
 #define MODEL_EXCHANGE_H
 
-#include "Option.h"
-#include "ExchangeParameter.pb.h"
+#include <mutex>
 #include "boost/date_time/gregorian/gregorian.hpp"
 #include "boost/date_time/posix_time/posix_time.hpp"
+#include "Option.h"
+#include "ExchangeParameter.pb.h"
 
-#include <mutex>
-
-class Exchange
-{
-public:
-  static const int32_t AnnualTradingDays = 245;
+class Exchange {
+ public:
+  static const int32_t kAnnualTradingDays = 245;
 
   void OnExchangeParameter(const Proto::ExchangeParameter &param);
   const boost::gregorian::date& TradingDay() { return trading_day_; }
@@ -30,4 +28,4 @@ private:
   std::mutex mtx_;
 };
 
-#endif
+#endif // MODEL_EXCHANGE_H

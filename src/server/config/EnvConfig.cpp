@@ -7,16 +7,13 @@
 
 using namespace base;
 
-EnvConfig* EnvConfig::GetInstance()
-{
+EnvConfig* EnvConfig::GetInstance() {
   static EnvConfig config;
   return &config;
 }
 
-EnvConfig::EnvConfig()
-{
-  configs_ =
-  {
+EnvConfig::EnvConfig() {
+  configs_ = {
     { static_cast<int8_t>(EnvVar::APP_NAME), "APP_NAME" },
     { static_cast<int8_t>(EnvVar::NIC), "NIC" },
     { static_cast<int8_t>(EnvVar::CONFIG_FILE), "CONFIG_FILE" },
@@ -68,14 +65,11 @@ EnvConfig::EnvConfig()
   };
 }
 
-bool EnvConfig::GetValue(EnvVar var, std::string &value) const
-{
+bool EnvConfig::GetValue(EnvVar var, std::string &value) const {
   auto it = configs_.find(static_cast<int8_t>(var));
-  if (it != configs_.end())
-  {
+  if (it != configs_.end()) {
     char *v = getenv(it->second.c_str());
-    if (v)
-    {
+    if (v) {
       value = v;
       return true;
     }
@@ -83,14 +77,11 @@ bool EnvConfig::GetValue(EnvVar var, std::string &value) const
   return false;
 }
 
-bool EnvConfig::GetValue(EnvVar var, bool &value) const
-{
+bool EnvConfig::GetValue(EnvVar var, bool &value) const {
   auto it = configs_.find(static_cast<int8_t>(var));
-  if (it != configs_.end())
-  {
+  if (it != configs_.end()) {
     char *v = getenv(it->second.c_str());
-    if (v)
-    {
+    if (v) {
       value = boost::iequals(v, "TRUE");
       // value = boost::is_iequal(v, "TRUE");
       return true;
@@ -99,14 +90,11 @@ bool EnvConfig::GetValue(EnvVar var, bool &value) const
   return false;
 }
 
-bool EnvConfig::GetValue(EnvVar var, int32_t &value) const
-{
+bool EnvConfig::GetValue(EnvVar var, int32_t &value) const {
   auto it = configs_.find(static_cast<int8_t>(var));
-  if (it != configs_.end())
-  {
+  if (it != configs_.end()) {
     char *v = getenv(it->second.c_str());
-    if (v)
-    {
+    if (v) {
       value = atoi(v);
       return true;
     }
@@ -114,14 +102,11 @@ bool EnvConfig::GetValue(EnvVar var, int32_t &value) const
   return false;
 }
 
-bool EnvConfig::GetValue(EnvVar var, char &value) const
-{
+bool EnvConfig::GetValue(EnvVar var, char &value) const {
   auto it = configs_.find(static_cast<int8_t>(var));
-  if (it != configs_.end())
-  {
+  if (it != configs_.end()) {
     char *v = getenv(it->second.c_str());
-    if (v)
-    {
+    if (v) {
       value = v[0];
       return true;
     }
@@ -129,14 +114,11 @@ bool EnvConfig::GetValue(EnvVar var, char &value) const
   return false;
 }
 
-bool EnvConfig::GetValue(EnvVar var, double &value) const
-{
+bool EnvConfig::GetValue(EnvVar var, double &value) const {
   auto it = configs_.find(static_cast<int8_t>(var));
-  if (it != configs_.end())
-  {
+  if (it != configs_.end()) {
     char *v = getenv(it->second.c_str());
-    if (v)
-    {
+    if (v) {
       value = atof(v);
       return true;
     }
@@ -144,91 +126,61 @@ bool EnvConfig::GetValue(EnvVar var, double &value) const
   return false;
 }
 
-template <class T> T EnvConfig::GetValue(EnvVar var) const
-{
+template <class T> T EnvConfig::GetValue(EnvVar var) const {
   T ret;
   auto it = configs_.find(static_cast<int8_t>(var));
-  if (it != configs_.end())
-  {
-    if (GetValue(var, ret))
-    {
+  if (it != configs_.end()) {
+    if (GetValue(var, ret)) {
       LOG_INF << boost::format("%1%=%2%") % it->second % ret;
-    }
-    else
-    {
+    } else {
       throw std::runtime_error(std::string("Can't read env var ") + it->second);
     }
-  }
-  else
-  {
+  } else {
     throw std::runtime_error(std::string("Can't find env var ") +
-        std::to_string(static_cast<int8_t>(var)));
+          std::to_string(static_cast<int8_t>(var)));
   }
   return ret;
 }
 
-double EnvConfig::GetDouble(EnvVar var) const
-{
-  return GetValue<double>(var);
-}
+double EnvConfig::GetDouble(EnvVar var) const { return GetValue<double>(var); }
 
-int32_t EnvConfig::GetInt32(EnvVar var) const
-{
-  return GetValue<int32_t>(var);
-}
+int32_t EnvConfig::GetInt32(EnvVar var) const { return GetValue<int32_t>(var); }
 
-bool EnvConfig::GetBool(EnvVar var) const
-{
-  return GetValue<bool>(var);
-}
+bool EnvConfig::GetBool(EnvVar var) const { return GetValue<bool>(var); }
 
-std::string EnvConfig::GetString(EnvVar var) const
-{
-  return GetValue<std::string>(var);
-}
+std::string EnvConfig::GetString(EnvVar var) const { return GetValue<std::string>(var); }
 
-template <class T> T EnvConfig::GetValue(EnvVar var, const T &default_value) const
-{
+template <class T> T EnvConfig::GetValue(EnvVar var, const T &default_value) const {
   T ret;
   auto it = configs_.find(static_cast<int8_t>(var));
-  if (it != configs_.end())
-  {
-    if (GetValue(var, ret))
-    {
+  if (it != configs_.end()) {
+    if (GetValue(var, ret)) {
       LOG_INF << boost::format("%1%=%2%") % it->second % ret;
-    }
-    else
-    {
+    } else {
       LOG_INF << boost::format("%1% isn't configured, use default value %2%") %
-        it->second % default_value;
+                 it->second % default_value;
       ret = default_value;
     }
-  }
-  else
-  {
+  } else {
     LOG_INF << boost::format("%1% isn't found, use default value %2%") %
-      static_cast<int8_t>(var) % default_value;
+               static_cast<int8_t>(var) % default_value;
     ret = default_value;
   }
   return ret;
 }
 
-double EnvConfig::GetDouble(EnvVar var, double default_value) const
-{
+double EnvConfig::GetDouble(EnvVar var, double default_value) const {
   return GetValue<double>(var, default_value);
 }
 
-int32_t EnvConfig::GetInt32(EnvVar var, int32_t default_value) const
-{
+int32_t EnvConfig::GetInt32(EnvVar var, int32_t default_value) const {
   return GetValue<int32_t>(var, default_value);
 }
 
-bool EnvConfig::GetBool(EnvVar var, bool default_value) const
-{
+bool EnvConfig::GetBool(EnvVar var, bool default_value) const {
   return GetValue<bool>(var, default_value);
 }
 
-std::string EnvConfig::GetString(EnvVar var, const std::string& default_value) const
-{
+std::string EnvConfig::GetString(EnvVar var, const std::string& default_value) const {
   return GetValue<std::string>(var, default_value);
 }

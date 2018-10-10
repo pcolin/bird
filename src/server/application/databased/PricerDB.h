@@ -1,19 +1,17 @@
 #ifndef DATABASED_PRICING_SPEC_DB_H
 #define DATABASED_PRICING_SPEC_DB_H
 
+#include <unordered_map>
 #include "DbBase.h"
 #include "InstrumentDB.h"
 #include "Pricer.pb.h"
 
-#include <unordered_map>
-
-class PricerDB : public DbBase
-{
+class PricerDB : public DbBase {
+ public:
   typedef std::unordered_map<std::string, std::shared_ptr<Proto::Pricer>> PricerMap;
-public:
   PricerDB(ConcurrentSqliteDB &db, const std::string &table_name, InstrumentDB &instrument_db);
 
-private:
+ private:
   virtual void RefreshCache() override;
   virtual void RegisterCallback(base::ProtoMessageDispatcher<base::ProtoMessagePtr> &dispatcher);
 
@@ -28,4 +26,4 @@ private:
   PricerMap pricers_;
 };
 
-#endif
+#endif // DATABASED_PRICING_SPEC_DB_H

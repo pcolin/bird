@@ -1,8 +1,8 @@
 #include "Trade.h"
+#include <map>
+#include "boost/format.hpp"
 #include "Trade.pb.h"
 #include "base/logger/LogStream.h"
-#include <map>
-#include <boost/format.hpp>
 
 // std::string Trade::Dump() const
 // {
@@ -15,8 +15,7 @@
 //       Proto::Side_Name(side) % volume % price).str();
 // }
 
-std::shared_ptr<Proto::Trade> Trade::Serialize() const
-{
+std::shared_ptr<Proto::Trade> Trade::Serialize() const {
   auto t = Message::NewProto<Proto::Trade>();
   t->set_id(id);
   t->set_instrument(instrument->Id());
@@ -33,13 +32,13 @@ std::shared_ptr<Proto::Trade> Trade::Serialize() const
   return t;
 }
 
-namespace base
-{
-LogStream& operator<<(LogStream& stream, const TradePtr &trade)
-{
+namespace base {
+
+LogStream& operator<<(LogStream& stream, const TradePtr &trade) {
   assert(trade);
-  stream << trade->id << ' ' << trade->instrument->Id() << ' ' << trade->order_id << ' ' <<
-    Proto::Side_Name(trade->side) << ' ' << trade->volume << '@' << trade->price;
+  stream << trade->id << ' ' << trade->instrument->Id() << ' ' << trade->order_id << ' '
+         << Proto::Side_Name(trade->side) << ' ' << trade->volume << '@' << trade->price;
   return stream;
 }
-}
+
+} // namespace base

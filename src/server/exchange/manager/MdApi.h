@@ -1,10 +1,9 @@
 #ifndef MD_API_H
 #define MD_API_H
 
-class MdApi
-{
-  public:
-    virtual void Init() = 0;
+class MdApi {
+ public:
+  virtual void Init() = 0;
 };
 
-#endif
+#endif // MD_API_H

@@ -1,20 +1,19 @@
 #ifndef DATABASED_EXCHANGE_PARAMETER_DB_H
 #define DATABASED_EXCHANGE_PARAMETER_DB_H
 
+#include <unordered_map>
 #include "DbBase.h"
 #include "ExchangeParameter.pb.h"
 
-#include <unordered_map>
-
-class ExchangeParameterDB : public DbBase
-{
-public:
-  ExchangeParameterDB(ConcurrentSqliteDB &db, const std::string &table_name,
-      const std::string &holiday_table_name);
+class ExchangeParameterDB : public DbBase {
+ public:
+  ExchangeParameterDB(ConcurrentSqliteDB &db,
+                      const std::string &table_name,
+                      const std::string &holiday_table_name);
 
   const std::string& TradingDay() const { return trading_day_; }
 
-private:
+ private:
   virtual void RefreshCache() override;
   virtual void RegisterCallback(base::ProtoMessageDispatcher<base::ProtoMessagePtr> &dispatcher);
 
@@ -31,4 +30,4 @@ private:
   // boost::gregorian::date trading_day_;
 };
 
-#endif
+#endif // DATABASED_EXCHANGE_PARAMETER_DB_H

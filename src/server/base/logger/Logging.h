@@ -5,14 +5,11 @@
 #include "LogStream.h"
 #include "Timestamp.h"
 
-namespace base
-{
+namespace base {
 
-class Logger
-{
-public:
-  enum LogLevel
-  {
+class Logger {
+ public:
+  enum LogLevel {
     TRACE,
     DEBUG,
     INFO,
@@ -24,27 +21,22 @@ public:
   };
 
   // compile time calculation of basename of source file
-  class SourceFile
-  {
-  public:
+  class SourceFile {
+   public:
     template<int N>
     inline SourceFile(const char (&arr)[N])
-      : data_(arr), size_(N-1)
-    {
+        : data_(arr), size_(N-1) {
       const char* slash = strrchr(data_, '/'); // builtin function
-      if (slash)
-      {
+      if (slash) {
         data_ = slash + 1;
         size_ -= static_cast<int>(data_ - arr);
       }
     }
 
     explicit SourceFile(const char* filename)
-      : data_(filename)
-    {
+        : data_(filename) {
       const char* slash = strrchr(filename, '/');
-      if (slash)
-      {
+      if (slash) {
         data_ = slash + 1;
       }
       size_ = static_cast<int>(strlen(data_));
@@ -66,10 +58,8 @@ public:
   static void SetFlush(std::function<void()>);
   static void InitFileLogger(const char *dir, const char* prefix, bool sync);
 
-private:
-
-  class Impl
-  {
+ private:
+  class Impl {
    public:
     typedef Logger::LogLevel LogLevel;
     Impl(LogLevel level, int old_errno, const SourceFile& file, int line);
@@ -82,17 +72,12 @@ private:
     int line_;
     SourceFile basename_;
   };
-
   Impl impl_;
-
 };
 
 extern Logger::LogLevel g_logLevel;
 
-inline Logger::LogLevel Logger::logLevel()
-{
-  return g_logLevel;
-}
+inline Logger::LogLevel Logger::logLevel() { return g_logLevel; }
 
 ///
 /// CAUTION: do not write:
@@ -133,15 +118,13 @@ const char* strerror_tl(int savedErrno);
 
 // A small helper for CHECK_NOTNULL().
 template <typename T>
-T* CheckNotNull(Logger::SourceFile file, int line, const char *names, T* ptr)
-{
-  if (ptr == NULL)
-  {
-   Logger(file, line, Logger::FATAL).Stream() << names;
+T* CheckNotNull(Logger::SourceFile file, int line, const char *names, T* ptr) {
+  if (ptr == NULL) {
+    Logger(file, line, Logger::FATAL).Stream() << names;
   }
   return ptr;
 }
 
-}
+} // namespace base
 
 #endif  // BASE_LOGGING_H

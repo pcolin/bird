@@ -4,8 +4,7 @@
 #include "Message.h"
 #include "Option.h"
 
-struct TheoData
-{
+struct TheoData {
   operator bool() const { return spot != base::PRICE_UNDEFINED; }
   void InterpolateFrom(const TheoData &td1, const TheoData &td2);
 
@@ -20,8 +19,7 @@ struct TheoData
   // double rho = 0.0;
 };
 
-struct TheoMatrix
-{
+struct TheoMatrix {
   static const int DEPTH = 30;
 
   TheoMatrix() : header(MsgType::TheoMatrix) {}
@@ -38,10 +36,11 @@ struct TheoMatrix
 
 typedef std::shared_ptr<TheoMatrix> TheoMatrixPtr;
 
-namespace base
-{
+namespace base {
+
 class LogStream;
 LogStream& operator<<(LogStream& stream, const TheoMatrixPtr &matrix);
-}
 
-#endif
+} // namespace base
+
+#endif // MODEL_THEO_MATRIX_H

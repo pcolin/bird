@@ -8,40 +8,32 @@
 
 using namespace base;
 
-ExchangeManager* ExchangeManager::GetInstance()
-{
+ExchangeManager* ExchangeManager::GetInstance() {
   static ExchangeManager manager;
   return &manager;
 }
 
-ExchangeManager::~ExchangeManager()
-{
-  if (trader_)
-  {
+ExchangeManager::~ExchangeManager() {
+  if (trader_) {
     delete trader_;
     trader_ = nullptr;
   }
-  if (md_)
-  {
+  if (md_) {
     delete md_;
     md_ = nullptr;
   }
 }
 
-void ExchangeManager::Init()
-{
+void ExchangeManager::Init() {
   bool simulated = EnvConfig::GetInstance()->GetBool(EnvVar::SIMULATED_EXCHANGE, false);
-  if (simulated)
-  {
+  if (simulated) {
     LOG_INF << "Start Simualtion exchange api";
     trader_ = new SimulationTraderApi();
     trader_->Init();
 
     md_ = new SimulationMdApi();
     md_->Init();
-  }
-  else
-  {
+  } else {
     LOG_INF << "Start CTP exchange api";
     trader_ = new CtpTraderApi();
     trader_->Init();

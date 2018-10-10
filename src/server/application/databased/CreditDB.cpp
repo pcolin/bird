@@ -3,16 +3,18 @@
 #include "model/Message.h"
 #include "boost/format.hpp"
 
-CreditDB::CreditDB(ConcurrentSqliteDB &db, const std::string &table_name,
-    const std::string &record_table_name, InstrumentDB &instrument_db,
-    ExchangeParameterDB &exchange_db)
-  : DbBase(db, table_name), caches_(Proto::StrategyType::DummyQuoter),
-  record_table_name_(record_table_name), instrument_db_(instrument_db),
-  trading_day_(exchange_db.TradingDay())
-{}
+CreditDB::CreditDB(ConcurrentSqliteDB &db,
+                   const std::string &table_name,
+                   const std::string &record_table_name,
+                   InstrumentDB &instrument_db,
+                   ExchangeParameterDB &exchange_db)
+    : DbBase(db, table_name),
+      caches_(Proto::StrategyType::DummyQuoter),
+      record_table_name_(record_table_name),
+      instrument_db_(instrument_db),
+      trading_day_(exchange_db.TradingDay()) {}
 
-void CreditDB::RefreshCache()
-{
+void CreditDB::RefreshCache() {
   char sql[1024];
   sprintf(sql, "DELETE FROM %s WHERE maturity<'%s'", table_name_.c_str(), trading_day_.c_str());
   ExecSql(sql);
@@ -28,64 +30,51 @@ void CreditDB::RefreshCache()
 }
 
 void CreditDB::RegisterCallback(
-    base::ProtoMessageDispatcher<base::ProtoMessagePtr> &dispatcher)
-{
+    base::ProtoMessageDispatcher<base::ProtoMessagePtr> &dispatcher) {
   dispatcher.RegisterCallback<Proto::CreditReq>(
-    std::bind(&CreditDB::OnRequest, this, std::placeholders::_1));
+      std::bind(&CreditDB::OnRequest, this, std::placeholders::_1));
 }
 
-base::ProtoMessagePtr CreditDB::OnRequest(const std::shared_ptr<Proto::CreditReq> &msg)
-{
+base::ProtoMessagePtr CreditDB::OnRequest(const std::shared_ptr<Proto::CreditReq> &msg) {
   LOG_INF << "Credit request: " << msg->ShortDebugString();
   auto reply = Message::NewProto<Proto::CreditRep>();
   Proto::RequestType type = msg->type();
-  if (type == Proto::RequestType::Get)
-  {
-    for (auto &cache: caches_)
-    {
-      for (auto &credit : cache)
-      {
-        for (auto &c : credit.second)
-        {
+  if (type == Proto::RequestType::Get) {
+    for (auto &cache: caches_) {
+      for (auto &credit : cache) {
+        for (auto &c : credit.second) {
           reply->add_credits()->CopyFrom(*c.second);
         }
       }
     }
     LOG_INF << boost::format("Get %1% credits totally.") % reply->credits_size();
-  }
-  else if (type == Proto::RequestType::Set)
-  {
+  } else if (type == Proto::RequestType::Set) {
     char sql[1024];
     TransactionGuard tg(this);
-    for (auto &c : msg->credits())
-    {
+    for (auto &c : msg->credits()) {
       const std::string &m = c.maturity();
       sprintf(sql, "INSERT OR REPLACE INTO %s VALUES(%d, '%s', '%s', %f, %f, %f, %f, %f, %f, %f)",
-          table_name_.c_str(), static_cast<int>(c.strategy()), c.underlying().c_str(), m.c_str(),
-          c.delta(), c.vega(), c.skew(), c.convex(), c.cash(), c.price(), c.multiplier());
+              table_name_.c_str(), static_cast<int>(c.strategy()), c.underlying().c_str(), m.c_str(),
+              c.delta(), c.vega(), c.skew(), c.convex(), c.cash(), c.price(), c.multiplier());
       ExecSql(sql);
       auto &credits = caches_[c.strategy()][c.underlying()];
       auto it = credits.find(m);
-      if (it != credits.end())
-      {
+      if (it != credits.end()) {
         it->second->CopyFrom(c);
         sprintf(sql, "DELETE FROM %s WHERE strategy=%d AND EXISTS"
-            "(SELECT id FROM '%s' WHERE hedge_underlying='%s' AND maturity='%s')",
-            record_table_name_.c_str(), c.strategy(), instrument_db_.TableName().c_str(),
-            c.underlying().c_str(), m.c_str());
+                     "(SELECT id FROM '%s' WHERE hedge_underlying='%s' AND maturity='%s')",
+                record_table_name_.c_str(), c.strategy(), instrument_db_.TableName().c_str(),
+                c.underlying().c_str(), m.c_str());
         ExecSql(sql);
-      }
-      else
-      {
+      } else {
         auto credit = Message::NewProto<Proto::Credit>();
         credit->CopyFrom(c);
         credits.emplace(m, credit);
       }
 
-      for (auto &r : c.records())
-      {
+      for (auto &r : c.records()) {
         sprintf(sql, "INSERT INTO '%s' VALUES(%d, '%s', %f)", record_table_name_.c_str(),
-            c.strategy(), r.option().c_str(), r.credit());
+                c.strategy(), r.option().c_str(), r.credit());
         ExecSql(sql);
       }
     }
@@ -95,8 +84,7 @@ base::ProtoMessagePtr CreditDB::OnRequest(const std::shared_ptr<Proto::CreditReq
   return reply;
 }
 
-int CreditDB::Callback(void *data, int argc, char **argv, char **col_name)
-{
+int CreditDB::Callback(void *data, int argc, char **argv, char **col_name) {
   assert(argc == 10);
   auto *tmp = static_cast<std::tuple<std::vector<CreditMap>*, InstrumentDB*>*>(data);
   auto *caches = std::get<0>(*tmp);
@@ -104,8 +92,7 @@ int CreditDB::Callback(void *data, int argc, char **argv, char **col_name)
 
   std::string underlying = argv[1];
   auto inst = instrument_db->FindUnderlying(underlying);
-  if (inst)
-  {
+  if (inst) {
     auto c = Message::NewProto<Proto::Credit>();
     auto strategy = static_cast<Proto::StrategyType>(atoi(argv[0]));
     c->set_strategy(strategy);
@@ -121,32 +108,26 @@ int CreditDB::Callback(void *data, int argc, char **argv, char **col_name)
     c->set_multiplier(atof(argv[9]));
     // LOG_INF << strategy << " " << underlying << " " << maturity << " " << sizeof(*caches) / sizeof(CreditMap);
     (*caches)[strategy][underlying][maturity] = c;
-  }
-  else
-  {
+  } else {
     LOG_ERR << "Failed to find underlying " << underlying;
   }
   return 0;
 }
 
-int CreditDB::RecordCallback(void *data, int argc, char **argv, char **col_name)
-{
+int CreditDB::RecordCallback(void *data, int argc, char **argv, char **col_name) {
   auto *tmp = static_cast<std::tuple<std::vector<CreditMap>*, InstrumentDB*>*>(data);
   auto *caches = std::get<0>(*tmp);
   auto *instrument_db = std::get<1>(*tmp);
 
   const std::string instrument = argv[1];
   auto option = instrument_db->FindOption(instrument);
-  if (option)
-  {
+  if (option) {
     auto strategy = static_cast<Proto::StrategyType>(atoi(argv[0]));
     auto &cache = (*caches)[strategy];
     auto it = cache.find(option->hedge_underlying());
-    if (it != cache.end())
-    {
+    if (it != cache.end()) {
       auto itr = it->second.find(option->maturity());
-      if (itr != it->second.end())
-      {
+      if (itr != it->second.end()) {
         auto *record = itr->second->add_records();
         record->set_option(instrument);
         record->set_credit(atof(argv[2]));

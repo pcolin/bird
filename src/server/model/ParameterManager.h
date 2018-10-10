@@ -1,6 +1,7 @@
 #ifndef MODEL_PARAMETER_MANAGER_H
 #define MODEL_PARAMETER_MANAGER_H
 
+#include <mutex>
 #include "Exchange.h"
 #include "InterestRate.pb.h"
 #include "SSRate.pb.h"
@@ -8,12 +9,9 @@
 #include "Destriker.pb.h"
 #include "Elastic.pb.h"
 
-#include <mutex>
-
-class ParameterManager
-{
+class ParameterManager {
+ public:
   typedef std::shared_ptr<Proto::Reply> ProtoReplyPtr;
-public:
   static ParameterManager* GetInstance();
   ~ParameterManager() {}
 
@@ -60,4 +58,4 @@ private:
   // std::mutex elastics_mtx_;
 };
 
-#endif
+#endif // MODEL_PARAMETER_MANAGER_H

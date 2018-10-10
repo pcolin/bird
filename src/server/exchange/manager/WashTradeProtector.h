@@ -1,28 +1,27 @@
 #ifndef EXCHANGE_WASH_TRADE_PROTECTOR_H
 #define EXCHANGE_WASH_TRADE_PROTECTOR_H
 
-#include "model/Order.h"
 #include <list>
 #include <unordered_map>
 #include <mutex>
+#include "model/Order.h"
 
-class WashTradeProtector
-{
-public:
+class WashTradeProtector {
+ public:
   WashTradeProtector();
   ~WashTradeProtector() {}
 
-  bool TryAdd(const OrderPtr &order);
-  bool TryAdd(const OrderPtr &bid, const OrderPtr &ask);
-  void Remove(const OrderPtr &order);
-  void Remove(const OrderPtr &bid, const OrderPtr &ask);
+  bool TryAdd(const OrderPtr& order);
+  bool TryAdd(const OrderPtr& bid, const OrderPtr& ask);
+  void Remove(const OrderPtr& order);
+  void Remove(const OrderPtr& bid, const OrderPtr& ask);
 
-private:
+ private:
   const bool enabled_;
   typedef std::unordered_map<const Instrument*,
-          std::tuple<std::list<OrderPtr>, std::list<OrderPtr>>> InstOrderMap;
+                             std::tuple<std::list<OrderPtr>, std::list<OrderPtr>>> InstOrderMap;
   InstOrderMap orders_;
   std::mutex mtx_;
 };
 
-#endif
+#endif // EXCHANGE_WASH_TRADE_PROTECTOR_H

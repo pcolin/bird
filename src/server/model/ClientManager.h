@@ -1,17 +1,17 @@
 #ifndef MODEL_CLIENT_MANAGER_H
 #define MODEL_CLIENT_MANAGER_H
 
+#include <unordered_map>
+#include <mutex>
 #include "Login.pb.h"
 #include "Reply.pb.h"
 #include "Heartbeat.pb.h"
-#include <unordered_map>
-#include <mutex>
 
-class ClientManager
-{
+class ClientManager {
+ public:
   typedef std::shared_ptr<Proto::Reply> ProtoReplyPtr;
   typedef std::unordered_map<std::string, std::tuple<Proto::Role, int64_t>> ClientHeartbeatMap;
-public:
+
   static ClientManager* GetInstance();
   ~ClientManager() {}
 
@@ -20,11 +20,11 @@ public:
 
   ProtoReplyPtr OnHeartbeat(const std::shared_ptr<Proto::Heartbeat> &heartbeat);
 
-private:
+ private:
   ClientManager() {}
 
   ClientHeartbeatMap clients_;
   std::mutex mtx_;
 };
 
-#endif
+#endif // MODEL_CLIENT_MANAGER_H

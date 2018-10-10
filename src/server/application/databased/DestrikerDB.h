@@ -1,18 +1,16 @@
 #ifndef DATABASED_DESTRIKER_DB_H
 #define DATABASED_DESTRIKER_DB_H
 
+#include <unordered_map>
 #include "DbBase.h"
 #include "InstrumentDB.h"
 #include "Destriker.pb.h"
 
-#include <unordered_map>
-
-class DestrikerDB : public DbBase
-{
-public:
+class DestrikerDB : public DbBase {
+ public:
   DestrikerDB(ConcurrentSqliteDB &db, const std::string &table_name, InstrumentDB &instrument_db);
 
-private:
+ private:
   virtual void RefreshCache() override;
   virtual void RegisterCallback(base::ProtoMessageDispatcher<base::ProtoMessagePtr> &dispatcher);
 
@@ -25,4 +23,4 @@ private:
   InstrumentDB &instrument_db_;
 };
 
-#endif
+#endif // DATABASED_DESTRIKER_DB_H

@@ -1,21 +1,19 @@
 #ifndef DATABASED_POSITION_DB_H
 #define DATABASED_POSITION_DB_H
 
+#include <unordered_map>
+#include <thread>
+#include <mutex>
 #include "DbBase.h"
 #include "base/concurrency/blockingconcurrentqueue.h"
 #include "Position.pb.h"
 
-#include <unordered_map>
-#include <thread>
-#include <mutex>
-
-class PositionDB : public DbBase
-{
+class PositionDB : public DbBase {
+ public:
   typedef std::unordered_map<std::string, std::shared_ptr<Proto::Position>> PositionMap;
-public:
   PositionDB(ConcurrentSqliteDB &db, const std::string &table_name);
 
-private:
+ private:
   virtual void RefreshCache() override;
   virtual void RegisterCallback(base::ProtoMessageDispatcher<base::ProtoMessagePtr> &dispatcher);
 
@@ -34,4 +32,4 @@ private:
   std::thread thread_;
 };
 
-#endif
+#endif // DATABASED_POSITION_DB_H

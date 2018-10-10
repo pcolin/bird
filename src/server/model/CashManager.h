@@ -1,19 +1,18 @@
 #ifndef MODEL_CASH_MANAGER_H
 #define MODEL_CASH_MANAGER_H
 
-#include "Cash.pb.h"
 #include <memory>
+#include "Cash.pb.h"
 
-class CashManager
-{
-public:
+class CashManager {
+ public:
   static CashManager* GetInstance();
   ~CashManager() {}
 
   void OnCash(const std::shared_ptr<Proto::Cash> &cash);
 
-private:
+ private:
   CashManager() {}
 };
 
-#endif
+#endif // MODEL_CASH_MANAGER_H

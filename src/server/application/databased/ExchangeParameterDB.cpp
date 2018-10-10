@@ -2,19 +2,16 @@
 #include "base/logger/Logging.h"
 #include "config/EnvConfig.h"
 #include "model/Message.h"
-
 #include "boost/format.hpp"
 #include "boost/date_time/gregorian/gregorian.hpp"
 #include "boost/date_time/posix_time/posix_time.hpp"
 
-ExchangeParameterDB::ExchangeParameterDB(ConcurrentSqliteDB &db, const std::string &table_name,
-    const std::string &holiday_table_name)
-  : DbBase(db, table_name), holiday_table_name_(holiday_table_name)
-    // trading_day_(boost::gregorian::day_clock::local_day())
-{}
+ExchangeParameterDB::ExchangeParameterDB(ConcurrentSqliteDB &db,
+                                         const std::string &table_name,
+                                         const std::string &holiday_table_name)
+    : DbBase(db, table_name), holiday_table_name_(holiday_table_name) {}
 
-void ExchangeParameterDB::RefreshCache()
-{
+void ExchangeParameterDB::RefreshCache() {
   char sql[1024];
   auto today = boost::gregorian::day_clock::local_day();
   today -= boost::gregorian::date_duration(30);
@@ -22,7 +19,7 @@ void ExchangeParameterDB::RefreshCache()
   // sprintf(sql, "DELETE FROM %s WHERE holiday<strftime(\"%s\", 'now')", holiday_table_name_.c_str(),
   //     fmt);
   sprintf(sql, "DELETE FROM %s WHERE holiday<%s", holiday_table_name_.c_str(),
-      boost::gregorian::to_iso_string(today).c_str());
+          boost::gregorian::to_iso_string(today).c_str());
   ExecSql(sql);
 
   sprintf(sql, "SELECT * FROM %s", table_name_.c_str());
@@ -33,70 +30,57 @@ void ExchangeParameterDB::RefreshCache()
   SetTradingDay();
 }
 
-void ExchangeParameterDB::RegisterCallback(base::ProtoMessageDispatcher<base::ProtoMessagePtr> &dispatcher)
-{
+void ExchangeParameterDB::RegisterCallback(
+    base::ProtoMessageDispatcher<base::ProtoMessagePtr> &dispatcher) {
   dispatcher.RegisterCallback<Proto::ExchangeParameterReq>(
-    std::bind(&ExchangeParameterDB::OnRequest, this, std::placeholders::_1));
+      std::bind(&ExchangeParameterDB::OnRequest, this, std::placeholders::_1));
 }
 
 base::ProtoMessagePtr ExchangeParameterDB::OnRequest(
-    const std::shared_ptr<Proto::ExchangeParameterReq> &msg)
-{
+    const std::shared_ptr<Proto::ExchangeParameterReq> &msg) {
   LOG_INF << "Exchange parameter request: " << msg->ShortDebugString();
   auto reply = Message::NewProto<Proto::ExchangeParameterRep>();
-  if (msg->type() == Proto::RequestType::Get)
-  {
-    if (cache_)
-    {
+  if (msg->type() == Proto::RequestType::Get) {
+    if (cache_) {
       reply->add_parameters()->CopyFrom(*cache_);
-    }
-    else
-    {
+    } else {
       reply->mutable_result()->set_result(false);
       reply->mutable_result()->set_error("no exchange parameter");
       return reply;
     }
-  }
-  else if (msg->type() == Proto::RequestType::Set)
-  {
+  } else if (msg->type() == Proto::RequestType::Set) {
     char sql[1024];
     TransactionGuard tg(this);
 
-    for (auto &p : msg->parameters())
-    {
+    for (auto &p : msg->parameters()) {
       auto ep = Message::NewProto<Proto::ExchangeParameter>();
       ep->CopyFrom(p);
       cache_.swap(ep);
       SetTradingDay();
 
       std::ostringstream oss;
-      for (auto &s : p.sessions())
-      {
+      for (auto &s : p.sessions()) {
         oss << s.begin() << '-' << s.end() << '-' << s.stop() << ',';
       }
       std::ostringstream oss1;
-      for (auto &s : p.maturity_sessions())
-      {
+      for (auto &s : p.maturity_sessions()) {
         oss1 << s.begin() << '-' << s.end() << '-' << s.stop() << ',';
       }
       sprintf(sql, "INSERT OR REPLACE INTO %s VALUES(%d, '%s', '%s', '%s', %d, %d, %d)",
-          table_name_.c_str(), static_cast<int32_t>(p.exchange()),
-          oss.str().c_str(), oss1.str().c_str(), p.charm_start_time().c_str(),
-          p.rfq_delay(), p.rfq_timeout(), p.rfq_volume());
+              table_name_.c_str(), static_cast<int32_t>(p.exchange()),
+              oss.str().c_str(), oss1.str().c_str(), p.charm_start_time().c_str(),
+              p.rfq_delay(), p.rfq_timeout(), p.rfq_volume());
       ExecSql(sql);
 
       sprintf(sql, "DELETE FROM %s", holiday_table_name_.c_str());
       ExecSql(sql);
-      for (auto &h : p.holidays())
-      {
+      for (auto &h : p.holidays()) {
         sprintf(sql, "INSERT INTO %s VALUES('%s', %f)", holiday_table_name_.c_str(),
-            h.date().c_str(), h.weight());
+                h.date().c_str(), h.weight());
         ExecSql(sql);
       }
     }
-  }
-  else if (msg->type() == Proto::RequestType::Del)
-  {
+  } else if (msg->type() == Proto::RequestType::Del) {
     cache_.reset();
     char sql[1024];
     TransactionGuard tg(this);
@@ -109,15 +93,12 @@ base::ProtoMessagePtr ExchangeParameterDB::OnRequest(
   return reply;
 }
 
-void ExchangeParameterDB::SetTradingDay()
-{
+void ExchangeParameterDB::SetTradingDay() {
   auto trading_day = boost::gregorian::day_clock::local_day();
-  if (cache_)
-  {
+  if (cache_) {
     const auto time = EnvConfig::GetInstance()->GetString(EnvVar::NIGHT_SESSION_TIME, "23:59:59.0");
     const auto night_session_time = boost::posix_time::duration_from_string(time);
-    if (boost::posix_time::second_clock::local_time().time_of_day() > night_session_time)
-    {
+    if (boost::posix_time::second_clock::local_time().time_of_day() > night_session_time) {
       trading_day += boost::gregorian::date_duration(1);
       auto &holidays = cache_->holidays();
       while (trading_day.day_of_week() == boost::gregorian::Saturday ||
@@ -125,8 +106,7 @@ void ExchangeParameterDB::SetTradingDay()
              std::find_if(holidays.begin(), holidays.end(), [&](const auto &h)
                {
                  return h.date() == boost::gregorian::to_iso_string(trading_day);
-               }) != holidays.end())
-      {
+               }) != holidays.end()) {
         trading_day += boost::gregorian::date_duration(1);
       }
     }
@@ -137,8 +117,7 @@ void ExchangeParameterDB::SetTradingDay()
   LOG_INF << "Trading day is " << trading_day_;
 }
 
-int ExchangeParameterDB::ParameterCallback(void *data, int argc, char **argv, char **col_name)
-{
+int ExchangeParameterDB::ParameterCallback(void *data, int argc, char **argv, char **col_name) {
   auto p = Message::NewProto<Proto::ExchangeParameter>();
   p->set_exchange(static_cast<Proto::Exchange>(atoi(argv[0])));
   ParseTradingSession(argv[1], std::bind(&Proto::ExchangeParameter::add_sessions, p.get()));
@@ -154,24 +133,16 @@ int ExchangeParameterDB::ParameterCallback(void *data, int argc, char **argv, ch
 }
 
 void ExchangeParameterDB::ParseTradingSession(char *data,
-    std::function<Proto::TradingSession*()> func)
-{
+                                              std::function<Proto::TradingSession*()> func) {
   char *beg = data, *first = data, *second = data, *pos = data + 1;
-  while (*pos != 0)
-  {
-    if (*pos == '-')
-    {
-      if (first == beg)
-      {
+  while (*pos != 0) {
+    if (*pos == '-') {
+      if (first == beg) {
         first = pos;
-      }
-      else
-      {
+      } else {
         second = pos;
       }
-    }
-    else if (*pos == ',')
-    {
+    } else if (*pos == ',') {
       auto *s = func();
       s->set_begin(beg, first - beg);
       s->set_end(first + 1, second - first - 1);
@@ -182,8 +153,7 @@ void ExchangeParameterDB::ParseTradingSession(char *data,
   }
 }
 
-int ExchangeParameterDB::HolidayCallback(void *data, int argc, char **argv, char **col_name)
-{
+int ExchangeParameterDB::HolidayCallback(void *data, int argc, char **argv, char **col_name) {
   auto &cache = *static_cast<std::shared_ptr<Proto::ExchangeParameter>*>(data);
   auto *holiday = cache->add_holidays();
   holiday->set_date(argv[0]);

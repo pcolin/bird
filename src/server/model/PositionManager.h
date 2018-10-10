@@ -1,17 +1,15 @@
 #ifndef MODEL_POSITION_MANAGER_H
 #define MODEL_POSITION_MANAGER_H
 
+#include <unordered_map>
+#include <mutex>
 #include "Trade.h"
 #include "Position.pb.h"
 
-#include <unordered_map>
-#include <mutex>
-
 typedef std::shared_ptr<Proto::Position> PositionPtr;
 
-class PositionManager
-{
-public:
+class PositionManager {
+ public:
   static PositionManager* GetInstance();
   ~PositionManager() {}
 
@@ -23,7 +21,7 @@ public:
   void UpdatePosition(const PositionPtr &position);
   void OnTrade(const TradePtr &trade);
 
-private:
+ private:
   PositionManager() {}
 
   void PublishPosition(Proto::Exchange exchange, PositionPtr &position);
@@ -31,7 +29,6 @@ private:
   typedef std::unordered_map<const Instrument*, PositionPtr> PositionMap;
   PositionMap positions_;
   std::mutex mtx_;
-
 };
 
-#endif
+#endif // MODEL_POSITION_MANAGER_H

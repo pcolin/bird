@@ -1,13 +1,14 @@
 #ifndef MODEL_ORDER_MANAGER_H
 #define MODEL_ORDER_MANAGER_H
 
-#include "InactiveOrderManager.h"
 #include <vector>
 #include <mutex>
+#include "InactiveOrderManager.h"
 
-class OrderManager
-{
-public:
+class OrderManager {
+ public:
+  typedef std::unordered_map<size_t, OrderPtr> OrderMap;
+
   static OrderManager* GetInstance();
   ~OrderManager() {}
 
@@ -26,11 +27,10 @@ public:
 
   void Dump();
 
-private:
+ private:
   OrderManager() {}
   void UpdateOrder(const OrderPtr &order);
 
-  typedef std::unordered_map<size_t, OrderPtr> OrderMap;
   OrderMap active_orders_;
   typedef std::unordered_map<std::string, OrderPtr> ExchOrderMap;
   ExchOrderMap exch_active_orders_;
@@ -38,4 +38,4 @@ private:
   std::mutex mtx_;
 };
 
-#endif
+#endif // MODEL_ORDER_MANAGER_H

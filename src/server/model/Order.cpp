@@ -1,40 +1,37 @@
 #include "Order.h"
 // #include "base/logger/Logging.h"
-#include "Order.pb.h"
-#include "base/logger/LogStream.h"
-
 #include <map>
 #include <sstream>
-#include <boost/format.hpp>
-#include <boost/uuid/uuid_generators.hpp>
+#include "boost/format.hpp"
+#include "boost/uuid/uuid_generators.hpp"
+#include "Order.pb.h"
+#include "base/logger/LogStream.h"
 // #include <boost/uuid/uuid_io.hpp>
 // #include <boost/lexical_cast.hpp>
 
 thread_local boost::uuids::random_generator id_generator;
 
 Order::Order()
-  : header(MsgType::Order),
-    id(boost::uuids::hash_value(id_generator())), status(Proto::OrderStatus::Local)
-{
+    : header(MsgType::Order),
+      id(boost::uuids::hash_value(id_generator())),
+      status(Proto::OrderStatus::Local) {
   header.SetTime();
 }
 
 Order::Order(const Proto::Order &ord)
-  : header(MsgType::Order),
-    id(ord.id()),
-    price(ord.price()),
-    volume(ord.volume()),
-    strategy_type(ord.strategy_type()),
-    side(ord.side()),
-    time_condition(ord.time_condition()),
-    type(ord.type()),
-    status(ord.status())
-{
+    : header(MsgType::Order),
+      id(ord.id()),
+      price(ord.price()),
+      volume(ord.volume()),
+      strategy_type(ord.strategy_type()),
+      side(ord.side()),
+      time_condition(ord.time_condition()),
+      type(ord.type()),
+      status(ord.status()) {
   header.time = ord.time();
 }
 
-void Order::ResetId()
-{
+void Order::ResetId() {
   id = boost::uuids::hash_value(id_generator());
 }
 
@@ -74,8 +71,7 @@ void Order::ResetId()
 //   return ss.str();
 // }
 
-std::shared_ptr<Proto::Order> Order::Serialize() const
-{
+std::shared_ptr<Proto::Order> Order::Serialize() const {
   std::shared_ptr<Proto::Order> ord = Message::NewProto<Proto::Order>();
   ord->set_id(id);
   ord->set_instrument(instrument->Id());
@@ -101,8 +97,7 @@ std::shared_ptr<Proto::Order> Order::Serialize() const
   return ord;
 }
 
-void Order::Serialize(Proto::Order *order) const
-{
+void Order::Serialize(Proto::Order *order) const {
   order->set_id(id);
   order->set_instrument(instrument->Id());
   order->set_counter_id(counter_id);
@@ -126,48 +121,40 @@ void Order::Serialize(Proto::Order *order) const
   order->set_latency(header.interval[2]);
 }
 
-namespace base
-{
-LogStream& operator<<(LogStream& stream, const OrderPtr &order)
-{
-  if (order)
-  {
-    stream << boost::format("%1% %2% %3% %4%@%5% %6% %7%") % order->id % order->instrument->Id() %
-      Proto::Side_Name(order->side) % order->volume % order->price %
-      Proto::TimeCondition_Name(order->time_condition) % Proto::OrderStatus_Name(order->status);
+namespace base {
 
-    if (!order->counter_id.empty())
-    {
+LogStream& operator<<(LogStream& stream, const OrderPtr &order) {
+  if (order) {
+    stream << boost::format("%1% %2% %3% %4%@%5% %6% %7%") % order->id % order->instrument->Id() %
+              Proto::Side_Name(order->side) % order->volume % order->price %
+              Proto::TimeCondition_Name(order->time_condition) %
+              Proto::OrderStatus_Name(order->status);
+
+    if (!order->counter_id.empty()) {
       stream << boost::format(" CounterID(%1%)") % order->counter_id;
     }
-    if (!order->exchange_id.empty())
-    {
+    if (!order->exchange_id.empty()) {
       stream << boost::format(" ExchangeID(%1%)") % order->exchange_id;
     }
-    if (!order->strategy.empty())
-    {
+    if (!order->strategy.empty()) {
       stream << boost::format(" Strategy(%1%:%2%)") %
-        Proto::StrategyType_Name(order->strategy_type) % order->strategy;
+                Proto::StrategyType_Name(order->strategy_type) % order->strategy;
     }
-    if (order->avg_executed_price > 0)
-    {
+    if (order->avg_executed_price > 0) {
       stream << boost::format(" Executed(%1%@%2%)") % order->executed_volume %
-        order->avg_executed_price;
+                order->avg_executed_price;
     }
-    if (order->header.interval[2] > 0)
-    {
+    if (order->header.interval[2] > 0) {
       stream << boost::format(" Latency(%1%,%2%,%3%,%4%)") % order->header.time %
-        order->header.interval[0] % order->header.interval[1] % order->header.interval[2];
+                order->header.interval[0] % order->header.interval[1] % order->header.interval[2];
     }
-    if (!order->note.empty())
-    {
+    if (!order->note.empty()) {
       stream << boost::format(" Note(%1%)") % order->note;
     }
-  }
-  else
-  {
+  } else {
     stream.append("(NULL)", 6);
   }
   return stream;
 }
-}
+
+} // namespace base

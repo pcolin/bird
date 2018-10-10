@@ -1,33 +1,27 @@
 #ifndef STRATEGY_DEVICE_MANAGER_H
 #define STRATEGY_DEVICE_MANAGER_H
 
+#include <unordered_map>
 #include "StrategyTypes.h"
 #include "Strategy.pb.h"
 #include "Price.pb.h"
 #include "Quoter.pb.h"
 #include "base/disruptor/BusySpinWaitStrategy.h"
 #include "base/disruptor/MultiProducerSequencer.h"
-
-#include <unordered_map>
-#include <boost/circular_buffer.hpp>
+#include "boost/circular_buffer.hpp"
 
 class StrategyDevice;
-class DeviceManager
-{
-public:
+class DeviceManager {
+ public:
   DeviceManager(const Instrument *underlying);
   DeviceManager(const DeviceManager&) = delete;
   DeviceManager& operator=(const DeviceManager&) = delete;
   ~DeviceManager();
 
   void Init();
-  const Instrument* GetUnderlying() const
-  {
-    return underlying_;
-  }
+  const Instrument* GetUnderlying() const { return underlying_; }
 
-  template<class E> void Publish(E &e)
-  {
+  template<class E> void Publish(E &e) {
     int64_t seq = rb_.Next();
     rb_.Get(seq) = std::move(e);
     rb_.Publish(seq);
@@ -50,7 +44,7 @@ public:
 
   void UpdatePricer(const Proto::Pricer &pricing);
 
-private:
+ private:
   const Instrument *underlying_;
   UnderlyingPrice theo_;
   boost::circular_buffer<base::PriceType> underlying_prices_;
@@ -68,4 +62,4 @@ private:
   base::SequenceBarrier *barrier_;
 };
 
-#endif
+#endif // STRATEGY_DEVICE_MANAGER_H

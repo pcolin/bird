@@ -1,12 +1,11 @@
 #ifndef MODEL_TRADE_H
 #define MODEL_TRADE_H
 
+#include <memory>
 #include "Order.h"
 #include "Trade.pb.h"
-#include <memory>
 
-struct Trade
-{
+struct Trade {
   Trade() : header(MsgType::Trade) {}
   // std::string Dump() const;
   std::shared_ptr<Proto::Trade> Serialize() const;
@@ -23,10 +22,11 @@ struct Trade
 
 typedef std::shared_ptr<Trade> TradePtr;
 
-namespace base
-{
+namespace base {
+
 class LogStream;
 LogStream& operator<<(LogStream& stream, const TradePtr &order);
-}
 
-#endif
+} // namespace base
+
+#endif // MODEL_TRADE_H

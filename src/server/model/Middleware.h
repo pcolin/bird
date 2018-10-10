@@ -1,27 +1,24 @@
 #ifndef MODEL_MIDDLEWARE_H
 #define MODEL_MIDDLEWARE_H
 
+#include <thread>
+
 #include "base/concurrency/blockingconcurrentqueue.h"
 #include "base/logger/Logging.h"
 #include "base/common/ProtoMessageCoder.h"
 #include "base/common/ProtoMessageDispatcher.h"
 #include "Order.pb.h"
-
 #include "nn.h"
 #include "reqrep.h"
 
-#include <thread>
-
-class Middleware
-{
-public:
+class Middleware {
+ public:
   static Middleware* GetInstance();
   ~Middleware() {}
 
   void Init();
 
-  template<class ProtoType> void Publish(const std::shared_ptr<ProtoType> &msg)
-  {
+  template<class ProtoType> void Publish(const std::shared_ptr<ProtoType> &msg) {
     proto_messages_.enqueue(msg);
   }
 
@@ -86,7 +83,7 @@ public:
   //     Publish(pmp);
   // }
 
-private:
+ private:
   Middleware();
   // ProtoReplyPtr OnHeartbeat(const std::shared_ptr<Proto::Heartbeat> &msg);
   // ProtoReplyPtr OnPriceReq(const std::shared_ptr<Proto::PriceReq> &msg);
@@ -103,8 +100,7 @@ private:
   std::unique_ptr<std::thread> responder_;
 
   moodycamel::BlockingConcurrentQueue<base::ProtoMessagePtr> proto_messages_;
-  static const size_t capacity_ = 1024;
-
+  const size_t kCapacity = 1024;
 };
 
-#endif
+#endif // MODEL_MIDDLEWARE_H_

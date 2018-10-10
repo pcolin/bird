@@ -3,8 +3,7 @@
 
 #include <unordered_map>
 
-enum class EnvVar : int8_t
-{
+enum class EnvVar : int8_t {
   APP_NAME = 0,
   NIC,
   CONFIG_FILE,
@@ -57,33 +56,32 @@ enum class EnvVar : int8_t
   UL_PRICE_CHECK_NUM
 };
 
-class EnvConfig
-{
-  public:
-    static EnvConfig* GetInstance();
+class EnvConfig {
+ public:
+  static EnvConfig* GetInstance();
 
-    bool GetValue(EnvVar var, std::string &value) const;
-    bool GetValue(EnvVar var, bool &value) const;
-    bool GetValue(EnvVar var, int32_t &value) const;
-    bool GetValue(EnvVar var, char &value) const;
-    bool GetValue(EnvVar var, double &value) const;
+  bool GetValue(EnvVar var, std::string &value) const;
+  bool GetValue(EnvVar var, bool &value) const;
+  bool GetValue(EnvVar var, int32_t &value) const;
+  bool GetValue(EnvVar var, char &value) const;
+  bool GetValue(EnvVar var, double &value) const;
 
-    double GetDouble(EnvVar var) const;
-    int32_t GetInt32(EnvVar var) const;
-    bool GetBool(EnvVar var) const;
-    std::string GetString(EnvVar var) const;
+  double GetDouble(EnvVar var) const;
+  int32_t GetInt32(EnvVar var) const;
+  bool GetBool(EnvVar var) const;
+  std::string GetString(EnvVar var) const;
 
-    double GetDouble(EnvVar var, double default_value) const;
-    int32_t GetInt32(EnvVar var, int32_t default_value) const;
-    bool GetBool(EnvVar var, bool default_value) const;
-    std::string GetString(EnvVar var, const std::string& default_value) const;
+  double GetDouble(EnvVar var, double default_value) const;
+  int32_t GetInt32(EnvVar var, int32_t default_value) const;
+  bool GetBool(EnvVar var, bool default_value) const;
+  std::string GetString(EnvVar var, const std::string& default_value) const;
 
-  private:
-    EnvConfig();
-    template <class T> T GetValue(EnvVar var) const;
-    template <class T> T GetValue(EnvVar var, const T &default_value) const;
+ private:
+  EnvConfig();
+  template <class T> T GetValue(EnvVar var) const;
+  template <class T> T GetValue(EnvVar var, const T &default_value) const;
 
-    std::unordered_map<int8_t, const std::string> configs_;
+  std::unordered_map<int8_t, const std::string> configs_;
 };
 
-#endif
+#endif // ENV_CONFIG_H

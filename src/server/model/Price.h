@@ -1,33 +1,25 @@
 #ifndef MODEL_PRICE_H
 #define MODEL_PRICE_H
 
-#include "Message.h"
-#include "Instrument.h"
+#include <memory>
 #include "Price.pb.h"
 #include "Pricer.pb.h"
-#include <memory>
-
-// namespace Proto
-// {
-//   class Price;
-//   // enum UnderlyingTheoType;
-// }
+#include "Message.h"
+#include "Instrument.h"
 
 using base::PriceType;
 using base::VolumeType;
 using base::PRICE_UNDEFINED;
 using base::VOLUME_UNDEFINED;
 
-struct PriceLevel
-{
+struct PriceLevel {
   operator bool() const { return volume != VOLUME_UNDEFINED; }
 
   PriceType price = PRICE_UNDEFINED;
   VolumeType volume = VOLUME_UNDEFINED;
 };
 
-struct Price
-{
+struct Price {
   static const int LEVELS = 5;
   Price() : header(MsgType::Price) {}
 
@@ -53,15 +45,15 @@ struct Price
 
 typedef std::shared_ptr<Price> PricePtr;
 
-namespace base
-{
+namespace base {
+
 class LogStream;
 LogStream& operator<<(LogStream& stream, const PricePtr &price);
-}
 
-class UnderlyingPrice
-{
-public:
+} // namespace base
+
+class UnderlyingPrice {
+ public:
   UnderlyingPrice(const Instrument *underlying); /// : underlying_(underlying) {}
 
   void SetParameter(Proto::UnderlyingTheoType type, double elastic, double elastic_limit);
@@ -89,4 +81,4 @@ private:
   std::mutex mtx_;
 };
 
-#endif
+#endif // MODEL_PRICE_H

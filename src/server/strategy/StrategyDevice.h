@@ -1,17 +1,15 @@
 #ifndef STRATEGY_STRATEGY_DEVICE_H
 #define STRATEGY_STRATEGY_DEVICE_H
 
+#include <thread>
 #include "StrategyTypes.h"
 #include "base/disruptor/SequenceBarrier.h"
 
-#include <thread>
-
 class Strategy;
-class StrategyDevice
-{
-public:
+class StrategyDevice {
+ public:
   StrategyDevice(std::unique_ptr<Strategy> &strategy, StrategyRingBuffer &rb,
-      base::SequenceBarrier *barrier);
+                 base::SequenceBarrier *barrier);
   ~StrategyDevice();
 
   void Start();
@@ -32,4 +30,4 @@ private:
   std::atomic<bool> running_;
 };
 
-#endif
+#endif // STRATEGY_STRATEGY_DEVICE_H

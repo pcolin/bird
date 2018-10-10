@@ -1,22 +1,22 @@
 #ifndef DATABASED_QUOTER_DB_H
 #define DATABASED_QUOTER_DB_H
 
+#include <unordered_map>
 #include "DbBase.h"
 #include "InstrumentDB.h"
 #include "Quoter.pb.h"
 
-#include <unordered_map>
-
-class QuoterDB : public DbBase
-{
-  typedef std::unordered_map<std::string, std::shared_ptr<Proto::QuoterSpec>> QuoterMap;
+class QuoterDB : public DbBase {
   // typedef std::map<std::string,
   //         std::unordered_map<std::string, std::shared_ptr<Proto::QuoterRecord>>> QuoterRecordMap;
-public:
-  QuoterDB(ConcurrentSqliteDB &db, const std::string &table_name,
-      const std::string &record_table_name, InstrumentDB &instrument_db);
+ public:
+  typedef std::unordered_map<std::string, std::shared_ptr<Proto::QuoterSpec>> QuoterMap;
+  QuoterDB(ConcurrentSqliteDB &db,
+           const std::string &table_name,
+           const std::string &record_table_name,
+           InstrumentDB &instrument_db);
 
-private:
+ private:
   virtual void RefreshCache() override;
   virtual void RegisterCallback(base::ProtoMessageDispatcher<base::ProtoMessagePtr> &dispatcher);
 
@@ -32,4 +32,4 @@ private:
   // QuoterRecordMap records_;
 };
 
-#endif
+#endif // DATABASED_QUOTER_DB_H

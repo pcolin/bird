@@ -1,16 +1,16 @@
 #ifndef BASE_VERSION_H
 #define BASE_VERSION_H
 
-namespace base
-{
-  const int VER_MAJOR = 0;
-  const int VER_MINOR = 2;
-  const int VER_PATCH = 0;
+namespace base {
 
-  // void DumpVersion()
-  // {
-  //   LOG_PUB << ""
-  // }
-}
+const int VER_MAJOR = 0;
+const int VER_MINOR = 2;
+const int VER_PATCH = 0;
 
-#endif
+// void DumpVersion()
+// {
+//   LOG_PUB << ""
+// }
+} // namespace base
+
+#endif // BASE_VERSION_H

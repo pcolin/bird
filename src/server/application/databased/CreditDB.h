@@ -1,21 +1,21 @@
 #ifndef DATABASED_CREDIT_DB_H
 #define DATABASED_CREDIT_DB_H
 
+#include <vector>
+#include <map>
 #include "DbBase.h"
 #include "InstrumentDB.h"
 #include "Credit.pb.h"
 
-#include <vector>
-#include <map>
+class CreditDB : public DbBase {
+ public:
+  CreditDB(ConcurrentSqliteDB &db,
+           const std::string &table_name,
+           const std::string &record_table_name,
+           InstrumentDB &instrument_db,
+           ExchangeParameterDB &exchange_db);
 
-class CreditDB : public DbBase
-{
-public:
-  CreditDB(ConcurrentSqliteDB &db, const std::string &table_name,
-      const std::string &record_table_name, InstrumentDB &instrument_db,
-      ExchangeParameterDB &exchange_db);
-
-private:
+ private:
   virtual void RefreshCache() override;
   virtual void RegisterCallback(base::ProtoMessageDispatcher<base::ProtoMessagePtr> &dispatcher);
 
@@ -32,4 +32,4 @@ private:
   std::string trading_day_;
 };
 
-#endif
+#endif // DATABASED_CREDIT_DB_H

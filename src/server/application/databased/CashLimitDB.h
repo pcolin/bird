@@ -1,18 +1,16 @@
 #ifndef DATABASED_CASH_LIMIT_DB_H
 #define DATABASED_CASH_LIMIT_DB_H
 
+#include <unordered_map>
 #include "DbBase.h"
 #include "CashLimit.pb.h"
 
-#include <unordered_map>
-
-class CashLimitDB : public DbBase
-{
+class CashLimitDB : public DbBase {
+ public:
   typedef std::unordered_map<int32_t, std::shared_ptr<Proto::CashLimit>> CashLimitMap;
-public:
   CashLimitDB(ConcurrentSqliteDB &db, const std::string &table_name);
 
-private:
+ private:
   virtual void RefreshCache() override;
   virtual void RegisterCallback(base::ProtoMessageDispatcher<base::ProtoMessagePtr> &dispatcher);
 
@@ -23,4 +21,4 @@ private:
   CashLimitMap cache_;
 };
 
-#endif
+#endif // DATABASED_CASH_LIMIT_DB_H

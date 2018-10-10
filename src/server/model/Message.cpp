@@ -1,40 +1,33 @@
+#include <mutex>
 #include "Price.h"
 #include "TheoMatrix.h"
 #include "Order.h"
 #include "Trade.h"
 
-#include <mutex>
-
-PricePtr Message::NewPrice()
-{
+PricePtr Message::NewPrice() {
   static MessageFactory<Price> factory;
   return factory.Allocate();
 }
 
-TheoMatrixPtr Message::NewTheoMatrix()
-{
+TheoMatrixPtr Message::NewTheoMatrix() {
   static MessageFactory<TheoMatrix> factory;
   return factory.Allocate();
 }
 
 static MessageFactory<Order> order_factory;
-OrderPtr Message::NewOrder()
-{
+OrderPtr Message::NewOrder() {
   return order_factory.Allocate();
 }
 
-OrderPtr Message::NewOrder(const OrderPtr &ord)
-{
+OrderPtr Message::NewOrder(const OrderPtr &ord) {
   return order_factory.Allocate(ord);
 }
 
-// OrderPtr Message::NewOrder(const Proto::Order &ord)
-// {
+// OrderPtr Message::NewOrder(const Proto::Order &ord) {
 //   return order_factory.Allocate(ord);
 // }
 
-TradePtr Message::NewTrade()
-{
+TradePtr Message::NewTrade() {
   static MessageFactory<Trade> factory;
   return factory.Allocate();
 }

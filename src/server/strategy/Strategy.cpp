@@ -4,14 +4,14 @@
 // #include <sys/time.h>
 
 Strategy::Strategy(const std::string &name, DeviceManager *dm)
-  : name_(name), dm_(dm), visitor_(this)
-{
+    : name_(name),
+      dm_(dm),
+      visitor_(this) {
   dispatcher_.RegisterCallback<Proto::Heartbeat>(
       std::bind(&Strategy::OnHeartbeat, this, std::placeholders::_1));
 }
 
-bool Strategy::OnHeartbeat(const std::shared_ptr<Proto::Heartbeat> &heartbeat)
-{
+bool Strategy::OnHeartbeat(const std::shared_ptr<Proto::Heartbeat> &heartbeat) {
   // auto h = Message::NewProto<Proto::Heartbeat>();
   // h->set_type(Proto::ProcessorType::Strategy);
   // h->set_name(name_);

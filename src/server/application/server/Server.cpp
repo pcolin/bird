@@ -24,17 +24,15 @@ using namespace std;
 std::mutex mtx;
 std::condition_variable cv;
 
-int main(int argc, char *args[])
-{
+int main(int argc, char *args[]) {
   Logger::InitFileLogger(EnvConfig::GetInstance()->GetString(EnvVar::LOGGING_DIR).c_str(),
                          EnvConfig::GetInstance()->GetString(EnvVar::APP_NAME).c_str(),
                          EnvConfig::GetInstance()->GetBool(EnvVar::ASYNC_LOGGING) == false);
   Logger::SetLogLevel(static_cast<Logger::LogLevel>(
-        EnvConfig::GetInstance()->GetInt32(EnvVar::LOGGING_LEVEL)));
+                      EnvConfig::GetInstance()->GetInt32(EnvVar::LOGGING_LEVEL)));
   Proto::Exchange exchange;
   Proto::Exchange_Parse(EnvConfig::GetInstance()->GetString(EnvVar::EXCHANGE), &exchange);
-  Logger::SetNetOutput([&](Logger::LogLevel lvl, const char *data, int n)
-      {
+  Logger::SetNetOutput([&](Logger::LogLevel lvl, const char *data, int n) {
         auto info = Message::NewProto<Proto::ServerInfo>();
         info->set_exchange(exchange);
         info->set_info(data, n);
@@ -43,25 +41,7 @@ int main(int argc, char *args[])
         Middleware::GetInstance()->Publish(info);
       });
   LOG_INF << boost::format("Welcome BIRD-Server %1%.%2%.%3%, build date: %4%") %
-    VER_MAJOR % VER_MINOR % VER_PATCH % __DATE__;
-
-  // double v0 = 0;
-  // char buffer0[32] = {'a'};
-  // buffer0[31] = '\0';
-  // int len0 = dtoa_milo(v0, buffer0);
-
-
-  // double v1 = 1234e-6;
-  // char buffer1[32] = {'a'};
-  // buffer1[31] = '\0';
-  // int len1 = dtoa_milo(v1, buffer1);
-
-  // double v = 0.1234567890123456789;
-  // char buffer[32] = {'a'};
-  // buffer[31] = '\0';
-  // int len = dtoa_milo(v, buffer);
-  // assert(len == 32);
-
+             VER_MAJOR % VER_MINOR % VER_PATCH % __DATE__;
   Middleware::GetInstance()->Init();
   LOG_INF << "Middleware is running now";
 

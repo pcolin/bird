@@ -1,49 +1,36 @@
 #ifndef BASE_LOGSTREAM_H
 #define BASE_LOGSTREAM_H
 
-#include "StringPiece.h"
 #include <assert.h>
 #include <string.h> // memcpy
 #include <string>
 #include "boost/noncopyable.hpp"
 #include "boost/format/format_class.hpp"
+#include "StringPiece.h"
 
-namespace base
-{
+namespace base {
 
-namespace detail
-{
+namespace detail {
 
 const int kSmallBuffer = 4000;
 const int kLargeBuffer = 4000*1000;
 
 template<int SIZE>
-class FixedBuffer : boost::noncopyable
-{
+class FixedBuffer : boost::noncopyable {
  public:
-  FixedBuffer()
-    : cur_(data_)
-  {
-  }
+  FixedBuffer() : cur_(data_) {}
 
-  ~FixedBuffer()
-  {
-  }
+  ~FixedBuffer() {}
 
-  void append(const char* /*restrict*/ buf, size_t len)
-  {
+  void append(const char* /*restrict*/ buf, size_t len) {
     // FIXME: append partially
     size_t left = implicit_cast<size_t>(avail());
-    if (left > len)
-    {
+    if (left > len) {
       memcpy(cur_, buf, len);
       cur_ += len;
-    }
-    else
-    {
+    } else {
       const int ELLIPSIS_LENGTH = 6;
-      if (left > ELLIPSIS_LENGTH )
-      {
+      if (left > ELLIPSIS_LENGTH ) {
         memcpy(cur_, "......", ELLIPSIS_LENGTH );
         cur_ += ELLIPSIS_LENGTH;
       }
@@ -78,14 +65,12 @@ class FixedBuffer : boost::noncopyable
 
 } // namespace detail
 
-class LogStream : boost::noncopyable
-{
+class LogStream : boost::noncopyable {
   typedef LogStream self;
  public:
   typedef detail::FixedBuffer<detail::kSmallBuffer> Buffer;
 
-  self& operator<<(bool v)
-  {
+  self& operator<<(bool v) {
     buffer_.append(v ? "1" : "0", 1);
     return *this;
   }
@@ -101,16 +86,14 @@ class LogStream : boost::noncopyable
 
   self& operator<<(const void*);
 
-  self& operator<<(float v)
-  {
+  self& operator<<(float v) {
     *this << static_cast<double>(v);
     return *this;
   }
   self& operator<<(double);
   // self& operator<<(long double);
 
-  self& operator<<(char v)
-  {
+  self& operator<<(char v) {
     buffer_.append(&v, 1);
     return *this;
   }
@@ -118,50 +101,40 @@ class LogStream : boost::noncopyable
   // self& operator<<(signed char);
   // self& operator<<(unsigned char);
 
-  self& operator<<(const char* str)
-  {
-    if (str)
-    {
+  self& operator<<(const char* str) {
+    if (str) {
       buffer_.append(str, strlen(str));
-    }
-    else
-    {
+    } else {
       buffer_.append("(null)", 6);
     }
     return *this;
   }
 
-  self& operator<<(const unsigned char* str)
-  {
+  self& operator<<(const unsigned char* str) {
     return operator<<(reinterpret_cast<const char*>(str));
   }
 
-  self& operator<<(const sso_string& v)
-  {
+  self& operator<<(const sso_string& v) {
     buffer_.append(v.c_str(), v.size());
     return *this;
   }
 
-  self& operator<<(const std::string& v)
-  {
+  self& operator<<(const std::string& v) {
     buffer_.append(v.c_str(), v.size());
     return *this;
   }
 
-  self& operator<<(const StringPiece& v)
-  {
+  self& operator<<(const StringPiece& v) {
     buffer_.append(v.data(), v.size());
     return *this;
   }
 
   template<class Ch, class Tr, class Alloc>
-  self& operator<<(boost::basic_format<Ch, Tr, Alloc> &fmt)
-  {
+  self& operator<<(boost::basic_format<Ch, Tr, Alloc> &fmt) {
     return operator<<(fmt.str());
   }
 
-  self& operator<<(const Buffer& v)
-  {
+  self& operator<<(const Buffer& v) {
     *this << v.toStringPiece();
     return *this;
   }
@@ -173,19 +146,15 @@ class LogStream : boost::noncopyable
  private:
   void staticCheck();
 
-  template<typename T>
-  void formatInteger(T);
+  template<typename T> void formatInteger(T);
 
   Buffer buffer_;
-
   static const int kMaxNumericSize = 32;
 };
 
-class Fmt : boost::noncopyable
-{
+class Fmt : boost::noncopyable {
  public:
-  template<typename T>
-  Fmt(const char* fmt, T val);
+  template<typename T> Fmt(const char* fmt, T val);
 
   const char* data() const { return buf_; }
   int length() const { return length_; }
@@ -195,12 +164,12 @@ class Fmt : boost::noncopyable
   int length_;
 };
 
-inline LogStream& operator<<(LogStream& s, const Fmt& fmt)
-{
+inline LogStream& operator<<(LogStream& s, const Fmt& fmt) {
   s.append(fmt.data(), fmt.length());
   return s;
 }
 
 } // namespace base
+
 #endif  // BASE_LOGSTREAM_H
 

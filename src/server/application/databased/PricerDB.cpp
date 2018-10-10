@@ -1,18 +1,17 @@
 #include "PricerDB.h"
 #include "base/logger/Logging.h"
 #include "model/Message.h"
-#include <boost/format.hpp>
+#include "boost/format.hpp"
 
-PricerDB::PricerDB(ConcurrentSqliteDB &db, const std::string &table_name,
-    InstrumentDB &instrument_db)
-  : DbBase(db, table_name), instrument_db_(instrument_db)
-{}
+PricerDB::PricerDB(ConcurrentSqliteDB &db,
+                   const std::string &table_name,
+                   InstrumentDB &instrument_db)
+    : DbBase(db, table_name), instrument_db_(instrument_db) {}
 
-void PricerDB::RefreshCache()
-{
+void PricerDB::RefreshCache() {
   char sql[1024];
   sprintf(sql, "DELETE FROM %s WHERE NOT EXISTS(SELECT id FROM %s WHERE id = %s.underlying)",
-      table_name_.c_str(), instrument_db_.TableName().c_str(), table_name_.c_str());
+          table_name_.c_str(), instrument_db_.TableName().c_str(), table_name_.c_str());
   ExecSql(sql);
   // sprintf(sql, "DELETE FROM %s WHERE NOT EXISTS(SELECT id FROM %s WHERE id = %s.instrument)",
   //     record_table_name_.c_str(), instrument_db_.TableName().c_str(), record_table_name_.c_str());
@@ -26,62 +25,46 @@ void PricerDB::RefreshCache()
   // ExecSql(sql, &data, &PricerDB::RecordCallback);
 }
 
-void PricerDB::RegisterCallback(base::ProtoMessageDispatcher<base::ProtoMessagePtr> &dispatcher)
-{
+void PricerDB::RegisterCallback(base::ProtoMessageDispatcher<base::ProtoMessagePtr> &dispatcher) {
   dispatcher.RegisterCallback<Proto::PricerReq>(
-    std::bind(&PricerDB::OnRequest, this, std::placeholders::_1));
+      std::bind(&PricerDB::OnRequest, this, std::placeholders::_1));
 }
 
-base::ProtoMessagePtr PricerDB::OnRequest(const std::shared_ptr<Proto::PricerReq> &msg)
-{
+base::ProtoMessagePtr PricerDB::OnRequest(const std::shared_ptr<Proto::PricerReq> &msg) {
   LOG_INF << "Pricer request: " << msg->ShortDebugString();
   auto reply = Message::NewProto<Proto::PricerRep>();
-  if (msg->type() == Proto::RequestType::Get)
-  {
-    if (msg->name().empty())
-    {
-      for (auto it : pricers_)
-      {
+  if (msg->type() == Proto::RequestType::Get) {
+    if (msg->name().empty()) {
+      for (auto it : pricers_) {
         reply->add_pricers()->CopyFrom(*it.second);
       }
-    }
-    else
-    {
+    } else {
       auto it = pricers_.find(msg->name());
-      if (it != pricers_.end())
-      {
+      if (it != pricers_.end()) {
         reply->add_pricers()->CopyFrom(*it->second);
-      }
-      else
-      {
+      } else {
         reply->mutable_result()->set_result(false);
         reply->mutable_result()->set_error(msg->name() + " doesn't exist");
         return reply;
       }
     }
-  }
-  else if (msg->type() == Proto::RequestType::Set)
-  {
+  } else if (msg->type() == Proto::RequestType::Set) {
     char sql[1024];
     TransactionGuard tg(this);
-    for (auto &pricer : msg->pricers())
-    {
+    for (auto &pricer : msg->pricers()) {
       const std::string &name = pricer.name();
       sprintf(sql, "INSERT OR REPLACE INTO %s VALUES('%s', '%s', %d, %d, %d, %d, %d, %f, %f)",
-          table_name_.c_str(), name.c_str(), pricer.underlying().c_str(),
-          static_cast<int32_t>(pricer.model()), pricer.depth(), pricer.interval(),
-          static_cast<int32_t>(pricer.theo_type()), pricer.warn_tick_change(),
-          pricer.elastic(), pricer.elastic_limit());
+              table_name_.c_str(), name.c_str(), pricer.underlying().c_str(),
+              static_cast<int32_t>(pricer.model()), pricer.depth(), pricer.interval(),
+              static_cast<int32_t>(pricer.theo_type()), pricer.warn_tick_change(),
+              pricer.elastic(), pricer.elastic_limit());
       ExecSql(sql);
       auto it = pricers_.find(name);
-      if (it != pricers_.end())
-      {
+      if (it != pricers_.end()) {
         it->second->CopyFrom(pricer);
         sprintf(sql, "DELETE FROM %s WHERE name='%s'", record_table_name_.c_str(), name.c_str());
         ExecSql(sql);
-      }
-      else
-      {
+      } else {
         auto p = Message::NewProto<Proto::Pricer>();
         p->CopyFrom(pricer);
         pricers_.emplace(name, p);
@@ -94,16 +77,12 @@ base::ProtoMessagePtr PricerDB::OnRequest(const std::shared_ptr<Proto::PricerReq
       //   ExecSql(sql);
       // }
     }
-  }
-  else if (msg->type() == Proto::RequestType::Del)
-  {
+  } else if (msg->type() == Proto::RequestType::Del) {
     char sql[1024];
     TransactionGuard tg(this);
-    for (auto &pricer : msg->pricers())
-    {
+    for (auto &pricer : msg->pricers()) {
       const std::string &name = pricer.name();
-      if (pricers_.erase(name) == 1)
-      {
+      if (pricers_.erase(name) == 1) {
         sprintf(sql, "DELETE FROM %s WHERE name='%s'", table_name_.c_str(), name.c_str());
         ExecSql(sql);
         // sprintf(sql, "DELETE FROM %s WHERE name='%s'", record_table_name_.c_str(), name.c_str());
@@ -116,16 +95,14 @@ base::ProtoMessagePtr PricerDB::OnRequest(const std::shared_ptr<Proto::PricerReq
   return reply;
 }
 
-int PricerDB::Callback(void *data, int argc, char **argv, char **col_name)
-{
+int PricerDB::Callback(void *data, int argc, char **argv, char **col_name) {
   auto *tmp = static_cast<std::tuple<PricerMap*, InstrumentDB*>*>(data);
   auto *pricers = std::get<0>(*tmp);
   auto *instrument_db = std::get<1>(*tmp);
 
   const std::string underlying = argv[1];
   auto inst = instrument_db->FindUnderlying(underlying);
-  if (inst)
-  {
+  if (inst) {
     auto pricer = Message::NewProto<Proto::Pricer>();
     const std::string name = argv[0];
     pricer->set_name(name);
@@ -138,9 +115,7 @@ int PricerDB::Callback(void *data, int argc, char **argv, char **col_name)
     pricer->set_elastic(atof(argv[7]));
     pricer->set_elastic_limit(atof(argv[8]));
     (*pricers)[name] = pricer;
-  }
-  else
-  {
+  } else {
     LOG_ERR << underlying << " doesn't exist";
   }
   return 0;

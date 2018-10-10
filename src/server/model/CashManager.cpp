@@ -1,12 +1,9 @@
 #include "CashManager.h"
 
-CashManager* CashManager::GetInstance()
-{
+CashManager* CashManager::GetInstance() {
   static CashManager manager;
   return &manager;
 }
 
-void CashManager::OnCash(const std::shared_ptr<Proto::Cash> &cash)
-{
-
+void CashManager::OnCash(const std::shared_ptr<Proto::Cash> &cash) {
 }

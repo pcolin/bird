@@ -8,9 +8,8 @@
 #include "3rd_library/ctp/include/ThostFtdcTraderApi.h"
 
 class CtpTraderSpi;
-class CtpTraderApi : public TraderApi
-{
-public:
+class CtpTraderApi : public TraderApi {
+ public:
   CtpTraderApi();
   ~CtpTraderApi();
 
@@ -34,33 +33,33 @@ public:
   //   order_ref_ = order_ref;
   // }
   void OnUserLogin(int order_ref, int front_id, int session_id);
-  OrderPtr FindAndUpdate(const char *order_ref);
-  OrderPtr FindAndUpdate(const char *order_ref, const char *exchange_id);
-  OrderPtr FindAndUpdate(const char *order_ref, int trade_volume);
-  OrderPtr FindAndRemove(const char *order_ref);
+  OrderPtr FindAndUpdate(const char* order_ref);
+  OrderPtr FindAndUpdate(const char* order_ref, const char* exchange_id);
+  OrderPtr FindAndUpdate(const char* order_ref, int trade_volume);
+  OrderPtr FindAndRemove(const char* order_ref);
   void FindAndCancel(size_t id);
-  OrderPtr FindOrder(const char *order_ref);
-  bool FindOrder(size_t id, std::string &exchange_id);
-  OrderPtr RemoveOrder(const char *order_ref);
+  OrderPtr FindOrder(const char* order_ref);
+  bool FindOrder(size_t id, std::string& exchange_id);
+  OrderPtr RemoveOrder(const char* order_ref);
 
-protected:
-  void SubmitOrder(const OrderPtr &order) override;
-  void SubmitQuote(const OrderPtr &bid, const OrderPtr &ask) override;
-  void AmendOrder(const OrderPtr &order) override;
-  void AmendQuote(const OrderPtr &bid, const OrderPtr &ask) override;
-  void CancelOrder(const OrderPtr &order) override;
-  void CancelQuote(const OrderPtr &bid, const OrderPtr &ask) override;
+ protected:
+  void SubmitOrder(const OrderPtr& order) override;
+  void SubmitQuote(const OrderPtr& bid, const OrderPtr& ask) override;
+  void AmendOrder(const OrderPtr& order) override;
+  void AmendQuote(const OrderPtr& bid, const OrderPtr& ask) override;
+  void CancelOrder(const OrderPtr& order) override;
+  void CancelQuote(const OrderPtr& bid, const OrderPtr& ask) override;
 
   virtual void QueryCash() override;
 
-  void CancelOrder(const Instrument* inst, size_t id, const std::string &exchange_id);
+  void CancelOrder(const Instrument* inst, size_t id, const std::string& exchange_id);
 
-private:
+ private:
   void BuildTemplate();
   char GetOffsetFlag(Proto::Side side);
 
-  CThostFtdcTraderApi *api_ = nullptr;
-  CtpTraderSpi *spi_ = nullptr;
+  CThostFtdcTraderApi* api_ = nullptr;
+  CtpTraderSpi* spi_ = nullptr;
   std::atomic<int> req_id_ = {0};
   const std::string exchange_;
   const std::string broker_;
@@ -85,4 +84,4 @@ private:
   bool inst_ready_ = false;
 };
 
-#endif
+#endif // CTP_TRADER_API_H

@@ -4,57 +4,43 @@
 #include "Sequencer.h"
 #include "WaitStrategy.h"
 
-namespace base
-{
-class SingleProducerSequencer : public Sequencer
-{
-  public:
-    SingleProducerSequencer(int buffer_size, WaitStrategy *wait_strategy)
-      : Sequencer(buffer_size, wait_strategy)
-    {}
+namespace base {
 
-    virtual bool HasAvailableCapacity(int required_capacity) override;
+class SingleProducerSequencer : public Sequencer {
+ public:
+  SingleProducerSequencer(int buffer_size, WaitStrategy *wait_strategy)
+      : Sequencer(buffer_size, wait_strategy) {}
 
-    virtual int64_t RemainingCapacity() override;
+  virtual bool HasAvailableCapacity(int required_capacity) override;
 
-    virtual int64_t Next() override
-    {
-      return Next(1);
-    }
+  virtual int64_t RemainingCapacity() override;
 
-    virtual int64_t Next(int n) override;
+  virtual int64_t Next() override { return Next(1); }
 
-    virtual void Claim(int64_t sequence)
-    {
-      this->next_value_ = sequence;
-    }
+  virtual int64_t Next(int n) override;
 
-    virtual void Publish(int64_t sequence)
-    {
-      cursor_.Set(sequence);
-      wait_strategy_->SignalAllWhenBlocking();
-    }
+  virtual void Claim(int64_t sequence) { this->next_value_ = sequence; }
 
-    virtual void Publish(int64_t lo, int64_t hi)
-    {
-      Publish(hi);
-    }
+  virtual void Publish(int64_t sequence) {
+    cursor_.Set(sequence);
+    wait_strategy_->SignalAllWhenBlocking();
+  }
 
-    virtual bool IsAvailable(int64_t sequence)
-    {
-      return sequence <= cursor_.Get();
-    }
+  virtual void Publish(int64_t lo, int64_t hi) { Publish(hi); }
 
-    virtual int64_t GetHighestSequence(int64_t next_sequence, int64_t available_sequence)
-    {
-      return available_sequence;
-    }
+  virtual bool IsAvailable(int64_t sequence) { return sequence <= cursor_.Get(); }
 
-  private:
-    int64_t padding0_[7];
-    int64_t next_value_ = Sequence::INITIAL_VALUE_;
-    int64_t cached_value_ = Sequence::INITIAL_VALUE_;
-    int64_t padding1_[7];
+  virtual int64_t GetHighestSequence(int64_t next_sequence, int64_t available_sequence) {
+    return available_sequence;
+  }
+
+ private:
+  int64_t padding0_[7];
+  int64_t next_value_ = Sequence::INITIAL_VALUE_;
+  int64_t cached_value_ = Sequence::INITIAL_VALUE_;
+  int64_t padding1_[7];
 };
-}
-#endif
+
+} // namespace base
+
+#endif // BASE_DISRUPTOR_SINGLE_PRODUCER_SEQUENCER_H

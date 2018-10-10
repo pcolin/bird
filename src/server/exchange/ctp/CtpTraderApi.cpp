@@ -5,26 +5,22 @@
 #include "config/EnvConfig.h"
 #include "model/PositionManager.h"
 #include "model/OrderManager.h"
-
-#include <boost/format.hpp>
+#include "boost/format.hpp"
 
 using namespace base;
 
 CtpTraderApi::CtpTraderApi()
-  : exchange_(EnvConfig::GetInstance()->GetString(EnvVar::EXCHANGE)),
-    broker_(EnvConfig::GetInstance()->GetString(EnvVar::CTP_BROKER_ID)),
-    investor_(EnvConfig::GetInstance()->GetString(EnvVar::CTP_INVESTOR_ID)),
-    pulling_ids_(capacity_)
-{}
+    : exchange_(EnvConfig::GetInstance()->GetString(EnvVar::EXCHANGE)),
+      broker_(EnvConfig::GetInstance()->GetString(EnvVar::CTP_BROKER_ID)),
+      investor_(EnvConfig::GetInstance()->GetString(EnvVar::CTP_INVESTOR_ID)),
+      pulling_ids_(capacity_) {}
 
-CtpTraderApi::~CtpTraderApi()
-{
+CtpTraderApi::~CtpTraderApi() {
   if (api_) api_->Release();
   if (spi_) delete spi_;
 }
 
-void CtpTraderApi::Init()
-{
+void CtpTraderApi::Init() {
   LOG_INF << "Initialize CTP trader api";
   api_ = CThostFtdcTraderApi::CreateFtdcTraderApi();
   spi_ = new CtpTraderSpi(this);
@@ -34,7 +30,7 @@ void CtpTraderApi::Init()
   api_->SubscribePrivateTopic(THOST_TERT_QUICK);
   api_->SubscribePublicTopic(THOST_TERT_QUICK);
   api_->RegisterFront(const_cast<char*>(
-        EnvConfig::GetInstance()->GetString(EnvVar::CTP_TRADE_ADDR).c_str()));
+                      EnvConfig::GetInstance()->GetString(EnvVar::CTP_TRADE_ADDR).c_str()));
   api_->Init();
 
   LOG_INF << "Wait until instrument query finished...";
@@ -42,33 +38,30 @@ void CtpTraderApi::Init()
   inst_cv_.wait(lck, [this]{ return inst_ready_; });
   // StartRequestWork();
   TraderApi::Init();
-  pulling_thread_ = std::make_unique<std::thread>([&]()
-    {
-      LOG_INF << "Start thread to pull saved orders...";
-      size_t ids[capacity_];
-      while (true)
-      {
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
-        size_t cnt = pulling_ids_.wait_dequeue_bulk(ids, capacity_);
-        LOG_INF << boost::format("Get %1% saved orders") % cnt;
-        for (size_t i = 0; i < cnt; ++i)
-        {
-          FindAndCancel(ids[i]);
-          // auto ord = OrderManager::GetInstance()->FindActiveOrder(ids[i]);
-          // if (ord)
-          // {
-          //   if (!ord->counter_id.empty())
-          //     CancelOrder(ord);
-          //   else
-          //     pulling_ids_.enqueue(ids[i]);
-          // }
+  pulling_thread_ = std::make_unique<std::thread>(
+      [&]() {
+        LOG_INF << "Start thread to pull saved orders...";
+        size_t ids[capacity_];
+        while (true) {
+          std::this_thread::sleep_for(std::chrono::milliseconds(10));
+          size_t cnt = pulling_ids_.wait_dequeue_bulk(ids, capacity_);
+          LOG_INF << boost::format("Get %1% saved orders") % cnt;
+          for (size_t i = 0; i < cnt; ++i) {
+            FindAndCancel(ids[i]);
+            // auto ord = OrderManager::GetInstance()->FindActiveOrder(ids[i]);
+            // if (ord)
+            // {
+            //   if (!ord->counter_id.empty())
+            //     CancelOrder(ord);
+            //   else
+            //     pulling_ids_.enqueue(ids[i]);
+            // }
+          }
         }
-      }
-    });
+      });
 }
 
-void CtpTraderApi::Login()
-{
+void CtpTraderApi::Login() {
   const std::string user = EnvConfig::GetInstance()->GetString(EnvVar::CTP_USER_ID);
   const std::string pwd = EnvConfig::GetInstance()->GetString(EnvVar::CTP_PASSWORD);
   LOG_INF << boost::format("Login CTP Trader Api(%1%,%2%)") % user % pwd;
@@ -78,46 +71,40 @@ void CtpTraderApi::Login()
   strcpy(field.UserID, user.c_str());
   strcpy(field.Password, pwd.c_str());
 
-  while (int ret = api_->ReqUserLogin(&field, req_id_++))
-  {
+  while (int ret = api_->ReqUserLogin(&field, req_id_++)) {
     LOG_ERR << boost::format("Failed to send login request(%1%), retry after 1s") % ret;
     std::this_thread::sleep_for(std::chrono::seconds(1));
   }
   LOG_INF << "Success to send login request.";
 }
 
-void CtpTraderApi::Logout()
-{
+void CtpTraderApi::Logout() {
   LOG_INF << "Logout CTP Trader Api";
   CThostFtdcUserLogoutField field;
   memset(&field, 0, sizeof(field));
   strcpy(field.BrokerID, broker_.c_str());
   strcpy(field.UserID, investor_.c_str());
 
-  while (int ret = api_->ReqUserLogout(&field, req_id_++))
-  {
+  while (int ret = api_->ReqUserLogout(&field, req_id_++)) {
     LOG_ERR << boost::format("Failed to send logout request(%1%), retry after 1s") % ret;
     std::this_thread::sleep_for(std::chrono::seconds(1));
   }
   LOG_INF << "Success to send logout request.";
 }
 
-void CtpTraderApi::SubmitOrder(const OrderPtr &order)
-{
+void CtpTraderApi::SubmitOrder(const OrderPtr& order) {
   if (unlikely(!order)) return;
 
   /// Emergency to be done...
 
-  if (unlikely(!protector_.TryAdd(order)))
-  {
+  if (unlikely(!protector_.TryAdd(order))) {
     order->note = "wash trade";
     RejectOrder(order);
     return;
   }
 
   if (unlikely(order->strategy_type == Proto::StrategyType::Manual && order->IsOpen() == false &&
-      PositionManager::GetInstance()->TryFreeze(order) == false))
-  {
+               PositionManager::GetInstance()->TryFreeze(order) == false)) {
     order->side = order->IsBid() ? Proto::Side::Buy : Proto::Side::Sell;
     order->note = "not enough position";
     RejectOrder(order);
@@ -167,8 +154,7 @@ void CtpTraderApi::SubmitOrder(const OrderPtr &order)
   }
   int id = req_id_++;
   int ret = api_->ReqOrderInsert(&field, id);
-  if (likely(ret == 0))
-  {
+  if (likely(ret == 0)) {
     // auto ord = Message::NewOrder(order);
     // ord->counter_id = field.OrderRef;
     // ord->status = OrderStatus::Submitted;
@@ -181,9 +167,7 @@ void CtpTraderApi::SubmitOrder(const OrderPtr &order)
     //   field.CombOffsetFlag[0] % field.CombHedgeFlag[0] % field.VolumeTotalOriginal %
     //   field.VolumeCondition % field.MinVolume % field.ForceCloseReason % field.IsAutoSuspend %
     //   field.UserForceClose % field.OrderPriceType % field.LimitPrice % field.TimeCondition;
-  }
-  else
-  {
+  } else {
     LOG_ERR << "Failed to send order submit request: " << ret;
     order->note = std::move((boost::format("Send fail %1%") % ret).str());
     RejectOrder(order);
@@ -193,20 +177,16 @@ void CtpTraderApi::SubmitOrder(const OrderPtr &order)
   }
 }
 
-void CtpTraderApi::SubmitQuote(const OrderPtr &bid, const OrderPtr &ask)
-{
+void CtpTraderApi::SubmitQuote(const OrderPtr& bid, const OrderPtr& ask) {
 }
 
-void CtpTraderApi::AmendOrder(const OrderPtr &order)
-{
+void CtpTraderApi::AmendOrder(const OrderPtr& order) {
 }
 
-void CtpTraderApi::AmendQuote(const OrderPtr &bid, const OrderPtr &ask)
-{
+void CtpTraderApi::AmendQuote(const OrderPtr& bid, const OrderPtr& ask) {
 }
 
-void CtpTraderApi::CancelOrder(const OrderPtr &order)
-{
+void CtpTraderApi::CancelOrder(const OrderPtr& order) {
   // if (unlikely(!order)) return;
 
   // if (unlikely(order->IsInactive()))
@@ -217,21 +197,16 @@ void CtpTraderApi::CancelOrder(const OrderPtr &order)
   assert(order && !order->IsInactive());
 
   std::string exchange_id = order->exchange_id;
-  if (exchange_id.empty())
-  {
+  if (exchange_id.empty()) {
     auto ord = FindOrder(order->id, exchange_id);
-    if (FindOrder(order->id, exchange_id))
-    {
-      if (exchange_id.empty())
-      {
+    if (FindOrder(order->id, exchange_id)) {
+      if (exchange_id.empty()) {
         LOG_INF << boost::format("Counter ID of %1% is unavailable, saved...") % order->id;
         pulling_ids_.enqueue(order->id);
         return;
       }
       LOG_INF << "Original exchange id is empty, but find one";
-    }
-    else
-    {
+    } else {
       LOG_INF << boost::format("Order %1% is completed") % order->id;
       return;
     }
@@ -240,52 +215,44 @@ void CtpTraderApi::CancelOrder(const OrderPtr &order)
   CancelOrder(order->instrument, order->id, exchange_id);
 }
 
-void CtpTraderApi::CancelQuote(const OrderPtr &bid, const OrderPtr &ask)
-{
+void CtpTraderApi::CancelQuote(const OrderPtr& bid, const OrderPtr& ask) {
 }
 
 // void CtpTraderApi::CancelAll()
 // {
 // }
 
-void CtpTraderApi::CancelOrder(const Instrument* inst, size_t id, const std::string &exchange_id)
-{
+void CtpTraderApi::CancelOrder(const Instrument* inst, size_t id, const std::string& exchange_id) {
   CThostFtdcInputOrderActionField field(pull_order_);
   strcpy(field.InstrumentID, inst->Symbol().c_str());
   strcpy(field.OrderSysID, exchange_id.c_str());
   int req_id = req_id_++;
   int ret = api_->ReqOrderAction(&field, req_id);
-  if (ret == 0)
-  {
+  if (ret == 0) {
     LOG_INF << boost::format("Success to send order cancel request %1% ("
-        "InstrumentID:%2%, ExchangeID:%3%, OrderSysID:%4%)") %
-      req_id % field.InstrumentID % field.ExchangeID % field.OrderSysID;
-  }
-  else
-  {
+                             "InstrumentID:%2%, ExchangeID:%3%, OrderSysID:%4%)") %
+               req_id % field.InstrumentID % field.ExchangeID % field.OrderSysID;
+  } else {
     pulling_ids_.enqueue(id);
     LOG_ERR << "Failed to send order cancel request: " << ret;
   }
 }
 
-void CtpTraderApi::QueryInstruments()
-{
+void CtpTraderApi::QueryInstruments() {
   LOG_INF << "Query instruments of " << exchange_;
   CThostFtdcQryInstrumentField field;
   memset(&field, 0, sizeof(field));
   strcpy(field.ExchangeID, exchange_.c_str());
   /// strcpy(field.ProductID, "m_o");
 
-  while (int ret = api_->ReqQryInstrument(&field, req_id_++))
-  {
+  while (int ret = api_->ReqQryInstrument(&field, req_id_++)) {
     LOG_ERR << boost::format("Failed to send query instrument request(%1%), retry after 1s") % ret;
     std::this_thread::sleep_for(std::chrono::seconds(1));
   }
   LOG_INF << "Success to send query instrument request";
 }
 
-void CtpTraderApi::QueryFutureCommissionRate()
-{
+void CtpTraderApi::QueryFutureCommissionRate() {
   LOG_INF << "Query future commission rate of " << exchange_;
   CThostFtdcQryInstrumentCommissionRateField field;
   memset(&field, 0, sizeof(field));
@@ -293,65 +260,57 @@ void CtpTraderApi::QueryFutureCommissionRate()
   strcpy(field.InvestorID, investor_.c_str());
   // strcpy(field.InstrumentID, .c_str());
 
-  while (int ret = api_->ReqQryInstrumentCommissionRate(&field, req_id_++))
-  {
+  while (int ret = api_->ReqQryInstrumentCommissionRate(&field, req_id_++)) {
     LOG_ERR << boost::format(
-        "Failed to send query future commission rate request(%1%), retry after 1s") % ret;
+               "Failed to send query future commission rate request(%1%), retry after 1s") % ret;
     std::this_thread::sleep_for(std::chrono::seconds(1));
   }
   LOG_INF << "Success to send query future commission rate request";
 }
 
-void CtpTraderApi::QueryOptionCommissionRate()
-{
+void CtpTraderApi::QueryOptionCommissionRate() {
   LOG_INF << "Query option commission rate of " << exchange_;
   CThostFtdcQryOptionInstrCommRateField field;
   memset(&field, 0, sizeof(field));
   strcpy(field.BrokerID, broker_.c_str());
   strcpy(field.InvestorID, investor_.c_str());
 
-  while (int ret = api_->ReqQryOptionInstrCommRate(&field, req_id_++))
-  {
+  while (int ret = api_->ReqQryOptionInstrCommRate(&field, req_id_++)) {
     LOG_ERR << boost::format(
-        "Failed to send query option commission rate request(%1%), retry after 1s") % ret;
+               "Failed to send query option commission rate request(%1%), retry after 1s") % ret;
     std::this_thread::sleep_for(std::chrono::seconds(1));
   }
   LOG_INF << "Success to send query option commission rate";
 }
 
-void CtpTraderApi::QueryMMOptionCommissionRate()
-{
+void CtpTraderApi::QueryMMOptionCommissionRate() {
   LOG_INF << "Query mm option commission rate of " << exchange_;
   CThostFtdcQryMMOptionInstrCommRateField field;
   memset(&field, 0, sizeof(field));
   strcpy(field.BrokerID, broker_.c_str());
   strcpy(field.InvestorID, investor_.c_str());
 
-  while (int ret = api_->ReqQryMMOptionInstrCommRate(&field, req_id_++))
-  {
+  while (int ret = api_->ReqQryMMOptionInstrCommRate(&field, req_id_++)) {
     LOG_ERR << boost::format(
-        "Failed to send query mm option commission rate request(%1%), retry after 1s") % ret;
+               "Failed to send query mm option commission rate request(%1%), retry after 1s") % ret;
     std::this_thread::sleep_for(std::chrono::seconds(1));
   }
   LOG_INF << "Success to send query mm option commission rate";
 }
 
-void CtpTraderApi::QueryMarketData()
-{
+void CtpTraderApi::QueryMarketData() {
   LOG_INF << "Query market data of " << exchange_;
   CThostFtdcQryDepthMarketDataField field;
   memset(&field, 0, sizeof(field));
 
-  while (int ret = api_->ReqQryDepthMarketData(&field, req_id_++))
-  {
+  while (int ret = api_->ReqQryDepthMarketData(&field, req_id_++)) {
     LOG_ERR << boost::format("Failed to send query market data(%1%), retry after 1s") % ret;
     std::this_thread::sleep_for(std::chrono::seconds(1));
   }
   LOG_INF << "Success to send query market data request";
 }
 
-void CtpTraderApi::QueryOrders()
-{
+void CtpTraderApi::QueryOrders() {
   LOG_TRA << "Query orders";
   CThostFtdcQryOrderField field;
   memset(&field, 0, sizeof(field));
@@ -359,16 +318,14 @@ void CtpTraderApi::QueryOrders()
   strcpy(field.InvestorID, investor_.c_str());
   strcpy(field.ExchangeID, exchange_.c_str());
 
-  while (int ret = api_->ReqQryOrder(&field, req_id_++))
-  {
+  while (int ret = api_->ReqQryOrder(&field, req_id_++)) {
     LOG_ERR << boost::format("Failed to send query order request(%1%), retry after 1s") % ret;
     std::this_thread::sleep_for(std::chrono::seconds(1));
   }
   LOG_INF << "Success to send query orders request";
 }
 
-void CtpTraderApi::QueryTrades()
-{
+void CtpTraderApi::QueryTrades() {
   LOG_TRA << "Query trades";
   CThostFtdcQryTradeField field;
   memset(&field, 0, sizeof(field));
@@ -376,32 +333,28 @@ void CtpTraderApi::QueryTrades()
   strcpy(field.InvestorID, investor_.c_str());
   strcpy(field.ExchangeID, exchange_.c_str());
 
-  while (int ret = api_->ReqQryTrade(&field, req_id_++))
-  {
+  while (int ret = api_->ReqQryTrade(&field, req_id_++)) {
     LOG_ERR << boost::format("Failed to send query trade request(%1%), retry after 1s") % ret;
     std::this_thread::sleep_for(std::chrono::seconds(1));
   }
   LOG_INF << "Success to send query trades request";
 }
 
-void CtpTraderApi::QueryPositions()
-{
+void CtpTraderApi::QueryPositions() {
   LOG_TRA << "Query positions";
   CThostFtdcQryInvestorPositionField field;
   memset(&field, 0, sizeof(field));
   strcpy(field.BrokerID, broker_.c_str());
   strcpy(field.InvestorID, investor_.c_str());
 
-  while (int ret = api_->ReqQryInvestorPosition(&field, req_id_++))
-  {
+  while (int ret = api_->ReqQryInvestorPosition(&field, req_id_++)) {
     LOG_ERR << boost::format("Failed to send query position request(%1%), retry after 1s") % ret;
     std::this_thread::sleep_for(std::chrono::seconds(2));
   }
   LOG_INF << "Success to send query positions request";
 }
 
-void CtpTraderApi::QueryCash()
-{
+void CtpTraderApi::QueryCash() {
   LOG_TRA << "Query cash";
   CThostFtdcQryTradingAccountField field;
   memset(&field, 0, sizeof(field));
@@ -414,18 +367,14 @@ void CtpTraderApi::QueryCash()
   //   std::this_thread::sleep_for(std::chrono::seconds(1));
   // }
   int ret = api_->ReqQryTradingAccount(&field, req_id_++);
-  if (ret)
-  {
+  if (ret) {
     LOG_ERR << boost::format("Failed to send query cash request(return code = %1%)") % ret;
-  }
-  else
-  {
+  } else {
     LOG_INF << "Success to send query cash request";
   }
 }
 
-void CtpTraderApi::NotifyInstrumentReady()
-{
+void CtpTraderApi::NotifyInstrumentReady() {
   {
     std::lock_guard<std::mutex> lck(inst_mtx_);
     inst_ready_ = true;
@@ -433,8 +382,7 @@ void CtpTraderApi::NotifyInstrumentReady()
   inst_cv_.notify_one();
 }
 
-void CtpTraderApi::OnUserLogin(int order_ref, int front_id, int session_id)
-{
+void CtpTraderApi::OnUserLogin(int order_ref, int front_id, int session_id) {
   order_ref_ = order_ref;
 
   memset(&new_order_, 0, sizeof(new_order_));
@@ -473,82 +421,64 @@ void CtpTraderApi::OnUserLogin(int order_ref, int front_id, int session_id)
   pull_quote_.ActionFlag = THOST_FTDC_AF_Delete;
 }
 
-OrderPtr CtpTraderApi::FindAndUpdate(const char *order_ref)
-{
+OrderPtr CtpTraderApi::FindAndUpdate(const char *order_ref) {
   int ref = atoi(order_ref);
   std::lock_guard<std::mutex> lck(ref_mtx_);
   auto it = order_refs_.find(ref);
-  if (it != order_refs_.end())
-  {
-    if (it->second->status == Proto::OrderStatus::Local)
-    {
+  if (it != order_refs_.end()) {
+    if (it->second->status == Proto::OrderStatus::Local) {
       it->second->header.SetInterval(1);
       it->second->counter_id = order_ref;
       it->second->status = Proto::OrderStatus::Submitted;
       return it->second;
     }
-  }
-  else
-  {
+  } else {
     LOG_ERR << "Can't find order by ref " << order_ref;
   }
   return nullptr;
 }
 
-OrderPtr CtpTraderApi::FindAndUpdate(const char *order_ref, const char *exchange_id)
-{
+OrderPtr CtpTraderApi::FindAndUpdate(const char *order_ref, const char *exchange_id) {
   int ref = atoi(order_ref);
   std::lock_guard<std::mutex> lck(ref_mtx_);
   auto it = order_refs_.find(ref);
-  if (it != order_refs_.end())
-  {
-    if (it->second->status == Proto::OrderStatus::Submitted)
-    {
+  if (it != order_refs_.end()) {
+    if (it->second->status == Proto::OrderStatus::Submitted) {
       it->second->header.SetInterval(2);
       it->second->exchange_id = exchange_id;
       it->second->status = Proto::OrderStatus::New;
       return it->second;
     }
-  }
-  else
-  {
+  } else {
     LOG_ERR << "Can't find order by ref " << order_ref;
   }
   return nullptr;
 }
 
-OrderPtr CtpTraderApi::FindAndUpdate(const char *order_ref, int trade_volume)
-{
+OrderPtr CtpTraderApi::FindAndUpdate(const char *order_ref, int trade_volume) {
   int ref = atoi(order_ref);
   std::lock_guard<std::mutex> lck(ref_mtx_);
   auto it = order_refs_.find(ref);
-  if (it != order_refs_.end())
-  {
-    if (trade_volume > it->second->executed_volume)
-    {
+  if (it != order_refs_.end()) {
+    if (trade_volume > it->second->executed_volume) {
       it->second->status = (trade_volume < it->second->volume) ? Proto::OrderStatus::PartialFilled :
-        Proto::OrderStatus::Filled;
+                                                                 Proto::OrderStatus::Filled;
       it->second->executed_volume = trade_volume;
       return it->second;
     }
-  }
-  else
-  {
+  } else {
     LOG_ERR << "Can't find order by ref " << order_ref;
   }
   return nullptr;
 }
 
-OrderPtr CtpTraderApi::FindAndRemove(const char *order_ref)
-{
+OrderPtr CtpTraderApi::FindAndRemove(const char *order_ref) {
   int ref = atoi(order_ref);
   std::lock_guard<std::mutex> lck(ref_mtx_);
   auto it = order_refs_.find(ref);
-  if (it != order_refs_.end())
-  {
+  if (it != order_refs_.end()) {
     OrderPtr ord = it->second;
-    if (ord->IsInactive())
-    {
+    if (ord->IsInactive()) {
       order_refs_.erase(it);
       order_ids_.erase(ord->id);
     }
@@ -557,59 +487,48 @@ OrderPtr CtpTraderApi::FindAndRemove(const char *order_ref)
   return nullptr;
 }
 
-OrderPtr CtpTraderApi::FindOrder(const char *order_ref)
-{
+OrderPtr CtpTraderApi::FindOrder(const char *order_ref) {
   int ref = atoi(order_ref);
   std::lock_guard<std::mutex> lck(ref_mtx_);
   auto it = order_refs_.find(ref);
   return it != order_refs_.end() ? it->second : nullptr;
 }
 
-bool CtpTraderApi::FindOrder(size_t id, std::string &exchange_id)
-{
+bool CtpTraderApi::FindOrder(size_t id, std::string& exchange_id) {
   std::lock_guard<std::mutex> lck(ref_mtx_);
   auto it = order_ids_.find(id);
-  if (it != order_ids_.end())
-  {
+  if (it != order_ids_.end()) {
     exchange_id = it->second->exchange_id;
     return true;
   }
   return false;
 }
 
-void CtpTraderApi::FindAndCancel(size_t id)
-{
+void CtpTraderApi::FindAndCancel(size_t id) {
   const Instrument *inst = nullptr;
   std::string exchange_id;
   {
     std::lock_guard<std::mutex> lck(ref_mtx_);
     auto it = order_ids_.find(id);
-    if (it != order_ids_.end())
-    {
+    if (it != order_ids_.end()) {
       inst = it->second->instrument;
       exchange_id = it->second->exchange_id;
     }
   }
-  if (inst)
-  {
-    if (exchange_id.empty())
-    {
+  if (inst) {
+    if (exchange_id.empty()) {
       pulling_ids_.enqueue(id);
-    }
-    else
-    {
+    } else {
       CancelOrder(inst, id, exchange_id);
     }
   }
 }
 
-OrderPtr CtpTraderApi::RemoveOrder(const char *order_ref)
-{
+OrderPtr CtpTraderApi::RemoveOrder(const char *order_ref) {
   int ref = atoi(order_ref);
   std::lock_guard<std::mutex> lck(ref_mtx_);
   auto it = order_refs_.find(ref);
-  if (it != order_refs_.end())
-  {
+  if (it != order_refs_.end()) {
     OrderPtr ord = it->second;
     order_refs_.erase(it);
     order_ids_.erase(ord->id);
@@ -618,8 +537,7 @@ OrderPtr CtpTraderApi::RemoveOrder(const char *order_ref)
   return nullptr;
 }
 
-void CtpTraderApi::BuildTemplate()
-{
+void CtpTraderApi::BuildTemplate() {
   memset(&new_order_, 0, sizeof(new_order_));
   strcpy(new_order_.BrokerID, broker_.c_str());
   strcpy(new_order_.InvestorID, investor_.c_str());
@@ -654,10 +572,8 @@ void CtpTraderApi::BuildTemplate()
   pull_quote_.ActionFlag = THOST_FTDC_AF_Delete;
 }
 
-char CtpTraderApi::GetOffsetFlag(Proto::Side side)
-{
-  switch (side)
-  {
+char CtpTraderApi::GetOffsetFlag(Proto::Side side) {
+  switch (side) {
     case Proto::Side::Buy:
     case Proto::Side::Sell:
       return THOST_FTDC_OF_Open;

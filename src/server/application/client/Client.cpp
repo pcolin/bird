@@ -1,10 +1,8 @@
 #include <iostream>
-
 #include "nn.h"
 #include "reqrep.h"
 #include "Login.pb.h"
 #include "Strategy.pb.h"
-
 #include "base/common/ProtoMessageCoder.h"
 #include "model/Message.h"
 
@@ -14,40 +12,30 @@ int sock = -1;
 size_t n = 128;
 char *buf = new char[n];
 
-void Send(const std::shared_ptr<google::protobuf::Message> &msg)
-{
+void Send(const std::shared_ptr<google::protobuf::Message> &msg) {
   size_t size = base::EncodeProtoMessage(*msg, &buf, n);
-  if (size > 0)
-  {
+  if (size > 0) {
     size_t bytes = nn_send(sock, buf, size, 0);
-    if (unlikely(bytes != size))
-    {
+    if (unlikely(bytes != size)) {
       cout << "Failed to send message(" << bytes << " != " << size << endl;
       return;
     }
     char *recv_buf = NULL;
     size_t recv_bytes = nn_recv(sock, &recv_buf, NN_MSG, 0);
-    if (recv_bytes > 0)
-    {
+    if (recv_bytes > 0) {
       auto *m = base::DecodeProtoMessage(recv_buf, recv_bytes);
-      if (m)
-      {
+      if (m) {
         cout << m->GetTypeName() << " " << m->ShortDebugString() << endl;
-      }
-      else
-      {
+      } else {
         cout << "Failed to decode message." << endl;
       }
-    }
-    else
-    {
+    } else {
       cout << "Failed to receive reply message." << endl;
     }
   }
 }
 
-void Login()
-{
+void Login() {
   auto m = Message::NewProto<Proto::Login>();
   m->set_user("pengchong");
   m->set_password("pengchong");
@@ -58,15 +46,13 @@ void Login()
   Send(m);
 }
 
-void Logout()
-{
+void Logout() {
   auto m = Message::NewProto<Proto::Logout>();
   m->set_user("pengchong");
   Send(m);
 }
 
-void Play()
-{
+void Play() {
   auto m = Message::NewProto<Proto::StrategyOperateReq>();
   m->set_type(Proto::Set);
   auto *op = m->add_operates();
@@ -77,8 +63,7 @@ void Play()
   Send(m);
 }
 
-void Stop()
-{
+void Stop() {
   auto m = Message::NewProto<Proto::StrategyOperateReq>();
   m->set_type(Proto::Set);
   auto *op = m->add_operates();
@@ -89,47 +74,48 @@ void Stop()
   Send(m);
 }
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
   cout << "Hello client." << endl;
   sock = nn_socket(AF_SP, NN_REQ);
-  if (sock < 0)
-  {
+  if (sock < 0) {
     cout << "Failed to create socket" << endl;
     return -1;
   }
   // if (nn_connect(sock, "ipc:///tmp/reqrep.ipc") < 0)
-  if (nn_connect(sock, "tcp://172.28.1.53:8005") < 0)
-  {
+  if (nn_connect(sock, "tcp://172.28.1.53:8005") < 0) {
     cout << "Failed to connect socket" << endl;
     return -1;
   }
 
   char ch;
   bool running = true;
-  while (running)
-  {
+  while (running) {
     cout << "Press a key(1: Login|2: Logout|3: Play|4: Stop|q: exit)" << endl;
     cin >> ch;
-    switch (ch)
-    {
-      case '1':
+    switch (ch) {
+      case '1': {
         Login();
-        break;
-      case '2':
+      break;
+      }
+      case '2': {
         Logout();
-        break;
-      case '3':
+      break;
+      }
+      case '3': {
         Play();
-        break;
-      case '4':
+      break;
+      }
+      case '4': {
         Stop();
-        break;
-      case 'q':
+      break;
+      }
+      case 'q': {
         running = false;
+      break;
+      }
+      default: {
         break;
-      default:
-        break;
+      }
     }
   }
   nn_close(sock);

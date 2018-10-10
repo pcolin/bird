@@ -1,21 +1,25 @@
 #include "QuoterDB.h"
 #include "base/logger/Logging.h"
 #include "model/Message.h"
-#include <boost/format.hpp>
+#include "boost/format.hpp"
 
-QuoterDB::QuoterDB(ConcurrentSqliteDB &db, const std::string &table_name,
-    const std::string &record_table_name, InstrumentDB &instrument_db)
-  : DbBase(db, table_name), record_table_name_(record_table_name), instrument_db_(instrument_db)
-{}
+QuoterDB::QuoterDB(ConcurrentSqliteDB &db,
+                   const std::string &table_name,
+                   const std::string &record_table_name,
+                   InstrumentDB &instrument_db)
+    : DbBase(db, table_name),
+      record_table_name_(record_table_name),
+      instrument_db_(instrument_db) {}
 
-void QuoterDB::RefreshCache()
-{
+void QuoterDB::RefreshCache() {
   char sql[1024];
   sprintf(sql, "DELETE FROM %s WHERE NOT EXISTS(SELECT id FROM %s WHERE id = %s.underlying)",
-      table_name_.c_str(), instrument_db_.TableName().c_str(), table_name_.c_str());
+          table_name_.c_str(), instrument_db_.TableName().c_str(), table_name_.c_str());
   ExecSql(sql);
   sprintf(sql, "DELETE FROM %s WHERE NOT EXISTS(SELECT id FROM %s WHERE id = %s.instrument)",
-      record_table_name_.c_str(), instrument_db_.TableName().c_str(), record_table_name_.c_str());
+          record_table_name_.c_str(),
+          instrument_db_.TableName().c_str(),
+          record_table_name_.c_str());
   ExecSql(sql);
 
   sprintf(sql, "SELECT * FROM %s", table_name_.c_str());
@@ -28,20 +32,16 @@ void QuoterDB::RefreshCache()
   ExecSql(sql, &data, &QuoterDB::RecordCallback);
 }
 
-void QuoterDB::RegisterCallback(base::ProtoMessageDispatcher<base::ProtoMessagePtr> &dispatcher)
-{
+void QuoterDB::RegisterCallback(base::ProtoMessageDispatcher<base::ProtoMessagePtr> &dispatcher) {
   dispatcher.RegisterCallback<Proto::QuoterReq>(
-    std::bind(&QuoterDB::OnRequest, this, std::placeholders::_1));
+      std::bind(&QuoterDB::OnRequest, this, std::placeholders::_1));
 }
 
-base::ProtoMessagePtr QuoterDB::OnRequest(const std::shared_ptr<Proto::QuoterReq> &msg)
-{
+base::ProtoMessagePtr QuoterDB::OnRequest(const std::shared_ptr<Proto::QuoterReq> &msg) {
   LOG_INF << "Quoter request: " << msg->ShortDebugString();
   auto reply = Message::NewProto<Proto::QuoterRep>();
-  if (msg->type() == Proto::RequestType::Get)
-  {
-    for (auto it : quoters_)
-    {
+  if (msg->type() == Proto::RequestType::Get) {
+    for (auto it : quoters_) {
       reply->add_quoters()->CopyFrom(*it.second);
       // auto *quoter = reply->add_quoters();
       // quoter->CopyFrom(*it.second);
@@ -54,38 +54,31 @@ base::ProtoMessagePtr QuoterDB::OnRequest(const std::shared_ptr<Proto::QuoterReq
       //   }
       // }
     }
-  }
-  else if (msg->type() == Proto::RequestType::Set)
-  {
+  } else if (msg->type() == Proto::RequestType::Set) {
     char sql[1024];
     TransactionGuard tg(this);
-    for (auto &q : msg->quoters())
-    {
+    for (auto &q : msg->quoters()) {
       const std::string &name = q.name();
       sprintf(sql, "INSERT OR REPLACE INTO %s VALUES('%s', '%s', '%s', %f, %d, %d, %d, %d, %d, %d,"
-          " %d, %d, %d)",
-          table_name_.c_str(), name.c_str(), q.pricer().c_str(), q.underlying().c_str(),
-          q.delta_limit(), q.order_limit(), q.trade_limit(), q.bid_volume(), q.ask_volume(),
-          q.response_volume(), q.depth(), q.refill_times(), q.wide_spread(), q.protection());
+                   " %d, %d, %d)",
+              table_name_.c_str(), name.c_str(), q.pricer().c_str(), q.underlying().c_str(),
+              q.delta_limit(), q.order_limit(), q.trade_limit(), q.bid_volume(), q.ask_volume(),
+              q.response_volume(), q.depth(), q.refill_times(), q.wide_spread(), q.protection());
       ExecSql(sql);
       auto it = quoters_.find(name);
-      if (it != quoters_.end())
-      {
+      if (it != quoters_.end()) {
         it->second->CopyFrom(q);
         sprintf(sql, "DELETE FROM %s WHERE name='%s'", record_table_name_.c_str(), name.c_str());
         ExecSql(sql);
-      }
-      else
-      {
+      } else {
         auto quoter = Message::NewProto<Proto::QuoterSpec>();
         quoter->CopyFrom(q);
         quoters_.emplace(name, quoter);
       }
 
-      for (auto &op : q.options())
-      {
+      for (auto &op : q.options()) {
         sprintf(sql, "INSERT INTO %s VALUES('%s', '%s')", record_table_name_.c_str(), name.c_str(),
-            op.c_str());
+                op.c_str());
         ExecSql(sql);
       }
       // if (q.records().empty())
@@ -149,16 +142,12 @@ base::ProtoMessagePtr QuoterDB::OnRequest(const std::shared_ptr<Proto::QuoterReq
     //       op.c_str());
     //   ExecSql(sql);
     // }
-  }
-  else if (msg->type() == Proto::RequestType::Del)
-  {
+  } else if (msg->type() == Proto::RequestType::Del) {
     char sql[1024];
     TransactionGuard tg(this);
-    for (auto &q : msg->quoters())
-    {
+    for (auto &q : msg->quoters()) {
       const std::string &name = q.name();
-      if (quoters_.erase(name) == 1)
-      {
+      if (quoters_.erase(name) == 1) {
         sprintf(sql, "DELETE FROM %s WHERE name='%s'", table_name_.c_str(), name.c_str());
         ExecSql(sql);
         sprintf(sql, "DELETE FROM %s WHERE name='%s'", record_table_name_.c_str(), name.c_str());
@@ -176,16 +165,14 @@ base::ProtoMessagePtr QuoterDB::OnRequest(const std::shared_ptr<Proto::QuoterReq
   return reply;
 }
 
-int QuoterDB::Callback(void *data, int argc, char **argv, char **col_name)
-{
+int QuoterDB::Callback(void *data, int argc, char **argv, char **col_name) {
   auto *tmp = static_cast<std::tuple<QuoterMap*, InstrumentDB*>*>(data);
   auto *quoters = std::get<0>(*tmp);
   auto *instrument_db = std::get<1>(*tmp);
 
   const std::string underlying = argv[2];
   auto inst = instrument_db->FindUnderlying(underlying);
-  if (inst)
-  {
+  if (inst) {
     auto quoter = Message::NewProto<Proto::QuoterSpec>();
     const std::string name = argv[0];
     quoter->set_name(name);
@@ -202,28 +189,23 @@ int QuoterDB::Callback(void *data, int argc, char **argv, char **col_name)
     quoter->set_wide_spread(atoi(argv[11]) == 1);
     quoter->set_protection(atoi(argv[12]) == 1);
     (*quoters)[name] = quoter;
-  }
-  else
-  {
+  } else {
     LOG_ERR << underlying << " doesn't exist";
   }
   return 0;
 }
 
-int QuoterDB::RecordCallback(void *data, int argc, char **argv, char **col_name)
-{
+int QuoterDB::RecordCallback(void *data, int argc, char **argv, char **col_name) {
   auto *tmp = static_cast<std::tuple<QuoterMap*, InstrumentDB*>*>(data);
   auto *quoters = std::get<0>(*tmp);
   auto *instrument_db = std::get<1>(*tmp);
 
   const std::string instrument = argv[1];
   auto option = instrument_db->FindOption(instrument);
-  if (option)
-  {
+  if (option) {
     // const std::string name = argv[0];
     auto it = quoters->find(argv[0]);
-    if (it != quoters->end())
-    {
+    if (it != quoters->end()) {
       it->second->add_options(std::move(instrument));
       // auto record = Message::NewProto<Proto::QuoterRecord>();
       // record->set_instrument(instrument);

@@ -5,11 +5,9 @@
 #include <string>
 #include "boost/noncopyable.hpp"
 
-namespace base
-{
+namespace base {
 
-class LogFile : boost::noncopyable
-{
+class LogFile : boost::noncopyable {
  public:
   LogFile(const std::string& file);
   ~LogFile();
@@ -21,8 +19,8 @@ class LogFile : boost::noncopyable
   // const std::string basename_;
   FILE *file_;
   char buffer_[64*1024];
-
 };
 
-}
+} // namespace base
+
 #endif  // BASE_LOGFILE_H

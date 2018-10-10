@@ -1,38 +1,29 @@
 #ifndef MODEL_ORDER_H
 #define MODEL_ORDER_H
 
+#include <memory>
 #include "Message.h"
 #include "Instrument.h"
 #include "Order.pb.h"
-#include <memory>
 
-struct Order
-{
+struct Order {
   Order();
   Order(const Proto::Order &ord);
 
   void ResetId();
 
-  bool IsBid() const
-  {
+  bool IsBid() const {
     return side == Proto::Side::Buy || side == Proto::Side::BuyCover ||
-      side == Proto::Side::BuyCoverToday || side == Proto::Side::BuyCoverYesterday;
+           side == Proto::Side::BuyCoverToday || side == Proto::Side::BuyCoverYesterday;
   }
 
-  bool IsOpen() const
-  {
-    return side == Proto::Side::Buy || side == Proto::Side::Sell;
-  }
+  bool IsOpen() const { return side == Proto::Side::Buy || side == Proto::Side::Sell; }
 
-  bool IsCloseToday() const
-  {
+  bool IsCloseToday() const {
     return side == Proto::Side::BuyCoverToday || side == Proto::Side::SellCoverToday;
   }
 
-  bool IsInactive() const
-  {
-    return status >= Proto::OrderStatus::Filled;
-  }
+  bool IsInactive() const { return status >= Proto::OrderStatus::Filled; }
 
   // std::string Dump() const;
   std::shared_ptr<Proto::Order> Serialize() const;
@@ -59,10 +50,9 @@ struct Order
 
 typedef std::shared_ptr<Order> OrderPtr;
 
-struct OrderRequest
-{
+struct OrderRequest {
   OrderRequest(const OrderPtr &ord, Proto::OrderAction act)
-    : order(ord), action(act)
+      : order(ord), action(act)
   {}
 
   OrderPtr order;
@@ -71,10 +61,9 @@ struct OrderRequest
 
 typedef std::shared_ptr<OrderRequest> OrderRequestPtr;
 
-struct QuoteRequest
-{
+struct QuoteRequest {
   QuoteRequest(const OrderPtr &b, const OrderPtr &a, Proto::OrderAction act)
-    : bid(b), ask(a), action(act)
+      : bid(b), ask(a), action(act)
   {}
 
   OrderPtr bid;
@@ -84,10 +73,11 @@ struct QuoteRequest
 
 typedef std::shared_ptr<QuoteRequest> QuoteRequestPtr;
 
-namespace base
-{
+namespace base {
+  
 class LogStream;
 LogStream& operator<<(LogStream& stream, const OrderPtr &order);
-}
 
-#endif
+} // namespace base
+
+#endif // MODEL_ORDER_H

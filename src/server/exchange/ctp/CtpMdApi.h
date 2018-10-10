@@ -5,19 +5,18 @@
 #include "3rd_library/ctp/include/ThostFtdcMdApi.h"
 
 class CtpMdSpi;
-class CtpMdApi : public MdApi
-{
-public:
+class CtpMdApi : public MdApi {
+ public:
   ~CtpMdApi();
 
   void Init();
   void Login();
   void Subscribe();
 
-private:
+ private:
   CThostFtdcMdApi *api_ = nullptr;
   CtpMdSpi *spi_ = nullptr;
   int id_ = 0;
 };
 
-#endif
+#endif // CTP_MD_API_H
