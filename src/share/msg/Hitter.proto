@@ -14,6 +14,7 @@ message Hitter
 {
   string name = 1;
   string pricer = 2;
+  string underlying = 3;
 }
 
 message HitterReq

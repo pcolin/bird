@@ -4,6 +4,7 @@
 #include "StrategyDevice.h"
 #include "Pricer.h"
 #include "Quoter.h"
+#include "Hedger.h"
 #include "ClusterManager.h"
 #include "config/EnvConfig.h"
 #include "base/logger/Logging.h"
@@ -45,6 +46,8 @@ void DeviceManager::Init() {
     LOG_INF << "Add quoter " << quoter->name();
   }
 
+  /// initialize hedger
+
   /// Sync config from db to be done...
   // std::unique_ptr<Strategy> strategy(new TestStrategy("test", this));
   // auto d = std::make_shared<StrategyDevice>(strategy, rb_, barrier_);
@@ -58,14 +61,9 @@ void DeviceManager::Init() {
 }
 
 void DeviceManager::Publish(PricePtr &price) {
-  // int64_t seq = rb_.Next();
-  // rb_.Get(seq) = std::move(price);
-  // rb_.Publish(seq);
-
   /// add adjusted price to be done...
   if (price->instrument == underlying_) {
-    double delta = 0; /// Get delta to be done...
-    theo_.ApplyElastic(price, delta);
+    theo_.ApplyElastic(price, hedger_ ? hedger_->OpenDelta() : 0);
     double theo = theo_.Get();
     if (underlying_prices_.size() > 0) {
       double min = theo, max = theo;
@@ -88,7 +86,10 @@ void DeviceManager::Publish(PricePtr &price) {
     underlying_prices_.push_back(theo);
   }
 
-  Publish<PricePtr>(price);
+  // Publish<PricePtr>(price);
+  int64_t seq = rb_.Next();
+  rb_.Get(seq) = price;
+  rb_.Publish(seq);
 }
 
 void DeviceManager::Start(const std::string& name) {

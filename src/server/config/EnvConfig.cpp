@@ -39,6 +39,7 @@ EnvConfig::EnvConfig() {
     { static_cast<int8_t>(EnvVar::EXCHANGE), "EXCHANGE" },
     { static_cast<int8_t>(EnvVar::SIMULATED_EXCHANGE), "SIMULATED_EXCHANGE" },
     { static_cast<int8_t>(EnvVar::RECONNECT_INTERVAL), "RECONNECT_INT" },
+    { static_cast<int8_t>(EnvVar::PRICE_TIMEOUT), "PRICE_TIMEOUT" },
     { static_cast<int8_t>(EnvVar::PUB_PRICE_LEVELS), "PUB_PRICE_LVLS" },
     { static_cast<int8_t>(EnvVar::PUB_PRICE_INTERVAL), "PUB_PRICE_INT"},
     { static_cast<int8_t>(EnvVar::QRY_CASH_INTERVAL), "QRY_CASH_INT" },

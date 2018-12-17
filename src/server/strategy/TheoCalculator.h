@@ -57,19 +57,14 @@ class TheoCalculator {
   void OnSSRate(const std::shared_ptr<Proto::SSRate> &ssr);
   void OnVolatilityCurve(const std::shared_ptr<Proto::VolatilityCurve> &vc);
 
-  // int64_t RecalculateAll();
-  void Recalculate(ParametersMap::value_type &value, base::TickType lower, base::TickType upper);
-  void CalculateAndPublish(const Option *call, const Option *put, Parameters &p,
-                           double time_value, base::TickType lower, base::TickType upper);
-  void CalculateAndPublish(const Option *option, Parameters &p,
-                           double time_value, base::TickType lower, base::TickType upper);
-  // TheoMatrixPtr CalculateTheo(const Option* op, const std::shared_ptr<Parameter> &param,
-  //     base::TickType lower, base::TickType upper, double time_value);
+  void Recalculate(ParametersMap::value_type &value);
+  void CalculateAndPublish(const Option *call, const Option *put, Parameters &p, double time_value);
+  void CalculateAndPublish(const Option *option, Parameters &p, double time_value);
 
-  void SetLowerUpper(base::TickType &lower, base::TickType &upper) {
-    lower = std::max(1, tick_ - TheoMatrix::DEPTH);
-    upper = tick_ + TheoMatrix::DEPTH;
-  }
+  // void SetLowerUpper(base::TickType &lower, base::TickType &upper) {
+  //   lower = std::max(1, tick_ - TheoMatrix::DEPTH);
+  //   upper = tick_ + TheoMatrix::DEPTH;
+  // }
 
  private:
   class EventVisitor : public boost::static_visitor<void> {
@@ -106,7 +101,7 @@ class TheoCalculator {
   std::shared_ptr<Model::PricingModel> model_;
   std::shared_ptr<Model::VolatilityModel> vol_model_;
 
-  base::TickType tick_ = 0;
+  base::PriceType spot_ = base::PRICE_UNDEFINED;
   base::TickType lower_ = INT_MAX;
   base::TickType upper_ = INT_MIN;
 

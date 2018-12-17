@@ -48,7 +48,17 @@ void CtpMdSpi::OnRspError(CThostFtdcRspInfoField* pRspInfo, int nRequestID, bool
 void CtpMdSpi::OnRspSubMarketData(CThostFtdcSpecificInstrumentField* pSpecificInstrument,
                                   CThostFtdcRspInfoField* pRspInfo,
                                   int nRequestID,
-                                  bool bIsLast) {}
+                                  bool bIsLast) {
+  if (pRspInfo && pRspInfo->ErrorID != 0) {
+    LOG_ERR << boost::format("Failed to subscribe market data: %1%(%2%).") %
+               pRspInfo->ErrorID % GB2312ToUtf8(pRspInfo->ErrorMsg);
+    return;
+  }
+  LOG_INF << "Subscribe market data of " << pSpecificInstrument->InstrumentID;
+  if (bIsLast) {
+    monitor_.Start();
+  }
+}
 
 void CtpMdSpi::OnRspUnSubMarketData(CThostFtdcSpecificInstrumentField* pSpecificInstrument,
                                     CThostFtdcRspInfoField* pRspInfo,
@@ -183,6 +193,7 @@ void CtpMdSpi::OnRtnDepthMarketData(CThostFtdcDepthMarketDataField* pDepthMarket
     //   /// to be done... publish InstrumentReq
     // }
     dm->Publish(price);
+    monitor_.OnPrice(price);
   }
 }
 

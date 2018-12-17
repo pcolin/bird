@@ -66,6 +66,15 @@ const std::vector<const Option*> ProductManager::FindOptions(const Instrument *h
   return options;
 }
 
+const Instrument* ProductManager::FindInstrument(
+    const std::function<bool(const Instrument*)> &filter) {
+  std::lock_guard<std::mutex> lck(mtx_);
+  for (const auto& it : instruments_) {
+    if (filter && filter(it.second)) return it.second;
+  }
+  return nullptr;
+}
+
 const std::vector<const Instrument*> ProductManager::FindInstruments(
     const std::function<bool(const Instrument*)> &filter) {
   std::vector<const Instrument*> instruments;

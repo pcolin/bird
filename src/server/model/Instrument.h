@@ -42,6 +42,8 @@ class Instrument {
   const base::PriceType Multiplier() const { return multiplier_; }
   void Multiplier(base::PriceType multiplier) { multiplier_ = multiplier; }
 
+  const double GetDeltaRatio() const { return multiplier_ / hedge_underlying_->multiplier_; }
+
   const base::PriceType Highest() const { return highest_; }
   void Highest(base::PriceType highest) { highest_ = highest; }
 

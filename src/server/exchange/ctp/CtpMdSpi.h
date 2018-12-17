@@ -1,6 +1,7 @@
 #ifndef CTP_MD_SPI_H
 #define CTP_MD_SPI_H
 
+#include "../manager/MarketDataMonitor.h"
 #include "3rd_library/ctp/include/ThostFtdcMdApi.h"
 
 class CtpMdApi;
@@ -29,6 +30,7 @@ class CtpMdSpi : public CThostFtdcMdSpi {
 
  private:
   CtpMdApi *api_ = nullptr;
+  MarketDataMonitor monitor_;
 };
 
 #endif // CTP_MD_SPI_H

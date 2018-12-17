@@ -11,6 +11,7 @@
 #include "boost/circular_buffer.hpp"
 
 class StrategyDevice;
+class Hedger;
 class DeviceManager {
  public:
   DeviceManager(const Instrument *underlying);
@@ -54,6 +55,7 @@ class DeviceManager {
   std::unordered_map<std::string, std::shared_ptr<StrategyDevice>> devices_;
   std::unique_ptr<StrategyDevice> pricer_;
   std::unique_ptr<StrategyDevice> monitor_;
+  std::unique_ptr<Hedger> hedger_;
 
   base::BusySpinWaitStrategy strategy_;
   base::MultiProducerSequencer<BUFFER_SIZE> sequencer_;
