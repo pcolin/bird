@@ -13,10 +13,10 @@
 MarketMonitor::MarketMonitor(const std::string &name, DeviceManager *dm)
     : Strategy(name, dm),
       orders_(capacity_) {
-  struct timeval tv;
-  gettimeofday(&tv, NULL);
-  und_price_time_ = tv.tv_sec;
-  opt_price_time_ = tv.tv_sec;
+  // struct timeval tv;
+  // gettimeofday(&tv, NULL);
+  // und_price_time_ = tv.tv_sec;
+  // opt_price_time_ = tv.tv_sec;
 
   dispatcher_.RegisterCallback<Proto::InstrumentReq>(
       std::bind(&MarketMonitor::OnInstrumentReq, this, std::placeholders::_1));
@@ -38,27 +38,27 @@ void MarketMonitor::OnStop() {
 
 void MarketMonitor::OnPrice(const PricePtr &price) {
   LOG_DBG << price;
-  struct timeval tv;
-  gettimeofday(&tv, NULL);
-  int now = tv.tv_sec;
-  const int max_interval = 15;
-  int interval = now - opt_price_time_;
-  if (interval >= max_interval) {
-    LOG_ERR << boost::format("%1% : Option price feed timeout for %2%s") %
-      dm_->GetUnderlying()->Id() % interval;
-    opt_price_time_ = now;
-  }
-  interval = now - und_price_time_;
-  if (interval >= max_interval) {
-    LOG_ERR << boost::format("%1% : Underlying price feed timeout for %2%s") %
-      dm_->GetUnderlying()->Id() % interval;
-    und_price_time_ = now;
-  }
-  if (price->instrument->Type() == Proto::InstrumentType::Option) {
-    opt_price_time_ = now;
-  } else {
-    und_price_time_ = now;
-  }
+  // struct timeval tv;
+  // gettimeofday(&tv, NULL);
+  // int now = tv.tv_sec;
+  // const int max_interval = 15;
+  // int interval = now - opt_price_time_;
+  // if (interval >= max_interval) {
+  //   LOG_ERR << boost::format("%1% : Option price feed timeout for %2%s") %
+  //     dm_->GetUnderlying()->Id() % interval;
+  //   opt_price_time_ = now;
+  // }
+  // interval = now - und_price_time_;
+  // if (interval >= max_interval) {
+  //   LOG_ERR << boost::format("%1% : Underlying price feed timeout for %2%s") %
+  //     dm_->GetUnderlying()->Id() % interval;
+  //   und_price_time_ = now;
+  // }
+  // if (price->instrument->Type() == Proto::InstrumentType::Option) {
+  //   opt_price_time_ = now;
+  // } else {
+  //   und_price_time_ = now;
+  // }
   auto p = price->Serialize();
   prices_[price->instrument] = p;
   Middleware::GetInstance()->Publish(p);

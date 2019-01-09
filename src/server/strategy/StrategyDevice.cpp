@@ -2,6 +2,7 @@
 #include "Strategy.h"
 #include "base/logger/Logging.h"
 #include "model/Middleware.h"
+#include "config/EnvConfig.h"
 #include "boost/format.hpp"
 
 StrategyDevice::StrategyDevice(std::unique_ptr<Strategy> &strategy,
@@ -78,13 +79,28 @@ void StrategyDevice::Run() {
   Middleware::GetInstance()->Publish(start);
   rb_.AddGatingSequence(&sequence_);
 
+  bool no_detect_slow_handler = EnvConfig::GetInstance()
+                                ->GetBool(EnvVar::DETECT_SLOW_HANDLER, false);
+  int64_t slow_handler_timeout_us = EnvConfig::GetInstance()
+                                    ->GetInt32(EnvVar::SLOW_HANDLER_TIMEOUT_MS) * 1000;
+
   int64_t begin = std::max(rb_.GetCursor(), 0l);
   sequence_.Set(begin - 1);
   int64_t next = begin;
   while (running_) {
     int64_t available = barrier_->WaitFor(next);
     while (next <= available) {
-      strategy_->OnEvent(rb_.Get(next), next, next == available);
+      if (likely(no_detect_slow_handler)) {
+        strategy_->OnEvent(rb_.Get(next), next, next == available);
+      } else {
+        auto beg = base::Now();
+        const Event &e = rb_.Get(next);
+        strategy_->OnEvent(e, next, next == available);
+        auto end = base::Now();
+        if (end - beg > slow_handler_timeout_us) {
+          LOG_WAN << name << " has blocking handler: " << e.type().name();
+        }
+      }
       ++next;
     }
     sequence_.Set(available);

@@ -49,7 +49,8 @@ class DeviceManager {
   const Instrument *underlying_;
   UnderlyingPrice theo_;
   boost::circular_buffer<base::PriceType> underlying_prices_;
-  int32_t warn_tick_change_ = 5;
+  // int32_t warn_tick_change_ = 5;
+  double max_price_change_;
   bool normal_ = false;
 
   std::unordered_map<std::string, std::shared_ptr<StrategyDevice>> devices_;

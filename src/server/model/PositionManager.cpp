@@ -12,7 +12,8 @@ PositionManager* PositionManager::GetInstance() {
 
 void PositionManager::Init() {
   LOG_INF << "Initialize position manager...";
-  auto insts = ProductManager::GetInstance()->FindInstruments([](const Instrument*){ return true; });
+  auto insts = ProductManager::GetInstance()->FindInstruments(
+               [](const Instrument*){ return true; });
   std::lock_guard<std::mutex> lck(mtx_);
   for (auto &inst : insts) {
     auto pos = std::make_shared<Proto::Position>();
@@ -25,7 +26,8 @@ bool PositionManager::TryFreeze(const OrderPtr &order) {
   std::lock_guard<std::mutex> lck(mtx_);
   PositionPtr &pos = positions_[order->instrument];
   assert(pos);
-  static bool close_today = EnvConfig::GetInstance()->GetBool(EnvVar::CLOSE_TODAY_POS);
+  static bool close_today = EnvConfig::GetInstance()
+                            ->GetBool(EnvVar::CLOSE_TODAY_POSITION);
   if (order->IsBid()) {
     if (close_today) {
       if (order->volume <= pos->liquid_yesterday_short()) {

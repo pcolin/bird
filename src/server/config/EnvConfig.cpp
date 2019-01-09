@@ -26,32 +26,32 @@ EnvConfig::EnvConfig() {
     { static_cast<int8_t>(EnvVar::CONFIG_DB_FILE), "CONFIG_DB_FILE" },
     { static_cast<int8_t>(EnvVar::ORDER_DB_FILE), "ORDER_DB_FILE" },
     { static_cast<int8_t>(EnvVar::TRADE_DB_FILE), "TRADE_DB_FILE" },
-    { static_cast<int8_t>(EnvVar::DEL_EXPIRE_INST), "DEL_EXPIRE_INST" },
-    { static_cast<int8_t>(EnvVar::DEL_POS_AT_INIT), "DEL_POS_AT_INIT" },
+    { static_cast<int8_t>(EnvVar::DEL_EXPIRED_INSTRUMENT), "DEL_EXPIRED_INSTRUMENT" },
+    { static_cast<int8_t>(EnvVar::DEL_POSITION_AT_INITIAL), "DEL_POSITION_AT_INITIAL" },
 
     /// Logging
     { static_cast<int8_t>(EnvVar::LOGGING_LEVEL), "LOGGING_LEVEL" },
     { static_cast<int8_t>(EnvVar::LOGGING_DIR), "LOGGING_DIR" },
     { static_cast<int8_t>(EnvVar::ASYNC_LOGGING), "ASYNC_LOGGING" },
-    { static_cast<int8_t>(EnvVar::ASYNC_FLUSH_INT), "ASYNC_FLUSH_INT" },
+    { static_cast<int8_t>(EnvVar::ASYNC_FLUSH_INTERVAL), "ASYNC_FLUSH_INTERVAL" },
 
     /// exchange
     { static_cast<int8_t>(EnvVar::EXCHANGE), "EXCHANGE" },
     { static_cast<int8_t>(EnvVar::SIMULATED_EXCHANGE), "SIMULATED_EXCHANGE" },
-    { static_cast<int8_t>(EnvVar::RECONNECT_INTERVAL), "RECONNECT_INT" },
+    { static_cast<int8_t>(EnvVar::RECONNECT_INTERVAL), "RECONNECT_INTERVAL" },
     { static_cast<int8_t>(EnvVar::PRICE_TIMEOUT), "PRICE_TIMEOUT" },
-    { static_cast<int8_t>(EnvVar::PUB_PRICE_LEVELS), "PUB_PRICE_LVLS" },
-    { static_cast<int8_t>(EnvVar::PUB_PRICE_INTERVAL), "PUB_PRICE_INT"},
-    { static_cast<int8_t>(EnvVar::QRY_CASH_INTERVAL), "QRY_CASH_INT" },
-    { static_cast<int8_t>(EnvVar::OPT_CASH_LIMIT), "OPT_CASH_LIMIT" },
+    { static_cast<int8_t>(EnvVar::PUB_PRICE_LEVELS), "PUB_PRICE_LEVELS" },
+    { static_cast<int8_t>(EnvVar::PUB_PRICE_INTERVAL), "PUB_PRICE_INTERVAL"},
+    { static_cast<int8_t>(EnvVar::QRY_CASH_INTERVAL), "QRY_CASH_INTERVAL" },
+    { static_cast<int8_t>(EnvVar::OPTION_CASH_LIMIT), "OPTION_CASH_LIMIT" },
     { static_cast<int8_t>(EnvVar::SPOT_CASH_LIMIT), "SPOT_CASH_LIMIT" },
-    { static_cast<int8_t>(EnvVar::WASH_TRADE_PROT), "WASH_TRADE_PROT" },
-    { static_cast<int8_t>(EnvVar::ORDER_GC_THRESHOLD), "GC_THRESHOLD" },
+    { static_cast<int8_t>(EnvVar::WASH_TRADE_PROTECT), "WASH_TRADE_PROTECT" },
+    { static_cast<int8_t>(EnvVar::ORDER_GC_THRESHOLD), "ORDER_GC_THRESHOLD" },
     { static_cast<int8_t>(EnvVar::NIGHT_SESSION_TIME), "NIGHT_SESSION_TIME" },
-    { static_cast<int8_t>(EnvVar::CLOSE_TODAY_POS), "CLOSE_TODAY_POS" },
+    { static_cast<int8_t>(EnvVar::CLOSE_TODAY_POSITION), "CLOSE_TODAY_POSITION" },
     { static_cast<int8_t>(EnvVar::SUPPORT_QUOTE), "SUPPORT_QUOTE" },
-    { static_cast<int8_t>(EnvVar::AMEND_QUOTE), "AMEND_QUOTE" },
-    { static_cast<int8_t>(EnvVar::SIDE_QUOTE), "SIDE_QUOTE" },
+    { static_cast<int8_t>(EnvVar::SUPPORT_AMEND_QUOTE), "SUPPORT_AMEND_QUOTE" },
+    { static_cast<int8_t>(EnvVar::SUPPORT_SIDE_QUOTE), "SUPPORT_SIDE_QUOTE" },
 
     /// ctp
     { static_cast<int8_t>(EnvVar::CTP_TRADE_ADDR), "CTP_TRADE_ADDR" },
@@ -62,6 +62,8 @@ EnvConfig::EnvConfig() {
     { static_cast<int8_t>(EnvVar::CTP_PASSWORD), "CTP_PASSWORD" },
 
     { static_cast<int8_t>(EnvVar::UL_PRICE_CHECK_NUM), "UL_PRICE_CHECK_NUM" },
+    { static_cast<int8_t>(EnvVar::DETECT_SLOW_HANDLER), "DETECT_SLOW_HANDLER" },
+    { static_cast<int8_t>(EnvVar::SLOW_HANDLER_TIMEOUT_MS), "SLOW_HANDLER_TIMEOUT_MS" },
 
   };
 }

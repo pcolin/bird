@@ -27,7 +27,7 @@ std::shared_ptr<Proto::Instrument> InstrumentDB::FindInstrument(const std::strin
 
 void InstrumentDB::RefreshCache() {
   char query[1024];
-  if (EnvConfig::GetInstance()->GetBool(EnvVar::DEL_EXPIRE_INST, true)) {
+  if (EnvConfig::GetInstance()->GetBool(EnvVar::DEL_EXPIRED_INSTRUMENT, true)) {
     sprintf(query, "DELETE FROM %s WHERE maturity<'%s'", table_name_.c_str(), trading_date_.c_str());
     ExecSql(query);
   }

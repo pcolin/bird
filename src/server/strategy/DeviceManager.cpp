@@ -8,6 +8,7 @@
 #include "ClusterManager.h"
 #include "config/EnvConfig.h"
 #include "base/logger/Logging.h"
+#include "base/common/Float.h"
 #include "boost/format.hpp"
 
 DeviceManager::DeviceManager(const Instrument *underlying)
@@ -30,6 +31,7 @@ void DeviceManager::Init() {
   auto pricer = ClusterManager::GetInstance()->FindPricer(underlying_);
   if (pricer) {
     theo_.SetParameter(pricer->theo_type(), pricer->elastic(), pricer->elastic_limit());
+    max_price_change_ = pricer->warn_tick_change() * underlying_->Tick();
 
     std::unique_ptr<Strategy> strategy(new Pricer(pricer->name(), this));
     pricer_ = std::make_unique<StrategyDevice>(strategy, rb_, barrier_);
@@ -73,7 +75,8 @@ void DeviceManager::Publish(PricePtr &price) {
         else if (p > max)
           max = p;
       }
-      if (underlying_->ConvertToTick(max - min) > warn_tick_change_) {
+      // if (underlying_->ConvertToTick(max - min) > warn_tick_change_) {
+      if (base::IsMoreThan(max - min, max_price_change_)) {
         LOG_ERR << boost::format("%1% theo price warning: min(%2%), max(%3%)") %
                    underlying_->Id() % min % max;
         normal_ = false;
@@ -236,6 +239,7 @@ bool DeviceManager::IsStrategiesRunning() const {
 
 void DeviceManager::UpdatePricer(const Proto::Pricer &pricer) {
   theo_.SetParameter(pricer.theo_type(), pricer.elastic(), pricer.elastic_limit());
+  max_price_change_ = pricer.warn_tick_change() * underlying_->Tick();
 }
 
 // std::shared_ptr<Proto::QuoterSpec> DeviceManager::GetQuoter(const std::string &name)

@@ -4,9 +4,8 @@
 #include "Order.h"
 #include <unordered_map>
 
-class InactiveOrderManager
-{
-public:
+class InactiveOrderManager {
+ public:
   InactiveOrderManager();
   ~InactiveOrderManager() {}
 
@@ -18,7 +17,7 @@ public:
   size_t Size() const;
   void Dump() const;
 
-private:
+ private:
   typedef std::unordered_map<size_t, OrderPtr> OrderMap;
   typedef std::unordered_map<std::string, OrderPtr> ExchOrderMap;
   typedef std::tuple<OrderMap, ExchOrderMap> Generation;
@@ -27,7 +26,6 @@ private:
   static const int GENERATION_NUM = 3;
   const int gc_threshold_;
   std::array<GenerationPtr, GENERATION_NUM> generations_;
-  size_t order_num_ = 0;
 };
 
 #endif

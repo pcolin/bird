@@ -24,11 +24,11 @@ Quoter::Quoter(const std::string &name, DeviceManager *dm)
   dispatcher_.RegisterCallback<Proto::StrategyOperate>(
       std::bind(&Quoter::OnStrategyOperate, this, std::placeholders::_1));
 
-  side_quote_ = EnvConfig::GetInstance()->GetBool(EnvVar::SIDE_QUOTE, false);
+  side_quote_ = EnvConfig::GetInstance()->GetBool(EnvVar::SUPPORT_SIDE_QUOTE, false);
   if (side_quote_) {
     amend_quote_ = quote_ = true;
   } else {
-    amend_quote_ = EnvConfig::GetInstance()->GetBool(EnvVar::AMEND_QUOTE, false);
+    amend_quote_ = EnvConfig::GetInstance()->GetBool(EnvVar::SUPPORT_AMEND_QUOTE, false);
     if (amend_quote_) {
       quote_ = true;
     } else {

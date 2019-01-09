@@ -7,7 +7,7 @@
 using namespace base;
 
 WashTradeProtector::WashTradeProtector()
-    : enabled_(EnvConfig::GetInstance()->GetBool(EnvVar::WASH_TRADE_PROT, true)) {}
+    : enabled_(EnvConfig::GetInstance()->GetBool(EnvVar::WASH_TRADE_PROTECT, true)) {}
 
 bool WashTradeProtector::TryAdd(const OrderPtr& order) {
   if (unlikely(!enabled_ || !order)) {

@@ -11,7 +11,7 @@ PositionDB::PositionDB(ConcurrentSqliteDB &db,
 }
 
 void PositionDB::RefreshCache() {
-  if (EnvConfig::GetInstance()->GetBool(EnvVar::DEL_POS_AT_INIT, true)) {
+  if (EnvConfig::GetInstance()->GetBool(EnvVar::DEL_POSITION_AT_INITIAL, true)) {
     char sql[1024];
     sprintf(sql, "DELETE FROM %s", table_name_.c_str());
     ExecSql(sql);

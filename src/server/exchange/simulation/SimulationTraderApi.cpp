@@ -123,7 +123,8 @@ void SimulationTraderApi::MatchingProcess() {
     cash->set_total(8888888.88 + 3333333.33);
     cash->set_available(8888888.88);
     cash->set_margin(2222222.22);
-    static const double limit = EnvConfig::GetInstance()->GetDouble(EnvVar::OPT_CASH_LIMIT);
+    static const double limit = EnvConfig::GetInstance()
+                                ->GetDouble(EnvVar::OPTION_CASH_LIMIT);
     cash->set_is_enough(cash->available() >= limit);
     ClusterManager::GetInstance()->OnCash(cash);
 

@@ -478,7 +478,8 @@ void CtpTraderSpi::OnRspQryTradingAccount(CThostFtdcTradingAccountField* pTradin
     cash->set_total(pTradingAccount->Available + pTradingAccount->FrozenCash);
     cash->set_available(pTradingAccount->Available);
     cash->set_margin(pTradingAccount->CurrMargin);
-    static const double limit = EnvConfig::GetInstance()->GetDouble(EnvVar::OPT_CASH_LIMIT);
+    static const double limit = EnvConfig::GetInstance()
+                                ->GetDouble(EnvVar::OPTION_CASH_LIMIT);
     cash->set_is_enough(pTradingAccount->Available >= limit);
     ClusterManager::GetInstance()->OnCash(cash);
   }

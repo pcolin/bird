@@ -23,8 +23,8 @@ class MarketMonitor : public Strategy {
   bool OnInstrumentReq(const std::shared_ptr<Proto::InstrumentReq> &req);
   bool OnPosition(const std::shared_ptr<Proto::Position> &position);
   bool OnPriceReq(const std::shared_ptr<Proto::PriceReq> &req);
-  int und_price_time_;
-  int opt_price_time_;
+  // int und_price_time_;
+  // int opt_price_time_;
 
   void RunOrder();
 
