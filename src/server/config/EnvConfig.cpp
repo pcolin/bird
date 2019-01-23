@@ -49,6 +49,7 @@ EnvConfig::EnvConfig() {
     { static_cast<int8_t>(EnvVar::ORDER_GC_THRESHOLD), "ORDER_GC_THRESHOLD" },
     { static_cast<int8_t>(EnvVar::NIGHT_SESSION_TIME), "NIGHT_SESSION_TIME" },
     { static_cast<int8_t>(EnvVar::CLOSE_TODAY_POSITION), "CLOSE_TODAY_POSITION" },
+    { static_cast<int8_t>(EnvVar::PREFER_CLOSING_POSITION), "PREFER_CLOSING_POSITION" },
     { static_cast<int8_t>(EnvVar::SUPPORT_QUOTE), "SUPPORT_QUOTE" },
     { static_cast<int8_t>(EnvVar::SUPPORT_AMEND_QUOTE), "SUPPORT_AMEND_QUOTE" },
     { static_cast<int8_t>(EnvVar::SUPPORT_SIDE_QUOTE), "SUPPORT_SIDE_QUOTE" },

@@ -7,9 +7,9 @@ import "Exchange.proto";
 
 enum StrategyType
 {
-  Quoter = 0;
-  Hitter = 1;
-  Dimer = 2;
+  Hitter = 0;
+  Dimer = 1;
+  Quoter = 2;
   DummyQuoter = 3;
   Manual = 4;
 }

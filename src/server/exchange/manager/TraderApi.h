@@ -3,8 +3,9 @@
 
 #include "WashTradeProtector.h"
 #include "model/Order.h"
-#include "base/concurrency/concurrentqueue.h"
 #include "boost/variant.hpp"
+#include "tbb/concurrent_priority_queue.h"
+#include <thread>
 
 class TraderApi {
  public:
@@ -54,10 +55,29 @@ class TraderApi {
     TraderApi* api_;
   } visitor_;
 
+  typedef boost::variant<OrderRequestPtr, QuoteRequestPtr> RequestType;
+  class RequestComparator {
+
+    class StrategyTypeVisitor : public boost::static_visitor<Proto::StrategyType> {
+     public:
+      Proto::StrategyType operator()(const OrderRequestPtr& r) const {
+        return r->order->strategy_type;
+      }
+      Proto::StrategyType operator()(const QuoteRequestPtr& r) const {
+        return r->bid->strategy_type;
+      }
+    } visitor_;
+
+   public:
+    bool operator() (const RequestType& r1, const RequestType& r2) {
+      return boost::apply_visitor(visitor_, r1) > boost::apply_visitor(visitor_, r2);
+    }
+  };
+
   std::atomic<bool> running_ = {false};
   std::unique_ptr<std::thread> request_thread_;
-  typedef boost::variant<OrderRequestPtr, QuoteRequestPtr> RequestType;
-  moodycamel::ConcurrentQueue<RequestType> request_queue_;
+  // moodycamel::ConcurrentQueue<RequestType> request_queue_;
+  tbb::concurrent_priority_queue<RequestType, RequestComparator> request_queue_;
 
   std::unique_ptr<std::thread> cash_thread_;
 };

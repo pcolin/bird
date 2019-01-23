@@ -12,7 +12,8 @@ void TraderApi::Init() {
         LOG_INF << "Start requesting thread...";
         while (running_) {
           RequestType r;
-          if (request_queue_.try_dequeue(r)) {
+          // if (request_queue_.try_dequeue(r)) {
+          if (request_queue_.try_pop(r)) {
             boost::apply_visitor(visitor_, r);
           }
         }
@@ -31,37 +32,43 @@ void TraderApi::Init() {
 
 void TraderApi::Submit(const OrderPtr& order) {
   auto r = std::make_shared<OrderRequest>(order, Proto::OrderAction::Submit);
-  request_queue_.enqueue(r);
+  // request_queue_.enqueue(r);
+  request_queue_.push(r);
   LOG_INF << "Submit order: " << order;
 }
 
 void TraderApi::Submit(const OrderPtr& bid, const OrderPtr& ask) {
   auto r = std::make_shared<QuoteRequest>(bid, ask, Proto::OrderAction::Submit);
-  request_queue_.enqueue(r);
+  // request_queue_.enqueue(r);
+  request_queue_.push(r);
   LOG_INF << "Submit quote: bid(" << bid << ") ask(" << ask << ')';
 }
 
 void TraderApi::Amend(const OrderPtr& order) {
   auto r = std::make_shared<OrderRequest>(order, Proto::OrderAction::Amend);
-  request_queue_.enqueue(r);
+  // request_queue_.enqueue(r);
+  request_queue_.push(r);
   LOG_INF << "Amend order: " << order;
 }
 
 void TraderApi::Amend(const OrderPtr& bid, const OrderPtr& ask) {
   auto r = std::make_shared<QuoteRequest>(bid, ask, Proto::OrderAction::Amend);
-  request_queue_.enqueue(r);
+  // request_queue_.enqueue(r);
+  request_queue_.push(r);
   LOG_INF << "Amend quote: bid(" << bid << ") ask(" << ask << ')';
 }
 
 void TraderApi::Cancel(const OrderPtr& order) {
   auto r = std::make_shared<OrderRequest>(order, Proto::OrderAction::Cancel);
-  request_queue_.enqueue(r);
+  // request_queue_.enqueue(r);
+  request_queue_.push(r);
   LOG_INF << "Cancel order: " << order;
 }
 
 void TraderApi::Cancel(const OrderPtr& bid, const OrderPtr& ask) {
   auto r = std::make_shared<QuoteRequest>(bid, ask, Proto::OrderAction::Cancel);
-  request_queue_.enqueue(r);
+  // request_queue_.enqueue(r);
+  request_queue_.push(r);
   LOG_INF << "Cancel quote: bid(" << bid << ") ask(" << ask << ')';
 }
 
