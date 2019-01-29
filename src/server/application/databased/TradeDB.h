@@ -6,7 +6,7 @@
 #include <mutex>
 #include "DbBase.h"
 #include "InstrumentDB.h"
-#include "ExchangeParameterDB.h"
+#include "ProductParameterDB.h"
 #include "base/concurrency/blockingconcurrentqueue.h"
 #include "Trade.pb.h"
 
@@ -14,7 +14,7 @@ class TradeDB : public DbBase {
   typedef std::vector<std::shared_ptr<Proto::Trade>> TradeArray;
 
  public:
-  TradeDB(ConcurrentSqliteDB &db, InstrumentDB &instrument_db, ExchangeParameterDB &exchange_db);
+  TradeDB(ConcurrentSqliteDB &db, InstrumentDB &instrument_db, ProductParameterDB &product_db);
 
  private:
   virtual void RefreshCache() override;

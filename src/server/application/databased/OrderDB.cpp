@@ -6,8 +6,8 @@
 
 OrderDB::OrderDB(ConcurrentSqliteDB &db,
                  InstrumentDB &instrument_db,
-                 ExchangeParameterDB &exchange_db)
-    : DbBase(db, "Order" + exchange_db.TradingDay()),
+                 ProductParameterDB &product_db)
+    : DbBase(db, "Order" + product_db.TradingDay()),
       requests_(kCapacity),
       instrument_db_(instrument_db) {
   thread_ = std::thread(std::bind(&OrderDB::Run, this));

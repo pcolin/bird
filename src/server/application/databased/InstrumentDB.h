@@ -3,13 +3,13 @@
 
 #include <unordered_map>
 #include "DbBase.h"
-#include "ExchangeParameterDB.h"
+#include "ProductParameterDB.h"
 #include "Instrument.pb.h"
 
 class InstrumentDB : public DbBase {
  public:
   typedef std::unordered_map<std::string, std::shared_ptr<Proto::Instrument>> InstrumentMap;
-  InstrumentDB(ConcurrentSqliteDB &db, const std::string &table_name, ExchangeParameterDB &exch);
+  InstrumentDB(ConcurrentSqliteDB &db, const std::string &table_name, ProductParameterDB &product_db);
   std::shared_ptr<Proto::Instrument> FindOption(const std::string &id);
   std::shared_ptr<Proto::Instrument> FindUnderlying(const std::string &id);
   std::shared_ptr<Proto::Instrument> FindInstrument(const std::string &id);

@@ -4,12 +4,12 @@
 #include <iostream>
 #include "base/common/Likely.h"
 #include "base/logger/Logging.h"
-#include "model/ProductManager.h"
+#include "model/InstrumentManager.h"
 #include "strategy/ClusterManager.h"
 
 void SimulationMdApi::Init() {
   std::srand(std::time(nullptr));
-  auto insts = ProductManager::GetInstance()->FindInstruments(
+  auto insts = InstrumentManager::GetInstance()->FindInstruments(
       [](const Instrument *inst) { return inst->Type() == Proto::InstrumentType::Option; });
   for (auto *inst : insts) {
     auto p = Message::NewPrice();

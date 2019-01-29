@@ -3,7 +3,7 @@
 #include "base/common/Likely.h"
 #include "base/logger/Logging.h"
 #include "model/Middleware.h"
-#include "model/ProductManager.h"
+#include "model/InstrumentManager.h"
 #include "model/CashManager.h"
 #include "model/ParameterManager.h"
 #include "config/EnvConfig.h"
@@ -56,7 +56,7 @@ void ClusterManager::Init() {
     if (rep && rep->result().result()) {
       std::lock_guard<std::mutex> lck(switch_mtx_);
       for (auto &s : rep->switches()) {
-        // auto *op = ProductManager::GetInstance()->FindId(s.option());
+        // auto *op = InstrumentManager::GetInstance()->FindId(s.option());
         // if (op)
         // {
         auto sw = Message::NewProto<Proto::StrategySwitch>();
@@ -79,7 +79,7 @@ void ClusterManager::Init() {
       std::lock_guard<std::mutex> lck(credit_mtx_);
       for (auto &c : rep->credits()) {
         LOG_INF << "Credit: " << c.ShortDebugString();
-        // auto *underlying = ProductManager::GetInstance()->FindId(c.underlying());
+        // auto *underlying = InstrumentManager::GetInstance()->FindId(c.underlying());
         // if (underlying)
         // {
         auto credit = Message::NewProto<Proto::Credit>();
@@ -239,7 +239,7 @@ ClusterManager::ProtoReplyPtr ClusterManager::OnPriceReq(
   if (req->instrument().empty()) {
     Publish(req);
   } else {
-    auto *inst = ProductManager::GetInstance()->FindId(req->instrument());
+    auto *inst = InstrumentManager::GetInstance()->FindId(req->instrument());
     if (inst && inst->HedgeUnderlying()) {
       auto it = devices_.find(inst->HedgeUnderlying());
       if (it != devices_.end()) {
@@ -257,7 +257,7 @@ ClusterManager::ProtoReplyPtr ClusterManager::OnPricerReq(
   if (req->type() != Proto::RequestType::Get) {
     if (req->type() == Proto::RequestType::Set) {
       for (auto &p : req->pricers()) {
-        auto *underlying = ProductManager::GetInstance()->FindId(p.underlying());
+        auto *underlying = InstrumentManager::GetInstance()->FindId(p.underlying());
         if (underlying) {
           auto copy = Message::NewProto<Proto::Pricer>();
           copy->CopyFrom(p);
@@ -274,7 +274,7 @@ ClusterManager::ProtoReplyPtr ClusterManager::OnPricerReq(
       }
     } else if (req->type() == Proto::RequestType::Del) {
       for (auto &p : req->pricers()) {
-        auto *underlying = ProductManager::GetInstance()->FindId(p.underlying());
+        auto *underlying = InstrumentManager::GetInstance()->FindId(p.underlying());
         if (underlying) {
           auto *dm = FindDevice(underlying);
           if (dm) {
@@ -294,7 +294,7 @@ ClusterManager::ProtoReplyPtr ClusterManager::OnCreditReq(
     const std::shared_ptr<Proto::CreditReq> &req) {
   if (req->type() == Proto::RequestType::Set) {
     for (auto &c : req->credits()) {
-      auto *underlying = ProductManager::GetInstance()->FindId(c.underlying());
+      auto *underlying = InstrumentManager::GetInstance()->FindId(c.underlying());
       if (underlying) {
         auto credit = Message::NewProto<Proto::Credit>();
         credit->CopyFrom(c);
@@ -320,7 +320,7 @@ ClusterManager::ProtoReplyPtr ClusterManager::OnQuoterReq(
   if (req->type() != Proto::RequestType::Get) {
     if (req->type() == Proto::RequestType::Set) {
       for (auto &q : req->quoters()) {
-        auto *underlying = ProductManager::GetInstance()->FindId(q.underlying());
+        auto *underlying = InstrumentManager::GetInstance()->FindId(q.underlying());
         if (underlying) {
           auto quoter = Message::NewProto<Proto::QuoterSpec>();
           quoter->CopyFrom(q);
@@ -335,7 +335,7 @@ ClusterManager::ProtoReplyPtr ClusterManager::OnQuoterReq(
       }
     } else if (req->type() == Proto::RequestType::Del) {
       for (auto &q : req->quoters()) {
-        auto *underlying = ProductManager::GetInstance()->FindId(q.underlying());
+        auto *underlying = InstrumentManager::GetInstance()->FindId(q.underlying());
         if (underlying) {
           auto *dm = FindDevice(underlying);
           if (dm) {
@@ -355,7 +355,7 @@ ClusterManager::ProtoReplyPtr ClusterManager::OnStrategySwitchReq(
     const std::shared_ptr<Proto::StrategySwitchReq> &req) {
   if (req->type() == Proto::RequestType::Set) {
     for (auto &s : req->switches()) {
-      auto *op = ProductManager::GetInstance()->FindId(s.option());
+      auto *op = InstrumentManager::GetInstance()->FindId(s.option());
       if (op) {
         auto sw = Message::NewProto<Proto::StrategySwitch>();
         sw->CopyFrom(s);
@@ -380,7 +380,7 @@ ClusterManager::ProtoReplyPtr ClusterManager::OnStrategyOperateReq(
     const std::shared_ptr<Proto::StrategyOperateReq> &req) {
   if (req->type() == Proto::RequestType::Set) {
     for (auto &op : req->operates()) {
-      const Instrument *underlying = ProductManager::GetInstance()->FindId(op.underlying());
+      const Instrument *underlying = InstrumentManager::GetInstance()->FindId(op.underlying());
       if (underlying) {
         auto *dm = FindDevice(underlying);
         if (dm) {

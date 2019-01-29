@@ -3,7 +3,7 @@
 #include "model/Middleware.h"
 #include "model/Future.h"
 #include "model/Option.h"
-#include "model/ProductManager.h"
+#include "model/InstrumentManager.h"
 #include "strategy/ClusterManager.h"
 #include "config/EnvConfig.h"
 #include "Position.pb.h"
@@ -53,7 +53,7 @@ void SimulationTraderApi::Init() {
     it.second->Underlying(insts[underlying]);
     it.second->HedgeUnderlying(insts[hedge_underlying]);
 
-    ProductManager::GetInstance()->Add(it.second);
+    InstrumentManager::GetInstance()->Add(it.second);
     LOG_INF << "Add instrument " << it.second->Id();
 
     if (it.second->Type() == Proto::InstrumentType::Future &&
@@ -91,7 +91,7 @@ void SimulationTraderApi::MatchingProcess() {
   LOG_INF << "Start matching process....";
 
   int i = 0;
-  auto insts = ProductManager::GetInstance()->FindInstruments([](const Instrument*){ return true; });
+  auto insts = InstrumentManager::GetInstance()->FindInstruments([](const Instrument*){ return true; });
   for (auto &inst : insts) {
     if (++i % 2 == 0) continue;
 

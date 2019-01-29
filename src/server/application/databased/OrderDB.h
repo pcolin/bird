@@ -6,14 +6,14 @@
 #include <mutex>
 #include "DbBase.h"
 #include "InstrumentDB.h"
-#include "ExchangeParameterDB.h"
+#include "ProductParameterDB.h"
 #include "base/concurrency/blockingconcurrentqueue.h"
 #include "Order.pb.h"
 
 class OrderDB : public DbBase {
  public:
   typedef std::unordered_map<size_t, std::shared_ptr<Proto::Order>> OrderMap;
-  OrderDB(ConcurrentSqliteDB &db, InstrumentDB &instrument_db, ExchangeParameterDB &exchange_db);
+  OrderDB(ConcurrentSqliteDB &db, InstrumentDB &instrument_db, ProductParameterDB &product_db);
 
  private:
   virtual void RefreshCache() override;

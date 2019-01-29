@@ -6,10 +6,10 @@
 VolatilityCurveDB::VolatilityCurveDB(ConcurrentSqliteDB &db,
                                      const std::string &table_name,
                                      InstrumentDB &instrument_db,
-                                     ExchangeParameterDB &exchange_db)
+                                     ProductParameterDB &product_db)
     : DbBase(db, table_name),
       instrument_db_(instrument_db),
-      trading_day_(exchange_db.TradingDay()) {}
+      trading_day_(product_db.TradingDay()) {}
 
 void VolatilityCurveDB::RefreshCache() {
   char sql[1024];

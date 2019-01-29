@@ -13,7 +13,7 @@ class CreditDB : public DbBase {
            const std::string &table_name,
            const std::string &record_table_name,
            InstrumentDB &instrument_db,
-           ExchangeParameterDB &exchange_db);
+           ProductParameterDB &product_db);
 
  private:
   virtual void RefreshCache() override;

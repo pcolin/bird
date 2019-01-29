@@ -1,22 +1,22 @@
 #include <utility>
-#include "ProductManager.h"
+#include "InstrumentManager.h"
 #include "base/logger/Logging.h"
 
 using namespace base;
 
-ProductManager* ProductManager::GetInstance() {
-  static ProductManager manager;
+InstrumentManager* InstrumentManager::GetInstance() {
+  static InstrumentManager manager;
   return &manager;
 }
 
-ProductManager::~ProductManager() {
+InstrumentManager::~InstrumentManager() {
   for (auto& it : instruments_) {
     delete it.second;
   }
   // instruments_.clear();
 }
 
-const Instrument* ProductManager::Add(Instrument* instrument) {
+const Instrument* InstrumentManager::Add(Instrument* instrument) {
   if (instrument) {
     std::lock_guard<std::mutex> lck(mtx_);
     auto it = instruments_.find(instrument->Id());
@@ -31,7 +31,7 @@ const Instrument* ProductManager::Add(Instrument* instrument) {
   return instrument;
 }
 
-void ProductManager::Remove(const Instrument* instrument) {
+void InstrumentManager::Remove(const Instrument* instrument) {
   std::lock_guard<std::mutex> lck(mtx_);
   auto it = instruments_.find(instrument->Id());
   if (it != instruments_.end()) {
@@ -39,13 +39,13 @@ void ProductManager::Remove(const Instrument* instrument) {
   }
 }
 
-const Instrument* ProductManager::FindId(const std::string& id) {
+const Instrument* InstrumentManager::FindId(const std::string& id) {
   std::lock_guard<std::mutex> lck(mtx_);
   auto it = instruments_.find(id);
   return it != instruments_.end() ? it->second : nullptr;
 }
 
-const Instrument* ProductManager::FindSymbol(const std::string& symbol) {
+const Instrument* InstrumentManager::FindSymbol(const std::string& symbol) {
   std::lock_guard<std::mutex> lck(mtx_);
   for (const auto& it : instruments_) {
     if (it.first.find(symbol) != std::string::npos) return it.second;
@@ -53,7 +53,7 @@ const Instrument* ProductManager::FindSymbol(const std::string& symbol) {
   return nullptr;
 }
 
-const std::vector<const Option*> ProductManager::FindOptions(const Instrument *hedge_underlying) {
+const std::vector<const Option*> InstrumentManager::FindOptions(const Instrument *hedge_underlying) {
   std::vector<const Option*> options;
   std::lock_guard<std::mutex> lck(mtx_);
   for (const auto& it : instruments_) {
@@ -66,7 +66,7 @@ const std::vector<const Option*> ProductManager::FindOptions(const Instrument *h
   return options;
 }
 
-const Instrument* ProductManager::FindInstrument(
+const Instrument* InstrumentManager::FindInstrument(
     const std::function<bool(const Instrument*)> &filter) {
   std::lock_guard<std::mutex> lck(mtx_);
   for (const auto& it : instruments_) {
@@ -75,7 +75,7 @@ const Instrument* ProductManager::FindInstrument(
   return nullptr;
 }
 
-const std::vector<const Instrument*> ProductManager::FindInstruments(
+const std::vector<const Instrument*> InstrumentManager::FindInstruments(
     const std::function<bool(const Instrument*)> &filter) {
   std::vector<const Instrument*> instruments;
   std::lock_guard<std::mutex> lck(mtx_);

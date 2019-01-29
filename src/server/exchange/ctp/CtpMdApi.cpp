@@ -2,7 +2,7 @@
 #include "CtpMdSpi.h"
 #include "base/logger/Logging.h"
 #include "config/EnvConfig.h"
-#include "model/ProductManager.h"
+#include "model/InstrumentManager.h"
 #include "boost/format.hpp"
 
 using namespace base;
@@ -39,7 +39,7 @@ void CtpMdApi::Login() {
 
 void CtpMdApi::Subscribe() {
   LOG_INF << "Subscribe Marketdata.";
-  auto instruments = ProductManager::GetInstance()->FindInstruments(
+  auto instruments = InstrumentManager::GetInstance()->FindInstruments(
                      [](const Instrument*) { return true; });
   const int n = instruments.size();
   char **insts = new char*[n];

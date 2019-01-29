@@ -2,7 +2,7 @@
 #include <sstream>
 #include "Message.h"
 #include "ClientManager.h"
-#include "ProductManager.h"
+#include "InstrumentManager.h"
 #include "ParameterManager.h"
 #include "Instrument.pb.h"
 #include "Credit.pb.h"
@@ -88,7 +88,7 @@ std::shared_ptr<Proto::Reply> Middleware::OnOrderRequest(
   LOG_INF << "OnOrderRequest: " << req->ShortDebugString();
   if (req->action() == Proto::OrderAction::Submit) {
     for (auto &ord : req->orders()) {
-      auto *inst = ProductManager::GetInstance()->FindId(ord.instrument());
+      auto *inst = InstrumentManager::GetInstance()->FindId(ord.instrument());
       if (inst) {
         auto order = Message::NewOrder();
         order->instrument = inst;
@@ -106,7 +106,7 @@ std::shared_ptr<Proto::Reply> Middleware::OnOrderRequest(
     }
   } else if (req->action() == Proto::OrderAction::Cancel) {
     for (auto &ord : req->orders()) {
-      auto *inst = ProductManager::GetInstance()->FindId(ord.instrument());
+      auto *inst = InstrumentManager::GetInstance()->FindId(ord.instrument());
       if (inst) {
         auto order = Message::NewOrder();
         order->instrument = inst;
@@ -206,8 +206,8 @@ void Middleware::RunResponder() {
       &ClientManager::Login, ClientManager::GetInstance(), std::placeholders::_1));
   dispatcher.RegisterCallback<Proto::Logout>(std::bind(
       &ClientManager::Logout, ClientManager::GetInstance(), std::placeholders::_1));
-  dispatcher.RegisterCallback<Proto::ExchangeParameterReq>(std::bind(
-      &ParameterManager::OnExchangeParameterReq, ParameterManager::GetInstance(),
+  dispatcher.RegisterCallback<Proto::ProductParameterReq>(std::bind(
+      &ParameterManager::OnProductParameterReq, ParameterManager::GetInstance(),
       std::placeholders::_1));
   dispatcher.RegisterCallback<Proto::InterestRateReq>(std::bind(
       &ParameterManager::OnInterestRateReq, ParameterManager::GetInstance(),

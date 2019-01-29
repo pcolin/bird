@@ -1,0 +1,48 @@
+syntax = "proto3";
+package Proto;
+
+import "Exchange.proto";
+import "Request.proto";
+import "Reply.proto";
+
+message Holiday
+{
+  string date = 1;
+  double weight = 2;
+}
+
+message TradingSession
+{
+  string begin = 1;
+  string end = 2;
+  string stop = 3;
+}
+
+message ProductParameter
+{
+  string product = 1;
+  Exchange exchange = 2;
+  repeated TradingSession sessions = 3;
+  repeated TradingSession maturity_sessions = 4;
+  repeated Holiday holidays = 5;
+  string charm_start_time = 6;
+  int32 rfq_delay = 7;
+  int32 rfq_timeout = 8;
+  int32 rfq_volume = 9;
+  string trading_day = 10;
+  string night_session_time = 11;
+}
+
+message ProductParameterReq
+{
+  RequestType type = 1;
+  repeated ProductParameter parameters = 2;
+  string product = 3;
+  string user = 4;
+}
+
+message ProductParameterRep
+{
+  repeated ProductParameter parameters = 1;
+  Reply result = 2;
+}

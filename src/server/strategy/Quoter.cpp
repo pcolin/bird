@@ -4,7 +4,7 @@
 #include "base/common/Float.h"
 #include "base/logger/Logging.h"
 #include "exchange/manager/ExchangeManager.h"
-#include "model/ProductManager.h"
+#include "model/InstrumentManager.h"
 #include "model/ParameterManager.h"
 #include "model/PositionManager.h"
 #include "model/Middleware.h"
@@ -54,7 +54,7 @@ void Quoter::OnStart() {
     LOG_DBG << boost::format("Get %1% credits") % credits.size();
     parameters_.clear();
     for (auto &op : quoter_->options()) {
-      auto *inst = ProductManager::GetInstance()->FindId(op);
+      auto *inst = InstrumentManager::GetInstance()->FindId(op);
       if (inst) {
         auto &maturity = inst->Maturity();
         auto it = parameters_.find(maturity);
@@ -324,7 +324,7 @@ bool Quoter::OnCredit(const std::shared_ptr<Proto::Credit> &msg) {
   if (it != parameters_.end()) {
     it->second->multiplier = msg->multiplier();
     for (auto &r : msg->records()) {
-      auto *inst = ProductManager::GetInstance()->FindId(r.option());
+      auto *inst = InstrumentManager::GetInstance()->FindId(r.option());
       if (inst) {
         auto itr = it->second->parameters.find(inst);
         if (itr != it->second->parameters.end()) {
@@ -355,7 +355,7 @@ bool Quoter::OnQuoterSpec(const std::shared_ptr<Proto::QuoterSpec> &msg) {
 bool Quoter::OnStrategySwitch(const std::shared_ptr<Proto::StrategySwitch> &sw) {
   LOG_INF << "StrategySwitch: " << sw->ShortDebugString();
   if (sw->strategy() == Proto::StrategyType::Quoter) {
-    auto *inst = ProductManager::GetInstance()->FindId(sw->option());
+    auto *inst = InstrumentManager::GetInstance()->FindId(sw->option());
     if (inst) {
       auto it = parameters_.find(inst->Maturity());
       if (it != parameters_.end()) {

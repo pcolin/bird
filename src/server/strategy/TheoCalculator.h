@@ -7,7 +7,7 @@
 #include "VolatilityModel.h"
 #include "Heartbeat.pb.h"
 #include "Pricer.pb.h"
-#include "ExchangeParameter.pb.h"
+#include "ProductParameter.pb.h"
 #include "InterestRate.pb.h"
 #include "SSRate.pb.h"
 #include "Volatility.pb.h"
@@ -24,7 +24,7 @@ class TheoCalculator {
                          std::shared_ptr<Proto::VolatilityCurve>,
                          std::shared_ptr<Proto::SSRate>,
                          std::shared_ptr<Proto::Pricer>,
-                         std::shared_ptr<Proto::ExchangeParameterReq>,
+                         std::shared_ptr<Proto::ProductParameterReq>,
                          std::shared_ptr<Proto::InterestRateReq>> CalculatorEvent;
   typedef std::vector<std::array<const Option*, 2>> OptionsVector;
 
@@ -52,7 +52,7 @@ class TheoCalculator {
   void OnTrade(const TradePtr &t);
   void OnHeartbeat(const std::shared_ptr<Proto::Heartbeat> &h);
   void OnPricer(const std::shared_ptr<Proto::Pricer> &spec);
-  void OnExchangeParameter(const std::shared_ptr<Proto::ExchangeParameterReq> &req);
+  void OnProductParameter(const std::shared_ptr<Proto::ProductParameterReq> &req);
   void OnInterestRate(const std::shared_ptr<Proto::InterestRateReq> &req);
   void OnSSRate(const std::shared_ptr<Proto::SSRate> &ssr);
   void OnVolatilityCurve(const std::shared_ptr<Proto::VolatilityCurve> &vc);
@@ -75,8 +75,8 @@ class TheoCalculator {
     void operator()(const TradePtr &t) const { calculator_->OnTrade(t); }
     void operator()(const std::shared_ptr<Proto::Heartbeat> &h) { calculator_->OnHeartbeat(h); }
     void operator()(const std::shared_ptr<Proto::Pricer> &spec) { calculator_->OnPricer(spec); }
-    void operator()(const std::shared_ptr<Proto::ExchangeParameterReq> &req) {
-      calculator_->OnExchangeParameter(req);
+    void operator()(const std::shared_ptr<Proto::ProductParameterReq> &req) {
+      calculator_->OnProductParameter(req);
     }
     void operator()(const std::shared_ptr<Proto::InterestRateReq> &req) {
       calculator_->OnInterestRate(req);

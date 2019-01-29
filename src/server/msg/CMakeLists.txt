@@ -7,7 +7,7 @@ set(PROTO_FILES
   ../../share/msg/Server.proto
   ../../share/msg/Currency.proto
   ../../share/msg/Instrument.proto
-  ../../share/msg/ExchangeParameter.proto
+  ../../share/msg/ProductParameter.proto
   ../../share/msg/Cash.proto
   ../../share/msg/CashLimit.proto
   ../../share/msg/Position.proto
@@ -24,7 +24,8 @@ set(PROTO_FILES
   ../../share/msg/Hitter.proto
   ../../share/msg/Dimer.proto
   ../../share/msg/Strategy.proto
-  ../../share/msg/Credit.proto)
+  ../../share/msg/Credit.proto
+  ../../share/msg/RequestForQuote.proto)
 
 message ("Current Dir: ${CMAKE_CURRENT_SOURCE_DIR}")
 set(CC_FILES)

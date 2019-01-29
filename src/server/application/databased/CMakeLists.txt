@@ -4,7 +4,7 @@ ADD_EXECUTABLE(databased
   DbBase.cpp
   UserDB.cpp
   InstrumentDB.cpp
-  ExchangeParameterDB.cpp
+  ProductParameterDB.cpp
   PositionDB.cpp
   OrderDB.cpp
   TradeDB.cpp

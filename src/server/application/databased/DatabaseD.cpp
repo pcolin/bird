@@ -7,7 +7,7 @@
 #include "base/logger/Logging.h"
 #include "config/EnvConfig.h"
 #include "UserDB.h"
-#include "ExchangeParameterDB.h"
+#include "ProductParameterDB.h"
 #include "InterestRateDB.h"
 #include "SSRateDB.h"
 #include "VolatilityCurveDB.h"
@@ -167,22 +167,22 @@ int main(int argc, char *argv[]) {
   UserDB user_db(config_db, "UserInfo");
   bool ok = user_db.Initialize(dispatcher);
 
-  ExchangeParameterDB exchange_db(config_db, "ExchangeParameter", "Holiday");
-  ok = ok && exchange_db.Initialize(dispatcher);
+  ProductParameterDB product_db(config_db, "ProductParameter", "Holiday");
+  ok = ok && product_db.Initialize(dispatcher);
 
-  InstrumentDB instrument_db(config_db, "Instrument", exchange_db);
+  InstrumentDB instrument_db(config_db, "Instrument", product_db);
   ok = ok && instrument_db.Initialize(dispatcher);
 
   InterestRateDB interest_rate_db(config_db, "InterestRate");
   ok = ok && interest_rate_db.Initialize(dispatcher);
 
-  SSRateDB ssrate_db(config_db, "SSRate", instrument_db, exchange_db);
+  SSRateDB ssrate_db(config_db, "SSRate", instrument_db, product_db);
   ok = ok && ssrate_db.Initialize(dispatcher);
 
-  VolatilityCurveDB vol_curve_db(config_db, "VolatilityCurve", instrument_db, exchange_db);
+  VolatilityCurveDB vol_curve_db(config_db, "VolatilityCurve", instrument_db, product_db);
   ok = ok && vol_curve_db.Initialize(dispatcher);
 
-  CreditDB credit_db(config_db, "Credit", "CreditRecord", instrument_db, exchange_db);
+  CreditDB credit_db(config_db, "Credit", "CreditRecord", instrument_db, product_db);
   ok = ok && credit_db.Initialize(dispatcher);
 
   DestrikerDB destriker_db(config_db, "Destriker", instrument_db);
@@ -191,10 +191,10 @@ int main(int argc, char *argv[]) {
   PositionDB position(config_db, "Position");
   ok = ok && position.Initialize(dispatcher);
 
-  OrderDB order(order_db, instrument_db, exchange_db);
+  OrderDB order(order_db, instrument_db, product_db);
   ok = ok && order.Initialize(dispatcher);
 
-  TradeDB trade(trade_db, instrument_db, exchange_db);
+  TradeDB trade(trade_db, instrument_db, product_db);
   ok = ok && trade.Initialize(dispatcher);
 
   PricerDB pricing(config_db, "Pricer", instrument_db);

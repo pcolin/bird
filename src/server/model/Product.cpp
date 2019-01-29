@@ -1,11 +1,11 @@
-#include "Exchange.h"
+#include "Product.h"
 #include "boost/format.hpp"
 #include "config/EnvConfig.h"
 #include "base/logger/Logging.h"
 
 using namespace boost::gregorian;
 
-void Exchange::OnExchangeParameter(const Proto::ExchangeParameter &param) {
+void Product::OnProductParameter(const Proto::ProductParameter &param) {
   LOG_INF << "Update exchange parameter: " << param.ShortDebugString();
 
   std::ostringstream oss;
@@ -62,7 +62,7 @@ void Exchange::OnExchangeParameter(const Proto::ExchangeParameter &param) {
   days_to_maturity_.clear();
 }
 
-double Exchange::GetTimeValue(const boost::gregorian::date &maturity) {
+double Product::GetTimeValue(const boost::gregorian::date &maturity) {
   double trading_days = 0;
   double fraction = 0;
 
@@ -112,7 +112,7 @@ double Exchange::GetTimeValue(const boost::gregorian::date &maturity) {
   return ret;
 }
 
-bool Exchange::IsTradingTime(const boost::gregorian::date &maturity) {
+bool Product::IsTradingTime(const boost::gregorian::date &maturity) {
   auto now = boost::posix_time::second_clock::local_time();
   std::lock_guard<std::mutex> lck(mtx_);
   if (trading_day_ < maturity) {

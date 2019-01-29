@@ -61,26 +61,27 @@ message Instrument
 {
   string id = 1;
   string symbol = 2;
-  Exchange exchange = 3;
-  InstrumentType type = 4;
-  Currency currency = 5;
-  string underlying = 6;
-  string hedge_underlying = 7;
-  int32 lot = 8;
-  double tick = 9;
-  double multiplier = 10;
-  double highest = 11;
-  double lowest = 12;
-  CommissionType commission = 13;
-  double open_commission = 14;
-  double close_commission = 15;
-  double close_today_commission = 16;
-  OptionType call_put = 17;
-  string maturity = 18;
-  ExerciseType exercise = 19;
-  SettlementType settlement = 20;
-  double strike = 21;
-  InstrumentStatus status = 22;
+  string product = 3;
+  Exchange exchange = 4;
+  InstrumentType type = 5;
+  Currency currency = 6;
+  string underlying = 7;
+  string hedge_underlying = 8;
+  int32 lot = 9;
+  double tick = 10;
+  double multiplier = 11;
+  double highest = 12;
+  double lowest = 13;
+  CommissionType commission = 14;
+  double open_commission = 15;
+  double close_commission = 16;
+  double close_today_commission = 17;
+  OptionType call_put = 18;
+  string maturity = 19;
+  ExerciseType exercise = 20;
+  SettlementType settlement = 21;
+  double strike = 22;
+  InstrumentStatus status = 23;
 }
 
 message InstrumentReq

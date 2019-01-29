@@ -6,8 +6,8 @@
 
 TradeDB::TradeDB(ConcurrentSqliteDB &db,
                  InstrumentDB &instrument_db,
-                 ExchangeParameterDB &exchange_db)
-    : DbBase(db, "Trade" + exchange_db.TradingDay()),
+                 ProductParameterDB &product_db)
+    : DbBase(db, "Trade" + product_db.TradingDay()),
       requests_(kCapacity),
       instrument_db_(instrument_db) {
   thread_ = std::thread(std::bind(&TradeDB::Run, this));

@@ -2,12 +2,13 @@
 #include <cfloat>
 #include "CtpMdApi.h"
 #include "CtpTraderSpi.h"
+#include "RequestForQuote.pb.h"
 #include "base/common/Likely.h"
 #include "base/common/CodeConverter.h"
 #include "base/logger/Logging.h"
 #include "config/EnvConfig.h"
 #include "model/Price.h"
-#include "model/ProductManager.h"
+#include "model/InstrumentManager.h"
 #include "strategy/ClusterManager.h"
 #include "strategy/DeviceManager.h"
 #include "boost/format.hpp"
@@ -101,7 +102,7 @@ void CtpMdSpi::OnRtnDepthMarketData(CThostFtdcDepthMarketDataField* pDepthMarket
              pDepthMarketData->ActionDay;
   // std::string id = CtpTraderSpi::GetInstrumentId(
   //     pDepthMarketData->InstrumentID, pDepthMarketData->ExchangeID);
-  const Instrument *inst = ProductManager::GetInstance()->FindId(pDepthMarketData->InstrumentID);
+  const Instrument *inst = InstrumentManager::GetInstance()->FindId(pDepthMarketData->InstrumentID);
   if (inst) {
     auto *dm = ClusterManager::GetInstance()->FindDevice(inst->HedgeUnderlying());
     if (dm == nullptr) {
@@ -197,4 +198,22 @@ void CtpMdSpi::OnRtnDepthMarketData(CThostFtdcDepthMarketDataField* pDepthMarket
   }
 }
 
-void CtpMdSpi::OnRtnForQuoteRsp(CThostFtdcForQuoteRspField* pForQuoteRsp) {}
+void CtpMdSpi::OnRtnForQuoteRsp(CThostFtdcForQuoteRspField* pForQuoteRsp) {
+  if (unlikely(!pForQuoteRsp)) {
+    LOG_WAN << "OnRtnForQuoteRsp : null parameter";
+    return;
+  }
+
+  LOG_INF << boost::format("get %1% rfq(%2%) of %3%") % pForQuoteRsp->ExchangeID %
+             pForQuoteRsp->ForQuoteSysID % pForQuoteRsp->InstrumentID;
+  auto *inst = InstrumentManager::GetInstance()->FindId(pForQuoteRsp->InstrumentID);
+  if (inst) {
+    auto *dm = ClusterManager::GetInstance()->FindDevice(inst->HedgeUnderlying());
+    if (dm){
+      auto rfq = Message::NewProto<Proto::RequestForQuote>();
+      rfq->set_instrument(inst->Id());
+      rfq->set_id(pForQuoteRsp->ForQuoteSysID);
+      dm->Publish(rfq);
+    } 
+  }
+}

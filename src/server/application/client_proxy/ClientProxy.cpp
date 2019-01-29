@@ -10,7 +10,7 @@
 #include "Trade.pb.h"
 #include "Cash.pb.h"
 #include "Position.pb.h"
-#include "ExchangeParameter.pb.h"
+#include "ProductParameter.pb.h"
 #include "SSRate.pb.h"
 #include "InterestRate.pb.h"
 #include "Volatility.pb.h"
@@ -79,7 +79,7 @@ int main(int argc, char *argv[])
   auto *trade = new Proto::Trade();
   auto *cash = new Proto::Cash();
   auto *position = new Proto::PositionReq();
-  auto *exchange_parameter = new Proto::ExchangeParameterReq();
+  auto *product_parameter = new Proto::ProductParameterReq();
   auto *interest_rate = new Proto::InterestRateReq();
   auto *ssrate = new Proto::SSRateReq();
   auto *volatility = new Proto::VolatilityCurveReq();
@@ -128,7 +128,7 @@ int main(int argc, char *argv[])
   delete trade;
   delete cash;
   delete position;
-  delete exchange_parameter;
+  delete product_parameter;
   delete ssrate;
   delete interest_rate;
   delete volatility;

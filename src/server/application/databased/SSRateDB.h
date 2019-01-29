@@ -4,7 +4,7 @@
 #include <unordered_map>
 #include "DbBase.h"
 #include "InstrumentDB.h"
-#include "ExchangeParameterDB.h"
+#include "ProductParameterDB.h"
 #include "SSRate.pb.h"
 
 class SSRateDB : public DbBase {
@@ -12,7 +12,7 @@ class SSRateDB : public DbBase {
   SSRateDB(ConcurrentSqliteDB &db,
            const std::string &table_name,
            InstrumentDB &instrument_db,
-           ExchangeParameterDB &exchange_db);
+           ProductParameterDB &product_db);
 
  private:
   virtual void RefreshCache() override;

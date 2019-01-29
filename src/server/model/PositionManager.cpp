@@ -1,6 +1,6 @@
 #include "PositionManager.h"
 #include "boost/format.hpp"
-#include "ProductManager.h"
+#include "InstrumentManager.h"
 #include "Middleware.h"
 #include "config/EnvConfig.h"
 #include "base/logger/Logging.h"
@@ -12,7 +12,7 @@ PositionManager* PositionManager::GetInstance() {
 
 void PositionManager::Init() {
   LOG_INF << "Initialize position manager...";
-  auto insts = ProductManager::GetInstance()->FindInstruments(
+  auto insts = InstrumentManager::GetInstance()->FindInstruments(
                [](const Instrument*){ return true; });
   std::lock_guard<std::mutex> lck(mtx_);
   for (auto &inst : insts) {
@@ -181,7 +181,7 @@ void PositionManager::Release(const OrderPtr &order) {
 }
 
 void PositionManager::UpdatePosition(const PositionPtr &position) {
-  const Instrument *inst = ProductManager::GetInstance()->FindId(position->instrument());
+  const Instrument *inst = InstrumentManager::GetInstance()->FindId(position->instrument());
   assert(inst);
   std::lock_guard<std::mutex> lck(mtx_);
   auto &pos = positions_[inst];

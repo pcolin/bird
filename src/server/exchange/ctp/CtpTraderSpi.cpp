@@ -7,7 +7,7 @@
 #include "config/EnvConfig.h"
 #include "model/Future.h"
 #include "model/Option.h"
-#include "model/ProductManager.h"
+#include "model/InstrumentManager.h"
 #include "model/ParameterManager.h"
 #include "model/PositionManager.h"
 #include "model/OrderManager.h"
@@ -125,7 +125,7 @@ void CtpTraderSpi::OnRspQryInstrument(CThostFtdcInstrumentField* pInstrument,
       future->Maturity(boost::gregorian::from_undelimited_string(pInstrument->ExpireDate)); /// DCE
       if (id == it->second.hedge_underlying) {
         future->HedgeUnderlying(future);
-        ProductManager::GetInstance()->Add(future);
+        InstrumentManager::GetInstance()->Add(future);
         LOG_INF << "Add Future " << id;
       }
       futures.emplace(future, it->second.hedge_underlying);
@@ -152,20 +152,20 @@ void CtpTraderSpi::OnRspQryInstrument(CThostFtdcInstrumentField* pInstrument,
     inst->Product(pInstrument->ProductID);
     inst->Exchange(exchange);
     if (pInstrument->IsTrading) {
-      auto exch = ParameterManager::GetInstance()->GetExchange();
-      if (exch) {
-        if (exch->IsTradingTime(inst->Maturity())) {
+      auto product = ParameterManager::GetInstance()->GetProduct(pInstrument->ProductID);
+      if (product) {
+        if (product->IsTradingTime(inst->Maturity())) {
           inst->Status(Proto::InstrumentStatus::Trading);
         } else {
           inst->Status(Proto::InstrumentStatus::PreOpen);
         }
       } else {
-        LOG_ERR << "Failed to get exchange parameter.";
+        LOG_ERR << "failed to get product parameter.";
       }
     } else {
       inst->Status(Proto::InstrumentStatus::Halt);
     }
-    LOG_DBG << boost::format("Set %1% status: %2%") % inst->Id() %
+    LOG_DBG << boost::format("set %1% status: %2%") % inst->Id() %
                Proto::InstrumentStatus_Name(inst->Status());
     inst->Currency(Proto::Currency::CNY);
     inst->Tick(pInstrument->PriceTick);
@@ -179,23 +179,23 @@ void CtpTraderSpi::OnRspQryInstrument(CThostFtdcInstrumentField* pInstrument,
         ClusterManager::GetInstance()->AddDevice(it.first);
       } else {
         LOG_DBG << "Begin to deal with future " << it.second;
-        const Instrument* undl = ProductManager::GetInstance()->FindId(it.second);
+        const Instrument* undl = InstrumentManager::GetInstance()->FindId(it.second);
         assert (undl);
         it.first->HedgeUnderlying(undl);
-        ProductManager::GetInstance()->Add(it.first);
+        InstrumentManager::GetInstance()->Add(it.first);
         LOG_INF << "Add Future " << it.first->Id();
       }
       // it.first->Serialize(req->add_instruments());
     }
     for (auto &it : options) {
-      const Instrument* undl = ProductManager::GetInstance()->FindId(it.second);
+      const Instrument* undl = InstrumentManager::GetInstance()->FindId(it.second);
       assert (undl);
       it.first->Underlying(undl);
-      const Instrument* hedge_undl = ProductManager::GetInstance()->FindId(
+      const Instrument* hedge_undl = InstrumentManager::GetInstance()->FindId(
                                      config_[it.second].hedge_underlying);
       assert(hedge_undl);
       it.first->HedgeUnderlying(hedge_undl);
-      ProductManager::GetInstance()->Add(it.first);
+      InstrumentManager::GetInstance()->Add(it.first);
       LOG_INF << boost::format("Add Option %1%, Hedge Underlying %2%") %
                  it.first->Id() % hedge_undl->Id();
       // it.first->Serialize(req->add_instruments());
@@ -232,7 +232,7 @@ void CtpTraderSpi::OnRspQryInstrumentCommissionRate(
              pInstrumentCommissionRate->CloseTodayRatioByVolume;
 
   /// to be done...
-  auto instruments = ProductManager::GetInstance()->FindInstruments(
+  auto instruments = InstrumentManager::GetInstance()->FindInstruments(
       [&](const Instrument *inst) {
         return inst->Product() == pInstrumentCommissionRate->InstrumentID;
       });
@@ -286,7 +286,7 @@ void CtpTraderSpi::OnRspQryOptionInstrCommRate(
              pOptionInstrCommRate->CloseTodayRatioByVolume;
 
   /// to be done...
-  auto instruments = ProductManager::GetInstance()->FindInstruments(
+  auto instruments = InstrumentManager::GetInstance()->FindInstruments(
       [&](const Instrument *inst) {
         return inst->Product() == pOptionInstrCommRate->InstrumentID;
       });
@@ -365,7 +365,7 @@ void CtpTraderSpi::OnRspQryDepthMarketData(CThostFtdcDepthMarketDataField* pDept
              pDepthMarketData->InstrumentID % pDepthMarketData->UpperLimitPrice %
              pDepthMarketData->LowerLimitPrice % pDepthMarketData->PreSettlementPrice;
   auto *inst = const_cast<Instrument*>(
-               ProductManager::GetInstance()->FindId(pDepthMarketData->InstrumentID));
+               InstrumentManager::GetInstance()->FindId(pDepthMarketData->InstrumentID));
   if (inst) {
     inst->Highest(pDepthMarketData->UpperLimitPrice);
     inst->Lowest(pDepthMarketData->LowerLimitPrice);
@@ -373,7 +373,7 @@ void CtpTraderSpi::OnRspQryDepthMarketData(CThostFtdcDepthMarketDataField* pDept
                inst->Id() % inst->Lowest() % inst->Highest();
   }
   if (bIsLast) {
-    auto &instruments = ProductManager::GetInstance()->FindInstruments(
+    auto &instruments = InstrumentManager::GetInstance()->FindInstruments(
                         [](const Instrument*) { return true; });
     if (instruments.size() > 0) {
       auto req = Message::NewProto<Proto::InstrumentReq>();
@@ -426,7 +426,7 @@ void CtpTraderSpi::OnRspQryInvestorPosition(CThostFtdcInvestorPositionField* pIn
                pInvestorPosition->LongFrozen % pInvestorPosition->ShortFrozen %
                pInvestorPosition->PositionDate % pInvestorPosition->OpenVolume %
                pInvestorPosition->CloseVolume % pInvestorPosition->TodayPosition;
-    auto *inst = ProductManager::GetInstance()->FindId(pInvestorPosition->InstrumentID);
+    auto *inst = InstrumentManager::GetInstance()->FindId(pInvestorPosition->InstrumentID);
     if (inst) {
       PositionPtr pos = nullptr;
       auto it = positions.find(inst);
@@ -598,7 +598,7 @@ void CtpTraderSpi::OnRtnTrade(CThostFtdcTradeField* pTrade) {
              pTrade->InstrumentID % pTrade->OrderRef % pTrade->OrderLocalID % pTrade->OrderSysID %
              pTrade->TradeID % pTrade->Direction % pTrade->Price % pTrade->Volume %
              pTrade->TradeDate % pTrade->TradeTime;
-  const Instrument *inst = ProductManager::GetInstance()->FindId(pTrade->InstrumentID);
+  const Instrument *inst = InstrumentManager::GetInstance()->FindId(pTrade->InstrumentID);
   if (inst) {
     auto ord = api_->FindAndRemove(pTrade->OrderRef);
     // if (ord == nullptr)
@@ -716,7 +716,7 @@ void CtpTraderSpi::OnRtnInstrumentStatus(CThostFtdcInstrumentStatusField* pInstr
                            "InstrumentStatus(%3%)") %
              pInstrumentStatus->InstrumentID % pInstrumentStatus->ExchangeID %
              pInstrumentStatus->InstrumentStatus;
-  auto instruments = ProductManager::GetInstance()->FindInstruments(
+  auto instruments = InstrumentManager::GetInstance()->FindInstruments(
       [&](const Instrument *inst) { return inst->Product() == pInstrumentStatus->InstrumentID; });
   if (instruments.size() > 0) {
     auto req = Message::NewProto<Proto::InstrumentReq>();

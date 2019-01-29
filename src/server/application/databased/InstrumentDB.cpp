@@ -7,8 +7,8 @@
 
 InstrumentDB::InstrumentDB(ConcurrentSqliteDB &db,
                            const std::string &table_name,
-                           ExchangeParameterDB &exchange_db)
-    : DbBase(db, table_name), trading_date_(exchange_db.TradingDay()) {}
+                           ProductParameterDB &product_db)
+    : DbBase(db, table_name), trading_date_(product_db.TradingDay()) {}
 
 std::shared_ptr<Proto::Instrument> InstrumentDB::FindOption(const std::string &id) {
   auto it = options_.find(id);
@@ -43,7 +43,7 @@ void InstrumentDB::RegisterCallback(
 }
 
 base::ProtoMessagePtr InstrumentDB::OnRequest(const std::shared_ptr<Proto::InstrumentReq> &msg) {
-  LOG_INF << "Instrument request: " << msg->ShortDebugString();
+  LOG_INF << "instrument request: " << msg->ShortDebugString();
   auto reply = Message::NewProto<Proto::InstrumentRep>();
   if (msg->type() == Proto::RequestType::Get) {
     for (auto &underlying : underlyings_) {
@@ -56,15 +56,15 @@ base::ProtoMessagePtr InstrumentDB::OnRequest(const std::shared_ptr<Proto::Instr
         reply->add_instruments()->CopyFrom(*option.second);
       }
     }
-    LOG_INF << boost::format("Get %1% instruments totally.") % reply->instruments_size();
+    LOG_INF << boost::format("get %1% instruments totally.") % reply->instruments_size();
   } else if (msg->type() == Proto::RequestType::Set) {
     char sql[1024];
     TransactionGuard tg(this);
     for (auto &inst : msg->instruments()) {
       if (!inst.symbol().empty()) {
-        sprintf(sql, "INSERT OR REPLACE INTO %s VALUES('%s', '%s', %d, %d, %d, '%s', '%s', %d, %d, "
+        sprintf(sql, "INSERT OR REPLACE INTO %s VALUES('%s', '%s', '%s', %d, %d, %d, '%s', '%s', %d, %d, "
                      "%f, %f, %f, %f, %d, %f, %f, %f, %d, '%s', %d, %d, %f)",
-                table_name_.c_str(), inst.id().c_str(), inst.symbol().c_str(),
+                table_name_.c_str(), inst.id().c_str(), inst.symbol().c_str(), inst.product().c_str(),
                 static_cast<int32_t>(inst.exchange()), static_cast<int32_t>(inst.type()),
                 static_cast<int32_t>(inst.currency()), inst.underlying().c_str(),
                 inst.hedge_underlying().c_str(), static_cast<int32_t>(inst.status()), inst.lot(),
@@ -108,36 +108,37 @@ void InstrumentDB::UpdateInstrumentStatus(const Proto::Instrument &inst, Instrum
 }
 
 int InstrumentDB::UnderlyingCallback(void *data, int argc, char **argv, char **col_name) {
-  auto type = static_cast<Proto::InstrumentType>(atoi(argv[3]));
+  auto type = static_cast<Proto::InstrumentType>(atoi(argv[4]));
   if (type != Proto::InstrumentType::Option) {
     auto &cache = *static_cast<InstrumentMap*>(data);
     std::string id = argv[0];
     auto inst = Message::NewProto<Proto::Instrument>();
     inst->set_id(id);
     inst->set_symbol(argv[1]);
-    inst->set_exchange(static_cast<Proto::Exchange>(atoi(argv[2])));
+    inst->set_product(argv[2]);
+    inst->set_exchange(static_cast<Proto::Exchange>(atoi(argv[3])));
     inst->set_type(type);
-    inst->set_currency(static_cast<Proto::Currency>(atoi(argv[4])));
-    inst->set_underlying(argv[5]);
-    inst->set_hedge_underlying(argv[6]);
-    inst->set_status(static_cast<Proto::InstrumentStatus>(atoi(argv[7])));
-    inst->set_lot(atoi(argv[8]));
-    inst->set_tick(atof(argv[9]));
-    inst->set_multiplier(atof(argv[10]));
-    inst->set_highest(atof(argv[11]));
-    inst->set_lowest(atof(argv[12]));
-    inst->set_commission(static_cast<Proto::CommissionType>(atoi(argv[13])));
-    inst->set_open_commission(atof(argv[14]));
-    inst->set_close_commission(atof(argv[15]));
-    inst->set_close_today_commission(atof(argv[16]));
-    inst->set_maturity(argv[18]);
+    inst->set_currency(static_cast<Proto::Currency>(atoi(argv[5])));
+    inst->set_underlying(argv[6]);
+    inst->set_hedge_underlying(argv[7]);
+    inst->set_status(static_cast<Proto::InstrumentStatus>(atoi(argv[8])));
+    inst->set_lot(atoi(argv[9]));
+    inst->set_tick(atof(argv[10]));
+    inst->set_multiplier(atof(argv[11]));
+    inst->set_highest(atof(argv[12]));
+    inst->set_lowest(atof(argv[13]));
+    inst->set_commission(static_cast<Proto::CommissionType>(atoi(argv[14])));
+    inst->set_open_commission(atof(argv[15]));
+    inst->set_close_commission(atof(argv[16]));
+    inst->set_close_today_commission(atof(argv[17]));
+    inst->set_maturity(argv[19]);
     cache[id] = inst;
   }
   return 0;
 }
 
 int InstrumentDB::OptionCallback(void *data, int argc, char **argv, char **col_name) {
-  auto type = static_cast<Proto::InstrumentType>(atoi(argv[3]));
+  auto type = static_cast<Proto::InstrumentType>(atoi(argv[4]));
   if (type == Proto::InstrumentType::Option) {
     auto *db = static_cast<InstrumentDB*>(data);
     auto &cache = db->options_;
@@ -145,26 +146,27 @@ int InstrumentDB::OptionCallback(void *data, int argc, char **argv, char **col_n
     auto inst = Message::NewProto<Proto::Instrument>();
     inst->set_id(id);
     inst->set_symbol(argv[1]);
-    inst->set_exchange(static_cast<Proto::Exchange>(atoi(argv[2])));
+    inst->set_product(argv[2]);
+    inst->set_exchange(static_cast<Proto::Exchange>(atoi(argv[3])));
     inst->set_type(type);
-    inst->set_currency(static_cast<Proto::Currency>(atoi(argv[4])));
-    inst->set_underlying(argv[5]);
-    inst->set_hedge_underlying(argv[6]);
-    inst->set_status(static_cast<Proto::InstrumentStatus>(atoi(argv[7])));
-    inst->set_lot(atoi(argv[8]));
-    inst->set_tick(atof(argv[9]));
-    inst->set_multiplier(atof(argv[10]));
-    inst->set_highest(atof(argv[11]));
-    inst->set_lowest(atof(argv[12]));
-    inst->set_commission(static_cast<Proto::CommissionType>(atoi(argv[13])));
-    inst->set_open_commission(atof(argv[14]));
-    inst->set_close_commission(atof(argv[15]));
-    inst->set_close_today_commission(atof(argv[16]));
-    inst->set_call_put(static_cast<Proto::OptionType>(atoi(argv[17])));
-    inst->set_maturity(argv[18]);
-    inst->set_exercise(static_cast<Proto::ExerciseType>(atoi(argv[19])));
-    inst->set_settlement(static_cast<Proto::SettlementType>(atoi(argv[20])));
-    inst->set_strike(atof(argv[21]));
+    inst->set_currency(static_cast<Proto::Currency>(atoi(argv[5])));
+    inst->set_underlying(argv[6]);
+    inst->set_hedge_underlying(argv[7]);
+    inst->set_status(static_cast<Proto::InstrumentStatus>(atoi(argv[8])));
+    inst->set_lot(atoi(argv[9]));
+    inst->set_tick(atof(argv[10]));
+    inst->set_multiplier(atof(argv[11]));
+    inst->set_highest(atof(argv[12]));
+    inst->set_lowest(atof(argv[13]));
+    inst->set_commission(static_cast<Proto::CommissionType>(atoi(argv[14])));
+    inst->set_open_commission(atof(argv[15]));
+    inst->set_close_commission(atof(argv[16]));
+    inst->set_close_today_commission(atof(argv[17]));
+    inst->set_call_put(static_cast<Proto::OptionType>(atoi(argv[18])));
+    inst->set_maturity(argv[19]);
+    inst->set_exercise(static_cast<Proto::ExerciseType>(atoi(argv[20])));
+    inst->set_settlement(static_cast<Proto::SettlementType>(atoi(argv[21])));
+    inst->set_strike(atof(argv[22]));
     cache[id] = inst;
   }
   return 0;

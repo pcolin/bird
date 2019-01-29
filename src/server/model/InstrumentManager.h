@@ -1,5 +1,5 @@
-#ifndef MODEL_PRODUCT_MANAGER_H
-#define MODEL_PRODUCT_MANAGER_H
+#ifndef MODEL_INSTRUMENT_MANAGER_H
+#define MODEL_INSTRUMENT_MANAGER_H
 
 #include <mutex>
 #include <vector>
@@ -7,10 +7,10 @@
 #include <functional>
 #include "Option.h"
 
-class ProductManager {
+class InstrumentManager {
  public:
-  static ProductManager* GetInstance();
-  ~ProductManager();
+  static InstrumentManager* GetInstance();
+  ~InstrumentManager();
 
   const Instrument* Add(Instrument* instrument);
   void Remove(const Instrument* instrument);
@@ -22,10 +22,10 @@ class ProductManager {
       const std::function<bool(const Instrument*)> &filter );
 
  private:
-  ProductManager() {}
+  InstrumentManager() {}
 
   std::unordered_map<std::string, Instrument*> instruments_;
   std::mutex mtx_;
 };
 
-#endif // MODEL_PRODUCT_MANAGER_H
+#endif // MODEL_INSTRUMENT_MANAGER_H

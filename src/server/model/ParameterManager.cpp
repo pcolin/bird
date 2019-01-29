@@ -1,6 +1,6 @@
 #include "ParameterManager.h"
 #include "boost/format.hpp"
-#include "ProductManager.h"
+#include "InstrumentManager.h"
 #include "Message.h"
 #include "Middleware.h"
 #include "strategy/ClusterManager.h"
@@ -13,44 +13,50 @@ ParameterManager* ParameterManager::GetInstance() {
 
 void ParameterManager::InitGlobal() {
   auto user = EnvConfig::GetInstance()->GetString(EnvVar::EXCHANGE);
-  /// Sync Exchange
+  /// Sync Product
   {
-    Proto::ExchangeParameterReq req;
+    Proto::ProductParameterReq req;
     req.set_type(Proto::RequestType::Get);
     req.set_user(user);
-    auto rep = std::dynamic_pointer_cast<Proto::ExchangeParameterRep>(
+    auto rep = std::dynamic_pointer_cast<Proto::ProductParameterRep>(
                Middleware::GetInstance()->Request(req));
     if (rep && rep->result().result()) {
-      exchange_ = std::make_shared<Exchange>();
       for(auto &p : rep->parameters()) {
-        exchange_->OnExchangeParameter(p);
+        auto it = products_.find(p.product());
+        if (it != products_.end()) {
+          it->second->OnProductParameter(p);
+        } else {
+          auto product = std::make_shared<Product>();
+          product->OnProductParameter(p);
+          products_.emplace(p.product(), product);
+        }
       }
     } else {
-      LOG_ERR << "Failed to sync Exchange.";
+      LOG_ERR << "Failed to sync Product.";
     }
   }
 }
 
 void ParameterManager::Init() {
   auto user = EnvConfig::GetInstance()->GetString(EnvVar::EXCHANGE);
-  // /// Sync Exchange
+  // /// Sync Product
   // {
-  //   auto req = Message::NewProto<Proto::ExchangeParameterReq>();
+  //   auto req = Message::NewProto<Proto::ProductParameterReq>();
   //   req->set_type(Proto::RequestType::Get);
   //   req->set_user(user);
-  //   auto rep = std::dynamic_pointer_cast<Proto::ExchangeParameterRep>(
+  //   auto rep = std::dynamic_pointer_cast<Proto::ProductParameterRep>(
   //       Middleware::GetInstance()->Request(req));
   //   if (rep && rep->result().result())
   //   {
-  //     exchange_ = std::make_shared<Exchange>();
+  //     exchange_ = std::make_shared<Product>();
   //     for(auto &p : rep->parameters())
   //     {
-  //       exchange_->OnExchangeParameter(p);
+  //       exchange_->OnProductParameter(p);
   //     }
   //   }
   //   else
   //   {
-  //     LOG_ERR << "Failed to sync Exchange.";
+  //     LOG_ERR << "Failed to sync Product.";
   //   }
   // }
   /// Sync InterestRate
@@ -81,7 +87,7 @@ void ParameterManager::Init() {
     if (rep && rep->result().result()) {
       std::lock_guard<std::mutex> lck(ssrates_mtx_);
       for (auto &r : rep->rates()) {
-        auto *inst = ProductManager::GetInstance()->FindId(r.underlying());
+        auto *inst = InstrumentManager::GetInstance()->FindId(r.underlying());
         if (inst) {
           auto it = ssrates_.find(inst);
           if (it == ssrates_.end()) {
@@ -107,7 +113,7 @@ void ParameterManager::Init() {
       std::lock_guard<std::mutex> lck(volatility_curves_mtx_);
       for (auto &v : rep->curves()) {
         LOG_INF << "VolatilityCurve: " << v.ShortDebugString();
-        auto *inst = ProductManager::GetInstance()->FindId(v.underlying());
+        auto *inst = InstrumentManager::GetInstance()->FindId(v.underlying());
         if (inst) {
           auto it = volatility_curves_.find(inst);
           if (it == volatility_curves_.end()) {
@@ -135,7 +141,7 @@ void ParameterManager::Init() {
     if (rep && rep->result().result()) {
       std::lock_guard<std::mutex> lck(destrikers_mtx_);
       for (auto &d : rep->destrikers()) {
-        auto *inst = ProductManager::GetInstance()->FindId(d.instrument());
+        auto *inst = InstrumentManager::GetInstance()->FindId(d.instrument());
         if (inst) {
           destrikers_[inst] = d.destriker();
         }
@@ -157,7 +163,7 @@ void ParameterManager::Init() {
   //     std::lock_guard<std::mutex> lck(elastics_mtx_);
   //     for (auto &e : rep->elastics())
   //     {
-  //       auto *inst = ProductManager::GetInstance()->FindId(e.instrument());
+  //       auto *inst = InstrumentManager::GetInstance()->FindId(e.instrument());
   //       if (inst)
   //       {
   //         elastics_[inst] = e.elastic();
@@ -169,6 +175,14 @@ void ParameterManager::Init() {
   //     LOG_ERR << "Failed to sync Elastic.";
   //   }
   // }
+}
+
+std::shared_ptr<Product> ParameterManager::GetProduct(const std::string &product) {
+  auto it = products_.find(product);
+  if (it != products_.end()) {
+    return it->second;
+  }
+  return nullptr;
 }
 
 bool ParameterManager::GetInterestRate(const boost::gregorian::date &date, double &rate) {
@@ -255,14 +269,21 @@ bool ParameterManager::GetDestriker(const Instrument *instrument, double &destri
 //   return false;
 // }
 
-ParameterManager::ProtoReplyPtr ParameterManager::OnExchangeParameterReq(
-    const std::shared_ptr<Proto::ExchangeParameterReq> &req) {
+ParameterManager::ProtoReplyPtr ParameterManager::OnProductParameterReq(
+    const std::shared_ptr<Proto::ProductParameterReq> &req) {
   if (req->type() == Proto::RequestType::Set) {
     for(auto &p : req->parameters()) {
-      exchange_->OnExchangeParameter(p);
+      auto it = products_.find(p.product());
+      if (it != products_.end()) {
+        it->second->OnProductParameter(p);
+      } else {
+        auto product = std::make_shared<Product>();
+        product->OnProductParameter(p);
+        products_.emplace(p.product(), product);
+      }
     }
     ClusterManager::GetInstance()->Publish(req);
-    LOG_PUB << req->user() << " set exchange parameters";
+    LOG_PUB << req->user() << " set product parameters";
   }
   return nullptr;
 }
@@ -288,7 +309,7 @@ ParameterManager::ProtoReplyPtr ParameterManager::OnSSRateReq(
   auto type = req->type();
   if (type == Proto::RequestType::Set) {
     for (auto &r : req->rates()) {
-      auto *inst = ProductManager::GetInstance()->FindId(r.underlying());
+      auto *inst = InstrumentManager::GetInstance()->FindId(r.underlying());
       if (inst) {
         auto p = Message::NewProto<Proto::SSRate>();
         p->CopyFrom(r);
@@ -309,7 +330,7 @@ ParameterManager::ProtoReplyPtr ParameterManager::OnSSRateReq(
     }
   } else if (type == Proto::RequestType::Del) {
     for (auto &r : req->rates()) {
-      auto *inst = ProductManager::GetInstance()->FindId(r.underlying());
+      auto *inst = InstrumentManager::GetInstance()->FindId(r.underlying());
       if (inst) {
         std::lock_guard<std::mutex> lck(ssrates_mtx_);
         auto it = ssrates_.find(inst);
@@ -334,7 +355,7 @@ ParameterManager::ProtoReplyPtr ParameterManager::OnSSRateReq(
 //    std::lock_guard<std::mutex> lck(volatilities_mtx_);
 //    for (auto &v : req->volatilities())
 //    {
-//      auto *inst = ProductManager::GetInstance()->FindId(v.instrument());
+//      auto *inst = InstrumentManager::GetInstance()->FindId(v.instrument());
 //      if (inst)
 //      {
 //        volatilities_[inst] = v.volatility();
@@ -346,7 +367,7 @@ ParameterManager::ProtoReplyPtr ParameterManager::OnSSRateReq(
 //    std::lock_guard<std::mutex> lck(volatilities_mtx_);
 //    for (auto &v : req->volatilities())
 //    {
-//      auto *inst = ProductManager::GetInstance()->FindId(v.instrument());
+//      auto *inst = InstrumentManager::GetInstance()->FindId(v.instrument());
 //      if (inst)
 //      {
 //        volatilities_.erase(inst);
@@ -360,7 +381,7 @@ ParameterManager::ProtoReplyPtr ParameterManager::OnVolatilityCurveReq(
   auto type = req->type();
   if (type == Proto::RequestType::Set) {
     for (auto &vc : req->curves()) {
-      auto *inst = ProductManager::GetInstance()->FindId(vc.underlying());
+      auto *inst = InstrumentManager::GetInstance()->FindId(vc.underlying());
       if (inst) {
         auto p = Message::NewProto<Proto::VolatilityCurve>();
         p->CopyFrom(vc);
@@ -381,7 +402,7 @@ ParameterManager::ProtoReplyPtr ParameterManager::OnVolatilityCurveReq(
     }
   } else if (type == Proto::RequestType::Del) {
     for (auto &vc : req->curves()) {
-      auto *inst = ProductManager::GetInstance()->FindId(vc.underlying());
+      auto *inst = InstrumentManager::GetInstance()->FindId(vc.underlying());
       if (inst) {
         std::lock_guard<std::mutex> lck(volatility_curves_mtx_);
         auto it = volatility_curves_.find(inst);
@@ -407,7 +428,7 @@ ParameterManager::ProtoReplyPtr ParameterManager::OnDestrikerReq(
     {
       std::lock_guard<std::mutex> lck(destrikers_mtx_);
       for (auto &d : req->destrikers()) {
-        auto *inst = ProductManager::GetInstance()->FindId(d.instrument());
+        auto *inst = InstrumentManager::GetInstance()->FindId(d.instrument());
         if (inst) {
           destrikers_[inst] = d.destriker();
           underlyings.insert(inst->HedgeUnderlying());
@@ -424,7 +445,7 @@ ParameterManager::ProtoReplyPtr ParameterManager::OnDestrikerReq(
   } else if (type == Proto::RequestType::Del) {
     std::lock_guard<std::mutex> lck(destrikers_mtx_);
     for (auto &d : req->destrikers()) {
-      auto *inst = ProductManager::GetInstance()->FindId(d.instrument());
+      auto *inst = InstrumentManager::GetInstance()->FindId(d.instrument());
       if (inst) {
         destrikers_.erase(inst);
       }
@@ -442,7 +463,7 @@ ParameterManager::ProtoReplyPtr ParameterManager::OnDestrikerReq(
 //     std::lock_guard<std::mutex> lck(elastics_mtx_);
 //     for (auto &e : req->elastics())
 //     {
-//       auto *inst = ProductManager::GetInstance()->FindId(e.instrument());
+//       auto *inst = InstrumentManager::GetInstance()->FindId(e.instrument());
 //       if (inst)
 //       {
 //         elastics_[inst] = e.elastic();
@@ -454,7 +475,7 @@ ParameterManager::ProtoReplyPtr ParameterManager::OnDestrikerReq(
 //     std::lock_guard<std::mutex> lck(elastics_mtx_);
 //     for (auto &e : req->elastics())
 //     {
-//       auto *inst = ProductManager::GetInstance()->FindId(e.instrument());
+//       auto *inst = InstrumentManager::GetInstance()->FindId(e.instrument());
 //       if (inst)
 //       {
 //         elastics_.erase(inst);

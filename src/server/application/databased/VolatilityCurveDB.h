@@ -4,7 +4,7 @@
 #include <unordered_map>
 #include "DbBase.h"
 #include "InstrumentDB.h"
-#include "ExchangeParameterDB.h"
+#include "ProductParameterDB.h"
 #include "Volatility.pb.h"
 
 class VolatilityCurveDB : public DbBase {
@@ -12,7 +12,7 @@ class VolatilityCurveDB : public DbBase {
   VolatilityCurveDB(ConcurrentSqliteDB &db,
                     const std::string &table_name,
                     InstrumentDB &instrument_db,
-                    ExchangeParameterDB &exchange_db);
+                    ProductParameterDB &product_db);
 
  private:
   virtual void RefreshCache() override;

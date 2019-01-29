@@ -10,7 +10,7 @@
 #include "exchange/manager/ExchangeManager.h"
 #include "strategy/ClusterManager.h"
 #include "model/Middleware.h"
-#include "model/ProductManager.h"
+#include "model/InstrumentManager.h"
 #include "model/ParameterManager.h"
 #include "model/OrderManager.h"
 #include "model/TradeManager.h"
@@ -67,9 +67,9 @@ int main(int argc, char *args[]) {
 
   // ///// test
   // std::this_thread::sleep_for(std::chrono::seconds(3));
-  // //// const Instrument* inst = ProductManager::GetInstance()->FindId("SR801");
+  // //// const Instrument* inst = InstrumentManager::GetInstance()->FindId("SR801");
   // const std::string id = "m1809";
-  // const Instrument* inst = ProductManager::GetInstance()->FindId(id);
+  // const Instrument* inst = InstrumentManager::GetInstance()->FindId(id);
   // if (inst)
   // {
   //   auto *dm = ClusterManager::GetInstance()->FindDevice(inst);

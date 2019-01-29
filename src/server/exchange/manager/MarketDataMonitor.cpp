@@ -1,11 +1,11 @@
 #include "MarketDataMonitor.h"
 #include "base/logger/Logging.h"
 #include "config/EnvConfig.h"
-#include "model/ProductManager.h"
+#include "model/InstrumentManager.h"
 #include "boost/format.hpp"
 
 void MarketDataMonitor::Start() {
-  instrument_ = ProductManager::GetInstance()->FindInstrument(
+  instrument_ = InstrumentManager::GetInstance()->FindInstrument(
       [](const auto& inst){ return true; });
   if (instrument_) {
     bool expected = false;

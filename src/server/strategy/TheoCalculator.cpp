@@ -5,7 +5,7 @@
 #include "base/logger/Logging.h"
 #include "base/common/Likely.h"
 #include "base/common/Float.h"
-#include "model/ProductManager.h"
+#include "model/InstrumentManager.h"
 #include "model/ParameterManager.h"
 #include "boost/format.hpp"
 // #include "tbb/parallel_for.h"
@@ -22,7 +22,7 @@ void TheoCalculator::Start() {
       running_ = true;
       thread_ = std::make_unique<std::thread>(
           [&]() {
-            LOG_INF << "Start calculator thread...";
+            LOG_INF << "start calculator thread...";
             while (running_) {
               CalculatorEvent e;
               if (events_.try_dequeue(e)) {
@@ -32,7 +32,7 @@ void TheoCalculator::Start() {
           });
     }
   } else {
-    LOG_ERR << boost::format("Pricing %1% is not existed") % name_;
+    LOG_ERR << boost::format("pricing %1% is not existed") % name_;
   }
 }
 
@@ -46,14 +46,14 @@ void TheoCalculator::Stop() {
 
 bool TheoCalculator::Initialize(const std::shared_ptr<Proto::Pricer> &spec) {
   Proto::PricingModel model = spec->model();
-  LOG_INF << boost::format("Start running %1%: model(%2%)") % spec->name() %
+  LOG_INF << boost::format("start running %1%: model(%2%)") % spec->name() %
              Proto::PricingModel_Name(model);
   if (model == Proto::PricingModel::BSM) {
     model_ = std::make_shared<Model::BlackScholesMertonModel>();
   } else if (model == Proto::PricingModel::CRR) {
     model_ = std::make_shared<Model::CoxRossRubinsteinModel>();
   } else {
-    LOG_ERR << "Unknown pricing model";
+    LOG_ERR << "unknown pricing model";
     return false;
   }
   vol_model_ = std::make_shared<Model::VolatilityModel>();
@@ -62,7 +62,7 @@ bool TheoCalculator::Initialize(const std::shared_ptr<Proto::Pricer> &spec) {
   parameters_.clear();
   auto *underlying = dm_->GetUnderlying();
   future_ = underlying->Type() == Proto::InstrumentType::Future;
-  auto options = ProductManager::GetInstance()->FindOptions(underlying);
+  auto options = InstrumentManager::GetInstance()->FindOptions(underlying);
   std::sort(options.begin(), options.end(),
             [](const Option *op1, const Option *op2) {
               if (op1->Underlying()->Id() < op2->Underlying()->Id()) {
@@ -114,12 +114,12 @@ bool TheoCalculator::Initialize(const std::shared_ptr<Proto::Pricer> &spec) {
         it->second.volatility->sccr = vc->sccr();
       } else {/// if (param->volatility)
         // it->second.volatility.reset();
-        LOG_WAN << boost::format("Volatility curve of %1% for %2% is null") %
+        LOG_WAN << boost::format("volatility curve of %1% for %2% is null") %
                    to_iso_string(maturity) % underlying->Id();
       }
     }
     it->second.options.insert(it->second.options.cend(), {call, put});
-    LOG_DBG << boost::format("Add options : %1% and %2%") % call->Id() % put->Id();
+    LOG_DBG << boost::format("add options : %1% and %2%") % call->Id() % put->Id();
   }
   return true;
 }
@@ -143,7 +143,7 @@ void TheoCalculator::OnPrice(const PricePtr &price) {
                              }
                            });
     calculate_time_ = base::Now();
-    LOG_INF << boost::format("Recalc theo with spot(%1%), matrix[%2%, %3%] finished : %4%us") %
+    LOG_INF << boost::format("recalc theo with spot(%1%), matrix[%2%, %3%] finished : %4%us") %
                price->adjusted_price % lower_ % upper_ % (calculate_time_ - begin_time);
   }
 }
@@ -161,9 +161,10 @@ void TheoCalculator::OnTrade(const TradePtr &trade) {
       auto *call = it->second.options[mid][0];
       assert(call);
       if (op->Strike() == call->Strike()) {
-        auto exch = ParameterManager::GetInstance()->GetExchange();
-        if (exch) {
-          double t = exch->GetTimeValue(op->Maturity());
+        auto product = ParameterManager::GetInstance()->GetProduct(
+            op->Underlying()->Product());
+        if (product) {
+          double t = product->GetTimeValue(op->Maturity());
           CalculateAndPublish(it->second.options[mid][op->CallPut()], it->second, t);
         }
         return;
@@ -187,7 +188,7 @@ void TheoCalculator::OnHeartbeat(const std::shared_ptr<Proto::Heartbeat> &h) {
                              }
                            });
     calculate_time_ = base::Now();
-    LOG_INF << boost::format("Timely recalc with matrix[%1%, %2%] finished: %3%us") %
+    LOG_INF << boost::format("timely recalc with matrix[%1%, %2%] finished: %3%us") %
                lower_ % upper_ % (calculate_time_ - begin_time);
   }
 }
@@ -204,12 +205,12 @@ void TheoCalculator::OnPricer(const std::shared_ptr<Proto::Pricer> &spec) {
                              }
                            });
     calculate_time_ = base::Now();
-    LOG_INF << boost::format("Update Pricer to recalc with matrix[%1%, %2%] finished: %3%us") %
+    LOG_INF << boost::format("update Pricer to recalc with matrix[%1%, %2%] finished: %3%us") %
                lower_ % upper_ % (calculate_time_ - begin_time);
   }
 }
 
-void TheoCalculator::OnExchangeParameter(const std::shared_ptr<Proto::ExchangeParameterReq> &req) {
+void TheoCalculator::OnProductParameter(const std::shared_ptr<Proto::ProductParameterReq> &req) {
   if (spot_ != base::PRICE_UNDEFINED) {
     auto begin_time = base::Now();
     tbb::parallel_for_each(parameters_.begin(), parameters_.end(),
@@ -220,7 +221,7 @@ void TheoCalculator::OnExchangeParameter(const std::shared_ptr<Proto::ExchangePa
                              }
                            });
     calculate_time_ = base::Now();
-    LOG_INF << boost::format("Update ExchangeParameter to recalc with matrix[%1%, %2%] "
+    LOG_INF << boost::format("update ProductParameter to recalc with matrix[%1%, %2%] "
                              "finished: %3%us") % lower_ % upper_ % (calculate_time_ - begin_time);
   }
 }
@@ -238,7 +239,7 @@ void TheoCalculator::OnInterestRate(const std::shared_ptr<Proto::InterestRateReq
                              }
                            });
     calculate_time_ = base::Now();
-    LOG_INF << boost::format("Update InterestRate to recalc with matrix[%1%, %2%] finished: %3%us") %
+    LOG_INF << boost::format("update InterestRate to recalc with matrix[%1%, %2%] finished: %3%us") %
                lower_ % upper_ % (calculate_time_ - begin_time);
   }
 }
@@ -249,7 +250,7 @@ void TheoCalculator::OnSSRate(const std::shared_ptr<Proto::SSRate> &ssr) {
   if (it != parameters_.end()) {
     it->second.basis = ssr->rate();
   } else {
-    LOG_ERR << "Can't find maturity " << to_iso_string(maturity);
+    LOG_ERR << "can't find maturity " << to_iso_string(maturity);
     return;
   }
   if (spot_ != base::PRICE_UNDEFINED) {
@@ -261,7 +262,7 @@ void TheoCalculator::OnSSRate(const std::shared_ptr<Proto::SSRate> &ssr) {
                              }
                            });
     calculate_time_ = base::Now();
-    LOG_INF << boost::format("Update SSRate to recalc with matrix[%1%, %2%] finished: %3%us") %
+    LOG_INF << boost::format("update SSRate to recalc with matrix[%1%, %2%] finished: %3%us") %
                lower_ % upper_ % (calculate_time_ - begin_time);
   }
 }
@@ -287,7 +288,7 @@ void TheoCalculator::OnVolatilityCurve(const std::shared_ptr<Proto::VolatilityCu
     it->second.volatility->spcr = vc->spcr();
     it->second.volatility->sccr = vc->sccr();
   } else {
-    LOG_ERR << "Can't find maturity " << to_iso_string(maturity);
+    LOG_ERR << "can't find maturity " << to_iso_string(maturity);
     return;
   }
   if (spot_ != base::PRICE_UNDEFINED) {
@@ -299,7 +300,7 @@ void TheoCalculator::OnVolatilityCurve(const std::shared_ptr<Proto::VolatilityCu
                              }
                            });
     calculate_time_ = base::Now();
-    LOG_INF << boost::format("Update volatility to recalc with matrix[%1%, %2%] finished: %3%us") %
+    LOG_INF << boost::format("update volatility to recalc with matrix[%1%, %2%] finished: %3%us") %
                lower_ % upper_ % (calculate_time_ - begin_time);
   }
 }
@@ -307,23 +308,27 @@ void TheoCalculator::OnVolatilityCurve(const std::shared_ptr<Proto::VolatilityCu
 void TheoCalculator::Recalculate(ParametersMap::value_type &value) {
   static int counts[5] = { 1, 2, 4, 8, 16 };
   static int count = 0;
-  double t = ParameterManager::GetInstance()->GetExchange()->GetTimeValue(value.first);
-  // tbb::parallel_for_each(value.second.options.begin(), value.second.options.end(),
-  //     [&](std::array<const Option*, 2> &options)
-  //     {
-  //       CalculateAndPublish(options[0], options[1], value.second, t, lower, upper);
-  //     });
-  auto &options = value.second.options;
-  tbb::parallel_for(tbb::blocked_range<OptionsVector::iterator>(options.begin(), options.end(),
-                                                                counts[count % 5]),
-                    [&](const tbb::blocked_range<OptionsVector::iterator> &r) {
-                      for (auto it = r.begin(); it != r.end(); ++it)
-                      {
-                        CalculateAndPublish((*it)[0], (*it)[1], value.second, t);
-                      }
-                    });
-  LOG_DBG << "parallel with " << counts[count % 5];
-  ++count;
+  auto *underlying = dm_->GetUnderlying();
+  auto product = ParameterManager::GetInstance()->GetProduct(underlying->Product());
+  if (product) {
+    double t = product->GetTimeValue(value.first);
+    // tbb::parallel_for_each(value.second.options.begin(), value.second.options.end(),
+    //     [&](std::array<const Option*, 2> &options)
+    //     {
+    //       CalculateAndPublish(options[0], options[1], value.second, t, lower, upper);
+    //     });
+    auto &options = value.second.options;
+    tbb::parallel_for(tbb::blocked_range<OptionsVector::iterator>(options.begin(), options.end(),
+                                                                  counts[count % 5]),
+                      [&](const tbb::blocked_range<OptionsVector::iterator> &r) {
+                        for (auto it = r.begin(); it != r.end(); ++it)
+                        {
+                          CalculateAndPublish((*it)[0], (*it)[1], value.second, t);
+                        }
+                      });
+    LOG_DBG << "parallel with " << counts[count % 5];
+    ++count;
+  }
 }
 
 void TheoCalculator::CalculateAndPublish(const Option *call,

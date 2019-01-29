@@ -39,6 +39,7 @@ EnvConfig::EnvConfig() {
     { static_cast<int8_t>(EnvVar::EXCHANGE), "EXCHANGE" },
     { static_cast<int8_t>(EnvVar::SIMULATED_EXCHANGE), "SIMULATED_EXCHANGE" },
     { static_cast<int8_t>(EnvVar::RECONNECT_INTERVAL), "RECONNECT_INTERVAL" },
+    { static_cast<int8_t>(EnvVar::FLOW_CONTROL_LIMIT), "FLOW_CONTROL_LIMIT" },
     { static_cast<int8_t>(EnvVar::PRICE_TIMEOUT), "PRICE_TIMEOUT" },
     { static_cast<int8_t>(EnvVar::PUB_PRICE_LEVELS), "PUB_PRICE_LEVELS" },
     { static_cast<int8_t>(EnvVar::PUB_PRICE_INTERVAL), "PUB_PRICE_INTERVAL"},
