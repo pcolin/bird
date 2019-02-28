@@ -15,16 +15,32 @@ class TraderApi {
   virtual void Login() = 0;
   virtual void Logout() = 0;
 
-  void Submit(const OrderPtr& order);
-  void Submit(const OrderPtr& bid, const OrderPtr& ask);
-  void Amend(const OrderPtr& order);
-  void Amend(const OrderPtr& bid, const OrderPtr& ask);
-  void Cancel(const OrderPtr& order);
-  void Cancel(const OrderPtr& bid, const OrderPtr& ask);
+  virtual bool IsMMOption(const Instrument *option) = 0;
+  virtual bool GetMMPrice(const Instrument *option,
+                          double theo,
+                          double &bid,
+                          double &ask) = 0;
+  virtual bool GetQRPrice(const Instrument *option,
+                          double theo,
+                          double &bid,
+                          double &ask) = 0;
+  virtual bool MeetMMObligation(const OrderPtr &bid,
+                                const OrderPtr &ask,
+                                double &ratio) = 0;
+  virtual bool MeetQRObligation(const OrderPtr &bid,
+                                const OrderPtr &ask,
+                                double &ratio) = 0;
+
+  void Submit(const OrderPtr &order);
+  void Submit(const OrderPtr &bid, const OrderPtr &ask);
+  void Amend(const OrderPtr &order);
+  void Amend(const OrderPtr &bid, const OrderPtr &ask);
+  void Cancel(const OrderPtr &order);
+  void Cancel(const OrderPtr &bid, const OrderPtr &ask);
   void CancelAll();
 
-  void OnOrderResponse(const OrderPtr& order);
-  void RejectOrder(const OrderPtr& order);
+  void OnOrderResponse(const OrderPtr &order);
+  void RejectOrder(const OrderPtr &order);
 
  protected:
   // void StartRequestWork();

@@ -37,7 +37,7 @@ void CreditDB::RegisterCallback(
 
 base::ProtoMessagePtr CreditDB::OnRequest(const std::shared_ptr<Proto::CreditReq> &msg) {
   LOG_INF << "Credit request: " << msg->ShortDebugString();
-  auto reply = Message::NewProto<Proto::CreditRep>();
+  auto reply = Message<Proto::CreditRep>::New();
   Proto::RequestType type = msg->type();
   if (type == Proto::RequestType::Get) {
     for (auto &cache: caches_) {
@@ -67,9 +67,9 @@ base::ProtoMessagePtr CreditDB::OnRequest(const std::shared_ptr<Proto::CreditReq
                 c.underlying().c_str(), m.c_str());
         ExecSql(sql);
       } else {
-        auto credit = Message::NewProto<Proto::Credit>();
-        credit->CopyFrom(c);
-        credits.emplace(m, credit);
+        // auto credit = Message::NewProto<Proto::Credit>();
+        // credit->CopyFrom(c);
+        credits.emplace(m, Message<Proto::Credit>::New(c));
       }
 
       for (auto &r : c.records()) {
@@ -93,7 +93,7 @@ int CreditDB::Callback(void *data, int argc, char **argv, char **col_name) {
   std::string underlying = argv[1];
   auto inst = instrument_db->FindUnderlying(underlying);
   if (inst) {
-    auto c = Message::NewProto<Proto::Credit>();
+    auto c = Message<Proto::Credit>::New();
     auto strategy = static_cast<Proto::StrategyType>(atoi(argv[0]));
     c->set_strategy(strategy);
     c->set_underlying(underlying);

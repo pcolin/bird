@@ -32,13 +32,14 @@ void ClusterManager::Init() {
     Proto::PricerReq req;
     req.set_type(Proto::RequestType::Get);
     req.set_user(user);
-    auto rep = std::dynamic_pointer_cast<Proto::PricerRep>(Middleware::GetInstance()->Request(req));
+    auto rep = std::dynamic_pointer_cast<Proto::PricerRep>(
+        Middleware::GetInstance()->Request(req));
     if (rep && rep->result().result()) {
       std::lock_guard<std::mutex> lck(pricer_mtx_);
       for (auto &p : rep->pricers()) {
         LOG_INF << "Pricer: " << p.ShortDebugString();
-        auto pricer = Message::NewProto<Proto::Pricer>();
-        pricer->CopyFrom(p);
+        auto pricer = Message<Proto::Pricer>::New(p);
+        // pricer->CopyFrom(p);
         pricers_.emplace(p.name(), pricer);
       }
     } else {
@@ -59,8 +60,8 @@ void ClusterManager::Init() {
         // auto *op = InstrumentManager::GetInstance()->FindId(s.option());
         // if (op)
         // {
-        auto sw = Message::NewProto<Proto::StrategySwitch>();
-        sw->CopyFrom(s);
+        auto sw = Message<Proto::StrategySwitch>::New(s);
+        // sw->CopyFrom(s);
         switches_[s.strategy()][s.option()] = sw;
         // }
       }
@@ -74,7 +75,8 @@ void ClusterManager::Init() {
     Proto::CreditReq req;
     req.set_type(Proto::RequestType::Get);
     req.set_user(user);
-    auto rep = std::dynamic_pointer_cast<Proto::CreditRep>(Middleware::GetInstance()->Request(req));
+    auto rep = std::dynamic_pointer_cast<Proto::CreditRep>(
+        Middleware::GetInstance()->Request(req));
     if (rep && rep->result().result()) {
       std::lock_guard<std::mutex> lck(credit_mtx_);
       for (auto &c : rep->credits()) {
@@ -82,8 +84,8 @@ void ClusterManager::Init() {
         // auto *underlying = InstrumentManager::GetInstance()->FindId(c.underlying());
         // if (underlying)
         // {
-        auto credit = Message::NewProto<Proto::Credit>();
-        credit->CopyFrom(c);
+        auto credit = Message<Proto::Credit>::New(c);
+        // credit->CopyFrom(c);
         auto date = boost::gregorian::from_undelimited_string(credit->maturity());
         credits_[c.strategy()][c.underlying()][date] = credit;
         LOG_DBG << boost::format("Add credits of %1%@%2%") % c.underlying() % c.maturity();
@@ -103,17 +105,35 @@ void ClusterManager::Init() {
     Proto::QuoterReq req;
     req.set_type(Proto::RequestType::Get);
     req.set_user(user);
-    auto rep = std::dynamic_pointer_cast<Proto::QuoterRep>(Middleware::GetInstance()->Request(req));
+    auto rep = std::dynamic_pointer_cast<Proto::QuoterRep>(
+        Middleware::GetInstance()->Request(req));
     if (rep && rep->result().result()) {
       std::lock_guard<std::mutex> lck(quoter_mtx_);
       for (auto &q : rep->quoters()) {
         LOG_INF << "Quoter: " << q.ShortDebugString();
-        auto quoter = Message::NewProto<Proto::QuoterSpec>();
-        quoter->CopyFrom(q);
-        quoters_.emplace(q.name(), quoter);
+        // auto quoter = Message<Proto::QuoterSpec>::New(q);
+        // quoter->CopyFrom(q);
+        quoters_.emplace(q.name(), Message<Proto::QuoterSpec>::New(q));
       }
     } else {
       LOG_ERR << "Failed to sync quoters";
+    }
+  }
+
+  /// sync statistics from db.
+  {
+    Proto::MarketMakingStatisticReq req;
+    req.set_type(Proto::RequestType::Get);
+    req.set_user(user);
+    auto rep = std::dynamic_pointer_cast<Proto::MarketMakingStatisticRep>(
+        Middleware::GetInstance()->Request(req));
+    if (rep && rep->result().result()) {
+      for (auto &s : rep->statistics()) {
+        LOG_INF << "MarketMakingStatistic: " << s.ShortDebugString();
+        statistics_.emplace(s.underlying(), Message<Proto::MarketMakingStatistic>::New(s));
+      }
+    } else {
+      LOG_ERR << "Failed to sync statistics";
     }
   }
 }
@@ -149,9 +169,9 @@ std::shared_ptr<Proto::Pricer> ClusterManager::FindPricer(const std::string &nam
   std::lock_guard<std::mutex> lck(pricer_mtx_);
   auto it = pricers_.find(name);
   if (it != pricers_.end()) {
-    auto ret = Message::NewProto<Proto::Pricer>();
-    ret->CopyFrom(*it->second);
-    return ret;
+    return Message<Proto::Pricer>::New(*it->second);
+    // ret->CopyFrom(*it->second);
+    // return ret;
   }
   return nullptr;
 }
@@ -160,9 +180,9 @@ std::shared_ptr<Proto::Pricer> ClusterManager::FindPricer(const Instrument *unde
   std::lock_guard<std::mutex> lck(pricer_mtx_);
   for (auto &it : pricers_) {
     if (underlying->Id() == it.second->underlying()) {
-      auto ret = Message::NewProto<Proto::Pricer>();
-      ret->CopyFrom(*it.second);
-      return ret;
+      return Message<Proto::Pricer>::New(*it.second);
+      // ret->CopyFrom(*it.second);
+      // return ret;
     }
   }
   return nullptr;
@@ -172,9 +192,9 @@ std::shared_ptr<Proto::QuoterSpec> ClusterManager::FindQuoter(const std::string 
   std::lock_guard<std::mutex> lck(quoter_mtx_);
   auto it = quoters_.find(name);
   if (it != quoters_.end()) {
-    auto ret = Message::NewProto<Proto::QuoterSpec>();
-    ret->CopyFrom(*it->second);
-    return ret;
+    return Message<Proto::QuoterSpec>::New(*it->second);
+    // ret->CopyFrom(*it->second);
+    // return ret;
   }
   return nullptr;
 }
@@ -214,6 +234,11 @@ std::shared_ptr<Proto::StrategySwitch> ClusterManager::FindStrategySwitch(
   return nullptr;
 }
 
+std::shared_ptr<Proto::MarketMakingStatistic> ClusterManager::FindStatistic(
+    const std::string &underlying) {
+  return statistics_[underlying];
+}
+
 void ClusterManager::OnHeartbeat(const std::shared_ptr<Proto::Heartbeat> &heartbeat) {
   Publish(heartbeat);
 }
@@ -227,7 +252,7 @@ void ClusterManager::OnInstrumentReq(const std::shared_ptr<Proto::InstrumentReq>
 
 void ClusterManager::OnCash(const std::shared_ptr<Proto::Cash> &cash) {
   if (!cash->is_enough()) {
-    LOG_ERR << "Cash isn't enough, stop all strategies...";
+    LOG_ERR << "cash isn't enough, stop all strategies...";
     StopAll("cash limit broken");
   }
   CashManager::GetInstance()->OnCash(cash);
@@ -259,8 +284,8 @@ ClusterManager::ProtoReplyPtr ClusterManager::OnPricerReq(
       for (auto &p : req->pricers()) {
         auto *underlying = InstrumentManager::GetInstance()->FindId(p.underlying());
         if (underlying) {
-          auto copy = Message::NewProto<Proto::Pricer>();
-          copy->CopyFrom(p);
+          auto copy = Message<Proto::Pricer>::New(p);
+          // copy->CopyFrom(p);
           {
             std::lock_guard<std::mutex> lck(pricer_mtx_);
             pricers_[p.name()] = copy;
@@ -296,8 +321,8 @@ ClusterManager::ProtoReplyPtr ClusterManager::OnCreditReq(
     for (auto &c : req->credits()) {
       auto *underlying = InstrumentManager::GetInstance()->FindId(c.underlying());
       if (underlying) {
-        auto credit = Message::NewProto<Proto::Credit>();
-        credit->CopyFrom(c);
+        auto credit = Message<Proto::Credit>::New(c);
+        // credit->CopyFrom(c);
         auto date = boost::gregorian::from_undelimited_string(c.maturity());
         {
           std::lock_guard<std::mutex> lck(credit_mtx_);
@@ -322,11 +347,12 @@ ClusterManager::ProtoReplyPtr ClusterManager::OnQuoterReq(
       for (auto &q : req->quoters()) {
         auto *underlying = InstrumentManager::GetInstance()->FindId(q.underlying());
         if (underlying) {
-          auto quoter = Message::NewProto<Proto::QuoterSpec>();
-          quoter->CopyFrom(q);
+          auto quoter = Message<Proto::QuoterSpec>::New(q);
+          // quoter->CopyFrom(q);
           auto *dm = FindDevice(underlying);
           if (dm && dm->IsStrategyRunning(q.name())) {
             dm->Stop(q.name(), req->user() + " set quoter");
+            dm->Publish(quoter);
           }
           std::lock_guard<std::mutex> lck(quoter_mtx_);
           quoters_[q.name()] = quoter;
@@ -357,8 +383,8 @@ ClusterManager::ProtoReplyPtr ClusterManager::OnStrategySwitchReq(
     for (auto &s : req->switches()) {
       auto *op = InstrumentManager::GetInstance()->FindId(s.option());
       if (op) {
-        auto sw = Message::NewProto<Proto::StrategySwitch>();
-        sw->CopyFrom(s);
+        auto sw = Message<Proto::StrategySwitch>::New(s);
+        // sw->CopyFrom(s);
         {
           std::lock_guard<std::mutex> lck(switch_mtx_);
           switches_[s.strategy()][op->Id()] = sw;

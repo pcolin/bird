@@ -1,15 +1,17 @@
 #ifndef STRATEGY_QUOTER_H
 #define STRATEGY_QUOTER_H
 
+#include <queue>
 #include "Strategy.h"
 #include "SSRate.pb.h"
 #include "Credit.pb.h"
+#include "Destriker.pb.h"
+#include "Volatility.pb.h"
 #include "Quoter.pb.h"
+#include "RequestForQuote.pb.h"
 
 class TraderApi;
 class Quoter : public Strategy {
-  // typedef std::tuple<OrderPtr, OrderPtr, bool> OrderTuple;
-  typedef std::tuple<OrderPtr, bool> OrderTuple;
   struct Parameter
   {
     double credit;
@@ -19,23 +21,25 @@ class Quoter : public Strategy {
     TheoData theo;
     int position;
     int32_t refill_times;
-    bool is_bid;
-    bool is_ask;
+    bool is_on;
     bool is_qr;
     OrderPtr bid;
     OrderPtr ask;
-    bool bid_canceling;
-    bool ask_canceling;
-    // std::list<OrderTuple> orders;
+    bool canceling;
+    std::string qr_id;
+    Proto::InstrumentStatus status;
+    int64_t auction_time;
+    base::VolumeType auction_volume;
   };
   typedef std::shared_ptr<Parameter> ParameterPtr;
+  typedef std::unordered_map<const Instrument*, ParameterPtr> ParameterMap;
 
   struct MaturityParameter
   {
     double basis;
     double price;
     double multiplier;
-    std::unordered_map<const Instrument*, ParameterPtr> parameters;
+    ParameterMap parameters;
   };
 
  public:
@@ -52,35 +56,33 @@ protected:
   virtual bool OnHeartbeat(const std::shared_ptr<Proto::Heartbeat> &heartbeat) override;
 
  private:
+  bool OnRequestForQuote(const std::shared_ptr<Proto::RequestForQuote> &msg);
   bool OnSSRate(const std::shared_ptr<Proto::SSRate> &msg);
   bool OnCredit(const std::shared_ptr<Proto::Credit> &msg);
-  bool OnQuoterSpec(const std::shared_ptr<Proto::QuoterSpec> &msg);
+  bool OnDestriker(const std::shared_ptr<Proto::Destriker> &msg);
+  bool OnVolatilityCurve(const std::shared_ptr<Proto::VolatilityCurve> &msg);
+  // bool OnQuoterSpec(const std::shared_ptr<Proto::QuoterSpec> &msg);
   bool OnStrategySwitch(const std::shared_ptr<Proto::StrategySwitch> &msg);
   bool OnStrategyOperate(const std::shared_ptr<Proto::StrategyOperate> &msg);
+  bool OnInstrumentReq(const std::shared_ptr<Proto::InstrumentReq> &msg);
+  void CheckForAuction();
+  void CheckForQR();
+  void RespondingQR(const std::shared_ptr<Proto::RequestForQuote> &rfq);
   void PublishStatistic();
 
   bool Check(const Instrument *inst, double multiplier, ParameterPtr &parameter);
-  void Requote(const Instrument *inst, double spot, double multiplier, ParameterPtr &parameter);
-  bool GetBidPrice(const Instrument *inst, double theo, double multiplier, double credit,
-                   double &price);
-  bool GetAskPrice(const Instrument *inst, double theo, double multiplier, double credit,
-                   double &price);
-  // bool GetBidAskPrice(const Instrument *inst, double theo, double multiplier, double credit,
-  //     double &bid_price, double &ask_price);
-  bool IsBidAdjusted(const OrderPtr &bid, double theo, double multiplier, double credit);
-  bool IsAskAdjusted(const OrderPtr &ask, double theo, double multiplier, double credit);
-
-  void ResubmitBidOrder(const Instrument *inst, double multiplier, ParameterPtr &parameter);
-  void SubmitBidOrder(const Instrument *inst, double multiplier, ParameterPtr &parameter);
-  void ResubmitAskOrder(const Instrument *inst, double multiplier, ParameterPtr &parameter);
-  void SubmitAskOrder(const Instrument *inst, double multiplier, ParameterPtr &parameter);
-  void SubmitOrders(const Instrument *inst, double theo, double multiplier, ParameterPtr &parameter);
+  void CalculateAndResubmit(const Instrument *inst,
+                            double spot,
+                            double multiplier,
+                            ParameterPtr &parameter);
+  void ResubmitOrders(const Instrument *inst, double multiplier, ParameterPtr &parameter);
   void CancelOrders(const std::shared_ptr<Parameter> &parameter);
-  OrderPtr NewOrder(const Instrument *inst, const OrderPtr &order, base::PriceType price);
   TraderApi *api_ = nullptr;
 
   std::shared_ptr<Proto::QuoterSpec> quoter_;
   std::map<boost::gregorian::date, std::shared_ptr<MaturityParameter>> parameters_;
+  std::queue<std::tuple<std::shared_ptr<Proto::RequestForQuote>, int64_t>> pending_rfqs_;
+  // std::queue<std::tuple<ParameterMap::iterator, int64_t>> active_rfqs_;
 
   bool quote_;
   bool amend_quote_;
@@ -88,9 +90,9 @@ protected:
 
   OrderPtr bid_;
   OrderPtr ask_;
-  std::unordered_set<size_t> order_ids_;
-  int32_t orders_;
-  int32_t trades_;
+  std::unordered_map<size_t, OrderPtr> orders_;
+  int32_t order_num_;
+  int32_t trade_num_;
   double delta_;
 };
 

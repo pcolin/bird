@@ -16,5 +16,6 @@ ADD_EXECUTABLE(databased
   PricerDB.cpp
   StrategySwitchDB.cpp
   QuoterDB.cpp
-  DestrikerDB.cpp)
+  DestrikerDB.cpp
+  MarketMakingStatisticDB.cpp)
 TARGET_LINK_LIBRARIES(databased dl nanomsg protomsg logger config boost_date_time)

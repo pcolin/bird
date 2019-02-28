@@ -14,9 +14,9 @@ BOOST_AUTO_TEST_CASE(testPrice)
   BOOST_CHECK(!out);
   {
     cout << "inner group begin" << endl;
-    PricePtr p = Message::NewPrice();
+    PricePtr p = Message<Price>::New();
     out = p;
-    PricePtr p2 = Message::NewPrice();
+    PricePtr p2 = Message<Price>::New();
     cout << "inner group end" << endl;
   }
   cout << "After inner gourp" << endl;

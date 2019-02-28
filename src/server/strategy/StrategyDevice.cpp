@@ -71,7 +71,7 @@ void StrategyDevice::Run() {
   LOG_INF << boost::format("Device %1% start running") % name;
   barrier_->ClearAlert();
   strategy_->OnStart();
-  auto start = Message::NewProto<Proto::StrategyStatistic>();
+  auto start = Message<Proto::StrategyStatistic>::New();
   start->set_name(name);
   start->set_exchange(strategy_->Underlying()->Exchange());
   start->set_underlying(strategy_->UnderlyingId());
@@ -107,7 +107,7 @@ void StrategyDevice::Run() {
   }
 
   strategy_->OnStop();
-  auto stop = Message::NewProto<Proto::StrategyStatistic>();
+  auto stop = Message<Proto::StrategyStatistic>::New();
   stop->set_name(name);
   stop->set_exchange(strategy_->Underlying()->Exchange());
   stop->set_underlying(strategy_->UnderlyingId());

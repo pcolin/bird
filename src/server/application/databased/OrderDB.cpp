@@ -37,7 +37,7 @@ void OrderDB::RegisterCallback(base::ProtoMessageDispatcher<base::ProtoMessagePt
 
 base::ProtoMessagePtr OrderDB::OnRequest(const std::shared_ptr<Proto::OrderReq> &msg) {
   LOG_INF << "Order request: " << msg->ShortDebugString();
-  auto reply = Message::NewProto<Proto::OrderRep>();
+  auto reply = Message<Proto::OrderRep>::New();
   if (msg->type() == Proto::RequestType::Get) {
     std::lock_guard<std::mutex> lck(mtx_);
     for (auto &order : orders_) {
@@ -83,9 +83,9 @@ void OrderDB::Run() {
             if (it != orders_.end()) {
               it->second->CopyFrom(ord);
             } else {
-              auto order = Message::NewProto<Proto::Order>();
-              order->CopyFrom(ord);
-              orders_.emplace(ord.id(), order);
+              // auto order = Message::NewProto<Proto::Order>();
+              // order->CopyFrom(ord);
+              orders_.emplace(ord.id(), Message<Proto::Order>::New(ord));
             }
           }
         }
@@ -102,7 +102,7 @@ int OrderDB::Callback(void *data, int argc, char **argv, char **col_name) {
   const std::string instrument = argv[1];
   auto inst = instrument_db->FindInstrument(instrument);
   if (inst) {
-    auto order = Message::NewProto<Proto::Order>();
+    auto order = Message<Proto::Order>::New();
     char *end = NULL;
     LOG_DBG << "Retrive order id = " << argv[0];
     size_t id = strtoull(argv[0], &end, 10);

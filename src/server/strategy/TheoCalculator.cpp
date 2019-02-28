@@ -335,11 +335,11 @@ void TheoCalculator::CalculateAndPublish(const Option *call,
                                          const Option *put,
                                          Parameters &p,
                                          double time_value) {
-  auto call_matrix = Message::NewTheoMatrix();
+  auto call_matrix = Message<TheoMatrix>::New();
   call_matrix->option = call;
   call_matrix->lower = lower_;
   call_matrix->upper = upper_;
-  auto put_matrix = Message::NewTheoMatrix();
+  auto put_matrix = Message<TheoMatrix>::New();
   put_matrix->option = put;
   put_matrix->lower = lower_;
   put_matrix->upper = upper_;
@@ -382,7 +382,7 @@ void TheoCalculator::CalculateAndPublish(const Option *call,
 }
 
 void TheoCalculator::CalculateAndPublish(const Option *option, Parameters &p, double time_value) {
-  auto matrix = Message::NewTheoMatrix();
+  auto matrix = Message<TheoMatrix>::New();
   matrix->option = option;
   matrix->lower = lower_;
   matrix->upper = upper_;

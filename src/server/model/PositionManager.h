@@ -15,6 +15,8 @@ class PositionManager {
 
   void Init();
 
+  int GetNetPosition(const Instrument *inst);
+
   bool TryFreeze(const OrderPtr &order);
   void Release(const OrderPtr &order);
 

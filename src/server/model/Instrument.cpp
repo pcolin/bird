@@ -1,5 +1,5 @@
 #include "Instrument.h"
-#include "base/common/Itoa.h"
+#include "base/common/Time.h"
 
 void Instrument::Serialize(Proto::Instrument *inst) const {
   inst->set_id(id_);
@@ -19,28 +19,10 @@ void Instrument::Serialize(Proto::Instrument *inst) const {
   }
   inst->set_highest(highest_);
   inst->set_lowest(lowest_);
-
-  char tmp[9];
-  base::convert(tmp, (int)maturity_.year());
-  int month = maturity_.month();
-  if (month > 9) {
-    base::convert(tmp + 4, month);
-  } else {
-    tmp[4] = '0';
-    base::convert(tmp + 5, month);
-  }
-  int day = maturity_.day();
-  if (day > 9) {
-    base::convert(tmp + 6, day);
-  } else {
-    tmp[6] = '0';
-    base::convert(tmp + 7, day);
-  }
-
   inst->set_commission(commission_type_);
   inst->set_open_commission(open_commission_);
   inst->set_close_commission(close_commission_);
   inst->set_close_today_commission(close_today_commission_);
-  inst->set_maturity(tmp);
+  inst->set_maturity(base::DateToString(maturity_));
   inst->set_status(status_);
 }

@@ -39,7 +39,7 @@ void QuoterDB::RegisterCallback(base::ProtoMessageDispatcher<base::ProtoMessageP
 
 base::ProtoMessagePtr QuoterDB::OnRequest(const std::shared_ptr<Proto::QuoterReq> &msg) {
   LOG_INF << "Quoter request: " << msg->ShortDebugString();
-  auto reply = Message::NewProto<Proto::QuoterRep>();
+  auto reply = Message<Proto::QuoterRep>::New();
   if (msg->type() == Proto::RequestType::Get) {
     for (auto it : quoters_) {
       reply->add_quoters()->CopyFrom(*it.second);
@@ -63,7 +63,7 @@ base::ProtoMessagePtr QuoterDB::OnRequest(const std::shared_ptr<Proto::QuoterReq
                    " %d, %d, %d)",
               table_name_.c_str(), name.c_str(), q.pricer().c_str(), q.underlying().c_str(),
               q.delta_limit(), q.order_limit(), q.trade_limit(), q.bid_volume(), q.ask_volume(),
-              q.response_volume(), q.depth(), q.refill_times(), q.wide_spread(), q.protection());
+              q.qr_volume(), q.depth(), q.refill_times(), q.wide_spread(), q.protection());
       ExecSql(sql);
       auto it = quoters_.find(name);
       if (it != quoters_.end()) {
@@ -71,9 +71,9 @@ base::ProtoMessagePtr QuoterDB::OnRequest(const std::shared_ptr<Proto::QuoterReq
         sprintf(sql, "DELETE FROM %s WHERE name='%s'", record_table_name_.c_str(), name.c_str());
         ExecSql(sql);
       } else {
-        auto quoter = Message::NewProto<Proto::QuoterSpec>();
-        quoter->CopyFrom(q);
-        quoters_.emplace(name, quoter);
+        // auto quoter = Message<Proto::QuoterSpec>::New();
+        // quoter->CopyFrom(q);
+        quoters_.emplace(name, Message<Proto::QuoterSpec>::New(q));
       }
 
       for (auto &op : q.options()) {
@@ -173,7 +173,7 @@ int QuoterDB::Callback(void *data, int argc, char **argv, char **col_name) {
   const std::string underlying = argv[2];
   auto inst = instrument_db->FindUnderlying(underlying);
   if (inst) {
-    auto quoter = Message::NewProto<Proto::QuoterSpec>();
+    auto quoter = Message<Proto::QuoterSpec>::New();
     const std::string name = argv[0];
     quoter->set_name(name);
     quoter->set_pricer(argv[1]);
@@ -183,7 +183,7 @@ int QuoterDB::Callback(void *data, int argc, char **argv, char **col_name) {
     quoter->set_trade_limit(atoi(argv[5]));
     quoter->set_bid_volume(atoi(argv[6]));
     quoter->set_ask_volume(atoi(argv[7]));
-    quoter->set_response_volume(atoi(argv[8]));
+    quoter->set_qr_volume(atoi(argv[8]));
     quoter->set_depth(atoi(argv[9]));
     quoter->set_refill_times(atoi(argv[10]));
     quoter->set_wide_spread(atoi(argv[11]) == 1);

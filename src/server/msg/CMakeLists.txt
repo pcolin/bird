@@ -25,7 +25,8 @@ set(PROTO_FILES
   ../../share/msg/Dimer.proto
   ../../share/msg/Strategy.proto
   ../../share/msg/Credit.proto
-  ../../share/msg/RequestForQuote.proto)
+  ../../share/msg/RequestForQuote.proto
+  ../../share/msg/MarketMakingStatistic.proto)
 
 message ("Current Dir: ${CMAKE_CURRENT_SOURCE_DIR}")
 set(CC_FILES)

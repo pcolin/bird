@@ -57,9 +57,12 @@ class UnderlyingPrice {
   UnderlyingPrice(const Instrument *underlying); /// : underlying_(underlying) {}
 
   void SetParameter(Proto::UnderlyingTheoType type, double elastic, double elastic_limit);
-  void ApplyElastic(PricePtr &price, double delta);
+  PriceType ApplyElastic(PricePtr &price, double delta);
   bool ApplyElastic(double delta);
-  PriceType Get() const { return theo_; }
+  PriceType Get() {
+    std::lock_guard<std::mutex> lck(mtx_);
+    return theo_;
+  }
 
 private:
   PriceType CalcTheo(const PricePtr &p) const;

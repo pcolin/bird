@@ -13,7 +13,8 @@ void SimulationTraderApi::Init() {
   req.set_type(Proto::RequestType::Get);
   req.set_exchange(Proto::Exchange::DCE);
   req.set_user(EnvConfig::GetInstance()->GetString(EnvVar::EXCHANGE));
-  auto r = std::dynamic_pointer_cast<Proto::InstrumentRep>(Middleware::GetInstance()->Request(req));
+  auto r = std::dynamic_pointer_cast<Proto::InstrumentRep>(
+    Middleware::GetInstance()->Request(req));
   if (unlikely(!r)) {
     LOG_INF << "Failed to sync instruments";
   }
@@ -62,25 +63,26 @@ void SimulationTraderApi::Init() {
     }
   }
 
-  td_ = std::make_unique<std::thread>(std::bind(&SimulationTraderApi::MatchingProcess, this));
+  td_ = std::make_unique<std::thread>(
+    std::bind(&SimulationTraderApi::MatchingProcess, this));
 }
 
-void SimulationTraderApi::SubmitOrder(const OrderPtr& order) {
+void SimulationTraderApi::SubmitOrder(const OrderPtr &order) {
 }
 
-void SimulationTraderApi::SubmitQuote(const OrderPtr& bid, const OrderPtr& ask) {
+void SimulationTraderApi::SubmitQuote(const OrderPtr &bid, const OrderPtr &ask) {
 }
 
-void SimulationTraderApi::AmendOrder(const OrderPtr& order) {
+void SimulationTraderApi::AmendOrder(const OrderPtr &order) {
 }
 
-void SimulationTraderApi::AmendQuote(const OrderPtr& bid, const OrderPtr& ask) {
+void SimulationTraderApi::AmendQuote(const OrderPtr &bid, const OrderPtr &ask) {
 }
 
-void SimulationTraderApi::CancelOrder(const OrderPtr& order) {
+void SimulationTraderApi::CancelOrder(const OrderPtr &order) {
 }
 
-void SimulationTraderApi::CancelQuote(const OrderPtr& bid, const OrderPtr& ask) {
+void SimulationTraderApi::CancelQuote(const OrderPtr &bid, const OrderPtr &ask) {
 }
 
 void SimulationTraderApi::QueryCash() {
@@ -91,11 +93,12 @@ void SimulationTraderApi::MatchingProcess() {
   LOG_INF << "Start matching process....";
 
   int i = 0;
-  auto insts = InstrumentManager::GetInstance()->FindInstruments([](const Instrument*){ return true; });
+  auto insts = InstrumentManager::GetInstance()->FindInstruments(
+    [](const Instrument*){ return true; });
   for (auto &inst : insts) {
     if (++i % 2 == 0) continue;
 
-    auto p = Message::NewProto<Proto::Position>();
+    auto p = Message<Proto::Position>::New();
     p->set_instrument(inst->Id());
     p->set_exchange(inst->Exchange());
 
@@ -123,14 +126,15 @@ void SimulationTraderApi::MatchingProcess() {
     cash->set_total(8888888.88 + 3333333.33);
     cash->set_available(8888888.88);
     cash->set_margin(2222222.22);
-    static const double limit = EnvConfig::GetInstance()
-                                ->GetDouble(EnvVar::OPTION_CASH_LIMIT);
+    static const double limit = EnvConfig::GetInstance()->
+      GetDouble(EnvVar::OPTION_CASH_LIMIT);
     cash->set_is_enough(cash->available() >= limit);
     ClusterManager::GetInstance()->OnCash(cash);
 
     if (i % 12 == 0) {
-      auto status = i % 9 ?  Proto::InstrumentStatus::Trading : Proto::InstrumentStatus::Halt;
-      auto req = Message::NewProto<Proto::InstrumentReq>();
+      auto status = i % 9 ?
+        Proto::InstrumentStatus::Trading : Proto::InstrumentStatus::Halt;
+      auto req = Message<Proto::InstrumentReq>::New();
       req->set_type(Proto::RequestType::Set);
       req->set_exchange(Proto::Exchange::DCE);
       for (auto &inst : insts) {

@@ -120,8 +120,8 @@ void ParameterManager::Init() {
             it = volatility_curves_.emplace(inst, std::make_shared<DateVolatilityMap>()).first;
           }
           auto date = boost::gregorian::from_undelimited_string(v.maturity());
-          auto curve = Message::NewProto<Proto::VolatilityCurve>();
-          curve->CopyFrom(v);
+          auto curve = Message<Proto::VolatilityCurve>::New(v);
+          // curve->CopyFrom(v);
           (*it->second)[date] = curve;
           LOG_DBG << "Add volatility curve of " << v.underlying() << '@' << v.maturity();
         }
@@ -311,8 +311,8 @@ ParameterManager::ProtoReplyPtr ParameterManager::OnSSRateReq(
     for (auto &r : req->rates()) {
       auto *inst = InstrumentManager::GetInstance()->FindId(r.underlying());
       if (inst) {
-        auto p = Message::NewProto<Proto::SSRate>();
-        p->CopyFrom(r);
+        auto p = Message<Proto::SSRate>::New(r);
+        // p->CopyFrom(r);
         auto *dm = ClusterManager::GetInstance()->FindDevice(inst);
         if (dm) {
           dm->Publish(p);
@@ -383,8 +383,8 @@ ParameterManager::ProtoReplyPtr ParameterManager::OnVolatilityCurveReq(
     for (auto &vc : req->curves()) {
       auto *inst = InstrumentManager::GetInstance()->FindId(vc.underlying());
       if (inst) {
-        auto p = Message::NewProto<Proto::VolatilityCurve>();
-        p->CopyFrom(vc);
+        auto p = Message<Proto::VolatilityCurve>::New(vc);
+        // p->CopyFrom(vc);
         auto *dm = ClusterManager::GetInstance()->FindDevice(inst);
         if (dm) {
           dm->Publish(p);
@@ -424,23 +424,27 @@ ParameterManager::ProtoReplyPtr ParameterManager::OnDestrikerReq(
     const std::shared_ptr<Proto::DestrikerReq> &req) {
   auto type = req->type();
   if (type == Proto::RequestType::Set) {
-    std::set<const Instrument*> underlyings;
+    // std::set<const Instrument*> underlyings;
     {
       std::lock_guard<std::mutex> lck(destrikers_mtx_);
       for (auto &d : req->destrikers()) {
         auto *inst = InstrumentManager::GetInstance()->FindId(d.instrument());
         if (inst) {
+          auto *dm = ClusterManager::GetInstance()->FindDevice(inst->HedgeUnderlying());
+          if (dm) {
+            auto p = Message<Proto::Destriker>::New(d);
+            dm->Publish(p);
+          }
           destrikers_[inst] = d.destriker();
-          underlyings.insert(inst->HedgeUnderlying());
         }
       }
     }
-    for (auto *inst : underlyings) {
-      auto *dm = ClusterManager::GetInstance()->FindDevice(inst);
-      if (dm) {
-        dm->Publish(req);
-      }
-    }
+    // for (auto *inst : underlyings) {
+    //   auto *dm = ClusterManager::GetInstance()->FindDevice(inst);
+    //   if (dm) {
+    //     dm->Publish(req);
+    //   }
+    // }
     LOG_PUB << req->user() << " set destrikers";
   } else if (type == Proto::RequestType::Del) {
     std::lock_guard<std::mutex> lck(destrikers_mtx_);

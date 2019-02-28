@@ -109,7 +109,7 @@ void CtpMdSpi::OnRtnDepthMarketData(CThostFtdcDepthMarketDataField* pDepthMarket
       LOG_ERR << "Can't find device manager for " << inst->HedgeUnderlying();
       return;
     }
-    PricePtr price = Message::NewPrice();
+    PricePtr price = Message<Price>::New();
     price->header.SetTime();
     price->instrument = inst;
     if (pDepthMarketData->LastPrice < DBL_MAX) {
@@ -209,11 +209,11 @@ void CtpMdSpi::OnRtnForQuoteRsp(CThostFtdcForQuoteRspField* pForQuoteRsp) {
   auto *inst = InstrumentManager::GetInstance()->FindId(pForQuoteRsp->InstrumentID);
   if (inst) {
     auto *dm = ClusterManager::GetInstance()->FindDevice(inst->HedgeUnderlying());
-    if (dm){
-      auto rfq = Message::NewProto<Proto::RequestForQuote>();
+    if (dm) {
+      auto rfq = Message<Proto::RequestForQuote>::New();
       rfq->set_instrument(inst->Id());
       rfq->set_id(pForQuoteRsp->ForQuoteSysID);
       dm->Publish(rfq);
-    } 
+    }
   }
 }

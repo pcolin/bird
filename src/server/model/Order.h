@@ -35,8 +35,17 @@ struct Order {
   size_t id;
   std::string counter_id;
   std::string exchange_id;
+  std::string quote_id;
   std::string strategy;
   std::string note;
+  base::PriceType market_bid;
+  base::PriceType market_ask;
+  base::PriceType spot;
+  double theo;
+  double delta;
+  double volatility;
+  double ss_rate;
+  double credit;
   base::PriceType price;
   base::PriceType avg_executed_price;
   base::VolumeType volume;
@@ -74,7 +83,7 @@ struct QuoteRequest {
 typedef std::shared_ptr<QuoteRequest> QuoteRequestPtr;
 
 namespace base {
-  
+
 class LogStream;
 LogStream& operator<<(LogStream& stream, const OrderPtr &order);
 

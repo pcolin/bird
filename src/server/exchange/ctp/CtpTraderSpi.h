@@ -42,9 +42,10 @@ class CtpTraderSpi : public CThostFtdcTraderSpi {
 	virtual void OnRspQryInstrumentCommissionRate(
       CThostFtdcInstrumentCommissionRateField* pInstrumentCommissionRate,
       CThostFtdcRspInfoField* pRspInfo, int nRequestID, bool bIsLast) override;
-	virtual void OnRspQryOptionInstrCommRate(CThostFtdcOptionInstrCommRateField* pOptionInstrCommRate,
-                                           CThostFtdcRspInfoField* pRspInfo,
-                                           int nRequestID, bool bIsLast) override;
+	virtual void OnRspQryOptionInstrCommRate(
+      CThostFtdcOptionInstrCommRateField* pOptionInstrCommRate,
+      CThostFtdcRspInfoField* pRspInfo,
+      int nRequestID, bool bIsLast) override;
 	virtual void OnRspQryMMOptionInstrCommRate(
       CThostFtdcMMOptionInstrCommRateField* pMMOptionInstrCommRate,
       CThostFtdcRspInfoField* pRspInfo, int nRequestID, bool bIsLast) override;
@@ -116,12 +117,15 @@ class CtpTraderSpi : public CThostFtdcTraderSpi {
  private:
   Proto::Exchange GetExchange(const char* exchange) const;
   // std::string GetInstrumentId(char* id, Exchanges exchange) const;
-  Proto::InstrumentStatus GetInstrumentStatus(TThostFtdcInstrumentStatusType status) const;
+  Proto::InstrumentStatus GetInstrumentStatus(
+      TThostFtdcInstrumentStatusType status, Proto::InstrumentStatus last_status) const;
   void UpdateOrder(const char* exchange_id, base::VolumeType volume, Proto::OrderStatus status);
 
   CtpTraderApi *api_ = nullptr;
   bool login = false;
   InstrumentConfigMap config_;
+
+  boost::gregorian::date first_maturity_;
 };
 
 #endif // CTP_TRADER_SPI_H

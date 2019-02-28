@@ -18,6 +18,7 @@
 #include "OrderDB.h"
 #include "TradeDB.h"
 #include "PricerDB.h"
+#include "MarketMakingStatisticDB.h"
 #include "StrategySwitchDB.h"
 #include "QuoterDB.h"
 #include "Heartbeat.pb.h"
@@ -205,6 +206,10 @@ int main(int argc, char *argv[]) {
 
   QuoterDB quoter(config_db, "Quoter", "QuoterRecord", instrument_db);
   ok = ok && quoter.Initialize(dispatcher);
+
+  MarketMakingStatisticDB statistic(config_db, "MarketMakingStatistic",
+      instrument_db, product_db);
+  ok = ok && statistic.Initialize(dispatcher);
 
   if (!ok) {
     LOG_ERR << "Failed to initialize DB!";

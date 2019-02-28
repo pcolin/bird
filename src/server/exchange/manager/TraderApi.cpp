@@ -90,7 +90,7 @@ void TraderApi::OnOrderResponse(const OrderPtr& order) {
 }
 
 void TraderApi::RejectOrder(const OrderPtr& order) {
-  auto ord = Message::NewOrder(order);
+  auto ord = Message<Order>::New(order);
   ord->status = Proto::OrderStatus::Rejected;
   OnOrderResponse(ord);
 }

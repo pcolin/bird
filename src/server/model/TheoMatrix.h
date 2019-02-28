@@ -7,6 +7,7 @@
 struct TheoData {
   operator bool() const { return spot != base::PRICE_UNDEFINED; }
   void InterpolateFrom(const TheoData &td1, const TheoData &td2);
+  void Reset() { spot = base::PRICE_UNDEFINED; }
 
   base::PriceType spot = base::PRICE_UNDEFINED;
   double volatility = 0.0;

@@ -54,6 +54,7 @@ EnvConfig::EnvConfig() {
     { static_cast<int8_t>(EnvVar::SUPPORT_QUOTE), "SUPPORT_QUOTE" },
     { static_cast<int8_t>(EnvVar::SUPPORT_AMEND_QUOTE), "SUPPORT_AMEND_QUOTE" },
     { static_cast<int8_t>(EnvVar::SUPPORT_SIDE_QUOTE), "SUPPORT_SIDE_QUOTE" },
+    { static_cast<int8_t>(EnvVar::CANCEL_QR_AFTER_TRADE), "CANCEL_QR_AFTER_TRADE" },
 
     /// ctp
     { static_cast<int8_t>(EnvVar::CTP_TRADE_ADDR), "CTP_TRADE_ADDR" },

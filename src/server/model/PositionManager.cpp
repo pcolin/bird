@@ -22,6 +22,15 @@ void PositionManager::Init() {
   }
 }
 
+int PositionManager::GetNetPosition(const Instrument *inst) {
+  std::lock_guard<std::mutex> lck(mtx_);
+  auto it = positions_.find(inst);
+  if (it != positions_.end()) {
+    return it->second->total_long() - it->second->total_short();
+  }
+  return 0;
+}
+
 bool PositionManager::TryFreeze(const OrderPtr &order) {
   std::lock_guard<std::mutex> lck(mtx_);
   PositionPtr &pos = positions_[order->instrument];
@@ -301,7 +310,7 @@ void PositionManager::OnTrade(const TradePtr &trade) {
 
 void PositionManager::PublishPosition(Proto::Exchange exchange, PositionPtr &position) {
   position->set_time(base::Now());
-  auto req = Message::NewProto<Proto::PositionReq>();
+  auto req = Message<Proto::PositionReq>::New();
   req->set_type(Proto::RequestType::Set);
   req->set_exchange(exchange);
   req->add_positions()->CopyFrom(*position);

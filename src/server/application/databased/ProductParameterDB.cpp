@@ -36,7 +36,7 @@ void ProductParameterDB::RegisterCallback(
 base::ProtoMessagePtr ProductParameterDB::OnRequest(
     const std::shared_ptr<Proto::ProductParameterReq> &msg) {
   LOG_INF << "product parameter request: " << msg->ShortDebugString();
-  auto reply = Message::NewProto<Proto::ProductParameterRep>();
+  auto reply = Message<Proto::ProductParameterRep>::New();
   if (msg->type() == Proto::RequestType::Get) {
     if (msg->product().empty()) {
       for (auto it : cache_) {
@@ -57,7 +57,7 @@ base::ProtoMessagePtr ProductParameterDB::OnRequest(
     TransactionGuard tg(this);
 
     for (auto &p : msg->parameters()) {
-      auto tmp = Message::NewProto<Proto::ProductParameter>();
+      auto tmp = Message<Proto::ProductParameter>::New();
       tmp->CopyFrom(p);
       cache_[p.product()] = tmp;
       SetTradingDay();
@@ -129,7 +129,7 @@ void ProductParameterDB::SetTradingDay() {
 }
 
 int ProductParameterDB::ParameterCallback(void *data, int argc, char **argv, char **col_name) {
-  auto p = Message::NewProto<Proto::ProductParameter>();
+  auto p = Message<Proto::ProductParameter>::New();
   p->set_product(argv[0]);
   p->set_exchange(static_cast<Proto::Exchange>(atoi(argv[1])));
   ParseTradingSession(argv[2], std::bind(&Proto::ProductParameter::add_sessions, p.get()));

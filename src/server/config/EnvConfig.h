@@ -46,6 +46,7 @@ enum class EnvVar : int8_t {
   SUPPORT_QUOTE,
   SUPPORT_AMEND_QUOTE,
   SUPPORT_SIDE_QUOTE,
+  CANCEL_QR_AFTER_TRADE,
 
   /// ctp
   CTP_TRADE_ADDR,

@@ -25,7 +25,7 @@ void PositionDB::RegisterCallback(base::ProtoMessageDispatcher<base::ProtoMessag
 
 base::ProtoMessagePtr PositionDB::OnRequest(const std::shared_ptr<Proto::PositionReq> &msg) {
   LOG_INF << "Position request: " << msg->ShortDebugString();
-  auto reply = Message::NewProto<Proto::PositionRep>();
+  auto reply = Message<Proto::PositionRep>::New();
   if (msg->type() == Proto::RequestType::Get) {
     if (msg->instrument().empty()) {
       std::lock_guard<std::mutex> lck(mtx_);
@@ -78,9 +78,9 @@ void PositionDB::Run() {
             if (it != positions_.end()) {
               it->second->CopyFrom(p);
             } else {
-              auto position = Message::NewProto<Proto::Position>();
-              position->CopyFrom(p);
-              positions_.emplace(p.instrument(), position);
+              // auto position = Message<Proto::Position>::New();
+              // position->CopyFrom(p);
+              positions_.emplace(p.instrument(), Message<Proto::Position>::New(p));
             }
           }
         }

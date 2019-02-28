@@ -72,11 +72,12 @@ void Order::ResetId() {
 // }
 
 std::shared_ptr<Proto::Order> Order::Serialize() const {
-  std::shared_ptr<Proto::Order> ord = Message::NewProto<Proto::Order>();
+  std::shared_ptr<Proto::Order> ord = Message<Proto::Order>::New();
   ord->set_id(id);
   ord->set_instrument(instrument->Id());
   ord->set_counter_id(counter_id);
   ord->set_exchange_id(exchange_id);
+  ord->set_quote_id(quote_id);
   ord->set_note(note);
   ord->set_price(price);
   ord->set_avg_executed_price(avg_executed_price);
@@ -102,6 +103,7 @@ void Order::Serialize(Proto::Order *order) const {
   order->set_instrument(instrument->Id());
   order->set_counter_id(counter_id);
   order->set_exchange_id(exchange_id);
+  order->set_quote_id(quote_id);
   order->set_note(note);
   order->set_price(price);
   order->set_avg_executed_price(avg_executed_price);
@@ -125,28 +127,41 @@ namespace base {
 
 LogStream& operator<<(LogStream& stream, const OrderPtr &order) {
   if (order) {
-    stream << boost::format("%1% %2% %3% %4%@%5% %6% %7%") % order->id % order->instrument->Id() %
-              Proto::Side_Name(order->side) % order->volume % order->price %
-              Proto::TimeCondition_Name(order->time_condition) %
-              Proto::OrderStatus_Name(order->status);
+    stream << boost::format("%1% %2% %3% %4%@%5% %6% %7%") % order->id %
+      order->instrument->Id() % Proto::Side_Name(order->side) % order->volume %
+      order->price % Proto::TimeCondition_Name(order->time_condition) %
+      Proto::OrderStatus_Name(order->status);
 
+    if (order->spot > 0 && order->theo > 0) {
+      stream << boost::format(" Theo(%1%) Spot(%2%) Volatility(%3%) SSRate(%4%)") %
+        order->theo % order->spot % order->volatility % order->ss_rate;
+    }
+    if (order->credit > 0) {
+      stream << boost::format(" Credit(%1%)") % order->credit;
+    }
+    if (order->market_bid > 0 || order->market_ask > 0) {
+      stream << boost::format(" Market(%1%:%2%)") % order->market_bid % order->market_ask;
+    }
     if (!order->counter_id.empty()) {
       stream << boost::format(" CounterID(%1%)") % order->counter_id;
     }
     if (!order->exchange_id.empty()) {
       stream << boost::format(" ExchangeID(%1%)") % order->exchange_id;
     }
+    if (!order->quote_id.empty()) {
+      stream << boost::format(" QuoteID(%1%)") % order->quote_id;
+    }
     if (!order->strategy.empty()) {
       stream << boost::format(" Strategy(%1%:%2%)") %
-                Proto::StrategyType_Name(order->strategy_type) % order->strategy;
+        Proto::StrategyType_Name(order->strategy_type) % order->strategy;
     }
     if (order->avg_executed_price > 0) {
       stream << boost::format(" Executed(%1%@%2%)") % order->executed_volume %
-                order->avg_executed_price;
+        order->avg_executed_price;
     }
     if (order->header.interval[2] > 0) {
       stream << boost::format(" Latency(%1%,%2%,%3%,%4%)") % order->header.time %
-                order->header.interval[0] % order->header.interval[1] % order->header.interval[2];
+        order->header.interval[0] % order->header.interval[1] % order->header.interval[2];
     }
     if (!order->note.empty()) {
       stream << boost::format(" Note(%1%)") % order->note;

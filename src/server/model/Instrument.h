@@ -29,6 +29,12 @@ class Instrument {
 
   const Proto::InstrumentStatus Status() const { return status_; }
   void Status(Proto::InstrumentStatus status) { status_ = status; }
+  bool IsAuction() const { return IsAuction(status_); }
+  static bool IsAuction(Proto::InstrumentStatus status) {
+    return status == Proto::InstrumentStatus::OpeningAuction ||
+           status == Proto::InstrumentStatus::ClosingAuction ||
+           status == Proto::InstrumentStatus::Fuse;
+  }
 
   const Proto::Currency Currency() const { return currency_; }
   void Currency(Proto::Currency currency) { currency_ = currency; }

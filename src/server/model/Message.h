@@ -48,46 +48,49 @@ class MessageFactory {
         });
   }
 
-  std::shared_ptr<T> Allocate(const std::shared_ptr<T> &pt) {
-    T *t = nullptr;
+  std::shared_ptr<T> Allocate(const T &t) {
+    T *p = nullptr;
     {
       std::lock_guard<std::mutex> lck(mtx_);
-      t = pool_.newElement(*pt);
+      p = pool_.newElement(t);
     }
-    assert(t);
-    return std::shared_ptr<T>(t, [this](T *p) {
+    assert(p);
+    return std::shared_ptr<T>(p, [this](T *pt) {
           std::lock_guard<std::mutex> lck(mtx_);
-          pool_.deleteElement(p);
+          pool_.deleteElement(pt);
         });
   }
 
+  // std::shared_ptr<T> Allocate(const std::shared_ptr<T> &pt) {
+  //   T *t = nullptr;
+  //   {
+  //     std::lock_guard<std::mutex> lck(mtx_);
+  //     t = pool_.newElement(*pt);
+  //   }
+  //   assert(t);
+  //   return std::shared_ptr<T>(t, [this](T *p) {
+  //         std::lock_guard<std::mutex> lck(mtx_);
+  //         pool_.deleteElement(p);
+  //       });
+  // }
+
  private:
   MemoryPool<T, 1024*sizeof(T)> pool_;
+  /// FIXME: spin lock?
   std::mutex mtx_;
 };
 
-class Price;
-class TheoMatrix;
-class Order;
-// namespace Proto
-// {
-//   class Order;
-// }
-class Trade;
+template<class T>
 class Message {
  public:
-  static std::shared_ptr<Price> NewPrice();
-  static std::shared_ptr<TheoMatrix> NewTheoMatrix();
-  static std::shared_ptr<Order> NewOrder();
-  static std::shared_ptr<Order> NewOrder(const std::shared_ptr<Order> &ord);
-  // static std::shared_ptr<Order> NewOrder(const Proto::Order &ord);
-  static std::shared_ptr<Trade> NewTrade();
-  template<class T> static std::shared_ptr<T> NewProto() {
-    static MessageFactory<T> factory;
-    return factory.Allocate();
-  }
+  static std::shared_ptr<T> New() { return factory.Allocate(); }
+  static std::shared_ptr<T> New(const T &t) { return factory.Allocate(t); }
+  static std::shared_ptr<T> New(const std::shared_ptr<T> &t) {return factory.Allocate(*t);}
 
-  // static int64_t GetTime();
+ private:
+  static MessageFactory<T> factory;
 };
+
+template<class T> MessageFactory<T> Message<T>::factory;
 
 #endif // MODEL_MESSAGE_H

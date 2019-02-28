@@ -35,7 +35,7 @@ void TradeDB::RegisterCallback(base::ProtoMessageDispatcher<base::ProtoMessagePt
 
 base::ProtoMessagePtr TradeDB::OnRequest(const std::shared_ptr<Proto::TradeReq> &msg) {
   LOG_INF << "Trade request: " << msg->ShortDebugString();
-  auto reply = Message::NewProto<Proto::TradeRep>();
+  auto reply = Message<Proto::TradeRep>::New();
   if (msg->type() == Proto::RequestType::Get) {
     std::lock_guard<std::mutex> lck(mtx_);
     for (auto &trade : trades_) {
@@ -89,7 +89,7 @@ int TradeDB::Callback(void *data, int argc, char **argv, char **col_name) {
   const std::string instrument = argv[1];
   auto inst = instrument_db->FindInstrument(instrument);
   if (inst) {
-    auto trade = Message::NewProto<Proto::Trade>();
+    auto trade = Message<Proto::Trade>::New();
     const std::string id = argv[0];
     trade->set_id(id);
     trade->set_instrument(instrument);

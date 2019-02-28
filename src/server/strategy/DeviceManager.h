@@ -22,7 +22,7 @@ class DeviceManager {
   void Init();
   const Instrument* GetUnderlying() const { return underlying_; }
 
-  template<class E> void Publish(E &e) {
+  template<class E> void Publish(const E &e) {
     int64_t seq = rb_.Next();
     rb_.Get(seq) = std::move(e);
     rb_.Publish(seq);
@@ -44,6 +44,7 @@ class DeviceManager {
   bool IsStrategiesRunning() const;
 
   void UpdatePricer(const Proto::Pricer &pricing);
+  double GetUnderlyingTheo() { return theo_.Get(); }
 
  private:
   const Instrument *underlying_;

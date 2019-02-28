@@ -36,7 +36,7 @@ void DeviceManager::Init() {
     std::unique_ptr<Strategy> strategy(new Pricer(pricer->name(), this));
     pricer_ = std::make_unique<StrategyDevice>(strategy, rb_, barrier_);
     // devices_.emplace(pricer->name(), std::move(d));
-    LOG_INF << "Add pricer " << pricer->name();
+    LOG_INF << "add pricer " << pricer->name();
   }
 
   /// initialize quoter
@@ -45,7 +45,7 @@ void DeviceManager::Init() {
     std::unique_ptr<Strategy> strategy(new Quoter(quoter->name(), this));
     auto d = std::make_shared<StrategyDevice>(strategy, rb_, barrier_);
     devices_.emplace(quoter->name(), std::move(d));
-    LOG_INF << "Add quoter " << quoter->name();
+    LOG_INF << "add quoter " << quoter->name();
   }
 
   /// initialize hedger
@@ -65,8 +65,7 @@ void DeviceManager::Init() {
 void DeviceManager::Publish(PricePtr &price) {
   /// add adjusted price to be done...
   if (price->instrument == underlying_) {
-    theo_.ApplyElastic(price, hedger_ ? hedger_->OpenDelta() : 0);
-    double theo = theo_.Get();
+    double theo = theo_.ApplyElastic(price, hedger_ ? hedger_->OpenDelta() : 0);
     if (underlying_prices_.size() > 0) {
       double min = theo, max = theo;
       for (double p : underlying_prices_) {
@@ -144,9 +143,9 @@ void DeviceManager::OnStrategyOperate(const std::string &user, const Proto::Stra
       if (op.operate() == Proto::StrategyOperation::Stop) {
         sd->Stop(user + " stop");
       } else if (op.operate() == Proto::StrategyOperation::Start) {
-        auto copy = Message::NewProto<Proto::StrategyOperate>();
-        copy->CopyFrom(op);
-        Publish(copy);
+        Publish(Message<Proto::StrategyOperate>::New(op));
+        // copy->CopyFrom(op);
+        // Publish(copy);
       }
     } else if (op.operate() == Proto::StrategyOperation::Start) {
       if (!pricer_->IsRunning()) {
@@ -155,7 +154,7 @@ void DeviceManager::OnStrategyOperate(const std::string &user, const Proto::Stra
       sd->Start();
     }
   } else {
-    LOG_ERR << "Can't find strategy " << op.name();
+    LOG_ERR << "can't find strategy " << op.name();
   }
   LOG_PUB << boost::format("%1% %2% %3%") % user % Proto::StrategyOperation_Name(op.operate()) %
              op.name() ;

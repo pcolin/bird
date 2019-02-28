@@ -1,0 +1,42 @@
+syntax = "proto3";
+package Proto;
+
+import "Request.proto";
+import "Reply.proto";
+import "Exchange.proto";
+
+message MarketMakingStatistic
+{
+  string underlying = 1;
+  string date = 2;
+  Exchange exchange = 3;
+  int32 orders = 4;
+  int32 underlying_cancels = 5;
+  int32 opening_quotes = 6;
+  int32 closing_quotes = 7;
+  int32 fuse_quotes = 8;
+  int32 total_fuses = 9;
+  int32 valid_qrs = 10;
+  int32 total_qrs = 11;
+  int32 quoting_options = 12;
+  int32 valid_quotes = 13;
+  int32 cum_valid_quotes = 14;
+  int32 total_quotes = 15;
+  double spread_ratio = 16;
+  double cum_spread_ratio = 17;
+  repeated string warning_options = 18;
+}
+
+message MarketMakingStatisticReq
+{
+  RequestType type = 1;
+  Exchange exchange = 2;
+  string user = 3;
+  repeated MarketMakingStatistic statistics = 4;
+}
+
+message MarketMakingStatisticRep
+{
+  repeated MarketMakingStatistic statistics = 1;
+  Reply result = 2;
+}

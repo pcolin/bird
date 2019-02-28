@@ -3,6 +3,8 @@
 
 #include <sys/time.h>
 #include <cstring>
+#include "base/common/Itoa.h"
+#include "boost/date_time/gregorian/gregorian.hpp"
 // #include "Itoa.h"
 
 namespace base {
@@ -47,6 +49,27 @@ inline int64_t StringToTime(const char* date, const char* time) {
   t.tm_min = atoi(time + 3);
   t.tm_sec = atoi(time + 6);
   return mktime(&t) * MILLION;
+}
+
+/// date --> 20190221
+inline std::string DateToString(const boost::gregorian::date &date) {
+  char tmp[9];
+  base::convert(tmp, (int)date.year());
+  int month = date.month();
+  if (month > 9) {
+    base::convert(tmp + 4, month);
+  } else {
+    tmp[4] = '0';
+    base::convert(tmp + 5, month);
+  }
+  int day = date.day();
+  if (day > 9) {
+    base::convert(tmp + 6, day);
+  } else {
+    tmp[6] = '0';
+    base::convert(tmp + 7, day);
+  }
+  return tmp;
 }
 // inline std::string ToIsoString(int year, int month, int day)
 // {

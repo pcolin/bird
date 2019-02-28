@@ -1,6 +1,7 @@
 #include "CtpTraderApi.h"
 #include "CtpTraderSpi.h"
 #include "base/common/Likely.h"
+#include "base/common/Float.h"
 #include "base/logger/Logging.h"
 #include "config/EnvConfig.h"
 #include "model/PositionManager.h"
@@ -21,7 +22,7 @@ CtpTraderApi::~CtpTraderApi() {
 }
 
 void CtpTraderApi::Init() {
-  LOG_INF << "Initialize CTP trader api";
+  LOG_INF << "initialize CTP trader api";
   api_ = CThostFtdcTraderApi::CreateFtdcTraderApi();
   spi_ = new CtpTraderSpi(this);
   api_->RegisterSpi(spi_);
@@ -30,22 +31,22 @@ void CtpTraderApi::Init() {
   api_->SubscribePrivateTopic(THOST_TERT_QUICK);
   api_->SubscribePublicTopic(THOST_TERT_QUICK);
   api_->RegisterFront(const_cast<char*>(
-                      EnvConfig::GetInstance()->GetString(EnvVar::CTP_TRADE_ADDR).c_str()));
+    EnvConfig::GetInstance()->GetString(EnvVar::CTP_TRADE_ADDR).c_str()));
   api_->Init();
 
-  LOG_INF << "Wait until instrument query finished...";
+  LOG_INF << "wait until instrument query finished...";
   std::unique_lock<std::mutex> lck(inst_mtx_);
   inst_cv_.wait(lck, [this]{ return inst_ready_; });
   // StartRequestWork();
   TraderApi::Init();
   pulling_thread_ = std::make_unique<std::thread>(
       [&]() {
-        LOG_INF << "Start thread to pull saved orders...";
+        LOG_INF << "start thread to pull saved orders...";
         size_t ids[capacity_];
         while (true) {
           std::this_thread::sleep_for(std::chrono::milliseconds(10));
           size_t cnt = pulling_ids_.wait_dequeue_bulk(ids, capacity_);
-          LOG_INF << boost::format("Get %1% saved orders") % cnt;
+          LOG_INF << boost::format("get %1% saved orders") % cnt;
           for (size_t i = 0; i < cnt; ++i) {
             FindAndCancel(ids[i]);
             // auto ord = OrderManager::GetInstance()->FindActiveOrder(ids[i]);
@@ -64,7 +65,7 @@ void CtpTraderApi::Init() {
 void CtpTraderApi::Login() {
   const std::string user = EnvConfig::GetInstance()->GetString(EnvVar::CTP_USER_ID);
   const std::string pwd = EnvConfig::GetInstance()->GetString(EnvVar::CTP_PASSWORD);
-  LOG_INF << boost::format("Login CTP Trader Api(%1%,%2%)") % user % pwd;
+  LOG_INF << boost::format("login CTP Trader Api(%1%,%2%)") % user % pwd;
   CThostFtdcReqUserLoginField field;
   memset(&field, 0, sizeof(field));
   strcpy(field.BrokerID, broker_.c_str());
@@ -72,27 +73,499 @@ void CtpTraderApi::Login() {
   strcpy(field.Password, pwd.c_str());
 
   while (int ret = api_->ReqUserLogin(&field, req_id_++)) {
-    LOG_ERR << boost::format("Failed to send login request(%1%), retry after 1s") % ret;
+    LOG_ERR << boost::format("failed to send login request(%1%), retry after 1s") % ret;
     std::this_thread::sleep_for(std::chrono::seconds(1));
   }
-  LOG_INF << "Success to send login request.";
+  LOG_INF << "success to send login request.";
 }
 
 void CtpTraderApi::Logout() {
-  LOG_INF << "Logout CTP Trader Api";
+  LOG_INF << "logout CTP Trader Api";
   CThostFtdcUserLogoutField field;
   memset(&field, 0, sizeof(field));
   strcpy(field.BrokerID, broker_.c_str());
   strcpy(field.UserID, investor_.c_str());
 
   while (int ret = api_->ReqUserLogout(&field, req_id_++)) {
-    LOG_ERR << boost::format("Failed to send logout request(%1%), retry after 1s") % ret;
+    LOG_ERR << boost::format("failed to send logout request(%1%), retry after 1s") % ret;
     std::this_thread::sleep_for(std::chrono::seconds(1));
   }
-  LOG_INF << "Success to send logout request.";
+  LOG_INF << "success to send logout request.";
 }
 
-void CtpTraderApi::SubmitOrder(const OrderPtr& order) {
+bool CtpTraderApi::IsMMOption(const Instrument *option) {
+  return true;
+}
+
+bool CtpTraderApi::GetMMPrice(
+    const Instrument *option,
+    double theo,
+    double &bid,
+    double &ask) {
+  switch (option->Exchange()) {
+    case Proto::Exchange::CFFEX : {
+      double t = option->RoundToTick(theo, Proto::RoundDirection::Nearest);
+      if (option->Maturity() == first_maturity_) {
+        if (base::IsLessThan(t - 2.5, 100)) {
+          if (base::IsLessThan(t - 0.5, 20)) {
+            if (base::IsLessThan(t - 0.3, 10)) {
+              bid = t - 0.3;
+              ask = t + 0.3;
+            } else {
+              bid = std::max(t - 0.5, 10.0);
+              ask = bid + 1;
+            }
+          } else if (base::IsLessThan(t - 1.3, 50)) {
+            bid = std::max(t - 1.3, 20.0);
+            ask = bid + 2.6;
+          } else {
+            bid = std::max(t - 2.5, 50.0);
+            ask = bid + 5;
+          }
+        } else if (base::IsLessThan(t - 7.5, 500)) {
+          if (base::IsLessThan(t - 4, 250)) {
+            bid = std::max(t - 4, 100.0);
+            ask = bid + 8;
+          } else {
+            bid = std::max(t - 7.5, 250.0);
+            ask = bid + 15;
+          }
+        } else if (base::IsLessThan(t - 15, 1000)) {
+          bid = std::max(t - 15, 500.0);
+          ask = bid + 30;
+        } else if (base::IsLessThan(t - 30, 2000)) {
+          bid = std::max(t - 30, 1000.0);
+          ask = bid + 60;
+        } else {
+          bid = std::max(t - 60, 2000.0);
+          ask = bid + 120;
+        }
+        // if (base::IsLessThan(t - 0.3, 10)) {
+        //   bid = t - 0.3;
+        //   ask = t + 0.3;
+        // } else if (base::IsLessThan(t - 0.5, 20)) {
+        //   bid = std::max(t - 0.5, 10.0);
+        //   ask = bid + 1;
+        // } else if (base::IsLessThan(t - 1.3, 50)) {
+        //   bid = std::max(t - 1.3, 20.0);
+        //   ask = bid + 2.6;
+        // } else if (base::IsLessThan(t - 2.5, 100)) {
+        //   bid = std::max(t - 2.5, 50.0);
+        //   ask = bid + 5;
+        // } else if (base::IsLessThan(t - 4, 250)) {
+        //   bid = std::max(t - 4, 100.0);
+        //   ask = bid + 8;
+        // } else if (base::IsLessThan(t - 7.5, 500)) {
+        //   bid = std::max(t - 7.5, 250.0);
+        //   ask = bid + 15;
+        // } else if (base::IsLessThan(t - 15, 1000)) {
+        //   bid = std::max(t - 15, 500.0);
+        //   ask = bid + 30;
+        // } else if (base::IsLessThan(t - 30, 2000)) {
+        //   bid = std::max(t - 30, 1000.0);
+        //   ask = bid + 60;
+        // } else {
+        //   bid = std::max(t - 60, 2000.0);
+        //   ask = bid + 120;
+        // }
+      } else {
+        if (base::IsLessThan(t - 4, 100)) {
+          if (base::IsLessThan(t - 1, 20)) {
+            if (base::IsLessThan(t - 0.5, 10)) {
+              bid = t - 0.5;
+              ask = t + 0.5;
+            } else {
+              bid = std::max(t - 1, 10.0);
+              ask = bid + 2;
+            }
+          } else if (base::IsLessThan(t - 2, 50)) {
+            bid = std::max(t - 2, 20.0);
+            ask = bid + 4;
+          } else {
+            bid = std::max(t - 4, 50.0);
+            ask = bid + 8;
+          }
+        } else if (base::IsLessThan(t - 12.5, 500)) {
+          if (base::IsLessThan(t - 7.5, 250)) {
+            bid = std::max(t - 7.5, 100.0);
+            ask = bid + 15;
+          } else {
+            bid = std::max(t - 12.5, 250.0);
+            ask = bid + 25;
+          }
+        } else if (base::IsLessThan(t - 25, 1000)) {
+          bid = std::max(t - 25, 500.0);
+          ask = bid + 50;
+        } else if (base::IsLessThan(t - 50, 2000)) {
+          bid = std::max(t - 50, 1000.0);
+          ask = bid + 100;
+        } else {
+          bid = std::max(t - 100, 2000.0);
+          ask = bid + 200;
+        }
+      }
+      return true;
+    }
+    case Proto::Exchange::SHFE : {
+      if (base::IsLessOrEqual(theo - 30, 500)) {
+        bid = option->RoundToTick(std::min(theo / (1 + 0.5 * 0.12), theo - 10),
+                                  Proto::RoundDirection::Up);
+        ask = option->RoundToTick(std::max(bid * (1 + 0.12), bid + 20),
+                                  Proto::RoundDirection::Down);
+      } else if (base::IsLessOrEqual(theo - 50, 1000)) {
+        bid = option->RoundToTick(std::min(theo / (1 + 0.5 * 0.1), theo - 30),
+                                  Proto::RoundDirection::Up);
+        ask = option->RoundToTick(std::max(bid * (1 + 0.1), bid + 60),
+                                  Proto::RoundDirection::Down);
+      } else if (base::IsLessOrEqual(theo - 120, 3000)) {
+        bid = option->RoundToTick(std::min(theo / (1 + 0.5 * 0.08), theo - 50),
+                                  Proto::RoundDirection::Up);
+        ask = option->RoundToTick(std::max(bid * (1 + 0.08), bid + 100),
+                                  Proto::RoundDirection::Down);
+      } else {
+        bid = option->RoundToTick(std::min(theo / (1 + 0.5 * 0.06), theo - 120),
+                                  Proto::RoundDirection::Up);
+        ask = option->RoundToTick(std::max(bid * (1 + 0.06), bid + 240),
+                                  Proto::RoundDirection::Down);
+      }
+      return true;
+    }
+    case Proto::Exchange::DCE : {
+      switch (option->Product()[0]) {
+        case 'm' : {
+          if (base::IsLessThan(theo - 3, 50)) {
+            bid = option->RoundToTick(std::min(theo / (1 + 0.5 * 0.12), theo - 2),
+                                      Proto::RoundDirection::Up);
+            ask = option->RoundToTick(std::max(bid * (1 + 0.12), bid + 4),
+                                      Proto::RoundDirection::Down);
+          } else if (base::IsLessThan(theo - 14, 400)) {
+            bid = option->RoundToTick(std::min(theo / (1 + 0.5 * 0.07), theo - 3),
+                                      Proto::RoundDirection::Up);
+            ask = option->RoundToTick(std::max(bid * (1 + 0.07), bid + 6),
+                                      Proto::RoundDirection::Down);
+          } else {
+            bid = option->RoundToTick(std::min(theo / (1 + 0.5 * 0.06), theo - 14),
+                                      Proto::RoundDirection::Up);
+            ask = option->RoundToTick(std::max(bid * (1 + 0.06), bid + 28),
+                                      Proto::RoundDirection::Down);
+          }
+          return true;
+        }
+        case 'c' : {
+          if (base::IsLessThan(theo - 2.5, 50)) {
+            bid = option->RoundToTick(std::min(theo / (1 + 0.5 * 0.1), theo - 1.5),
+                                      Proto::RoundDirection::Up);
+            ask = option->RoundToTick(std::max(bid * (1 + 0.1), bid + 3),
+                                      Proto::RoundDirection::Down);
+          } else if (base::IsLessThan(theo - 4.5, 150)) {
+            bid = option->RoundToTick(std::min(theo / (1 + 0.5 * 0.06), theo - 2.5),
+                                      Proto::RoundDirection::Up);
+            ask = option->RoundToTick(std::max(bid * (1 + 0.06), bid + 5),
+                                      Proto::RoundDirection::Down);
+          } else {
+            bid = option->RoundToTick(std::min(theo / (1 + 0.5 * 0.04), theo - 4.5),
+                                      Proto::RoundDirection::Up);
+            ask = option->RoundToTick(std::max(bid * (1 + 0.04), bid + 9),
+                                      Proto::RoundDirection::Down);
+          }
+          return true;
+        }
+        default :
+          return false;
+      }
+    }
+    case Proto::Exchange::CZCE : {
+      double t = option->RoundToTick(theo, Proto::RoundDirection::Nearest);
+      switch (option->Product()[0]) {
+        case 'S' : {
+          if (base::IsLessThan(t - 3, 100)) {
+            if (base::IsLessThan(t - 2, 50)) {
+              bid = t - 2;
+              ask = t + 2;
+            } else {
+              bid = std::max(t - 3, 50.0);
+              ask = bid + 6;
+            }
+          } else if (base::IsLessThan(t - 8, 300)) {
+            if (base::IsLessThan(t - 4, 200)) {
+              bid = std::max(t - 4, 100.0);
+              ask = bid + 8;
+            } else {
+              bid = std::max(t - 8, 200.0);
+              ask = bid + 16;
+            }
+          } else if (base::IsLessThan(t - 12, 500)) {
+            bid = std::max(t - 12, 300.0);
+            ask = bid + 24;
+          } else {
+            bid = std::max(t - 20, 500.0);
+            ask = bid + 40;
+          }
+          return true;
+        }
+        case 'C' : {
+          if (base::IsLessThan(t - 6, 300)) {
+            if (base::IsLessThan(t - 4, 150)) {
+              bid = t - 4;
+              ask = t + 4;
+            } else {
+              bid = std::max(t - 6, 150.0);
+              ask = bid + 12;
+            }
+          } else if (base::IsLessThan(t - 24, 1000)) {
+            if (base::IsLessThan(t - 12, 600)) {
+              bid = std::max(t - 12, 300.0);
+              ask = bid + 24;
+            } else {
+              bid = std::max(t - 24, 600.0);
+              ask = bid + 48;
+            }
+          } else if (base::IsLessThan(t - 40, 1500)) {
+            bid = std::max(t - 40, 1000.0);
+            ask = bid + 80;
+          } else {
+            bid = std::max(t - 60, 1500.0);
+            ask = bid + 120;
+          }
+          return true;
+        }
+        default :
+          return false;
+      }
+    }
+    default :
+      return false;
+  }
+}
+
+bool CtpTraderApi::GetQRPrice(
+    const Instrument *option,
+    double theo,
+    double &bid,
+    double &ask) {
+  switch (option->Exchange()) {
+    case Proto::Exchange::CFFEX : {
+      double t = option->RoundToTick(theo, Proto::RoundDirection::Nearest);
+      if (option->Maturity() == first_maturity_) {
+        if (base::IsLessThan(t - 2.5, 100)) {
+          if (base::IsLessThan(t - 0.5, 20)) {
+            if (base::IsLessThan(t - 0.3, 10)) {
+              bid = t - 0.3;
+              ask = t + 0.3;
+            } else {
+              bid = std::max(t - 0.5, 10.0);
+              ask = bid + 1;
+            }
+          } else if (base::IsLessThan(t - 1.3, 50)) {
+            bid = std::max(t - 1.3, 20.0);
+            ask = bid + 2.6;
+          } else {
+            bid = std::max(t - 2.5, 50.0);
+            ask = bid + 5;
+          }
+        } else if (base::IsLessThan(t - 7.5, 500)) {
+          if (base::IsLessThan(t - 4, 250)) {
+            bid = std::max(t - 4, 100.0);
+            ask = bid + 8;
+          } else {
+            bid = std::max(t - 7.5, 250.0);
+            ask = bid + 15;
+          }
+        } else if (base::IsLessThan(t - 15, 1000)) {
+          bid = std::max(t - 15, 500.0);
+          ask = bid + 30;
+        } else if (base::IsLessThan(t - 30, 2000)) {
+          bid = std::max(t - 30, 1000.0);
+          ask = bid + 60;
+        } else {
+          bid = std::max(t - 60, 2000.0);
+          ask = bid + 120;
+        }
+      } else {
+        if (base::IsLessThan(t - 4, 100)) {
+          if (base::IsLessThan(t - 1, 20)) {
+            if (base::IsLessThan(t - 0.5, 10)) {
+              bid = t - 0.5;
+              ask = t + 0.5;
+            } else {
+              bid = std::max(t - 1, 10.0);
+              ask = bid + 2;
+            }
+          } else if (base::IsLessThan(t - 2, 50)) {
+            bid = std::max(t - 2, 20.0);
+            ask = bid + 4;
+          } else {
+            bid = std::max(t - 4, 50.0);
+            ask = bid + 8;
+          }
+        } else if (base::IsLessThan(t - 12.5, 500)) {
+          if (base::IsLessThan(t - 7.5, 250)) {
+            bid = std::max(t - 7.5, 100.0);
+            ask = bid + 15;
+          } else {
+            bid = std::max(t - 12.5, 250.0);
+            ask = bid + 25;
+          }
+        } else if (base::IsLessThan(t - 25, 1000)) {
+          bid = std::max(t - 25, 500.0);
+          ask = bid + 50;
+        } else if (base::IsLessThan(t - 50, 2000)) {
+          bid = std::max(t - 50, 1000.0);
+          ask = bid + 100;
+        } else {
+          bid = std::max(t - 100, 2000.0);
+          ask = bid + 200;
+        }
+      }
+      return true;
+    }
+    case Proto::Exchange::SHFE : {
+      if (base::IsLessOrEqual(theo - 35, 500)) {
+        bid = option->RoundToTick(std::min(theo / (1 + 0.5 * 0.14), theo - 15),
+                                  Proto::RoundDirection::Up);
+        ask = option->RoundToTick(std::max(bid * (1 + 0.14), bid + 30),
+                                  Proto::RoundDirection::Down);
+      } else if (base::IsLessOrEqual(theo - 60, 1000)) {
+        bid = option->RoundToTick(std::min(theo / (1 + 0.5 * 0.12), theo - 35),
+                                  Proto::RoundDirection::Up);
+        ask = option->RoundToTick(std::max(bid * (1 + 0.12), bid + 70),
+                                  Proto::RoundDirection::Down);
+      } else if (base::IsLessOrEqual(theo - 150, 3000)) {
+        bid = option->RoundToTick(std::min(theo / (1 + 0.5 * 0.1), theo - 60),
+                                  Proto::RoundDirection::Up);
+        ask = option->RoundToTick(std::max(bid * (1 + 0.1), bid + 120),
+                                  Proto::RoundDirection::Down);
+      } else {
+        bid = option->RoundToTick(std::min(theo / (1 + 0.5 * 0.08), theo - 150),
+                                  Proto::RoundDirection::Up);
+        ask = option->RoundToTick(std::max(bid * (1 + 0.08), bid + 300),
+                                  Proto::RoundDirection::Down);
+      }
+      return true;
+    }
+    case Proto::Exchange::DCE : {
+      switch (option->Product()[0]) {
+        case 'm' : {
+          if (base::IsLessThan(theo - 4, 50)) {
+            bid = option->RoundToTick(std::min(theo / (1 + 0.5 * 0.16), theo - 3),
+                                      Proto::RoundDirection::Up);
+            ask = option->RoundToTick(std::max(bid * (1 + 0.16), bid + 6),
+                                      Proto::RoundDirection::Down);
+          } else if (base::IsLessThan(theo - 24, 400)) {
+            bid = option->RoundToTick(std::min(theo / (1 + 0.5 * 0.12), theo - 4),
+                                      Proto::RoundDirection::Up);
+            ask = option->RoundToTick(std::max(bid * (1 + 0.12), bid + 8),
+                                      Proto::RoundDirection::Down);
+          } else {
+            bid = option->RoundToTick(std::min(theo / (1 + 0.5 * 0.1), theo - 24),
+                                      Proto::RoundDirection::Up);
+            ask = option->RoundToTick(std::max(bid * (1 + 0.1), bid + 48),
+                                      Proto::RoundDirection::Down);
+          }
+          return true;
+        }
+        case 'c' : {
+          if (base::IsLessThan(theo - 4, 50)) {
+            bid = option->RoundToTick(std::min(theo / (1 + 0.5 * 0.16), theo - 2),
+                                      Proto::RoundDirection::Up);
+            ask = option->RoundToTick(std::max(bid * (1 + 0.16), bid + 4),
+                                      Proto::RoundDirection::Down);
+          } else if (base::IsLessThan(theo - 7.5, 150)) {
+            bid = option->RoundToTick(std::min(theo / (1 + 0.5 * 0.1), theo - 4),
+                                      Proto::RoundDirection::Up);
+            ask = option->RoundToTick(std::max(bid * (1 + 0.1), bid + 8),
+                                      Proto::RoundDirection::Down);
+          } else {
+            bid = option->RoundToTick(std::min(theo / (1 + 0.5 * 0.08), theo - 7.5),
+                                      Proto::RoundDirection::Up);
+            ask = option->RoundToTick(std::max(bid * (1 + 0.08), bid + 15),
+                                      Proto::RoundDirection::Down);
+          }
+          return true;
+        }
+        default :
+          return false;
+      }
+    }
+    case Proto::Exchange::CZCE : {
+      double t = option->RoundToTick(theo, Proto::RoundDirection::Nearest);
+      switch (option->Product()[0]) {
+        case 'S' : {
+          if (base::IsLessThan(t - 4, 100)) {
+            if (base::IsLessThan(t - 3, 50)) {
+              bid = t - 3;
+              ask = t + 3;
+            } else {
+              bid = std::max(t - 4, 50.0);
+              ask = bid + 8;
+            }
+          } else if (base::IsLessThan(t - 12, 300)) {
+            if (base::IsLessThan(t - 8, 200)) {
+              bid = std::max(t - 8, 100.0);
+              ask = bid + 16;
+            } else {
+              bid = std::max(t - 12, 200.0);
+              ask = bid + 24;
+            }
+          } else if (base::IsLessThan(t - 20, 500)) {
+            bid = std::max(t - 20, 300.0);
+            ask = bid + 40;
+          } else {
+            bid = std::max(t - 30, 500.0);
+            ask = bid + 60;
+          }
+          return true;
+        }
+        case 'C' : {
+          if (base::IsLessThan(t - 12, 300)) {
+            if (base::IsLessThan(t - 6, 150)) {
+              bid = t - 6;
+              ask = t + 6;
+            } else {
+              bid = std::max(t - 12, 150.0);
+              ask = bid + 24;
+            }
+          } else if (base::IsLessThan(t - 40, 1000)) {
+            if (base::IsLessThan(t - 24, 600)) {
+              bid = std::max(t - 24, 300.0);
+              ask = bid + 48;
+            } else {
+              bid = std::max(t - 40, 600.0);
+              ask = bid + 80;
+            }
+          } else if (base::IsLessThan(t - 60, 1500)) {
+            bid = std::max(t - 60, 1000.0);
+            ask = bid + 120;
+          } else {
+            bid = std::max(t - 80, 1500.0);
+            ask = bid + 160;
+          }
+          return true;
+        }
+        default :
+          return false;
+      }
+    }
+    default :
+      return false;
+  }
+}
+
+bool CtpTraderApi::MeetMMObligation(
+    const OrderPtr& bid,
+    const OrderPtr& ask,
+    double& ratio) {
+  return true;
+}
+
+bool CtpTraderApi::MeetQRObligation(
+    const OrderPtr& bid,
+    const OrderPtr& ask,
+    double& ratio) {
+  return true;
+}
+
+void CtpTraderApi::SubmitOrder(const OrderPtr &order) {
   if (unlikely(!order)) return;
 
   /// Emergency to be done...
@@ -146,7 +619,7 @@ void CtpTraderApi::SubmitOrder(const OrderPtr& order) {
   field.VolumeTotalOriginal = order->volume;
 
   {
-    auto copy = Message::NewOrder(order);
+    auto copy = Message<Order>::New(order);
     copy->header.SetInterval(0);
     std::lock_guard<std::mutex> lck(ref_mtx_);
     order_refs_[order_ref_] = copy;
@@ -160,7 +633,7 @@ void CtpTraderApi::SubmitOrder(const OrderPtr& order) {
     // ord->status = OrderStatus::Submitted;
     // ord->header.SetInterval(0);
     // OnOrderResponse(ord);
-    LOG_INF << "Success to send order submit request " << id;
+    LOG_INF << "success to send order submit request " << id;
     // LOG_INF << boost::format("Field: %1%,%2%,%3%,%4%,%5%,%6%,%7%,%8%,%9%,%10%,%11%,%12%,%13%,%14%,"
     //     "%15%,%16%") %
     //   field.BrokerID % field.InvestorID % field.InstrumentID % field.OrderRef % field.Direction %
@@ -168,8 +641,8 @@ void CtpTraderApi::SubmitOrder(const OrderPtr& order) {
     //   field.VolumeCondition % field.MinVolume % field.ForceCloseReason % field.IsAutoSuspend %
     //   field.UserForceClose % field.OrderPriceType % field.LimitPrice % field.TimeCondition;
   } else {
-    LOG_ERR << "Failed to send order submit request: " << ret;
-    order->note = std::move((boost::format("Send fail %1%") % ret).str());
+    LOG_ERR << "failed to send order submit request: " << ret;
+    order->note = std::move((boost::format("send fail %1%") % ret).str());
     RejectOrder(order);
     std::lock_guard<std::mutex> lck(ref_mtx_);
     order_refs_.erase(order_ref_);
@@ -177,16 +650,16 @@ void CtpTraderApi::SubmitOrder(const OrderPtr& order) {
   }
 }
 
-void CtpTraderApi::SubmitQuote(const OrderPtr& bid, const OrderPtr& ask) {
+void CtpTraderApi::SubmitQuote(const OrderPtr &bid, const OrderPtr &ask) {
 }
 
-void CtpTraderApi::AmendOrder(const OrderPtr& order) {
+void CtpTraderApi::AmendOrder(const OrderPtr &order) {
 }
 
-void CtpTraderApi::AmendQuote(const OrderPtr& bid, const OrderPtr& ask) {
+void CtpTraderApi::AmendQuote(const OrderPtr &bid, const OrderPtr &ask) {
 }
 
-void CtpTraderApi::CancelOrder(const OrderPtr& order) {
+void CtpTraderApi::CancelOrder(const OrderPtr &order) {
   // if (unlikely(!order)) return;
 
   // if (unlikely(order->IsInactive()))
@@ -201,13 +674,13 @@ void CtpTraderApi::CancelOrder(const OrderPtr& order) {
     auto ord = FindOrder(order->id, exchange_id);
     if (FindOrder(order->id, exchange_id)) {
       if (exchange_id.empty()) {
-        LOG_INF << boost::format("Counter ID of %1% is unavailable, saved...") % order->id;
+        LOG_INF << boost::format("counter ID of %1% is unavailable, saved...") % order->id;
         pulling_ids_.enqueue(order->id);
         return;
       }
-      LOG_INF << "Original exchange id is empty, but find one";
+      LOG_INF << "original exchange id is empty, but find one";
     } else {
-      LOG_INF << boost::format("Order %1% is completed") % order->id;
+      LOG_INF << boost::format("order %1% is completed") % order->id;
       return;
     }
   }
@@ -222,38 +695,41 @@ void CtpTraderApi::CancelQuote(const OrderPtr& bid, const OrderPtr& ask) {
 // {
 // }
 
-void CtpTraderApi::CancelOrder(const Instrument* inst, size_t id, const std::string& exchange_id) {
+void CtpTraderApi::CancelOrder(
+    const Instrument *inst,
+    size_t id,
+    const std::string &exchange_id) {
   CThostFtdcInputOrderActionField field(pull_order_);
   strcpy(field.InstrumentID, inst->Symbol().c_str());
   strcpy(field.OrderSysID, exchange_id.c_str());
   int req_id = req_id_++;
   int ret = api_->ReqOrderAction(&field, req_id);
   if (ret == 0) {
-    LOG_INF << boost::format("Success to send order cancel request %1% ("
+    LOG_INF << boost::format("success to send order cancel request %1% ("
                              "InstrumentID:%2%, ExchangeID:%3%, OrderSysID:%4%)") %
                req_id % field.InstrumentID % field.ExchangeID % field.OrderSysID;
   } else {
     pulling_ids_.enqueue(id);
-    LOG_ERR << "Failed to send order cancel request: " << ret;
+    LOG_ERR << "failed to send order cancel request: " << ret;
   }
 }
 
 void CtpTraderApi::QueryInstruments() {
-  LOG_INF << "Query instruments of " << exchange_;
+  LOG_INF << "query instruments of " << exchange_;
   CThostFtdcQryInstrumentField field;
   memset(&field, 0, sizeof(field));
   strcpy(field.ExchangeID, exchange_.c_str());
   /// strcpy(field.ProductID, "m_o");
 
   while (int ret = api_->ReqQryInstrument(&field, req_id_++)) {
-    LOG_ERR << boost::format("Failed to send query instrument request(%1%), retry after 1s") % ret;
+    LOG_ERR << boost::format("failed to send query instrument request(%1%), retry after 1s") % ret;
     std::this_thread::sleep_for(std::chrono::seconds(1));
   }
-  LOG_INF << "Success to send query instrument request";
+  LOG_INF << "success to send query instrument request";
 }
 
 void CtpTraderApi::QueryFutureCommissionRate() {
-  LOG_INF << "Query future commission rate of " << exchange_;
+  LOG_INF << "query future commission rate of " << exchange_;
   CThostFtdcQryInstrumentCommissionRateField field;
   memset(&field, 0, sizeof(field));
   strcpy(field.BrokerID, broker_.c_str());
@@ -262,14 +738,14 @@ void CtpTraderApi::QueryFutureCommissionRate() {
 
   while (int ret = api_->ReqQryInstrumentCommissionRate(&field, req_id_++)) {
     LOG_ERR << boost::format(
-               "Failed to send query future commission rate request(%1%), retry after 1s") % ret;
+               "failed to send query future commission rate request(%1%), retry after 1s") % ret;
     std::this_thread::sleep_for(std::chrono::seconds(1));
   }
-  LOG_INF << "Success to send query future commission rate request";
+  LOG_INF << "success to send query future commission rate request";
 }
 
 void CtpTraderApi::QueryOptionCommissionRate() {
-  LOG_INF << "Query option commission rate of " << exchange_;
+  LOG_INF << "query option commission rate of " << exchange_;
   CThostFtdcQryOptionInstrCommRateField field;
   memset(&field, 0, sizeof(field));
   strcpy(field.BrokerID, broker_.c_str());
@@ -277,14 +753,14 @@ void CtpTraderApi::QueryOptionCommissionRate() {
 
   while (int ret = api_->ReqQryOptionInstrCommRate(&field, req_id_++)) {
     LOG_ERR << boost::format(
-               "Failed to send query option commission rate request(%1%), retry after 1s") % ret;
+               "failed to send query option commission rate request(%1%), retry after 1s") % ret;
     std::this_thread::sleep_for(std::chrono::seconds(1));
   }
-  LOG_INF << "Success to send query option commission rate";
+  LOG_INF << "success to send query option commission rate";
 }
 
 void CtpTraderApi::QueryMMOptionCommissionRate() {
-  LOG_INF << "Query mm option commission rate of " << exchange_;
+  LOG_INF << "query mm option commission rate of " << exchange_;
   CThostFtdcQryMMOptionInstrCommRateField field;
   memset(&field, 0, sizeof(field));
   strcpy(field.BrokerID, broker_.c_str());
@@ -292,26 +768,26 @@ void CtpTraderApi::QueryMMOptionCommissionRate() {
 
   while (int ret = api_->ReqQryMMOptionInstrCommRate(&field, req_id_++)) {
     LOG_ERR << boost::format(
-               "Failed to send query mm option commission rate request(%1%), retry after 1s") % ret;
+               "failed to send query mm option commission rate request(%1%), retry after 1s") % ret;
     std::this_thread::sleep_for(std::chrono::seconds(1));
   }
-  LOG_INF << "Success to send query mm option commission rate";
+  LOG_INF << "success to send query mm option commission rate";
 }
 
 void CtpTraderApi::QueryMarketData() {
-  LOG_INF << "Query market data of " << exchange_;
+  LOG_INF << "query market data of " << exchange_;
   CThostFtdcQryDepthMarketDataField field;
   memset(&field, 0, sizeof(field));
 
   while (int ret = api_->ReqQryDepthMarketData(&field, req_id_++)) {
-    LOG_ERR << boost::format("Failed to send query market data(%1%), retry after 1s") % ret;
+    LOG_ERR << boost::format("failed to send query market data(%1%), retry after 1s") % ret;
     std::this_thread::sleep_for(std::chrono::seconds(1));
   }
-  LOG_INF << "Success to send query market data request";
+  LOG_INF << "success to send query market data request";
 }
 
 void CtpTraderApi::QueryOrders() {
-  LOG_TRA << "Query orders";
+  LOG_TRA << "query orders";
   CThostFtdcQryOrderField field;
   memset(&field, 0, sizeof(field));
   strcpy(field.BrokerID, broker_.c_str());
@@ -319,14 +795,14 @@ void CtpTraderApi::QueryOrders() {
   strcpy(field.ExchangeID, exchange_.c_str());
 
   while (int ret = api_->ReqQryOrder(&field, req_id_++)) {
-    LOG_ERR << boost::format("Failed to send query order request(%1%), retry after 1s") % ret;
+    LOG_ERR << boost::format("failed to send query order request(%1%), retry after 1s") % ret;
     std::this_thread::sleep_for(std::chrono::seconds(1));
   }
-  LOG_INF << "Success to send query orders request";
+  LOG_INF << "success to send query orders request";
 }
 
 void CtpTraderApi::QueryTrades() {
-  LOG_TRA << "Query trades";
+  LOG_TRA << "query trades";
   CThostFtdcQryTradeField field;
   memset(&field, 0, sizeof(field));
   strcpy(field.BrokerID, broker_.c_str());
@@ -334,28 +810,28 @@ void CtpTraderApi::QueryTrades() {
   strcpy(field.ExchangeID, exchange_.c_str());
 
   while (int ret = api_->ReqQryTrade(&field, req_id_++)) {
-    LOG_ERR << boost::format("Failed to send query trade request(%1%), retry after 1s") % ret;
+    LOG_ERR << boost::format("failed to send query trade request(%1%), retry after 1s") % ret;
     std::this_thread::sleep_for(std::chrono::seconds(1));
   }
-  LOG_INF << "Success to send query trades request";
+  LOG_INF << "success to send query trades request";
 }
 
 void CtpTraderApi::QueryPositions() {
-  LOG_TRA << "Query positions";
+  LOG_TRA << "query positions";
   CThostFtdcQryInvestorPositionField field;
   memset(&field, 0, sizeof(field));
   strcpy(field.BrokerID, broker_.c_str());
   strcpy(field.InvestorID, investor_.c_str());
 
   while (int ret = api_->ReqQryInvestorPosition(&field, req_id_++)) {
-    LOG_ERR << boost::format("Failed to send query position request(%1%), retry after 1s") % ret;
+    LOG_ERR << boost::format("failed to send query position request(%1%), retry after 1s") % ret;
     std::this_thread::sleep_for(std::chrono::seconds(2));
   }
-  LOG_INF << "Success to send query positions request";
+  LOG_INF << "success to send query positions request";
 }
 
 void CtpTraderApi::QueryCash() {
-  LOG_TRA << "Query cash";
+  LOG_TRA << "query cash";
   CThostFtdcQryTradingAccountField field;
   memset(&field, 0, sizeof(field));
   strcpy(field.BrokerID, broker_.c_str());
@@ -363,18 +839,19 @@ void CtpTraderApi::QueryCash() {
 
   // while (int ret = api_->ReqQryTradingAccount(&field, req_id_++))
   // {
-  //   LOG_ERR << boost::format("Failed to send query cash request(%1%), retry after 1s") % ret;
+  //   LOG_ERR << boost::format("failed to send query cash request(%1%), retry after 1s") % ret;
   //   std::this_thread::sleep_for(std::chrono::seconds(1));
   // }
   int ret = api_->ReqQryTradingAccount(&field, req_id_++);
   if (ret) {
-    LOG_ERR << boost::format("Failed to send query cash request(return code = %1%)") % ret;
+    LOG_ERR << boost::format("failed to send query cash request(return code = %1%)") % ret;
   } else {
-    LOG_INF << "Success to send query cash request";
+    LOG_INF << "success to send query cash request";
   }
 }
 
-void CtpTraderApi::NotifyInstrumentReady() {
+void CtpTraderApi::NotifyInstrumentReady(const boost::gregorian::date& first_maturity) {
+  first_maturity_ = first_maturity;
   {
     std::lock_guard<std::mutex> lck(inst_mtx_);
     inst_ready_ = true;
@@ -433,7 +910,7 @@ OrderPtr CtpTraderApi::FindAndUpdate(const char *order_ref) {
       return it->second;
     }
   } else {
-    LOG_ERR << "Can't find order by ref " << order_ref;
+    LOG_ERR << "can't find order by ref " << order_ref;
   }
   return nullptr;
 }
@@ -450,7 +927,7 @@ OrderPtr CtpTraderApi::FindAndUpdate(const char *order_ref, const char *exchange
       return it->second;
     }
   } else {
-    LOG_ERR << "Can't find order by ref " << order_ref;
+    LOG_ERR << "can't find order by ref " << order_ref;
   }
   return nullptr;
 }
@@ -461,13 +938,13 @@ OrderPtr CtpTraderApi::FindAndUpdate(const char *order_ref, int trade_volume) {
   auto it = order_refs_.find(ref);
   if (it != order_refs_.end()) {
     if (trade_volume > it->second->executed_volume) {
-      it->second->status = (trade_volume < it->second->volume) ? Proto::OrderStatus::PartialFilled :
-                                                                 Proto::OrderStatus::Filled;
+      it->second->status = (trade_volume < it->second->volume) ?
+        Proto::OrderStatus::PartialFilled : Proto::OrderStatus::Filled;
       it->second->executed_volume = trade_volume;
       return it->second;
     }
   } else {
-    LOG_ERR << "Can't find order by ref " << order_ref;
+    LOG_ERR << "can't find order by ref " << order_ref;
   }
   return nullptr;
 }
@@ -494,7 +971,7 @@ OrderPtr CtpTraderApi::FindOrder(const char *order_ref) {
   return it != order_refs_.end() ? it->second : nullptr;
 }
 
-bool CtpTraderApi::FindOrder(size_t id, std::string& exchange_id) {
+bool CtpTraderApi::FindOrder(size_t id, std::string &exchange_id) {
   std::lock_guard<std::mutex> lck(ref_mtx_);
   auto it = order_ids_.find(id);
   if (it != order_ids_.end()) {

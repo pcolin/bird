@@ -44,7 +44,7 @@ void InstrumentDB::RegisterCallback(
 
 base::ProtoMessagePtr InstrumentDB::OnRequest(const std::shared_ptr<Proto::InstrumentReq> &msg) {
   LOG_INF << "instrument request: " << msg->ShortDebugString();
-  auto reply = Message::NewProto<Proto::InstrumentRep>();
+  auto reply = Message<Proto::InstrumentRep>::New();
   if (msg->type() == Proto::RequestType::Get) {
     for (auto &underlying : underlyings_) {
       if (msg->exchange() == underlying.second->exchange()) {
@@ -94,7 +94,7 @@ void InstrumentDB::UpdateInstrument(const Proto::Instrument &inst, InstrumentMap
   if (it != cache.end()) {
     it->second->CopyFrom(inst);
   } else {
-    auto instrument = Message::NewProto<Proto::Instrument>();
+    auto instrument = Message<Proto::Instrument>::New();
     instrument->CopyFrom(inst);
     cache.emplace(inst.id(), instrument);
   }
@@ -112,7 +112,7 @@ int InstrumentDB::UnderlyingCallback(void *data, int argc, char **argv, char **c
   if (type != Proto::InstrumentType::Option) {
     auto &cache = *static_cast<InstrumentMap*>(data);
     std::string id = argv[0];
-    auto inst = Message::NewProto<Proto::Instrument>();
+    auto inst = Message<Proto::Instrument>::New();
     inst->set_id(id);
     inst->set_symbol(argv[1]);
     inst->set_product(argv[2]);
@@ -143,7 +143,7 @@ int InstrumentDB::OptionCallback(void *data, int argc, char **argv, char **col_n
     auto *db = static_cast<InstrumentDB*>(data);
     auto &cache = db->options_;
     std::string id = argv[0];
-    auto inst = Message::NewProto<Proto::Instrument>();
+    auto inst = Message<Proto::Instrument>::New();
     inst->set_id(id);
     inst->set_symbol(argv[1]);
     inst->set_product(argv[2]);

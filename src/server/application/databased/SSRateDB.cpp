@@ -29,7 +29,7 @@ void SSRateDB::RegisterCallback(
 
 base::ProtoMessagePtr SSRateDB::OnRequest(const std::shared_ptr<Proto::SSRateReq> &msg) {
   LOG_INF << "SSRate request: " << msg->ShortDebugString();
-  auto reply = Message::NewProto<Proto::SSRateRep>();
+  auto reply = Message<Proto::SSRateRep>::New();
   Proto::RequestType type = msg->type();
   if (type == Proto::RequestType::Get) {
     if (msg->underlying().empty()) {

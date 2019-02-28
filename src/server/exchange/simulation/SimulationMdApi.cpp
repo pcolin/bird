@@ -12,12 +12,12 @@ void SimulationMdApi::Init() {
   auto insts = InstrumentManager::GetInstance()->FindInstruments(
       [](const Instrument *inst) { return inst->Type() == Proto::InstrumentType::Option; });
   for (auto *inst : insts) {
-    auto p = Message::NewPrice();
+    auto p = Message<Price>::New();
     p->instrument = inst;
     auto *underlying = inst->Underlying();
     auto it = prices_.find(underlying->Id());
     if (it == prices_.end()) {
-      auto up = Message::NewPrice();
+      auto up = Message<Price>::New();
       up->instrument = underlying;
       up->pre_close = inst->RoundToTick(3100 - std::rand() % 100, Proto::RoundDirection::Nearest);
       up->pre_settlement = up->pre_close - std::rand() % 50;
@@ -67,7 +67,7 @@ void SimulationMdApi::Work() {
         it.second->adjust = PRICE_UNDEFINED;
       }
 
-      auto p = Message::NewPrice();
+      auto p = Message<Price>::New();
       *p = *it.second;
       p->header.SetTime();
 

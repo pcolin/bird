@@ -9,6 +9,7 @@
 #include "Pricer.pb.h"
 #include "Credit.pb.h"
 #include "Quoter.pb.h"
+#include "MarketMakingStatistic.pb.h"
 #include "DeviceManager.h"
 #include "model/Instrument.h"
 
@@ -34,7 +35,9 @@ class ClusterManager {
   std::vector<std::shared_ptr<Proto::Credit>> FindCredits(Proto::StrategyType strategy,
                                                           const Instrument *underlying);
   std::shared_ptr<Proto::StrategySwitch> FindStrategySwitch(Proto::StrategyType strategy,
-                                                            const Instrument* op);
+                                                            const Instrument *op);
+  std::shared_ptr<Proto::MarketMakingStatistic> FindStatistic(
+      const std::string &underlying);
 
   void OnHeartbeat(const std::shared_ptr<Proto::Heartbeat> &heartbeat);
   void OnInstrumentReq(const std::shared_ptr<Proto::InstrumentReq> &req);
@@ -72,6 +75,9 @@ class ClusterManager {
 
   std::unordered_map<std::string, std::shared_ptr<Proto::QuoterSpec>> quoters_;
   std::mutex quoter_mtx_;
+
+  std::unordered_map<std::string,
+                     std::shared_ptr<Proto::MarketMakingStatistic>> statistics_;
 };
 
 #endif // STRATEGY_CLUSTER_MANAGER_H

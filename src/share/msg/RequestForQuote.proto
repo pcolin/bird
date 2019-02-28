@@ -1,0 +1,21 @@
+syntax = "proto3";
+package Proto;
+
+import "Reply.proto";
+
+message RequestForQuote 
+{
+  string instrument = 1;
+  string id = 2;
+}
+
+message RequestForQuoteReq
+{
+  string user = 1;
+  repeated RequestForQuote rfqs = 2;
+}
+
+message RequestForQuoteRep
+{
+  Reply result = 1;
+}

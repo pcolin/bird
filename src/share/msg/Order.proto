@@ -57,20 +57,21 @@ message Order
   string instrument = 2;
   string counter_id = 3;
   string exchange_id = 4;
-  string strategy = 5;
-  string note = 6;
-  double price = 7;
-  double avg_executed_price = 8;
-  int32 volume = 9;
-  int32 executed_volume = 10;
-  Exchange exchange = 11;
-  StrategyType strategy_type = 12;
-  Side side = 13;
-  TimeCondition time_condition = 14;
-  OrderType type = 15;
-  OrderStatus status = 16;
-  uint64 time = 17;
-  int32 latency = 18;
+  string quote_id = 5;
+  string strategy = 6;
+  string note = 7;
+  double price = 8;
+  double avg_executed_price = 9;
+  int32 volume = 10;
+  int32 executed_volume = 11;
+  Exchange exchange = 12;
+  StrategyType strategy_type = 13;
+  Side side = 14;
+  TimeCondition time_condition = 15;
+  OrderType type = 16;
+  OrderStatus status = 17;
+  uint64 time = 18;
+  int32 latency = 19;
 }
 
 message OrderRequest

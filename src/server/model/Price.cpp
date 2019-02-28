@@ -81,7 +81,7 @@
 // }
 
 std::shared_ptr<Proto::Price> Price::Serialize() const {
-  auto p = Message::NewProto<Proto::Price>();
+  auto p = Message<Proto::Price>::New();
   p->set_instrument(instrument->Id());
   p->set_exchange(instrument->Exchange());
   if (last.price != base::PRICE_UNDEFINED) {
@@ -192,7 +192,7 @@ LogStream& operator<<(LogStream& stream, const PricePtr &price) {
 
 UnderlyingPrice::UnderlyingPrice(const Instrument *underlying)
     : underlying_(underlying),
-      price_(Message::NewPrice()) {}
+      price_(Message<Price>::New()) {}
 
 void UnderlyingPrice::SetParameter(
     Proto::UnderlyingTheoType type,
@@ -206,7 +206,7 @@ void UnderlyingPrice::SetParameter(
   elastic_limit_ = elastic_limit;
 }
 
-void UnderlyingPrice::ApplyElastic(PricePtr &price, double delta) {
+PriceType UnderlyingPrice::ApplyElastic(PricePtr &price, double delta) {
   price->adjust = 0;
   price->adjusted_price = CalcTheo(price);
 
@@ -223,8 +223,9 @@ void UnderlyingPrice::ApplyElastic(PricePtr &price, double delta) {
   }
 
   *price_ = *price;
-  theo_ = price->adjusted_price;
   adjust_ = price->adjust;
+  theo_ = price->adjusted_price;
+  return theo_;
 }
 
 bool UnderlyingPrice::ApplyElastic(double delta) {

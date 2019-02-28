@@ -90,7 +90,7 @@ std::shared_ptr<Proto::Reply> Middleware::OnOrderRequest(
     for (auto &ord : req->orders()) {
       auto *inst = InstrumentManager::GetInstance()->FindId(ord.instrument());
       if (inst) {
-        auto order = Message::NewOrder();
+        auto order = Message<Order>::New();
         order->instrument = inst;
         // order->id = ord.id();
         order->header.time = ord.time();
@@ -108,7 +108,7 @@ std::shared_ptr<Proto::Reply> Middleware::OnOrderRequest(
     for (auto &ord : req->orders()) {
       auto *inst = InstrumentManager::GetInstance()->FindId(ord.instrument());
       if (inst) {
-        auto order = Message::NewOrder();
+        auto order = Message<Order>::New();
         order->instrument = inst;
         order->id = ord.id();
         order->counter_id = ord.counter_id();
@@ -131,7 +131,7 @@ std::shared_ptr<Proto::Reply> Middleware::OnOrderRequest(
 
 void Middleware::RunTimer() {
   LOG_INF << "Start middleware timer...";
-  auto heartbeat = Message::NewProto<Proto::Heartbeat>();
+  auto heartbeat = Message<Proto::Heartbeat>::New();
   Proto::Exchange exchange;
   Proto::Exchange_Parse(EnvConfig::GetInstance()->GetString(EnvVar::EXCHANGE), &exchange);
   heartbeat->set_exchange(exchange);
@@ -233,7 +233,7 @@ void Middleware::RunResponder() {
       &ClusterManager::OnStrategyOperateReq, ClusterManager::GetInstance(),std::placeholders::_1));
   size_t n = 64;
   char *send_buf = new char[n];
-  auto reply = Message::NewProto<Proto::Reply>();
+  auto reply = Message<Proto::Reply>::New();
   while (true) {
     char *recv_buf = NULL;
     int recv_bytes = nn_recv(sock, &recv_buf, NN_MSG, 0);
