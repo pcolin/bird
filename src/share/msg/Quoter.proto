@@ -23,23 +23,22 @@ message QuoterSpec
   double delta_limit = 4;
   int32 order_limit = 5;
   int32 trade_limit = 6;
-  int32 bid_volume = 7;
-  int32 ask_volume = 8;
-  int32 qr_volume = 9;
-  int32 qr_delay = 10;
-  int32 qr_timeout = 11;
-  int32 open_auction_volume = 12;
-  int32 open_auction_delay = 13;
-  int32 close_auction_volume = 14;
-  int32 close_auction_delay = 15;
-  int32 fuse_auction_volume = 16;
-  int32 fuse_auction_delay = 17;
-  int32 depth = 18;
-  int32 refill_times = 19;
-  bool wide_spread = 20;
-  bool protection = 21;
+  int32 volume = 7;
+  int32 qr_volume = 8;
+  int32 qr_delay = 9;
+  int32 qr_timeout = 10;
+  int32 open_auction_volume = 11;
+  int32 open_auction_delay = 12;
+  int32 close_auction_volume = 13;
+  int32 close_auction_delay = 14;
+  int32 fuse_auction_volume = 15;
+  int32 fuse_auction_delay = 16;
+  int32 depth = 17;
+  int32 refill_times = 18;
+  bool wide_spread = 19;
+  bool protection = 20;
   //repeated QuoterRecord records = 14;
-  repeated string options = 22;
+  repeated string options = 21;
 }
 
 message QuoterReq

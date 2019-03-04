@@ -1,6 +1,6 @@
 #include "Quoter.h"
 #include <future>
-#include "ClusterManager.h"
+#include "strategy/base/ClusterManager.h"
 #include "base/common/Float.h"
 #include "base/logger/Logging.h"
 #include "exchange/manager/ExchangeManager.h"
@@ -91,7 +91,7 @@ void Quoter::OnStart() {
 
     bid_ = Message<Order>::New();
     bid_->strategy = name_;
-    bid_->volume = quoter_->bid_volume();
+    // bid_->volume = quoter_->volume();
     bid_->strategy_type = Proto::StrategyType::Quoter;
     bid_->side = Proto::Side::Buy;
     bid_->time_condition = Proto::TimeCondition::GTD;
@@ -100,7 +100,7 @@ void Quoter::OnStart() {
 
     ask_ = Message<Order>::New();
     ask_->strategy = name_;
-    ask_->volume = quoter_->ask_volume();
+    // ask_->volume = quoter_->volume();
     ask_->strategy_type = Proto::StrategyType::Quoter;
     ask_->side = Proto::Side::Sell;
     ask_->time_condition = Proto::TimeCondition::GTD;
@@ -710,11 +710,15 @@ void Quoter::ResubmitOrders(const Instrument *inst,
     bid_->instrument = ask_->instrument = inst;
     bid_->price = bp;
     ask_->price = ap;
-    if (parameter->status != Proto::InstrumentStatus::Trading) {
+    if (parameter->status == Proto::InstrumentStatus::Trading) {
+      if (parameter->qr_id.empty()) {
+        bid_->volume = ask_->volume = quoter_->volume();
+      } else {
+        bid_->volume = ask_->volume = quoter_->qr_volume();
+      }
+    } else {
       assert (Instrument::IsAuction(parameter->status));
       bid_->volume = ask_->volume = parameter->auction_volume;
-    } else if (unlikely(!parameter->qr_id.empty())){
-      bid_->volume = ask_->volume = quoter_->qr_volume();
     }
     bid_->spot = ask_->spot = parameter->theo.spot;
     bid_->volatility = ask_->volatility = parameter->theo.volatility;

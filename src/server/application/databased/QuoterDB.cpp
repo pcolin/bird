@@ -59,11 +59,14 @@ base::ProtoMessagePtr QuoterDB::OnRequest(const std::shared_ptr<Proto::QuoterReq
     TransactionGuard tg(this);
     for (auto &q : msg->quoters()) {
       const std::string &name = q.name();
-      sprintf(sql, "INSERT OR REPLACE INTO %s VALUES('%s', '%s', '%s', %f, %d, %d, %d, %d, %d, %d,"
-                   " %d, %d, %d)",
-              table_name_.c_str(), name.c_str(), q.pricer().c_str(), q.underlying().c_str(),
-              q.delta_limit(), q.order_limit(), q.trade_limit(), q.bid_volume(), q.ask_volume(),
-              q.qr_volume(), q.depth(), q.refill_times(), q.wide_spread(), q.protection());
+      sprintf(sql, "INSERT OR REPLACE INTO %s VALUES('%s', '%s', '%s', %f, %d, %d, %d, "
+          "%d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d)",
+          table_name_.c_str(), name.c_str(), q.pricer().c_str(), q.underlying().c_str(),
+          q.delta_limit(), q.order_limit(), q.trade_limit(), q.volume(), q.qr_volume(),
+          q.qr_delay(), q.qr_timeout(), q.open_auction_volume(), q.open_auction_delay(),
+          q.close_auction_volume(), q.close_auction_delay(), q.fuse_auction_volume(),
+          q.fuse_auction_delay(), q.depth(), q.refill_times(), q.wide_spread(),
+          q.protection());
       ExecSql(sql);
       auto it = quoters_.find(name);
       if (it != quoters_.end()) {
@@ -181,13 +184,21 @@ int QuoterDB::Callback(void *data, int argc, char **argv, char **col_name) {
     quoter->set_delta_limit(atof(argv[3]));
     quoter->set_order_limit(atoi(argv[4]));
     quoter->set_trade_limit(atoi(argv[5]));
-    quoter->set_bid_volume(atoi(argv[6]));
-    quoter->set_ask_volume(atoi(argv[7]));
-    quoter->set_qr_volume(atoi(argv[8]));
-    quoter->set_depth(atoi(argv[9]));
-    quoter->set_refill_times(atoi(argv[10]));
-    quoter->set_wide_spread(atoi(argv[11]) == 1);
-    quoter->set_protection(atoi(argv[12]) == 1);
+    quoter->set_volume(atoi(argv[6]));
+    // quoter->set_ask_volume(atoi(argv[7]));
+    quoter->set_qr_volume(atoi(argv[7]));
+    quoter->set_qr_delay(atoi(argv[8]));
+    quoter->set_qr_timeout(atoi(argv[9]));
+    quoter->set_open_auction_volume(atoi(argv[10]));
+    quoter->set_open_auction_delay(atoi(argv[11]));
+    quoter->set_close_auction_volume(atoi(argv[12]));
+    quoter->set_close_auction_delay(atoi(argv[13]));
+    quoter->set_fuse_auction_volume(atoi(argv[14]));
+    quoter->set_fuse_auction_delay(atoi(argv[15]));
+    quoter->set_depth(atoi(argv[16]));
+    quoter->set_refill_times(atoi(argv[17]));
+    quoter->set_wide_spread(atoi(argv[18]) == 1);
+    quoter->set_protection(atoi(argv[19]) == 1);
     (*quoters)[name] = quoter;
   } else {
     LOG_ERR << underlying << " doesn't exist";

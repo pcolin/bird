@@ -18,6 +18,7 @@ class PositionDB : public DbBase {
   virtual void RegisterCallback(base::ProtoMessageDispatcher<base::ProtoMessagePtr> &dispatcher);
 
   base::ProtoMessagePtr OnRequest(const std::shared_ptr<Proto::PositionReq> &msg);
+  base::ProtoMessagePtr OnUpdate(const std::shared_ptr<Proto::Position> &msg);
   void UpdatePosition(const Proto::Position &inst, PositionMap &cache);
 
   void Run();
@@ -28,7 +29,7 @@ class PositionDB : public DbBase {
   std::mutex mtx_;
 
   const int capacity_ = 128;
-  moodycamel::BlockingConcurrentQueue<std::shared_ptr<Proto::PositionReq>> requests_;
+  moodycamel::BlockingConcurrentQueue<std::shared_ptr<Proto::Position>> requests_;
   std::thread thread_;
 };
 

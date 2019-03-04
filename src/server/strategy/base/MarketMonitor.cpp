@@ -52,8 +52,11 @@ void MarketMonitor::OnStart() {
       statistic = Message<Proto::MarketMakingStatistic>::New();
       statistic->set_underlying(underlying->Id());
       auto product = ParameterManager::GetInstance()->GetProduct(underlying->Product());
-      assert(product);
-      statistic->set_date(base::DateToString(product->TradingDay()));
+      if (product) {
+        statistic->set_date(base::DateToString(product->TradingDay()));
+      } else {
+        statistic->set_date(base::DateToString(boost::gregorian::day_clock::local_day()));
+      }
       statistic->set_exchange(underlying->Exchange());
     }
     statistics_[underlying] = statistic;
@@ -334,13 +337,10 @@ void MarketMonitor::QuotingStatistic() {
     }
   }
 
-  auto req = Message<Proto::MarketMakingStatisticReq>::New();
-  req->set_type(Proto::RequestType::Set);
-  req->set_exchange(Underlying()->Exchange());
   for (auto &it : statistics_) {
-    req->add_statistics()->CopyFrom(*it.second);
+    Middleware::GetInstance()->Publish(
+        Message<Proto::MarketMakingStatistic>::New(*it.second));
   }
-  Middleware::GetInstance()->Publish(req);
 }
 
 void MarketMonitor::AuctionStatistic(

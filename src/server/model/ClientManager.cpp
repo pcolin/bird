@@ -2,7 +2,7 @@
 #include "boost/format.hpp"
 #include "Middleware.h"
 #include "Message.h"
-#include "strategy/ClusterManager.h"
+#include "strategy/base/ClusterManager.h"
 #include "base/logger/Logging.h"
 #include "base/common/Version.h"
 

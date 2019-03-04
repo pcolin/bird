@@ -26,11 +26,8 @@ message ProductParameter
   repeated TradingSession maturity_sessions = 4;
   repeated Holiday holidays = 5;
   string charm_start_time = 6;
-  int32 rfq_delay = 7;
-  int32 rfq_timeout = 8;
-  int32 rfq_volume = 9;
-  string trading_day = 10;
-  string night_session_time = 11;
+  string trading_day = 7;
+  string night_session_time = 8;
 }
 
 message ProductParameterReq

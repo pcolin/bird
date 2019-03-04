@@ -1,7 +1,7 @@
 #ifndef STRATEGY_DIMER_H
 #define STRATEGY_DIMER_H
 
-#include "Strategy.h"
+#include "strategy/base/Strategy.h"
 
 class Dimer : public Strategy {
 

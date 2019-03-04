@@ -9,8 +9,8 @@
 #include "config/EnvConfig.h"
 #include "model/Price.h"
 #include "model/InstrumentManager.h"
-#include "strategy/ClusterManager.h"
-#include "strategy/DeviceManager.h"
+#include "strategy/base/ClusterManager.h"
+#include "strategy/base/DeviceManager.h"
 #include "boost/format.hpp"
 
 using namespace base;

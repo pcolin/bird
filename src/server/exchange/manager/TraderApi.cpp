@@ -2,8 +2,8 @@
 #include "base/logger/Logging.h"
 #include "config/EnvConfig.h"
 #include "model/OrderManager.h"
-#include "strategy/DeviceManager.h"
-#include "strategy/ClusterManager.h"
+#include "strategy/base/DeviceManager.h"
+#include "strategy/base/ClusterManager.h"
 
 void TraderApi::Init() {
   running_ = true;

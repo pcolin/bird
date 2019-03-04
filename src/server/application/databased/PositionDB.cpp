@@ -21,12 +21,15 @@ void PositionDB::RefreshCache() {
 void PositionDB::RegisterCallback(base::ProtoMessageDispatcher<base::ProtoMessagePtr> &dispatcher) {
   dispatcher.RegisterCallback<Proto::PositionReq>(
       std::bind(&PositionDB::OnRequest, this, std::placeholders::_1));
+  dispatcher.RegisterCallback<Proto::Position>(
+      std::bind(&PositionDB::OnUpdate, this, std::placeholders::_1));
 }
 
 base::ProtoMessagePtr PositionDB::OnRequest(const std::shared_ptr<Proto::PositionReq> &msg) {
   LOG_INF << "Position request: " << msg->ShortDebugString();
   auto reply = Message<Proto::PositionRep>::New();
-  if (msg->type() == Proto::RequestType::Get) {
+  assert (msg->type() == Proto::RequestType::Get);
+  // if (msg->type() == Proto::RequestType::Get) {
     if (msg->instrument().empty()) {
       std::lock_guard<std::mutex> lck(mtx_);
       for (auto &position : positions_) {
@@ -45,46 +48,43 @@ base::ProtoMessagePtr PositionDB::OnRequest(const std::shared_ptr<Proto::Positio
       }
     }
     LOG_INF << boost::format("Get %1% positions totally.") % reply->positions_size();
-  } else {
-    requests_.enqueue(msg);
-  }
+  // } else {
+  //   requests_.enqueue(msg);
+  // }
   reply->mutable_result()->set_result(true);
   return reply;
 }
 
+base::ProtoMessagePtr PositionDB::OnUpdate(const std::shared_ptr<Proto::Position> &msg) {
+  LOG_INF << "Position: " << msg->ShortDebugString();
+  requests_.enqueue(msg);
+  return nullptr;
+}
+
 void PositionDB::Run() {
   LOG_INF << "Position update thread is running...";
-  std::shared_ptr<Proto::PositionReq> requests[capacity_];
+  std::shared_ptr<Proto::Position> requests[capacity_];
   while (true) {
     size_t cnt = requests_.wait_dequeue_bulk(requests, capacity_);
     char sql[1024];
     TransactionGuard tg(this);
     for (size_t i = 0; i < cnt; ++i) {
-      if (requests[i]->type() == Proto::RequestType::Set) {
-        for (auto &p : requests[i]->positions()) {
-          char time[32];
-          time_t seconds = p.time() / 1000000;
-          struct tm *t = localtime(&seconds);
-          size_t cnt = strftime(time, sizeof(time), "%Y-%m-%d %H:%M:%S", t);
-          snprintf(time + cnt, sizeof(time) - cnt, ".%06ld", p.time() % 1000000);
-          sprintf(sql, "INSERT OR REPLACE INTO %s VALUES('%s', %d, %d, %d, %d, %d, %d, %d, %d, '%s')"
-                  ,table_name_.c_str(), p.instrument().c_str(), p.total_long(), p.liquid_long(),
-                  p.liquid_yesterday_long(), p.yesterday_long(), p.total_short(), p.liquid_short(),
-                  p.liquid_yesterday_short(), p.yesterday_short(), time);
-          ExecSql(sql);
-          {
-            std::lock_guard<std::mutex> lck(mtx_);
-            auto it = positions_.find(p.instrument());
-            if (it != positions_.end()) {
-              it->second->CopyFrom(p);
-            } else {
-              // auto position = Message<Proto::Position>::New();
-              // position->CopyFrom(p);
-              positions_.emplace(p.instrument(), Message<Proto::Position>::New(p));
-            }
-          }
-        }
-      } else if (requests[i]->type() == Proto::RequestType::Del) {}
+      auto &p = requests[i];
+      char time[32];
+      time_t seconds = p->time() / 1000000;
+      struct tm *t = localtime(&seconds);
+      size_t cnt = strftime(time, sizeof(time), "%Y-%m-%d %H:%M:%S", t);
+      snprintf(time + cnt, sizeof(time) - cnt, ".%06ld", p->time() % 1000000);
+      sprintf(sql, "INSERT OR REPLACE INTO %s VALUES('%s', %d, %d, %d, %d, %d, %d, %d, "
+          "%d, '%s')" ,table_name_.c_str(), p->instrument().c_str(), p->total_long(),
+          p->liquid_long(), p->liquid_yesterday_long(), p->yesterday_long(),
+          p->total_short(), p->liquid_short(), p->liquid_yesterday_short(),
+          p->yesterday_short(), time);
+      ExecSql(sql);
+      {
+        std::lock_guard<std::mutex> lck(mtx_);
+        positions_[p->instrument()] = p;
+      }
     }
   }
 }

@@ -13,8 +13,8 @@
 #include "model/OrderManager.h"
 #include "model/TradeManager.h"
 #include "model/Middleware.h"
-#include "strategy/DeviceManager.h"
-#include "strategy/ClusterManager.h"
+#include "strategy/base/DeviceManager.h"
+#include "strategy/base/ClusterManager.h"
 #include "boost/format.hpp"
 
 CtpTraderSpi::CtpTraderSpi(CtpTraderApi* api)
@@ -134,10 +134,17 @@ void CtpTraderSpi::OnRspQryInstrument(CThostFtdcInstrumentField* pInstrument,
   } else if (pInstrument->ProductClass = THOST_FTDC_PC_Options) {
     // std::string undl = GetInstrumentId(pInstrument->UnderlyingInstrID, pInstrument->ExchangeID);
     std::string undl = pInstrument->UnderlyingInstrID;
+    if (strncmp(pInstrument->ProductID, "IO", 2) == 0) { /// IO1901-C-3300 -> IF1901
+      undl[1] = 'F';
+    } else if (strncmp(pInstrument->ProductID, "HO", 2) == 0) { /// HO1901-C-3300 -> IH1901
+      undl[0] = 'I';
+      undl[1] = 'H';
+    }
     if (config_.find(undl) != config_.end()) {
       Option* op = new Option();
       op->Id(id);
-      op->CallPut(pInstrument->OptionsType == THOST_FTDC_CP_CallOptions ? Proto::Call : Proto::Put);
+      op->CallPut(pInstrument->OptionsType == THOST_FTDC_CP_CallOptions ?
+          Proto::Call : Proto::Put);
       op->Strike(pInstrument->StrikePrice);
       op->SettlementType(Proto::PhysicalSettlement);
       op->ExerciseType(Proto::American);
@@ -157,14 +164,10 @@ void CtpTraderSpi::OnRspQryInstrument(CThostFtdcInstrumentField* pInstrument,
     inst->Exchange(exchange);
     if (pInstrument->IsTrading) {
       auto product = ParameterManager::GetInstance()->GetProduct(pInstrument->ProductID);
-      if (product) {
-        if (product->IsTradingTime(inst->Maturity())) {
-          inst->Status(Proto::InstrumentStatus::Trading);
-        } else {
-          inst->Status(Proto::InstrumentStatus::PreOpen);
-        }
+      if (!product || product->IsTradingTime(inst->Maturity())) {
+        inst->Status(Proto::InstrumentStatus::Trading);
       } else {
-        LOG_ERR << "failed to get product parameter.";
+        inst->Status(Proto::InstrumentStatus::PreOpen);
       }
     } else {
       inst->Status(Proto::InstrumentStatus::Halt);

@@ -1,7 +1,7 @@
 #ifndef STRATEGY_TEST_STRATEGY_H
 #define STRATEGY_TEST_STRATEGY_H
 
-#include "Strategy.h"
+#include "strategy/base/Strategy.h"
 
 class TraderApi;
 class TestStrategy : public Strategy {

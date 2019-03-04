@@ -3,7 +3,7 @@
 #include "InstrumentManager.h"
 #include "Message.h"
 #include "Middleware.h"
-#include "strategy/ClusterManager.h"
+#include "strategy/base/ClusterManager.h"
 #include "config/EnvConfig.h"
 
 ParameterManager* ParameterManager::GetInstance() {

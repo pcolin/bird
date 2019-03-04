@@ -1,5 +1,5 @@
 #include "Pricer.h"
-#include "ClusterManager.h"
+#include "strategy/base/ClusterManager.h"
 
 Pricer::Pricer(const std::string &name, DeviceManager *dm)
     : Strategy(name, dm),

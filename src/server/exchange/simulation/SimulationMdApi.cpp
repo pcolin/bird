@@ -5,7 +5,7 @@
 #include "base/common/Likely.h"
 #include "base/logger/Logging.h"
 #include "model/InstrumentManager.h"
-#include "strategy/ClusterManager.h"
+#include "strategy/base/ClusterManager.h"
 
 void SimulationMdApi::Init() {
   std::srand(std::time(nullptr));

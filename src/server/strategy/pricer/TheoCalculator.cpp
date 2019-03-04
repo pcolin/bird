@@ -1,5 +1,5 @@
 #include "TheoCalculator.h"
-#include "ClusterManager.h"
+#include "strategy/base/ClusterManager.h"
 #include "BlackScholesMertonModel.h"
 #include "CoxRossRubinsteinModel.h"
 #include "base/logger/Logging.h"

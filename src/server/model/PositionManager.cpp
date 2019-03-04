@@ -48,7 +48,7 @@ bool PositionManager::TryFreeze(const OrderPtr &order) {
                    order->volume %
                    (pos->liquid_short() - pos->liquid_yesterday_short()) %
                    pos->total_short();
-        PublishPosition(order->instrument->Exchange(), pos);
+        PublishPosition(pos);
         order->side = Proto::Side::BuyCoverYesterday;
         return true;
       } else if (order->volume <= pos->liquid_short() - pos->liquid_yesterday_short()) {
@@ -59,7 +59,7 @@ bool PositionManager::TryFreeze(const OrderPtr &order) {
                    (pos->liquid_short() - pos->liquid_yesterday_short()) %
                    order->volume %
                    pos->total_short();
-        PublishPosition(order->instrument->Exchange(), pos);
+        PublishPosition(pos);
         order->side = Proto::Side::BuyCoverToday;
         return true;
       }
@@ -70,7 +70,7 @@ bool PositionManager::TryFreeze(const OrderPtr &order) {
                  pos->liquid_short() %
                  order->volume %
                  pos->total_short();
-      PublishPosition(order->instrument->Exchange(), pos);
+      PublishPosition(pos);
       order->side = Proto::Side::BuyCover;
       return true;
     }
@@ -85,7 +85,7 @@ bool PositionManager::TryFreeze(const OrderPtr &order) {
                    order->volume %
                    (pos->liquid_long() - pos->liquid_yesterday_long()) %
                    pos->total_long();
-        PublishPosition(order->instrument->Exchange(), pos);
+        PublishPosition(pos);
         order->side == Proto::Side::SellCoverYesterday;
         return true;
       } else if (order->volume <= pos->liquid_long() - pos->liquid_yesterday_long()) {
@@ -96,7 +96,7 @@ bool PositionManager::TryFreeze(const OrderPtr &order) {
                    (pos->liquid_long() - pos->liquid_yesterday_long()) %
                    order->volume %
                    pos->total_long();
-        PublishPosition(order->instrument->Exchange(), pos);
+        PublishPosition(pos);
         order->side == Proto::Side::SellCoverToday;
         return true;
       }
@@ -107,7 +107,7 @@ bool PositionManager::TryFreeze(const OrderPtr &order) {
                  pos->liquid_long() %
                  order->volume %
                  pos->total_long();
-      PublishPosition(order->instrument->Exchange(), pos);
+      PublishPosition(pos);
       order->side == Proto::Side::SellCover;
       return true;
     }
@@ -185,7 +185,7 @@ void PositionManager::Release(const OrderPtr &order) {
       default:
         assert(false);
     }
-    PublishPosition(order->instrument->Exchange(), pos);
+    PublishPosition(pos);
   }
 }
 
@@ -209,7 +209,7 @@ void PositionManager::UpdatePosition(const PositionPtr &position) {
              position->yesterday_long() %
              position->yesterday_short();
   positions_[inst] = position;
-  PublishPosition(inst->Exchange(), positions_[inst]);
+  PublishPosition(positions_[inst]);
 }
 
 void PositionManager::OnTrade(const TradePtr &trade) {
@@ -305,14 +305,15 @@ void PositionManager::OnTrade(const TradePtr &trade) {
       assert(false);
     }
   }
-  PublishPosition(trade->instrument->Exchange(), pos);
+  // PublishPosition(trade->instrument->Exchange(), pos);
+  PublishPosition(pos);
 }
 
-void PositionManager::PublishPosition(Proto::Exchange exchange, PositionPtr &position) {
+void PositionManager::PublishPosition(PositionPtr &position) {
   position->set_time(base::Now());
-  auto req = Message<Proto::PositionReq>::New();
-  req->set_type(Proto::RequestType::Set);
-  req->set_exchange(exchange);
-  req->add_positions()->CopyFrom(*position);
-  Middleware::GetInstance()->Publish(req);
+  // auto req = Message<Proto::PositionReq>::New();
+  // req->set_type(Proto::RequestType::Set);
+  // req->set_exchange(exchange);
+  // req->add_positions()->CopyFrom(*position);
+  Middleware::GetInstance()->Publish(Message<Proto::Position>::New(position));
 }

@@ -1,7 +1,7 @@
 #ifndef STRATEGY_PRICER_H
 #define STRATEGY_PRICER_H
 
-#include "Strategy.h"
+#include "strategy/base/Strategy.h"
 #include "TheoCalculator.h"
 
 class Pricer : public Strategy {

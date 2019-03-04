@@ -19,6 +19,8 @@ class MarketMakingStatisticDB : public DbBase {
 
   base::ProtoMessagePtr OnRequest(
       const std::shared_ptr<Proto::MarketMakingStatisticReq> &msg);
+  base::ProtoMessagePtr OnUpdate(
+      const std::shared_ptr<Proto::MarketMakingStatistic> &msg);
 
   static int Callback(void *data, int argc, char **argv, char **col_name);
 

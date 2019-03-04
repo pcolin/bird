@@ -29,39 +29,41 @@ void MarketMakingStatisticDB::RegisterCallback(
     base::ProtoMessageDispatcher<base::ProtoMessagePtr> &dispatcher) {
   dispatcher.RegisterCallback<Proto::MarketMakingStatisticReq>(
       std::bind(&MarketMakingStatisticDB::OnRequest, this, std::placeholders::_1));
+  dispatcher.RegisterCallback<Proto::MarketMakingStatistic>(
+      std::bind(&MarketMakingStatisticDB::OnUpdate, this, std::placeholders::_1));
 }
 
 base::ProtoMessagePtr MarketMakingStatisticDB::OnRequest(
     const std::shared_ptr<Proto::MarketMakingStatisticReq> &msg) {
   LOG_INF << "MarketMakingStatistic request: " << msg->ShortDebugString();
   auto reply = Message<Proto::MarketMakingStatisticRep>::New();
-  if (msg->type() == Proto::RequestType::Get) {
-    for (auto &it : cache_) {
-      reply->add_statistics()->CopyFrom(*it.second);
-    }
-    LOG_INF << boost::format("Get %1% statistics totally.") % reply->statistics_size();
-  } else {
-    assert(msg->type() == Proto::RequestType::Set);
-    char sql[1024];
-    TransactionGuard tg(this);
-    for (auto &statistic : msg->statistics()) {
-      sprintf(sql, "INSERT OR REPLACE INTO %s VALUES('%s', '%s', %d, %d, %d, %d, %d, %d"
-          ", %d, %d, %d, %d, %d, %d, %d, %f, %f)",
-          table_name_.c_str(), statistic.underlying().c_str(), statistic.date().c_str(),
-          static_cast<int32_t>(statistic.exchange()), statistic.orders(),
-          statistic.underlying_cancels(), statistic.opening_quotes(),
-          statistic.closing_quotes(), statistic.fuse_quotes(), statistic.total_fuses(),
-          statistic.valid_qrs(), statistic.total_qrs(), statistic.quoting_options(),
-          statistic.valid_quotes(), statistic.cum_valid_quotes(), statistic.total_quotes(),
-          statistic.spread_ratio(), statistic.cum_spread_ratio());
-      if (ExecSql(sql)) {
-        cache_[statistic.underlying()] =
-          Message<Proto::MarketMakingStatistic>::New(statistic);
-      }
-    }
+  assert(msg->type() == Proto::RequestType::Get);
+  for (auto &it : cache_) {
+    reply->add_statistics()->CopyFrom(*it.second);
   }
+  LOG_INF << boost::format("Get %1% statistics totally.") % reply->statistics_size();
   reply->mutable_result()->set_result(true);
   return reply;
+}
+
+base::ProtoMessagePtr MarketMakingStatisticDB::OnUpdate(
+    const std::shared_ptr<Proto::MarketMakingStatistic> &msg) {
+  LOG_INF << "MarketMakingStatistic: " << msg->ShortDebugString();
+  char sql[1024];
+  TransactionGuard tg(this);
+  sprintf(sql, "INSERT OR REPLACE INTO %s VALUES('%s', '%s', %d, %d, %d, %d, %d, %d"
+      ", %d, %d, %d, %d, %d, %d, %d, %f, %f)",
+      table_name_.c_str(), msg->underlying().c_str(), msg->date().c_str(),
+      static_cast<int32_t>(msg->exchange()), msg->orders(),
+      msg->underlying_cancels(), msg->opening_quotes(),
+      msg->closing_quotes(), msg->fuse_quotes(), msg->total_fuses(),
+      msg->valid_qrs(), msg->total_qrs(), msg->quoting_options(),
+      msg->valid_quotes(), msg->cum_valid_quotes(), msg->total_quotes(),
+      msg->spread_ratio(), msg->cum_spread_ratio());
+  if (ExecSql(sql)) {
+    cache_[msg->underlying()] = msg;
+  }
+  return nullptr;
 }
 
 int MarketMakingStatisticDB::Callback(void *data, int argc, char **argv, char **col_name) {

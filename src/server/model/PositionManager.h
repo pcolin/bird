@@ -26,7 +26,7 @@ class PositionManager {
  private:
   PositionManager() {}
 
-  void PublishPosition(Proto::Exchange exchange, PositionPtr &position);
+  void PublishPosition(PositionPtr &position);
 
   typedef std::unordered_map<const Instrument*, PositionPtr> PositionMap;
   PositionMap positions_;

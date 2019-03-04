@@ -8,15 +8,15 @@
 #include "Server.pb.h"
 #include "config/EnvConfig.h"
 #include "exchange/manager/ExchangeManager.h"
-#include "strategy/ClusterManager.h"
 #include "model/Middleware.h"
 #include "model/InstrumentManager.h"
 #include "model/ParameterManager.h"
 #include "model/OrderManager.h"
 #include "model/TradeManager.h"
 #include "model/PositionManager.h"
-#include "strategy/DeviceManager.h"
-#include "strategy/StrategyDevice.h"
+#include "strategy/base/DeviceManager.h"
+#include "strategy/base/StrategyDevice.h"
+#include "strategy/base/ClusterManager.h"
 
 using namespace base;
 using namespace std;

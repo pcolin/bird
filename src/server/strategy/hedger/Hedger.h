@@ -1,15 +1,17 @@
-#ifndef STRATEGY_HITTER_H
-#define STRATEGY_HITTER_H
+#ifndef STRATEGY_HEDGER_H
+#define STRATEGY_HEDGER_H
 
-#include "Strategy.h"
+#include "strategy/base/Strategy.h"
 
-class Hitter : public Strategy {
+class Hedger : public Strategy {
 
  public:
-  Hitter(const std::string &name, DeviceManager *dm);
+  Hedger(const std::string &name, DeviceManager *dm);
 
   virtual void OnStart() override;
   virtual void OnStop() override;
+
+  double OpenDelta() { return open_delta_; }
 
  protected:
   virtual void OnPrice(const PricePtr &price) override;
@@ -19,6 +21,7 @@ class Hitter : public Strategy {
   virtual bool OnHeartbeat(const std::shared_ptr<Proto::Heartbeat> &heartbeat) override;
 
  private:
+  std::atomic<double> open_delta_;
 };
 
 #endif

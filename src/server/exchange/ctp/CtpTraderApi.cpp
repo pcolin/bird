@@ -555,7 +555,72 @@ bool CtpTraderApi::MeetMMObligation(
     const OrderPtr& bid,
     const OrderPtr& ask,
     double& ratio) {
-  return true;
+  if (likely(bid && ask)) {
+    switch (bid->instrument->Exchange()) {
+      case Proto::Exchange::CFFEX : {
+        if (bid->volume < 3 || ask->volume < 3) {
+          return false;
+        }
+        if (bid->instrument->Maturity() == first_maturity_) {
+          if (base::IsLessThan(bid->price, 100)) {
+            if (base::IsLessThan(bid->price, 20)) {
+              if (base::IsLessThan(bid->price, 10)) {
+                ratio = (ask->price - bid->price) / 0.6;
+              } else {
+                ratio = (ask->price - bid->price) / 1;
+              }
+            } else if (base::IsLessThan(bid->price, 50)) {
+              ratio = (ask->price - bid->price) / 2.6;
+            } else {
+              ratio = (ask->price - bid->price) / 5;
+            }
+          } else if (base::IsLessThan(bid->price, 500)) {
+            if (base::IsLessThan(bid->price, 250)) {
+              ratio = (ask->price - bid->price) / 8;
+            } else {
+              ratio = (ask->price - bid->price) / 15;
+            }
+          } else if (base::IsLessThan(bid->price, 1000)) {
+            ratio = (ask->price - bid->price) / 30;
+          } else if (base::IsLessThan(bid->price, 2000)) {
+            ratio = (ask->price - bid->price) / 60;
+          } else {
+            ratio = (ask->price - bid->price) / 120;
+          }
+        } else {
+          if (base::IsLessThan(bid->price, 100)) {
+            if (base::IsLessThan(bid->price, 20)) {
+              if (base::IsLessThan(bid->price, 10)) {
+                ratio = (ask->price - bid->price) / 1;
+              } else {
+                ratio = (ask->price - bid->price) / 2;
+              }
+            } else if (base::IsLessThan(bid->price, 50)) {
+              ratio = (ask->price - bid->price) / 4;
+            } else {
+              ratio = (ask->price - bid->price) / 8;
+            }
+          } else if (base::IsLessThan(bid->price, 500)) {
+            if (base::IsLessThan(bid->price, 250)) {
+              ratio = (ask->price - bid->price) / 15;
+            } else {
+              ratio = (ask->price - bid->price) / 25;
+            }
+          } else if (base::IsLessThan(bid->price, 1000)) {
+            ratio = (ask->price - bid->price) / 50;
+          } else if (base::IsLessThan(bid->price, 2000)) {
+            ratio = (ask->price - bid->price) / 100;
+          } else {
+            ratio = (ask->price - bid->price) / 200;
+          }
+        }
+        return base::IsLessOrEqual(ratio, 1);
+      }
+      default :
+        return false;
+    }
+  }
+  return false;
 }
 
 bool CtpTraderApi::MeetQRObligation(

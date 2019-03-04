@@ -2,7 +2,7 @@
 #define STRATEGY_THEO_CALCULATOR_H
 
 #include <thread>
-#include "DeviceManager.h"
+#include "strategy/base/DeviceManager.h"
 #include "PricingModel.h"
 #include "VolatilityModel.h"
 #include "Heartbeat.pb.h"

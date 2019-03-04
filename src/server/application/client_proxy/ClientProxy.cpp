@@ -19,6 +19,7 @@
 #include "Pricer.pb.h"
 #include "Quoter.pb.h"
 #include "Strategy.pb.h"
+#include "MarketMakingStatistic.pb.h"
 
 #include "nn.h"
 #include "pubsub.h"
@@ -89,6 +90,7 @@ int main(int argc, char *argv[])
   auto *quoter = new Proto::QuoterReq();
   auto *sw = new Proto::StrategySwitchReq();
   auto *status = new Proto::StrategyStatus();
+  auto *statistic = new Proto::MarketMakingStatistic();
 
   int32_t serial_num = 0;
   while (true)
@@ -138,5 +140,6 @@ int main(int argc, char *argv[])
   delete quoter;
   delete sw;
   delete status;
+  delete statistic;
   return 0;
 }
