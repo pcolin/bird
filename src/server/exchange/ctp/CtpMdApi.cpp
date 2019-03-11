@@ -39,8 +39,7 @@ void CtpMdApi::Login() {
 
 void CtpMdApi::Subscribe() {
   LOG_INF << "Subscribe Marketdata.";
-  auto instruments = InstrumentManager::GetInstance()->FindInstruments(
-                     [](const Instrument*) { return true; });
+  auto instruments = InstrumentManager::GetInstance()->FindInstruments(nullptr);
   const int n = instruments.size();
   char **insts = new char*[n];
   for (int i = 0; i < n; ++i) {

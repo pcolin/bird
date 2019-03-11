@@ -93,8 +93,7 @@ void SimulationTraderApi::MatchingProcess() {
   LOG_INF << "Start matching process....";
 
   int i = 0;
-  auto insts = InstrumentManager::GetInstance()->FindInstruments(
-    [](const Instrument*){ return true; });
+  auto insts = InstrumentManager::GetInstance()->FindInstruments(nullptr);
   for (auto &inst : insts) {
     if (++i % 2 == 0) continue;
 

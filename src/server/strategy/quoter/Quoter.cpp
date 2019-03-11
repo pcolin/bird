@@ -12,7 +12,9 @@
 #include "boost/format.hpp"
 
 Quoter::Quoter(const std::string &name, DeviceManager *dm)
-    : Strategy(name, dm) {
+    : Strategy(name, dm), statistic_(Message<Proto::StrategyStatistic>::New()) {
+  dispatcher_.RegisterCallback<Proto::PriceException>(
+      std::bind(&Quoter::OnPriceException, this, std::placeholders::_1));
   dispatcher_.RegisterCallback<Proto::RequestForQuote>(
       std::bind(&Quoter::OnRequestForQuote, this, std::placeholders::_1));
   dispatcher_.RegisterCallback<Proto::SSRate>(
@@ -39,6 +41,31 @@ Quoter::Quoter(const std::string &name, DeviceManager *dm)
     amend_quote_ = EnvConfig::GetInstance()->GetBool(EnvVar::SUPPORT_AMEND_QUOTE, false);
     quote_ = amend_quote_ || EnvConfig::GetInstance()->GetBool(EnvVar::SUPPORT_QUOTE);
   }
+
+  bid_ = Message<Order>::New();
+  bid_->strategy = name_;
+  // bid_->volume = quoter_->volume();
+  bid_->strategy_type = Proto::StrategyType::Quoter;
+  bid_->side = Proto::Side::Buy;
+  bid_->time_condition = Proto::TimeCondition::GTD;
+  bid_->type = Proto::OrderType::Limit;
+  bid_->status = Proto::OrderStatus::Local;
+
+  ask_ = Message<Order>::New();
+  ask_->strategy = name_;
+  // ask_->volume = quoter_->volume();
+  ask_->strategy_type = Proto::StrategyType::Quoter;
+  ask_->side = Proto::Side::Sell;
+  ask_->time_condition = Proto::TimeCondition::GTD;
+  ask_->type = Proto::OrderType::Limit;
+  ask_->status = Proto::OrderStatus::Local;
+
+  statistic_->set_name(name_);
+  statistic_->set_type(Proto::StrategyType::Quoter);
+  auto *underlying = Underlying();
+  statistic_->set_exchange(underlying->Exchange());
+  statistic_->set_underlying(underlying->Id());
+  statistic_->set_status(Proto::StrategyStatus::Running);
 }
 
 void Quoter::OnStart() {
@@ -60,211 +87,257 @@ void Quoter::OnStart() {
     for (auto &op : quoter_->options()) {
       auto *inst = InstrumentManager::GetInstance()->FindId(op);
       if (inst) {
-        auto &maturity = inst->Maturity();
-        auto it = parameters_.find(maturity);
+        auto it = parameters_.find(inst);
         if (it == parameters_.end()) {
-          auto mp = std::make_shared<MaturityParameter>();
-          if (inst->Underlying()->Type() == Proto::InstrumentType::Future) {
-            ParameterManager::GetInstance()->GetSSRate(
-                inst->Underlying(), maturity, it->second->basis);
+          auto p = std::make_shared<Parameter>();
+          auto itr = credits.find(op);
+          if (itr != credits.end()) {
+            p->credit = std::get<0>(itr->second);
+            p->multiplier = std::get<1>(itr->second);
           }
-          mp->price = dm_->GetUnderlyingTheo();
-          it = parameters_.emplace(maturity, mp).first;
+          ParameterManager::GetInstance()->GetDestriker(inst, p->destriker);
+          auto sw = ClusterManager::GetInstance()->FindStrategySwitch(
+              Proto::StrategyType::Quoter, inst);
+          if (sw) {
+            p->is_on = sw->is_bid();
+            p->is_qr = sw->is_qr_cover();
+          }
+          parameters_.emplace(inst, p);
+        } else {
+          LOG_WAN << "duplicate option " << op << " in " << name_;
         }
-        auto param = std::make_shared<Parameter>();
-        auto itr = credits.find(op);
-        if (itr != credits.end()) {
-          param->credit = std::get<0>(itr->second);
-          it->second->multiplier = std::get<1>(itr->second);
-        }
-        ParameterManager::GetInstance()->GetDestriker(inst, param->destriker);
-        param->position = PositionManager::GetInstance()->GetNetPosition(inst);
-        auto sw = ClusterManager::GetInstance()->FindStrategySwitch(
-            Proto::StrategyType::Quoter, inst);
-        if (sw) {
-          param->is_on = sw->is_bid();
-          param->is_qr = sw->is_qr_cover();
-        }
-        it->second->parameters.emplace(inst, param);
       }
     }
 
-    bid_ = Message<Order>::New();
-    bid_->strategy = name_;
-    // bid_->volume = quoter_->volume();
-    bid_->strategy_type = Proto::StrategyType::Quoter;
-    bid_->side = Proto::Side::Buy;
-    bid_->time_condition = Proto::TimeCondition::GTD;
-    bid_->type = Proto::OrderType::Limit;
-    bid_->status = Proto::OrderStatus::Local;
-
-    ask_ = Message<Order>::New();
-    ask_->strategy = name_;
-    // ask_->volume = quoter_->volume();
-    ask_->strategy_type = Proto::StrategyType::Quoter;
-    ask_->side = Proto::Side::Sell;
-    ask_->time_condition = Proto::TimeCondition::GTD;
-    ask_->type = Proto::OrderType::Limit;
-    ask_->status = Proto::OrderStatus::Local;
-
     orders_.clear();
-    order_num_ = 0;
-    trade_num_ = 0;
-    delta_ = 0;
+    statistic_->clear_delta();
+    statistic_->clear_orders();
+    statistic_->clear_trades();
+    statistic_->clear_bid_refills();
+    statistic_->clear_ask_refills();
   } else {
     LOG_ERR << "quoter " << name_ << " isn't existed";
+    stop_(name_ + "isn't existed");
   }
 }
 
 void Quoter::OnStop() {
   LOG_INF << "OnStop";
   for (auto &it : parameters_) {
-    for (auto &p : it.second->parameters) {
-      CancelOrders(p.second);
-    }
+    CancelOrders(it.second);
   }
-  PublishStatistic();
+  Middleware::GetInstance()->Publish(Message<Proto::StrategyStatistic>::New(*statistic_));
 }
 
 void Quoter::OnPrice(const PricePtr &price) {
   LOG_DBG << price;
   if (price->instrument->Type() == Proto::InstrumentType::Option) {
-    auto it = parameters_.find(price->instrument->Maturity());
+    auto it = parameters_.find(price->instrument);
     if (it != parameters_.end()) {
-      auto itr = it->second->parameters.find(price->instrument);
-      if (itr != it->second->parameters.end()) {
-        itr->second->price = price;
-      }
+      it->second->price = price;
     }
   } else if (price->instrument == Underlying()) {
-    if (unlikely(order_num_ >= quoter_->order_limit())) {
+    if (unlikely(statistic_->orders() >= quoter_->order_limit())) {
       stop_("order limit broken");
       return;
     }
-    for (auto &it : parameters_) {
-      it.second->price = price->adjusted_price + it.second->basis;
+    for (auto it = parameters_.begin(); it != parameters_.end(); ++it) {
       // if (unlikely(it.second->multiplier <= 0)) {
       //   LOG_INF << boost::format("credit multiplier of %1% is zero") % it.first;
       //   continue;
       // }
-      for (auto &p : it.second->parameters) {
-        if (unlikely(p.second->credit <= 0)) {
-          LOG_INF << boost::format("credit of %1% is zero") % p.first->Id();
-          continue;
-        }
-        if (unlikely(!p.second->theos)) {
-          LOG_INF << boost::format("theo matrix of %1% is null") % p.first->Id();
-          continue;
-        }
-        if (unlikely(p.second->refill_times == quoter_->refill_times())) {
-          LOG_INF << boost::format("refill time of %1% is broken") % p.first->Id();
-          continue;
-        }
-        CalculateAndResubmit(p.first, it.second->price, it.second->multiplier, p.second);
+      if (unlikely(it->second->credit <= 0)) {
+        LOG_INF << boost::format("credit of %1% is zero") % it->first->Id();
+        continue;
       }
+      if (unlikely(!it->second->theos)) {
+        LOG_INF << boost::format("theo matrix of %1% is null") % it->first->Id();
+        continue;
+      }
+      if (unlikely(it->second->bid_refills == quoter_->refill_limit())) {
+        LOG_INF << boost::format("bid refill time of %1% is broken") % it->first->Id();
+        continue;
+      }
+      if (unlikely(it->second->ask_refills == quoter_->refill_limit())) {
+        LOG_INF << boost::format("bid refill time of %1% is broken") % it->first->Id();
+        continue;
+      }
+      CalculateAndResubmit(it);
     }
   }
 }
 
 void Quoter::OnTheoMatrix(const TheoMatrixPtr &theo) {
   LOG_TRA << theo;
-  auto it = parameters_.find(theo->option->Maturity());
+  auto it = parameters_.find(theo->option);
   if (unlikely(it == parameters_.end())) {
-    LOG_DBG << boost::format("can't find maturity %1%") % theo->option->Maturity();
+    LOG_DBG << boost::format("can't find option %1%") % theo->option->Id();
     return;
   }
-  auto itr = it->second->parameters.find(theo->option);
-  if (unlikely(itr == it->second->parameters.end())) {
-    LOG_DBG << "can't find option " << theo->option->Id();
-    return;
-  }
-  itr->second->theos = theo;
+  it->second->theos = theo;
   LOG_INF << "update theo matrix of " << theo->option->Id();
-  if (unlikely(order_num_ >= quoter_->order_limit())) {
+  if (unlikely(statistic_->orders() >= quoter_->order_limit())) {
     stop_("order limit broken");
     return;
   }
-  // if (unlikely(it->second->multiplier <= 0)) {
-  //   LOG_INF << boost::format("credit multiplier of %1% is zero") % it->first;
-  //   return;
-  // }
-  if (unlikely(itr->second->credit <= 0)) {
-    LOG_INF << boost::format("credit of %1% is zero") % itr->first->Id();
+  if (unlikely(it->second->credit <= 0)) {
+    LOG_INF << boost::format("credit of %1% is zero") % it->first->Id();
     return;
   }
-  if (unlikely(itr->second->refill_times == quoter_->refill_times())) {
-    LOG_INF << boost::format("refill time of %1% is broken") % itr->first->Id();
+  if (unlikely(it->second->bid_refills == quoter_->refill_limit())) {
+    LOG_INF << boost::format("bid refill time of %1% is broken") % it->first->Id();
     return;
   }
-  CalculateAndResubmit(theo->option, it->second->price,
-                       it->second->multiplier, itr->second);
+  if (unlikely(it->second->ask_refills == quoter_->refill_limit())) {
+    LOG_INF << boost::format("ask refill time of %1% is broken") % it->first->Id();
+    return;
+  }
+  CalculateAndResubmit(it);
 }
 
 void Quoter::OnOrder(const OrderPtr &order) {
   LOG_DBG << order;
-  if (order->strategy == name_ &&
-      order->instrument->Type() == Proto::InstrumentType::Option) {
-    auto it = parameters_.find(order->instrument->Maturity());
+  if (order->strategy == name_ && order->instrument->Type() == Proto::Option) {
+    auto it = parameters_.find(order->instrument);
     if (unlikely(it == parameters_.end())) {
       return;
     }
-    auto itr = it->second->parameters.find(order->instrument);
-    if (unlikely(itr == it->second->parameters.end())) {
-      return;
-    }
+    auto update_order = [&](OrderPtr &side, OrderPtr &other_side) {
+      if (other_side->IsInactive()) {
+        other_side.reset();
+        side.reset();
+        it->second->canceling = false;
+        it->second->qr_id.clear();
+      } else {
+        side = order;
+      }
+    };
     if (order->IsBid()) {
-      auto &bid = itr->second->bid;
+      auto &bid = it->second->bid;
       if (bid && bid->id == order->id) {
-        LOG_INF << "bid order update: " << order;
-        if (order->IsInactive()) {
-          if (order->status == Proto::OrderStatus::Rejected) {
-            /// stop requote when order is rejected untill replay
-            itr->second->refill_times = quoter_->refill_times();
-          }
-          if (itr->second->ask->IsInactive()) {
-            bid.reset();
-            itr->second->ask.reset();
-            itr->second->canceling = false;
-            itr->second->qr_id.clear();
-          } else {
+        switch (order->status) {
+          case Proto::OrderStatus::Submitted:
+          case Proto::OrderStatus::New: {
             bid = order;
+            break;
           }
-          if (itr->second->is_on &&
-              Check(itr->first, it->second->multiplier, itr->second)) {
-            ResubmitOrders(itr->first, it->second->multiplier, itr->second);
+          case Proto::OrderStatus::PartialFilled: {
+            bid = order;
+            if (it->second->destriker != 0) {
+              CancelOrders(it->second);
+              it->second->theos.reset();
+            } else if (it->second->is_on && Check(it)) {
+              ResubmitOrders(it);
+            }
+            break;
           }
-        } else {
-          bid = order;
+          case Proto::OrderStatus::Filled: {
+            update_order(bid, it->second->ask);
+            if (it->second->destriker != 0) {
+              CancelOrders(it->second);
+              it->second->theos.reset();
+            }
+            if (unlikely(++it->second->bid_refills == quoter_->refill_limit())) {
+              statistic_->set_bid_refills(statistic_->bid_refills() + 1);
+            } else if (it->second->is_on && Check(it)) {
+              ResubmitOrders(it);
+            }
+            break;
+          }
+          case Proto::OrderStatus::PartialFilledCanceled: {
+            update_order(bid, it->second->ask);
+            if (unlikely(++it->second->bid_refills == quoter_->refill_limit())) {
+              statistic_->set_bid_refills(statistic_->bid_refills() + 1);
+            } else if (it->second->is_on && Check(it)) {
+              ResubmitOrders(it);
+            }
+            break;
+          }
+          case Proto::OrderStatus::Canceled: {
+            update_order(bid, it->second->ask);
+            if (it->second->is_on && Check(it)) {
+              ResubmitOrders(it);
+            }
+            orders_.erase(order->id);
+          }
+          case Proto::OrderStatus::Rejected: {
+            update_order(bid, it->second->ask);
+            /// stop requote when order is rejected untill replay
+            if (it->second->bid_refills < quoter_->refill_limit()) {
+              it->second->bid_refills = quoter_->refill_limit();
+              statistic_->set_bid_refills(statistic_->bid_refills() + 1);
+            }
+            orders_.erase(order->id);
+            break;
+          }
+          default:
+            break;
         }
+        LOG_INF << "bid order update: " << order;
       }
     } else {
-      auto &ask = itr->second->ask;
+      auto &ask = it->second->ask;
       if (ask && ask->id == order->id) {
-        LOG_INF << "ask order update: " << order;
-        if (order->IsInactive()) {
-          if (order->status == Proto::OrderStatus::Rejected) {
-            /// stop requote when order is rejected untill replay
-            itr->second->refill_times = quoter_->refill_times();
-          }
-          if (itr->second->bid->IsInactive()) {
-            itr->second->bid.reset();
-            ask.reset();
-            itr->second->canceling = false;
-            itr->second->qr_id.clear();
-          } else {
+        switch (order->status) {
+          case Proto::OrderStatus::Submitted:
+          case Proto::OrderStatus::New: {
             ask = order;
+            break;
           }
-          if (itr->second->is_on &&
-              Check(itr->first, it->second->multiplier, itr->second)) {
-            ResubmitOrders(itr->first, it->second->multiplier, itr->second);
+          case Proto::OrderStatus::PartialFilled: {
+            ask = order;
+            if (it->second->destriker != 0) {
+              CancelOrders(it->second);
+              it->second->theos.reset();
+            } else if (it->second->is_on && Check(it)) {
+              ResubmitOrders(it);
+            }
+            break;
           }
-        } else {
-          ask = order;
+          case Proto::OrderStatus::Filled: {
+            update_order(ask, it->second->bid);
+            if (it->second->destriker != 0) {
+              CancelOrders(it->second);
+              it->second->theos.reset();
+            }
+            if (unlikely(++it->second->ask_refills == quoter_->refill_limit())) {
+              statistic_->set_ask_refills(statistic_->ask_refills() + 1);
+            } else if (it->second->is_on && Check(it)) {
+              ResubmitOrders(it);
+            }
+            break;
+          }
+          case Proto::OrderStatus::PartialFilledCanceled: {
+            update_order(ask, it->second->bid);
+            if (unlikely(++it->second->ask_refills == quoter_->refill_limit())) {
+              statistic_->set_ask_refills(statistic_->ask_refills() + 1);
+            } else if (it->second->is_on && Check(it)) {
+              ResubmitOrders(it);
+            }
+            break;
+          }
+          case Proto::OrderStatus::Canceled: {
+            update_order(ask, it->second->bid);
+            if (it->second->is_on && Check(it)) {
+              ResubmitOrders(it);
+            }
+            orders_.erase(order->id);
+          }
+          case Proto::OrderStatus::Rejected: {
+            update_order(ask, it->second->bid);
+            /// stop requote when order is rejected untill replay
+            if (it->second->ask_refills < quoter_->refill_limit()) {
+              it->second->ask_refills = quoter_->refill_limit();
+              statistic_->set_ask_refills(statistic_->ask_refills() + 1);
+            }
+            orders_.erase(order->id);
+            break;
+          }
+          default:
+            break;
         }
+        LOG_INF << "ask order update: " << order;
       }
-    }
-    if (order->status >= Proto::OrderStatus::Canceled) {
-      orders_.erase(order->id);
     }
   }
 }
@@ -273,23 +346,17 @@ void Quoter::OnTrade(const TradePtr &trade) {
   LOG_DBG << trade;
   auto it = orders_.find(trade->order_id);
   if (it != orders_.end()) {
-    ++trade_num_;
-    if (trade_num_ >= quoter_->trade_limit()) {
+    statistic_->set_trades(statistic_->trades() + 1);
+    if (statistic_->trades() >= quoter_->trade_limit()) {
       stop_("trade limit broken");
       return;
     }
-    delta_ += it->second->delta * trade->volume * trade->instrument->Multiplier() /
-      trade->instrument->Underlying()->Multiplier();
-    if (base::IsMoreThan(delta_, quoter_->delta_limit())) {
+    statistic_->set_delta(statistic_->delta() +
+        it->second->delta * trade->volume * trade->instrument->Multiplier() /
+        trade->instrument->Underlying()->Multiplier());
+    if (base::IsMoreThan(statistic_->delta(), quoter_->delta_limit())) {
       stop_("delta limit broken");
       return;
-    }
-  }
-  auto it1 = parameters_.find(trade->instrument->Maturity());
-  if (it1 != parameters_.end()) {
-    auto itr = it1->second->parameters.find(trade->instrument);
-    if (itr != it1->second->parameters.end()) {
-      itr->second->position = PositionManager::GetInstance()->GetNetPosition(itr->first);
     }
   }
 }
@@ -297,7 +364,13 @@ void Quoter::OnTrade(const TradePtr &trade) {
 bool Quoter::OnHeartbeat(const std::shared_ptr<Proto::Heartbeat> &heartbeat) {
   CheckForAuction();
   CheckForQR();
-  PublishStatistic();
+  Middleware::GetInstance()->Publish(Message<Proto::StrategyStatistic>::New(*statistic_));
+}
+
+bool Quoter::OnPriceException(const std::shared_ptr<Proto::PriceException> &msg) {
+  if (msg->on()) {
+    stop_("price exception");
+  }
 }
 
 bool Quoter::OnRequestForQuote(const std::shared_ptr<Proto::RequestForQuote> &msg) {
@@ -312,27 +385,10 @@ bool Quoter::OnRequestForQuote(const std::shared_ptr<Proto::RequestForQuote> &ms
 bool Quoter::OnSSRate(const std::shared_ptr<Proto::SSRate> &msg) {
   LOG_DBG << msg->ShortDebugString();
   auto maturity = boost::gregorian::from_undelimited_string(msg->maturity());
-  auto it = parameters_.find(maturity);
-  if (it != parameters_.end()) {
-    it->second->price += (msg->rate() - it->second->basis);
-    it->second->basis = msg->rate();
-    for (auto &p : it->second->parameters) {
-      // if (unlikely(p.second->credit <= 0)) {
-      //   LOG_INF << boost::format("credit of %1% is zero") % p.first->Id();
-      //   continue;
-      // }
-      // if (unlikely(!p.second->theos)) {
-      //   LOG_INF << boost::format("theo matrix of %1% is null") % p.first->Id();
-      //   continue;
-      // }
-      // if (unlikely(p.second->refill_times == quoter_->refill_times())) {
-      //   LOG_INF << boost::format("refill time of %1% is broken") % p.first->Id();
-      //   continue;
-      // }
-      // CalculateAndResubmit(p.first, it->second->price, it->second->multiplier, p.second);
-      CancelOrders(p.second);
-      p.second->theos.reset();
-      p.second->theo.Reset();
+  for (auto &it : parameters_) {
+    if (it.first->Maturity() == maturity) {
+      CancelOrders(it.second);
+      it.second->theos.reset();
     }
   }
   // return true;
@@ -340,30 +396,31 @@ bool Quoter::OnSSRate(const std::shared_ptr<Proto::SSRate> &msg) {
 
 bool Quoter::OnCredit(const std::shared_ptr<Proto::Credit> &msg) {
   LOG_DBG << msg->ShortDebugString();
-  auto maturity = boost::gregorian::from_undelimited_string(msg->maturity());
-  auto it = parameters_.find(maturity);
-  if (it != parameters_.end()) {
-    it->second->multiplier = msg->multiplier();
+  if (msg->strategy() == Proto::StrategyType::Quoter) {
     for (auto &r : msg->records()) {
       auto *inst = InstrumentManager::GetInstance()->FindId(r.option());
       if (inst) {
-        auto itr = it->second->parameters.find(inst);
-        if (itr != it->second->parameters.end()) {
-          itr->second->credit = r.credit();
-          if (unlikely(order_num_ >= quoter_->order_limit())) {
+        auto it = parameters_.find(inst);
+        if (it != parameters_.end()) {
+          it->second->multiplier = msg->multiplier();
+          it->second->credit = r.credit();
+          if (unlikely(statistic_->orders() >= quoter_->order_limit())) {
             stop_("order limit broken");
             continue;
           }
-          if (unlikely(itr->second->refill_times == quoter_->refill_times())) {
-            LOG_INF << boost::format("refill time of %1% is broken") % inst->Id();
+          if (unlikely(it->second->bid_refills == quoter_->refill_limit())) {
+            LOG_INF << boost::format("bid refill time of %1% is broken") % inst->Id();
             continue;
           }
-          if (unlikely(!itr->second->theo)) {
-            LOG_INF << boost::format("theo of %1% is null") % inst->Id();
+          if (unlikely(it->second->ask_refills == quoter_->refill_limit())) {
+            LOG_INF << boost::format("ask refill time of %1% is broken") % inst->Id();
             continue;
           }
-          CalculateAndResubmit(inst, it->second->price, it->second->multiplier,
-                               itr->second);
+          if (unlikely(!it->second->theos)) {
+            LOG_INF << boost::format("theos of %1% is null") % inst->Id();
+            continue;
+          }
+          CalculateAndResubmit(it);
         }
       }
     }
@@ -374,85 +431,66 @@ bool Quoter::OnDestriker(const std::shared_ptr<Proto::Destriker> &msg) {
   LOG_INF << "Destriker: " << msg->ShortDebugString();
   auto *inst = InstrumentManager::GetInstance()->FindId(msg->instrument());
   assert (inst);
-  auto it = parameters_.find(inst->Maturity());
+  auto it = parameters_.find(inst);
   if (it != parameters_.end()) {
-    auto itr = it->second->parameters.find(inst);
-    if (itr != it->second->parameters.end()) {
-      itr->second->destriker = msg->destriker();
-      if (itr->second->is_on && Check(itr->first, it->second->multiplier, itr->second)) {
-        ResubmitOrders(itr->first, it->second->multiplier, itr->second);
-      }
-    }
+    CancelOrders(it->second);
+    it->second->destriker = msg->destriker();
+    it->second->theos.reset();
   }
 }
 
 bool Quoter::OnVolatilityCurve(const std::shared_ptr<Proto::VolatilityCurve> &msg) {
   LOG_DBG << msg->ShortDebugString();
   auto maturity = boost::gregorian::from_undelimited_string(msg->maturity());
-  auto it = parameters_.find(maturity);
-  if (it != parameters_.end()) {
-    for (auto &p : it->second->parameters) {
-      CancelOrders(p.second);
-      p.second->theos.reset();
-      p.second->theo.Reset();
+  for (auto &it : parameters_) {
+    if (it.first->Maturity() == maturity) {
+      CancelOrders(it.second);
+      it.second->theos.reset();
     }
   }
 }
-
-// bool Quoter::OnQuoterSpec(const std::shared_ptr<Proto::QuoterSpec> &msg) {
-//   LOG_INF << "QuoterSpec: " << msg->ShortDebugString();
-// }
 
 bool Quoter::OnStrategySwitch(const std::shared_ptr<Proto::StrategySwitch> &sw) {
   LOG_DBG << sw->ShortDebugString();
   if (sw->strategy() == Proto::StrategyType::Quoter) {
     auto *inst = InstrumentManager::GetInstance()->FindId(sw->option());
     if (inst) {
-      auto it = parameters_.find(inst->Maturity());
-      if (unlikely(it == parameters_.end())) {
-        return false;
-      }
-      auto itr = it->second->parameters.find(inst);
-      if (unlikely(itr == it->second->parameters.end())) {
-        return false;
-      }
-      if (itr->second->is_on != sw->is_bid()) {
-        if (itr->second->is_on) {
-          /// true --> false
-          CancelOrders(itr->second);
-        } else if (Check(inst, it->second->multiplier, itr->second)) {
-          /// false --> true
-          ResubmitOrders(inst, it->second->multiplier, itr->second);
+      auto it = parameters_.find(inst);
+      if (it != parameters_.end()) {
+        if (it->second->is_on != sw->is_bid()) {
+          if (it->second->is_on) {
+            /// true --> false
+            CancelOrders(it->second);
+          } else if (Check(it)) {
+            /// false --> true
+            ResubmitOrders(it);
+          }
+          it->second->is_on = sw->is_bid();
         }
-        itr->second->is_on = sw->is_bid();
+        it->second->is_qr = sw->is_qr_cover();
       }
-      itr->second->is_qr = sw->is_qr_cover();
     }
   }
 }
 
 bool Quoter::OnStrategyOperate(const std::shared_ptr<Proto::StrategyOperate> &msg) {
   if (msg->name() == Name() && msg->operate() == Proto::StrategyOperation::Start) {
-    order_num_ = 0;
-    trade_num_ = 0;
-    delta_ = 0;
-    for (auto &it : parameters_) {
-      // if (unlikely(it.second->multiplier <= 0)) {
-      //   LOG_INF << boost::format("credit multiplier of %1% is zero") % it.first;
-      //   continue;
-      // }
-      for (auto &p : it.second->parameters) {
-        p.second->refill_times = 0;
-        if (unlikely(p.second->credit <= 0)) {
-          LOG_INF << boost::format("credit of %1% is zero") % p.first->Id();
+    statistic_->clear_delta();
+    statistic_->clear_orders();
+    statistic_->clear_trades();
+    statistic_->clear_bid_refills();
+    statistic_->clear_ask_refills();
+    for (auto it = parameters_.begin(); it != parameters_.end(); ++it) {
+        it->second->bid_refills = it->second->ask_refills = 0;
+        if (unlikely(it->second->credit <= 0)) {
+          LOG_INF << boost::format("credit of %1% is zero") % it->first->Id();
           continue;
         }
-        if (unlikely(!p.second->theo)) {
-          LOG_INF << boost::format("theo of %1% is null") % p.first->Id();
+        if (unlikely(!it->second->theos)) {
+          LOG_INF << boost::format("theos of %1% is null") % it->first->Id();
           continue;
         }
-        CalculateAndResubmit(p.first, it.second->price, it.second->multiplier, p.second);
-      }
+        CalculateAndResubmit(it);
     }
   }
 }
@@ -463,32 +501,28 @@ bool Quoter::OnInstrumentReq(const std::shared_ptr<Proto::InstrumentReq> &msg) {
     if (inst.type() == Proto::InstrumentType::Option) {
       auto *instrument = InstrumentManager::GetInstance()->FindId(inst.id());
       if (instrument && instrument->HedgeUnderlying () == Underlying()) {
-        auto it = parameters_.find(instrument->Maturity());
+        auto it = parameters_.find(instrument);
         if (unlikely(it == parameters_.end())) {
-          return false;
-        }
-        auto itr = it->second->parameters.find(instrument);
-        if (unlikely(itr == it->second->parameters.end())) {
           return false;
         }
         auto status = inst.status();
         if (status == Proto::InstrumentStatus::OpeningAuction) {
-          CancelOrders(itr->second);
-          itr->second->auction_time = base::Now() +
-                                      quoter_->open_auction_delay() * base::MILLION;
-          itr->second->auction_volume = quoter_->open_auction_volume();
+          CancelOrders(it->second);
+          it->second->auction_time = base::Now() +
+            quoter_->open_auction_delay() * base::MILLION;
+          it->second->auction_volume = quoter_->open_auction_volume();
         } else if (status == Proto::InstrumentStatus::ClosingAuction) {
-          CancelOrders(itr->second);
-          itr->second->auction_time = base::Now() +
-                                      quoter_->close_auction_delay() * base::MILLION;
-          itr->second->auction_volume = quoter_->close_auction_volume();
+          CancelOrders(it->second);
+          it->second->auction_time = base::Now() +
+            quoter_->close_auction_delay() * base::MILLION;
+          it->second->auction_volume = quoter_->close_auction_volume();
         } else if (status == Proto::InstrumentStatus::Fuse) {
-          CancelOrders(itr->second);
-          itr->second->auction_time = base::Now() +
-                                      quoter_->fuse_auction_delay() * base::MILLION;
-          itr->second->auction_volume = quoter_->fuse_auction_volume();
+          CancelOrders(it->second);
+          it->second->auction_time = base::Now() +
+            quoter_->fuse_auction_delay() * base::MILLION;
+          it->second->auction_volume = quoter_->fuse_auction_volume();
         }
-        itr->second->status = status;
+        it->second->status = status;
       }
     }
   }
@@ -496,29 +530,17 @@ bool Quoter::OnInstrumentReq(const std::shared_ptr<Proto::InstrumentReq> &msg) {
 
 void Quoter::CheckForAuction() {
   auto now = base::Now();
-  for (auto &it : parameters_) {
-    // if (unlikely(it.second->multiplier <= 0)) {
-    //   LOG_INF << boost::format("credit multiplier of %1% is zero") % it.first;
-    //   continue;
-    // }
-    for (auto &p : it.second->parameters) {
-      if (Instrument::IsAuction(p.second->status) && p.second->auction_time >= now) {
-        if (unlikely(p.second->credit <= 0)) {
-          LOG_INF << boost::format("credit of %1% is zero") % p.first->Id();
-          continue;
-        }
-        if (unlikely(!p.second->theo)) {
-          LOG_INF << boost::format("theo of %1% is null") % p.first->Id();
-          continue;
-        }
-        if (p.second->theos->FindTheo(it.second->price, p.second->theo)) {
-          ResubmitOrders(p.first, it.second->multiplier, p.second);
-        } else {
-          p.second->theo.Reset();
-          LOG_INF << boost::format("can't find theo of %1% by spot %2%") %
-                     p.first->Id() % it.second->price;
-        }
+  for (auto it = parameters_.begin(); it != parameters_.end(); ++it) {
+    if (Instrument::IsAuction(it->second->status) && it->second->auction_time >= now) {
+      if (unlikely(it->second->credit <= 0)) {
+        LOG_INF << boost::format("credit of %1% is zero") % it->first->Id();
+        continue;
       }
+      if (unlikely(!it->second->theos)) {
+        LOG_INF << boost::format("theos of %1% is null") % it->first->Id();
+        continue;
+      }
+      ResubmitOrders(it);
     }
   }
 }
@@ -540,95 +562,78 @@ void Quoter::RespondingQR(const std::shared_ptr<Proto::RequestForQuote> &rfq) {
   LOG_INF << boost::format("responding rfq(%1%) of %2%") % rfq->id() % rfq->instrument();
   auto *instrument = InstrumentManager::GetInstance()->FindId(rfq->instrument());
   assert(instrument);
-  auto it = parameters_.find(instrument->Maturity());
-  if (it != parameters_.end()) {
-    auto itr = it->second->parameters.find(instrument);
-    if (itr != it->second->parameters.end() && itr->second->is_qr) {
-      if (itr->second->bid) {
-        CancelOrders(itr->second);
-        itr->second->qr_id = rfq->id();
-      } else {
-        itr->second->qr_id = rfq->id();
-        if (Check(itr->first, it->second->multiplier, itr->second)) {
-          ResubmitOrders(itr->first, it->second->multiplier, itr->second);
-        }
+  auto it = parameters_.find(instrument);
+  if (it != parameters_.end() && it->second->is_qr) {
+    if (it->second->bid) {
+      CancelOrders(it->second);
+      it->second->qr_id = rfq->id();
+    } else {
+      it->second->qr_id = rfq->id();
+      if (Check(it)) {
+        ResubmitOrders(it);
       }
     }
   }
 }
 
-void Quoter::PublishStatistic() {
-  auto s = Message<Proto::StrategyStatistic>::New();
-  s->set_name(name_);
-  s->set_type(Proto::StrategyType::Quoter);
-  auto *underlying = Underlying();
-  s->set_exchange(underlying->Exchange());
-  s->set_underlying(underlying->Id());
-  s->set_status(Proto::StrategyStatus::Running);
-  s->set_delta(delta_);
-  s->set_orders(order_num_);
-  s->set_trades(trade_num_);
-  Middleware::GetInstance()->Publish(s);
-}
-
-bool Quoter::Check(const Instrument *inst, double multiplier, ParameterPtr &parameter) {
-  if (unlikely(order_num_ >= quoter_->order_limit())) {
+bool Quoter::Check(ParameterMap::iterator &it) {
+  if (unlikely(statistic_->orders() >= quoter_->order_limit())) {
     stop_("order limit broken");
     return false;
   }
-  if (unlikely(parameter->refill_times == quoter_->refill_times())) {
-    LOG_INF << boost::format("refill time of %1% is broken") % inst->Id();
+  if (unlikely(it->second->bid_refills == quoter_->refill_limit())) {
+    LOG_INF << boost::format("bid refill time of %1% is broken") % it->first->Id();
     return false;
   }
-  // if (unlikely(multiplier <= 0)) {
-  //   LOG_INF << boost::format("credit multiplier of %1% is zero") % inst->Id();
-  //   return false;
-  // }
-  if (unlikely(parameter->credit <= 0)) {
-    LOG_INF << boost::format("credit of %1% is zero") % inst->Id();
+  if (unlikely(it->second->ask_refills == quoter_->refill_limit())) {
+    LOG_INF << boost::format("ask refill time of %1% is broken") % it->first->Id();
     return false;
   }
-  if (unlikely(!parameter->theo)) {
-    LOG_INF << boost::format("theo of %1% is null") % inst->Id();
+  if (unlikely(it->second->credit <= 0)) {
+    LOG_INF << boost::format("credit of %1% is zero") % it->first->Id();
     return false;
   }
-  if (unlikely(parameter->status != Proto::InstrumentStatus::Trading)) {
-    LOG_INF << inst->Id() << " is in " << Proto::InstrumentStatus_Name(inst->Status());
+  if (unlikely(!it->second->theos)) {
+    LOG_INF << boost::format("theos of %1% is null") % it->first->Id();
+    return false;
+  }
+  if (unlikely(it->second->status != Proto::InstrumentStatus::Trading)) {
+    LOG_INF << it->first->Id() << " is in " <<
+      Proto::InstrumentStatus_Name(it->first->Status());
     return false;
   }
   return true;
 }
 
-void Quoter::CalculateAndResubmit(const Instrument *inst,
-                                  double spot,
-                                  double multiplier,
-                                  ParameterPtr &parameter) {
-  if (parameter->theos->FindTheo(spot, parameter->theo)) {
-    if (parameter->is_on && parameter->status == Proto::InstrumentStatus::Trading) {
-      ResubmitOrders(inst, multiplier, parameter);
-    } else {
-      CancelOrders(parameter);
-    }
+void Quoter::CalculateAndResubmit(ParameterMap::iterator &it) {
+  if (it->second->is_on && it->second->status == Proto::InstrumentStatus::Trading) {
+    ResubmitOrders(it);
   } else {
-    CancelOrders(parameter);
-    parameter->theo.Reset();
-    LOG_INF << boost::format("can't find theo of %1% by spot %2%") % inst->Id() % spot;
+    CancelOrders(it->second);
   }
 }
 
-void Quoter::ResubmitOrders(const Instrument *inst,
-                            double multiplier,
-                            ParameterPtr &parameter) {
-  double theo = parameter->theo.theo + parameter->destriker * parameter->position;
-  double bp = inst->RoundToTick(theo - (1 + 0.5 * multiplier) * parameter->credit,
-                                Proto::RoundDirection::Down);
-  double ap = inst->RoundToTick(theo + (1 + 0.5 * multiplier) * parameter->credit,
-                                Proto::RoundDirection::Up);
+void Quoter::ResubmitOrders(ParameterMap::iterator &it) {
+  double spot = dm_->GetUnderlyingTheo();
+  TheoData theo;
+  if (unlikely(!it->second->theos->FindTheo(spot, theo))) {
+    CancelOrders(it->second);
+    LOG_INF << boost::format("can't find theo of %1% by spot %2%") %
+      it->first->Id() % spot;
+    return;
+  }
+  // double theo = it->second->theo.theo + it->second->destriker * it->second->position;
+  double bp = it->first->RoundToTick(theo.theo - (1 + 0.5 * it->second->multiplier) *
+      it->second->credit, Proto::RoundDirection::Down);
+  double ap = it->first->RoundToTick(theo.theo + (1 + 0.5 * it->second->multiplier) *
+      it->second->credit, Proto::RoundDirection::Up);
   double tolerance_ratio = 1;
   if (!quoter_->wide_spread()) {
     double mm_bid = 0, mm_ask = 0;
-    if ((parameter->qr_id.empty() && api_->GetMMPrice(inst, theo, mm_bid, mm_ask)) ||
-        (!parameter->qr_id.empty() && api_->GetQRPrice(inst, theo, mm_bid, mm_ask))) {
+    if ((it->second->qr_id.empty() &&
+         api_->GetMMPrice(it->first, theo.theo, mm_bid, mm_ask)) ||
+        (!it->second->qr_id.empty() &&
+         api_->GetQRPrice(it->first, theo.theo, mm_bid, mm_ask))) {
       if (base::IsMoreThan(mm_bid, bp)) {
         tolerance_ratio = (mm_ask - mm_bid) / (ap - bp);
         bp = mm_bid;
@@ -644,128 +649,130 @@ void Quoter::ResubmitOrders(const Instrument *inst,
       }
     }
   }
-  if (base::IsLessThan(bp, inst->Lowest())) {
-    if (base::IsLessThan(inst->Lowest(), theo - parameter->credit)) {
+  if (base::IsLessThan(bp, it->first->Lowest())) {
+    if (base::IsLessThan(it->first->Lowest(), theo.theo - it->second->credit)) {
       LOG_INF << boost::format("move bid price of %1% from %2% up to %3%") %
-                 inst->Id() % bp % inst->Lowest();
-      bp = inst->Lowest();
+                 it->first->Id() % bp % it->first->Lowest();
+      bp = it->first->Lowest();
     } else {
       LOG_INF << boost::format("%1%\'s lowest(%2%) >= theo(%3%) - credit(%4%)") %
-                 inst->Id() % inst->Lowest() % theo % parameter->credit;
-      CancelOrders(parameter);
+                 it->first->Id() % it->first->Lowest() % theo.theo % it->second->credit;
+      CancelOrders(it->second);
       return;
     }
-  } else if (base::IsMoreThan(bp, inst->Highest())) {
+  } else if (base::IsMoreThan(bp, it->first->Highest())) {
     LOG_INF << boost::format("%1% bid price(%2%) > Highest(%3%)") %
-               inst->Id() % bp % inst->Highest();
-    CancelOrders(parameter);
+               it->first->Id() % bp % it->first->Highest();
+    CancelOrders(it->second);
     return;
   }
-  if (base::IsMoreThan(ap, inst->Highest())) {
-    if (base::IsMoreThan(inst->Highest(), theo + parameter->credit)) {
+  if (base::IsMoreThan(ap, it->first->Highest())) {
+    if (base::IsMoreThan(it->first->Highest(), theo.theo + it->second->credit)) {
       LOG_INF << boost::format("move ask price of %1% from %2% down to %3%") %
-                 inst->Id() % ap % inst->Lowest();
-      ap = inst->Highest();
+                 it->first->Id() % ap % it->first->Lowest();
+      ap = it->first->Highest();
     } else {
       LOG_INF << boost::format("%1%\'s highest(%2%) <= theo(%3%) + credit(%4%)") %
-                 inst->Id() % inst->Highest() % theo % parameter->credit;
-      CancelOrders(parameter);
+                 it->first->Id() % it->first->Highest() % theo.theo % it->second->credit;
+      CancelOrders(it->second);
       return;
     }
-  } else if (base::IsLessThan(ap, inst->Lowest())) {
+  } else if (base::IsLessThan(ap, it->first->Lowest())) {
     LOG_INF << boost::format("%1% ask price(%2%) < Lowest(%3%)") %
-               inst->Id() % ap % inst->Lowest();
-    CancelOrders(parameter);
+               it->first->Id() % ap % it->first->Lowest();
+    CancelOrders(it->second);
     return;
   }
-  auto &price = parameter->price;
+  auto &price = it->second->price;
   if (quoter_->protection() && price) {
     if (price->asks[0] && bp >= price->asks[0].price) {
       LOG_DBG << boost::format("protect mode works(%1%), bid(%2%) >= market ask(%3% %4%)")
-                 % inst->Id() % bp % price->asks[0].price % price->asks[0].volume;
-      CancelOrders(parameter);
+                 % it->first->Id() % bp % price->asks[0].price % price->asks[0].volume;
+      CancelOrders(it->second);
       return;
     }
     if (price->bids[0] && ap <= price->bids[0].price) {
       LOG_DBG << boost::format("protect mode works(%1%), ask(%2%) <= market bid(%3% %4%)")
-                 % inst->Id() % ap % price->bids[0].price % price->bids[0].volume;
-      CancelOrders(parameter);
+                 % it->first->Id() % ap % price->bids[0].price % price->bids[0].volume;
+      CancelOrders(it->second);
       return;
     }
   }
   /// check tolerance
-  double tolerance = 0.5 * multiplier * parameter->credit * tolerance_ratio;
-  if (parameter->bid &&
-      base::IsBetween(parameter->bid->price, bp - tolerance, bp + tolerance) &&
-      base::IsBetween(parameter->ask->price, ap - tolerance, ap + tolerance)) {
+  double tolerance = 0.5 * it->second->multiplier * it->second->credit * tolerance_ratio;
+  if (it->second->bid &&
+      it->second->bid->status < Proto::PartialFilled &&
+      it->second->ask->status < Proto::PartialFilled &&
+      base::IsBetween(it->second->bid->price, bp - tolerance, bp + tolerance) &&
+      base::IsBetween(it->second->ask->price, ap - tolerance, ap + tolerance)) {
     LOG_DBG << boost::format("orders in tolerance(%1%): theo(%2%), "
                              "bid(%3%, %4%, %5%), ask(%6%, %7%, %8%)") %
-               inst->Id() % theo %
-               (bp - tolerance) % parameter->bid->price % (bp + tolerance) %
-               (ap - tolerance) % parameter->ask->price % (ap + tolerance);
+               it->first->Id() % theo.theo %
+               (bp - tolerance) % it->second->bid->price % (bp + tolerance) %
+               (ap - tolerance) % it->second->ask->price % (ap + tolerance);
     return;
   }
 
   auto build_orders = [&]() {
-    bid_->instrument = ask_->instrument = inst;
+    bid_->instrument = ask_->instrument = it->first;
     bid_->price = bp;
     ask_->price = ap;
-    if (parameter->status == Proto::InstrumentStatus::Trading) {
-      if (parameter->qr_id.empty()) {
+    if (it->second->status == Proto::InstrumentStatus::Trading) {
+      if (it->second->qr_id.empty()) {
         bid_->volume = ask_->volume = quoter_->volume();
       } else {
         bid_->volume = ask_->volume = quoter_->qr_volume();
       }
     } else {
-      assert (Instrument::IsAuction(parameter->status));
-      bid_->volume = ask_->volume = parameter->auction_volume;
+      assert (Instrument::IsAuction(it->second->status));
+      bid_->volume = ask_->volume = it->second->auction_volume;
     }
-    bid_->spot = ask_->spot = parameter->theo.spot;
-    bid_->volatility = ask_->volatility = parameter->theo.volatility;
-    bid_->ss_rate = ask_->ss_rate = parameter->theo.ss_rate;
-    bid_->theo = ask_->theo = parameter->theo.theo;
-    bid_->delta = ask_->delta = parameter->theo.delta;
-    bid_->credit = ask_->credit = parameter->credit;
-    parameter->bid = Message<Order>::New(bid_);
-    parameter->bid->header.SetTime();
-    parameter->bid->ResetId();
-    orders_.emplace(parameter->bid->id, parameter->bid);
-    PositionManager::GetInstance()->TryFreeze(parameter->bid);
-    parameter->ask = Message<Order>::New(ask_);
-    parameter->ask->header.SetTime();
-    parameter->ask->ResetId();
-    orders_.emplace(parameter->ask->id, parameter->ask);
-    PositionManager::GetInstance()->TryFreeze(parameter->ask);
-    order_num_ += 2;
+    bid_->spot = ask_->spot = theo.spot;
+    bid_->volatility = ask_->volatility = theo.volatility;
+    bid_->ss_rate = ask_->ss_rate = theo.ss_rate;
+    bid_->theo = ask_->theo = theo.theo;
+    bid_->delta = ask_->delta = theo.delta;
+    bid_->credit = ask_->credit = it->second->credit;
+    it->second->bid = Message<Order>::New(bid_);
+    it->second->bid->header.SetTime();
+    it->second->bid->ResetId();
+    orders_.emplace(it->second->bid->id, it->second->bid);
+    PositionManager::GetInstance()->TryFreeze(it->second->bid);
+    it->second->ask = Message<Order>::New(ask_);
+    it->second->ask->header.SetTime();
+    it->second->ask->ResetId();
+    orders_.emplace(it->second->ask->id, it->second->ask);
+    PositionManager::GetInstance()->TryFreeze(it->second->ask);
+    statistic_->set_orders(statistic_->orders() + 2);
   };
 
-  if (parameter->bid) {
-    assert(parameter->ask);
+  if (it->second->bid) {
+    assert(it->second->ask);
     if (amend_quote_) {
       build_orders();
-      api_->Submit(parameter->bid, parameter->ask);
+      api_->Submit(it->second->bid, it->second->ask);
+      LOG_INF << "amend quote: [" << it->second->bid << "], [" << it->second->ask << "]";
     } else {
-      CancelOrders(parameter);
+      CancelOrders(it->second);
     }
   } else {
-    assert(!parameter->ask);
+    assert(!it->second->ask);
     build_orders();
     if (quote_) {
-      api_->Submit(parameter->bid, parameter->ask);
+      api_->Submit(it->second->bid, it->second->ask);
     } else {
-      api_->Submit(parameter->bid);
-      api_->Submit(parameter->ask);
+      api_->Submit(it->second->bid);
+      api_->Submit(it->second->ask);
     }
+    LOG_INF << "new quote: " << it->second->bid << ", " << it->second->ask;
   }
 }
 
 void Quoter::CancelOrders(const std::shared_ptr<Parameter> &parameter) {
   if (parameter->canceling) {
-    LOG_INF << "quote is canceling: bid(" << parameter->bid
-            << ") : ask(" <<  parameter->ask << ')';
+    LOG_INF << "quote is canceling: " << parameter->bid << ", " << parameter->ask;
   } else if (!parameter->qr_id.empty()) {
-    LOG_INF << "forbid canceling qr quote: bid(" << parameter->bid
-            << ") : ask(" <<  parameter->ask << ')';
+    LOG_INF << "forbid canceling qr quote: " << parameter->bid << ", " <<  parameter->ask;
   } else if (parameter->bid) {
     assert(parameter->ask);
     if (parameter->status == Proto::InstrumentStatus::Trading) {
@@ -783,6 +790,7 @@ void Quoter::CancelOrders(const std::shared_ptr<Parameter> &parameter) {
         }
       }
       parameter->canceling = true;
+      LOG_INF << "cancel quote: " << parameter->bid << ", " << parameter->ask;
     }
   } else {
     assert(!parameter->ask);

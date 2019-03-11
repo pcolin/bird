@@ -35,3 +35,10 @@ message PriceReq
   string instrument = 2;
   string user = 3;
 }
+
+message PriceException
+{
+  string underlying = 1;
+  bool on = 2;
+  double multiplier = 3;
+}

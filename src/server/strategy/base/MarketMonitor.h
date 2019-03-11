@@ -66,6 +66,8 @@ class MarketMonitor : public Strategy {
   virtual void OnStart() override;
   virtual void OnStop() override;
 
+  PricePtr FindPrice(const Instrument *inst);
+
  protected:
   virtual void OnPrice(const PricePtr &price) override;
   virtual void OnOrder(const OrderPtr &order) override;

@@ -21,6 +21,7 @@
 #include "MarketMakingStatisticDB.h"
 #include "StrategySwitchDB.h"
 #include "QuoterDB.h"
+#include "HitterDB.h"
 #include "Heartbeat.pb.h"
 #include "Server.pb.h"
 #include "Price.pb.h"
@@ -206,6 +207,9 @@ int main(int argc, char *argv[]) {
 
   QuoterDB quoter(config_db, "Quoter", "QuoterRecord", instrument_db);
   ok = ok && quoter.Initialize(dispatcher);
+
+  HitterDB hitter(config_db, "Hitter", "HitterRecord", instrument_db);
+  ok = ok && hitter.Initialize(dispatcher);
 
   MarketMakingStatisticDB statistic(config_db, "MarketMakingStatistic",
       instrument_db, product_db);

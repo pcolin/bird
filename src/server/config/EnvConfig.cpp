@@ -47,6 +47,7 @@ EnvConfig::EnvConfig() {
     { static_cast<int8_t>(EnvVar::OPTION_CASH_LIMIT), "OPTION_CASH_LIMIT" },
     { static_cast<int8_t>(EnvVar::SPOT_CASH_LIMIT), "SPOT_CASH_LIMIT" },
     { static_cast<int8_t>(EnvVar::WASH_TRADE_PROTECT), "WASH_TRADE_PROTECT" },
+    { static_cast<int8_t>(EnvVar::MAX_ORDER_SIZE), "MAX_ORDER_SIZE" },
     { static_cast<int8_t>(EnvVar::ORDER_GC_THRESHOLD), "ORDER_GC_THRESHOLD" },
     { static_cast<int8_t>(EnvVar::NIGHT_SESSION_TIME), "NIGHT_SESSION_TIME" },
     { static_cast<int8_t>(EnvVar::CLOSE_TODAY_POSITION), "CLOSE_TODAY_POSITION" },

@@ -7,6 +7,7 @@
 #include "base/common/Float.h"
 #include "model/InstrumentManager.h"
 #include "model/ParameterManager.h"
+#include "model/PositionManager.h"
 #include "boost/format.hpp"
 // #include "tbb/parallel_for.h"
 #include "tbb/parallel_for_each.h"
@@ -339,10 +340,18 @@ void TheoCalculator::CalculateAndPublish(const Option *call,
   call_matrix->option = call;
   call_matrix->lower = lower_;
   call_matrix->upper = upper_;
+  double call_adjust = 0;
+  if (ParameterManager::GetInstance()->GetDestriker(call, call_adjust)) {
+    call_adjust *= PositionManager::GetInstance()->GetNetPosition(call);
+  }
   auto put_matrix = Message<TheoMatrix>::New();
   put_matrix->option = put;
   put_matrix->lower = lower_;
   put_matrix->upper = upper_;
+  double put_adjust = 0;
+  if (ParameterManager::GetInstance()->GetDestriker(put, put_adjust)) {
+    put_adjust *= PositionManager::GetInstance()->GetNetPosition(put);
+  }
   auto lower = call->HedgeUnderlying()->ConvertHalfToPrice(lower_);
   auto half_tick = call->HedgeUnderlying()->Tick() / 2;
   for (auto i = 0; i <= upper_ - lower_; ++i) {
@@ -362,14 +371,14 @@ void TheoCalculator::CalculateAndPublish(const Option *call,
     call_matrix->theos[i].spot = s;
     call_matrix->theos[i].volatility = v;
     call_matrix->theos[i].ss_rate = p.basis;
-    call_matrix->theos[i].theo = call_theo.theo;
+    call_matrix->theos[i].theo = std::max(0.0, call_theo.theo - call_adjust);
     call_matrix->theos[i].delta = call_theo.delta;
     call_matrix->theos[i].gamma = call_theo.gamma;
     call_matrix->theos[i].theta = call_theo.theta;
     put_matrix->theos[i].spot = s;
     put_matrix->theos[i].volatility = v;
     put_matrix->theos[i].ss_rate = p.basis;
-    put_matrix->theos[i].theo = put_theo.theo;
+    put_matrix->theos[i].theo = std::max(0.0, put_theo.theo - put_adjust);
     put_matrix->theos[i].delta = put_theo.delta;
     put_matrix->theos[i].gamma = put_theo.gamma;
     put_matrix->theos[i].theta = put_theo.theta;
@@ -386,6 +395,10 @@ void TheoCalculator::CalculateAndPublish(const Option *option, Parameters &p, do
   matrix->option = option;
   matrix->lower = lower_;
   matrix->upper = upper_;
+  double adjust = 0;
+  if (ParameterManager::GetInstance()->GetDestriker(option, adjust)) {
+    adjust *= PositionManager::GetInstance()->GetNetPosition(option);
+  }
   auto lower = option->HedgeUnderlying()->ConvertHalfToPrice(lower_);
   for (auto i = 0; i <= upper_ - lower_; ++i) {
     double s = lower + i * option->HedgeUnderlying()->Tick() / 2;
@@ -403,7 +416,7 @@ void TheoCalculator::CalculateAndPublish(const Option *option, Parameters &p, do
     matrix->theos[i].spot = s;
     matrix->theos[i].volatility = v;
     matrix->theos[i].ss_rate = p.basis;
-    matrix->theos[i].theo = theo.theo;
+    matrix->theos[i].theo = std::max(0.0, theo.theo - adjust);
     matrix->theos[i].delta = theo.delta;
     matrix->theos[i].gamma = theo.gamma;
     matrix->theos[i].theta = theo.theta;

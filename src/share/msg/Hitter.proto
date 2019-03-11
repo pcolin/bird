@@ -5,29 +5,37 @@ import "Exchange.proto";
 import "Request.proto";
 import "Reply.proto";
 
-message HitterRecord
-{
-  string instrument = 1;
+enum HitType {
+  Passive = 0;
+  Active = 1;
+  LastTrade = 2;
+  Refresh = 3;
+  Play = 4;
 }
 
-message Hitter
-{
+message HitterSpec {
   string name = 1;
   string pricer = 2;
   string underlying = 3;
+  double delta_limit = 4;
+  int32 order_limit = 5;
+  int32 trade_limit = 6;
+  int32 refill_limit = 7;
+  int32 bid_volume = 8;
+  int32 ask_volume = 9;
+  int32 max_volume = 10;
+  repeated string options = 11;
 }
 
-message HitterReq
-{
+message HitterReq {
   RequestType type = 1;
   Exchange exchange = 2;
-  repeated Hitter hitters = 3;
+  repeated HitterSpec hitters = 3;
   string name = 4;
   string user = 5;
 }
 
-message HitterRep
-{
-  repeated Hitter hitters = 1;
+message HitterRep {
+  repeated HitterSpec hitters = 1;
   Reply result = 2;
 }

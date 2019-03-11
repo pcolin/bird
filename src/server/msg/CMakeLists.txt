@@ -23,6 +23,7 @@ set(PROTO_FILES
   ../../share/msg/Quoter.proto
   ../../share/msg/Hitter.proto
   ../../share/msg/Dimer.proto
+  ../../share/msg/Hedger.proto
   ../../share/msg/Strategy.proto
   ../../share/msg/Credit.proto
   ../../share/msg/RequestForQuote.proto

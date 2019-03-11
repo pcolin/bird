@@ -76,13 +76,27 @@ void DeviceManager::Publish(PricePtr &price) {
       }
       // if (underlying_->ConvertToTick(max - min) > warn_tick_change_) {
       if (base::IsMoreThan(max - min, max_price_change_)) {
-        LOG_ERR << boost::format("%1% theo price warning: min(%2%), max(%3%)") %
-                   underlying_->Id() % min % max;
         normal_ = false;
+        auto ex = Message<Proto::PriceException>::New();
+        ex->set_underlying(underlying_->Id());
+        ex->set_on(true);
+        if (base::IsMoreThan(theo - underlying_prices_.back(), max_price_change_)) {
+          ex->set_multiplier(1.5);
+          LOG_ERR << boost::format("%1% theo price warning: %2% -> %3%") %
+            underlying_->Id() % underlying_prices_.back() % theo;
+        } else {
+          ex->set_multiplier(1);
+          LOG_ERR << boost::format("%1% theo price warning: min(%2%), max(%3%)") %
+            underlying_->Id() % min % max;
+        }
+        Publish(ex);
       } else if (normal_ == false) {
         normal_ = true;
         LOG_PUB << boost::format("%1% theo price is normal now: min(%2%), max(%3%)") %
-                   underlying_->Id() % min % max;
+          underlying_->Id() % min % max;
+        auto ex = Message<Proto::PriceException>::New();
+        ex->set_underlying(underlying_->Id());
+        Publish(ex);
       }
     }
     underlying_prices_.push_back(theo);
@@ -156,8 +170,8 @@ void DeviceManager::OnStrategyOperate(const std::string &user, const Proto::Stra
   } else {
     LOG_ERR << "can't find strategy " << op.name();
   }
-  LOG_PUB << boost::format("%1% %2% %3%") % user % Proto::StrategyOperation_Name(op.operate()) %
-             op.name() ;
+  LOG_PUB << boost::format("%1% %2% %3%") % user %
+    Proto::StrategyOperation_Name(op.operate()) % op.name() ;
   // if (publish) Publish(msg);
 }
 

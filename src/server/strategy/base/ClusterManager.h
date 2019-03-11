@@ -9,6 +9,9 @@
 #include "Pricer.pb.h"
 #include "Credit.pb.h"
 #include "Quoter.pb.h"
+#include "Hitter.pb.h"
+#include "Dimer.pb.h"
+#include "Hedger.pb.h"
 #include "MarketMakingStatistic.pb.h"
 #include "DeviceManager.h"
 #include "model/Instrument.h"
@@ -32,6 +35,9 @@ class ClusterManager {
   std::shared_ptr<Proto::Pricer> FindPricer(const Instrument *underlying);
   std::shared_ptr<Proto::QuoterSpec> FindQuoter(const std::string &name);
   std::vector<std::shared_ptr<Proto::QuoterSpec>> FindQuoters(const Instrument *underlying);
+  std::shared_ptr<Proto::HitterSpec> FindHitter(const std::string &name);
+  std::shared_ptr<Proto::DimerSpec> FindDimer(const std::string &name);
+  std::shared_ptr<Proto::HedgerSpec> FindHedger(const std::string &name);
   std::vector<std::shared_ptr<Proto::Credit>> FindCredits(Proto::StrategyType strategy,
                                                           const Instrument *underlying);
   std::shared_ptr<Proto::StrategySwitch> FindStrategySwitch(Proto::StrategyType strategy,
@@ -67,14 +73,23 @@ class ClusterManager {
   std::unordered_map<std::string, std::shared_ptr<Proto::Pricer>> pricers_;
   std::mutex pricer_mtx_;
 
+  std::unordered_map<std::string, std::shared_ptr<Proto::QuoterSpec>> quoters_;
+  std::mutex quoter_mtx_;
+
+  std::unordered_map<std::string, std::shared_ptr<Proto::HitterSpec>> hitters_;
+  std::mutex hitter_mtx_;
+
+  std::unordered_map<std::string, std::shared_ptr<Proto::DimerSpec>> dimers_;
+  std::mutex dimer_mtx_;
+
+  std::unordered_map<std::string, std::shared_ptr<Proto::HedgerSpec>> hedgers_;
+  std::mutex hedger_mtx_;
+
   std::vector<CreditMap> credits_;
   std::mutex credit_mtx_;
 
   std::vector<SwitchMap> switches_;
   std::mutex switch_mtx_;
-
-  std::unordered_map<std::string, std::shared_ptr<Proto::QuoterSpec>> quoters_;
-  std::mutex quoter_mtx_;
 
   std::unordered_map<std::string,
                      std::shared_ptr<Proto::MarketMakingStatistic>> statistics_;

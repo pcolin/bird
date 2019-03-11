@@ -95,4 +95,6 @@ message StrategyStatistic
   double delta = 6;
   int32 orders = 7;
   int32 trades = 8;
+  int32 bid_refills = 9;
+  int32 ask_refills = 10;
 }

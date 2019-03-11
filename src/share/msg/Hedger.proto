@@ -5,28 +5,28 @@ import "Exchange.proto";
 import "Request.proto";
 import "Reply.proto";
 
-message DimerRecord
+message HedgerRecord
 {
   string instrument = 1;
 }
 
-message DimerSpec
+message HedgerSpec
 {
   string name = 1;
-  string pricer = 2;
+  string underlying = 2;
 }
 
-message DimerReq
+message HedgerReq
 {
   RequestType type = 1;
   Exchange exchange = 2;
-  repeated DimerSpec dimers = 3;
+  repeated HedgerSpec hedgers = 3;
   string name = 4;
   string user = 5;
 }
 
-message DimerRep
+message HedgerRep
 {
-  repeated DimerSpec dimers = 1;
+  repeated HedgerSpec hedgers = 1;
   Reply result = 2;
 }

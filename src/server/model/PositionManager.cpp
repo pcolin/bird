@@ -12,8 +12,7 @@ PositionManager* PositionManager::GetInstance() {
 
 void PositionManager::Init() {
   LOG_INF << "Initialize position manager...";
-  auto insts = InstrumentManager::GetInstance()->FindInstruments(
-               [](const Instrument*){ return true; });
+  auto insts = InstrumentManager::GetInstance()->FindInstruments(nullptr);
   std::lock_guard<std::mutex> lck(mtx_);
   for (auto &inst : insts) {
     auto pos = std::make_shared<Proto::Position>();

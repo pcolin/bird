@@ -21,6 +21,7 @@ inline void TimeToString(int64_t time, char* str, size_t n) {
   time_t seconds = time / MILLION;
   struct tm* t = localtime(&seconds);
   size_t cnt = strftime(str, n, "%Y-%m-%d %H:%M:%S", t);
+  assert(cnt != 0);
   snprintf(str + cnt, n - cnt, ".%06ld", time % MILLION);
 }
 

@@ -53,7 +53,8 @@ const Instrument* InstrumentManager::FindSymbol(const std::string& symbol) {
   return nullptr;
 }
 
-const std::vector<const Option*> InstrumentManager::FindOptions(const Instrument *hedge_underlying) {
+const std::vector<const Option*> InstrumentManager::FindOptions(
+    const Instrument *hedge_underlying) {
   std::vector<const Option*> options;
   std::lock_guard<std::mutex> lck(mtx_);
   for (const auto& it : instruments_) {
@@ -69,7 +70,7 @@ const std::vector<const Option*> InstrumentManager::FindOptions(const Instrument
 const Instrument* InstrumentManager::FindInstrument(
     const std::function<bool(const Instrument*)> &filter) {
   std::lock_guard<std::mutex> lck(mtx_);
-  for (const auto& it : instruments_) {
+  for (auto &it : instruments_) {
     if (filter && filter(it.second)) return it.second;
   }
   return nullptr;
@@ -80,7 +81,7 @@ const std::vector<const Instrument*> InstrumentManager::FindInstruments(
   std::vector<const Instrument*> instruments;
   std::lock_guard<std::mutex> lck(mtx_);
   for (const auto& it : instruments_) {
-    if (filter && filter(it.second)) instruments.push_back(it.second);
+    if (!filter || filter(it.second)) instruments.push_back(it.second);
   }
   return instruments;
 }

@@ -38,9 +38,7 @@ void ClusterManager::Init() {
       std::lock_guard<std::mutex> lck(pricer_mtx_);
       for (auto &p : rep->pricers()) {
         LOG_INF << "Pricer: " << p.ShortDebugString();
-        auto pricer = Message<Proto::Pricer>::New(p);
-        // pricer->CopyFrom(p);
-        pricers_.emplace(p.name(), pricer);
+        pricers_.emplace(p.name(), Message<Proto::Pricer>::New(p));
       }
     } else {
       LOG_ERR << "Failed to sync pricers";
@@ -111,12 +109,64 @@ void ClusterManager::Init() {
       std::lock_guard<std::mutex> lck(quoter_mtx_);
       for (auto &q : rep->quoters()) {
         LOG_INF << "Quoter: " << q.ShortDebugString();
-        // auto quoter = Message<Proto::QuoterSpec>::New(q);
-        // quoter->CopyFrom(q);
         quoters_.emplace(q.name(), Message<Proto::QuoterSpec>::New(q));
       }
     } else {
       LOG_ERR << "Failed to sync quoters";
+    }
+  }
+
+  /// sync hitter from db.
+  {
+    Proto::HitterReq req;
+    req.set_type(Proto::RequestType::Get);
+    req.set_user(user);
+    auto rep = std::dynamic_pointer_cast<Proto::HitterRep>(
+        Middleware::GetInstance()->Request(req));
+    if (rep && rep->result().result()) {
+      std::lock_guard<std::mutex> lck(hitter_mtx_);
+      for (auto &h : rep->hitters()) {
+        LOG_INF << "Hitter: " << h.ShortDebugString();
+        hitters_.emplace(h.name(), Message<Proto::HitterSpec>::New(h));
+      }
+    } else {
+      LOG_ERR << "Failed to sync hitters";
+    }
+  }
+
+  /// sync dimer from db.
+  {
+    Proto::DimerReq req;
+    req.set_type(Proto::RequestType::Get);
+    req.set_user(user);
+    auto rep = std::dynamic_pointer_cast<Proto::DimerRep>(
+        Middleware::GetInstance()->Request(req));
+    if (rep && rep->result().result()) {
+      std::lock_guard<std::mutex> lck(dimer_mtx_);
+      for (auto &d : rep->dimers()) {
+        LOG_INF << "Dimer: " << d.ShortDebugString();
+        dimers_.emplace(d.name(), Message<Proto::DimerSpec>::New(d));
+      }
+    } else {
+      LOG_ERR << "Failed to sync dimers";
+    }
+  }
+
+  /// sync hedger from db.
+  {
+    Proto::HedgerReq req;
+    req.set_type(Proto::RequestType::Get);
+    req.set_user(user);
+    auto rep = std::dynamic_pointer_cast<Proto::HedgerRep>(
+        Middleware::GetInstance()->Request(req));
+    if (rep && rep->result().result()) {
+      std::lock_guard<std::mutex> lck(hedger_mtx_);
+      for (auto &h : rep->hedgers()) {
+        LOG_INF << "Hedger: " << h.ShortDebugString();
+        hedgers_.emplace(h.name(), Message<Proto::HedgerSpec>::New(h));
+      }
+    } else {
+      LOG_ERR << "Failed to sync hedgers";
     }
   }
 
@@ -169,9 +219,7 @@ std::shared_ptr<Proto::Pricer> ClusterManager::FindPricer(const std::string &nam
   std::lock_guard<std::mutex> lck(pricer_mtx_);
   auto it = pricers_.find(name);
   if (it != pricers_.end()) {
-    return Message<Proto::Pricer>::New(*it->second);
-    // ret->CopyFrom(*it->second);
-    // return ret;
+    return it->second;
   }
   return nullptr;
 }
@@ -180,7 +228,7 @@ std::shared_ptr<Proto::Pricer> ClusterManager::FindPricer(const Instrument *unde
   std::lock_guard<std::mutex> lck(pricer_mtx_);
   for (auto &it : pricers_) {
     if (underlying->Id() == it.second->underlying()) {
-      return Message<Proto::Pricer>::New(*it.second);
+      return it.second;
       // ret->CopyFrom(*it.second);
       // return ret;
     }
@@ -192,9 +240,7 @@ std::shared_ptr<Proto::QuoterSpec> ClusterManager::FindQuoter(const std::string 
   std::lock_guard<std::mutex> lck(quoter_mtx_);
   auto it = quoters_.find(name);
   if (it != quoters_.end()) {
-    return Message<Proto::QuoterSpec>::New(*it->second);
-    // ret->CopyFrom(*it->second);
-    // return ret;
+    return it->second;
   }
   return nullptr;
 }
@@ -209,6 +255,33 @@ std::vector<std::shared_ptr<Proto::QuoterSpec>> ClusterManager::FindQuoters(
     }
   }
   return quoters;
+}
+
+std::shared_ptr<Proto::HitterSpec> ClusterManager::FindHitter(const std::string &name) {
+  std::lock_guard<std::mutex> lck(hitter_mtx_);
+  auto it = hitters_.find(name);
+  if (it != hitters_.end()) {
+    return it->second;
+  }
+  return nullptr;
+}
+
+std::shared_ptr<Proto::DimerSpec> ClusterManager::FindDimer(const std::string &name) {
+  std::lock_guard<std::mutex> lck(dimer_mtx_);
+  auto it = dimers_.find(name);
+  if (it != dimers_.end()) {
+    return it->second;
+  }
+  return nullptr;
+}
+
+std::shared_ptr<Proto::HedgerSpec> ClusterManager::FindHedger(const std::string &name) {
+  std::lock_guard<std::mutex> lck(hedger_mtx_);
+  auto it = hedgers_.find(name);
+  if (it != hedgers_.end()) {
+    return it->second;
+  }
+  return nullptr;
 }
 
 std::vector<std::shared_ptr<Proto::Credit>> ClusterManager::FindCredits(

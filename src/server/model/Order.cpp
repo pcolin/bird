@@ -127,7 +127,7 @@ namespace base {
 
 LogStream& operator<<(LogStream& stream, const OrderPtr &order) {
   if (order) {
-    stream << boost::format("%1% %2% %3% %4%@%5% %6% %7%") % order->id %
+    stream << boost::format("(%1% %2% %3% %4%@%5% %6% %7%") % order->id %
       order->instrument->Id() % Proto::Side_Name(order->side) % order->volume %
       order->price % Proto::TimeCondition_Name(order->time_condition) %
       Proto::OrderStatus_Name(order->status);
@@ -166,6 +166,7 @@ LogStream& operator<<(LogStream& stream, const OrderPtr &order) {
     if (!order->note.empty()) {
       stream << boost::format(" Note(%1%)") % order->note;
     }
+    stream << ')';
   } else {
     stream.append("(NULL)", 6);
   }

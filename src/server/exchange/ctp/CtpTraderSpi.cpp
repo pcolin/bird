@@ -383,8 +383,7 @@ void CtpTraderSpi::OnRspQryDepthMarketData(CThostFtdcDepthMarketDataField* pDept
                inst->Id() % inst->Lowest() % inst->Highest();
   }
   if (bIsLast) {
-    auto &instruments = InstrumentManager::GetInstance()->FindInstruments(
-                        [](const Instrument*) { return true; });
+    auto &instruments = InstrumentManager::GetInstance()->FindInstruments(nullptr);
     if (instruments.size() > 0) {
       auto req = Message<Proto::InstrumentReq>::New();
       req->set_type(Proto::RequestType::Set);
