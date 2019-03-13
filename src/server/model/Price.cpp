@@ -277,10 +277,10 @@ base::PriceType UnderlyingPrice::CalcTheo(const PricePtr &p) const {
     return p->bids[0].price;
   } else if (p->asks[0]) {
     return p->asks[0].price;
-  } else if (p->pre_settlement != base::PRICE_UNDEFINED) {
-    return p->pre_settlement;
   } else if (p->pre_close != base::PRICE_UNDEFINED) {
     return p->pre_close;
+  } else if (p->pre_settlement != base::PRICE_UNDEFINED) {
+    return p->pre_settlement;
   }
 
   return base::PRICE_UNDEFINED;

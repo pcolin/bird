@@ -5,15 +5,19 @@ import "Exchange.proto";
 import "Request.proto";
 import "Reply.proto";
 
-message DimerRecord
-{
-  string instrument = 1;
-}
-
 message DimerSpec
 {
   string name = 1;
   string pricer = 2;
+  string underlying = 3;
+  double delta_limit = 4;
+  int32 order_limit = 5;
+  int32 trade_limit = 6;
+  int32 refill_limit = 7;
+  int32 bid_volume = 8;
+  int32 ask_volume = 9;
+  int32 tick = 10;
+  repeated string options = 11;
 }
 
 message DimerReq

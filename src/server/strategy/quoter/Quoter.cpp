@@ -19,12 +19,14 @@ Quoter::Quoter(const std::string &name, DeviceManager *dm)
       std::bind(&Quoter::OnRequestForQuote, this, std::placeholders::_1));
   dispatcher_.RegisterCallback<Proto::SSRate>(
       std::bind(&Quoter::OnSSRate, this, std::placeholders::_1));
+  dispatcher_.RegisterCallback<Proto::VolatilityCurve>(
+      std::bind(&Quoter::OnVolatilityCurve, this, std::placeholders::_1));
+  dispatcher_.RegisterCallback<Proto::InterestRateReq>(
+      std::bind(&Quoter::OnInterestRateReq, this, std::placeholders::_1));
   dispatcher_.RegisterCallback<Proto::Credit>(
       std::bind(&Quoter::OnCredit, this, std::placeholders::_1));
   dispatcher_.RegisterCallback<Proto::Destriker>(
       std::bind(&Quoter::OnDestriker, this, std::placeholders::_1));
-  dispatcher_.RegisterCallback<Proto::VolatilityCurve>(
-      std::bind(&Quoter::OnVolatilityCurve, this, std::placeholders::_1));
   // dispatcher_.RegisterCallback<Proto::QuoterSpec>(
   //     std::bind(&Quoter::OnQuoterSpec, this, std::placeholders::_1));
   dispatcher_.RegisterCallback<Proto::StrategySwitch>(
@@ -447,6 +449,14 @@ bool Quoter::OnVolatilityCurve(const std::shared_ptr<Proto::VolatilityCurve> &ms
       CancelOrders(it.second);
       it.second->theos.reset();
     }
+  }
+}
+
+bool Quoter::OnInterestRateReq(const std::shared_ptr<Proto::InterestRateReq> &msg) {
+  LOG_DBG << msg->ShortDebugString();
+  for (auto &it : parameters_) {
+    CancelOrders(it.second);
+    it.second->theos.reset();
   }
 }
 

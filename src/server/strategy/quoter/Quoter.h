@@ -4,9 +4,10 @@
 #include <queue>
 #include "strategy/base/Strategy.h"
 #include "SSRate.pb.h"
+#include "Volatility.pb.h"
+#include "InterestRate.pb.h"
 #include "Credit.pb.h"
 #include "Destriker.pb.h"
-#include "Volatility.pb.h"
 #include "Quoter.pb.h"
 #include "RequestForQuote.pb.h"
 
@@ -53,6 +54,7 @@ protected:
   bool OnSSRate(const std::shared_ptr<Proto::SSRate> &msg);
   bool OnCredit(const std::shared_ptr<Proto::Credit> &msg);
   bool OnVolatilityCurve(const std::shared_ptr<Proto::VolatilityCurve> &msg);
+  bool OnInterestRateReq(const std::shared_ptr<Proto::InterestRateReq> &msg);
   bool OnDestriker(const std::shared_ptr<Proto::Destriker> &msg);
   // bool OnQuoterSpec(const std::shared_ptr<Proto::QuoterSpec> &msg);
   bool OnStrategySwitch(const std::shared_ptr<Proto::StrategySwitch> &msg);

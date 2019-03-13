@@ -12,6 +12,7 @@
 Hitter::Hitter(const std::string &name, DeviceManager *dm)
     : Strategy(name, dm),
       max_volume_(EnvConfig::GetInstance()->GetInt32(EnvVar::MAX_ORDER_SIZE)),
+      bid_(Message<Order>::New()), ask_(Message<Order>::New()),
       statistic_(Message<Proto::StrategyStatistic>::New()) {
   dispatcher_.RegisterCallback<Proto::PriceException>(
       std::bind(&Hitter::OnPriceException, this, std::placeholders::_1));
@@ -24,13 +25,11 @@ Hitter::Hitter(const std::string &name, DeviceManager *dm)
   dispatcher_.RegisterCallback<Proto::InstrumentReq>(
       std::bind(&Hitter::OnInstrumentReq, this, std::placeholders::_1));
 
-  bid_ = Message<Order>::New();
   bid_->strategy = name_;
   bid_->side = Proto::Side::Buy;
   bid_->time_condition = Proto::TimeCondition::IOC;
   bid_->type = Proto::OrderType::Limit;
   bid_->status = Proto::OrderStatus::Local;
-  ask_ = Message<Order>::New();
   ask_->strategy = name_;
   ask_->side = Proto::Side::Sell;
   ask_->time_condition = Proto::TimeCondition::IOC;
@@ -262,7 +261,12 @@ void Hitter::EvaluateLast(ParameterMap::iterator &it) {
         credit *= (it->second->multiplier * exception_->multiplier());
       }
       if (it->second->ask_on && it->second->bid && it->second->bids.empty() &&
-          it->second->last.price >= theo.theo + credit) {
+          it->second->last.price >= theo.theo + credit &&
+          it->second->ask_refills < hitter_->refill_limit()) {
+        if (unlikely(statistic_->orders() >= hitter_->order_limit())) {
+          stop_("order limit broken");
+          return;
+        }
         auto size = base::IsEqual(credit, 0) ? hitter_->bid_volume() :
           static_cast<base::VolumeType>(hitter_->bid_volume() *
               (it->second->last.price - theo.theo) / credit);
@@ -276,34 +280,33 @@ void Hitter::EvaluateLast(ParameterMap::iterator &it) {
         ask_->delta = theo.delta;
         ask_->credit = credit;
         ask_->note = Proto::HitType_Name(Proto::HitType::LastTrade);
-        if (it->second->ask_refills < hitter_->refill_limit()) {
-          if (unlikely(statistic_->orders() >= hitter_->order_limit())) {
-            stop_("order limit broken");
-            return;
-          }
-          auto ord = Message<Order>::New(ask_);
-          if (it->second->is_cover && !PositionManager::GetInstance()->TryFreeze(ord)) {
-            LOG_DBG << it->first->Id() << " hasn't enough position to cover";
-            return;
-          }
-          api_->Submit(ord);
-          it->second->asks.insert(ord->id);
-          orders_.emplace(ord->id, ord);
-          statistic_->set_orders(statistic_->orders() + 1);
-          if (++it->second->ask_refills == hitter_->refill_limit()) {
-            statistic_->set_ask_refills(statistic_->ask_refills() + 1);
-          }
-          LOG_INF << "enter order: " << ord;
+        auto ord = Message<Order>::New(ask_);
+        if (!PositionManager::GetInstance()->TryFreeze(ord) && it->second->is_cover) {
+          LOG_DBG << it->first->Id() << " hasn't enough position to cover";
+          return;
         }
+        api_->Submit(ord);
+        it->second->asks.insert(ord->id);
+        orders_.emplace(ord->id, ord);
+        statistic_->set_orders(statistic_->orders() + 1);
+        if (++it->second->ask_refills == hitter_->refill_limit()) {
+          statistic_->set_ask_refills(statistic_->ask_refills() + 1);
+        }
+        LOG_INF << "enter order: " << ord;
       }
       if (it->second->bid_on && it->second->ask && it->second->asks.empty() &&
-          it->second->last.price <= theo.theo - credit) {
+          it->second->last.price <= theo.theo - credit &&
+          it->second->bid_refills < hitter_->refill_limit()) {
+        if (unlikely(statistic_->orders() >= hitter_->order_limit())) {
+          stop_("order limit broken");
+          return;
+        }
         auto size = base::IsEqual(credit, 0) ? hitter_->ask_volume() :
           static_cast<base::VolumeType>(hitter_->ask_volume() *
               (it->second->last.price - theo.theo) / credit);
         bid_->volume = std::min(size, hitter_->max_volume());
         bid_->instrument = it->first;
-        bid_->price = it->second->ask.price;
+        bid_->price = it->second->last.price;
         bid_->spot = theo.spot;
         bid_->volatility = theo.volatility;
         bid_->ss_rate = theo.ss_rate;
@@ -311,25 +314,19 @@ void Hitter::EvaluateLast(ParameterMap::iterator &it) {
         bid_->delta = theo.delta;
         bid_->credit = credit;
         bid_->note = Proto::HitType_Name(Proto::HitType::LastTrade);
-        if (it->second->bid_refills < hitter_->refill_limit()) {
-          if (unlikely(statistic_->orders() >= hitter_->order_limit())) {
-            stop_("order limit broken");
-            return;
-          }
-          auto ord = Message<Order>::New(bid_);
-          if (it->second->is_cover && !PositionManager::GetInstance()->TryFreeze(ord)) {
-            LOG_DBG << it->first->Id() << " hasn't enough position to cover";
-            return;
-          }
-          api_->Submit(ord);
-          it->second->bids.insert(ord->id);
-          orders_.emplace(ord->id, ord);
-          statistic_->set_orders(statistic_->orders() + 1);
-          if (++it->second->bid_refills == hitter_->refill_limit()) {
-            statistic_->set_bid_refills(statistic_->bid_refills() + 1);
-          }
-          LOG_INF << "enter order: " << ord;
+        auto ord = Message<Order>::New(bid_);
+        if (!PositionManager::GetInstance()->TryFreeze(ord) && it->second->is_cover) {
+          LOG_DBG << it->first->Id() << " hasn't enough position to cover";
+          return;
         }
+        api_->Submit(ord);
+        it->second->bids.insert(ord->id);
+        orders_.emplace(ord->id, ord);
+        statistic_->set_orders(statistic_->orders() + 1);
+        if (++it->second->bid_refills == hitter_->refill_limit()) {
+          statistic_->set_bid_refills(statistic_->bid_refills() + 1);
+        }
+        LOG_INF << "enter order: " << ord;
       }
     }
   }
