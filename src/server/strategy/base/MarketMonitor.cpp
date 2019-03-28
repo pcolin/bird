@@ -49,7 +49,7 @@ void MarketMonitor::OnStart() {
   for (auto *underlying : underlyings) {
     auto statistic = ClusterManager::GetInstance()->FindStatistic(underlying->Id());
     if (!statistic) {
-      statistic = Message<Proto::MarketMakingStatistic>::New();
+      statistic = std::make_shared<Proto::MarketMakingStatistic>();
       statistic->set_underlying(underlying->Id());
       auto product = ParameterManager::GetInstance()->GetProduct(underlying->Product());
       if (product) {
@@ -268,7 +268,7 @@ bool MarketMonitor::OnQuoterSpec(const std::shared_ptr<Proto::QuoterSpec> &msg) 
 void MarketMonitor::RunOrder() {
   LOG_INF << "Start order publishing thread...";
   OrderPtr orders[capacity_];
-  auto req = Message<Proto::OrderReq>::New();
+  auto req = std::make_shared<Proto::OrderReq>();
   req->set_type(Proto::RequestType::Set);
   req->set_exchange(Underlying()->Exchange());
   const std::string user = EnvConfig::GetInstance()->GetString(EnvVar::EXCHANGE);
@@ -293,7 +293,7 @@ void MarketMonitor::RunOrder() {
         orders[i]->Serialize(req->add_orders());
         if (req->orders_size()  == 10) {
           Middleware::GetInstance()->Publish(req);
-          req = Message<Proto::OrderReq>::New();
+          req = std::make_shared<Proto::OrderReq>();
           req->set_type(Proto::RequestType::Set);
           req->set_exchange(Underlying()->Exchange());
           req->set_user(user);
@@ -302,7 +302,7 @@ void MarketMonitor::RunOrder() {
     }
     if (req->orders_size()) {
       Middleware::GetInstance()->Publish(req);
-      req = Message<Proto::OrderReq>::New();
+      req = std::make_shared<Proto::OrderReq>();
       req->set_type(Proto::RequestType::Set);
       req->set_exchange(Underlying()->Exchange());
       req->set_user(user);
@@ -340,7 +340,7 @@ void MarketMonitor::QuotingStatistic() {
 
   for (auto &it : statistics_) {
     Middleware::GetInstance()->Publish(
-        Message<Proto::MarketMakingStatistic>::New(*it.second));
+        std::make_shared<Proto::MarketMakingStatistic>(*it.second));
   }
 }
 

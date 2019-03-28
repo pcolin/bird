@@ -80,7 +80,7 @@ void DeviceManager::Publish(PricePtr &price) {
       // if (underlying_->ConvertToTick(max - min) > warn_tick_change_) {
       if (base::IsMoreThan(max - min, max_price_change_)) {
         normal_ = false;
-        auto ex = Message<Proto::PriceException>::New();
+        auto ex = std::make_shared<Proto::PriceException>();
         ex->set_underlying(underlying_->Id());
         ex->set_on(true);
         if (base::IsMoreThan(theo - underlying_prices_.back(), max_price_change_)) {
@@ -97,7 +97,7 @@ void DeviceManager::Publish(PricePtr &price) {
         normal_ = true;
         LOG_PUB << boost::format("%1% theo price is normal now: min(%2%), max(%3%)") %
           underlying_->Id() % min % max;
-        auto ex = Message<Proto::PriceException>::New();
+        auto ex = std::make_shared<Proto::PriceException>();
         ex->set_underlying(underlying_->Id());
         Publish(ex);
       }
@@ -161,7 +161,7 @@ void DeviceManager::OnStrategyOperate(const std::string &user, const Proto::Stra
       if (op.operate() == Proto::StrategyOperation::Stop) {
         sd->Stop(user + " stop");
       } else if (op.operate() == Proto::StrategyOperation::Start) {
-        Publish(Message<Proto::StrategyOperate>::New(op));
+        Publish(std::make_shared<Proto::StrategyOperate>(op));
         // copy->CopyFrom(op);
         // Publish(copy);
       }

@@ -1,7 +1,7 @@
 #include "ClientManager.h"
 #include "boost/format.hpp"
 #include "Middleware.h"
-#include "Message.h"
+// #include "Message.h"
 #include "strategy/base/ClusterManager.h"
 #include "base/logger/Logging.h"
 #include "base/common/Version.h"
@@ -15,7 +15,7 @@ std::shared_ptr<Proto::Reply> ClientManager::Login(const std::shared_ptr<Proto::
   std::string server_version = (boost::format("%1%.%2%") % base::VER_MAJOR % base::VER_MINOR).str();
   const std::string &client_version = login->version();
   assert(client_version.size() > server_version.size());
-  auto reply = Message<Proto::Reply>::New();
+  auto reply = std::make_shared<Proto::Reply>();
   reply->set_result(true);
   for (int i = server_version.size() - 1; i >= 0 ; --i) {
     if (server_version[i] != client_version[i]) {
@@ -55,7 +55,7 @@ std::shared_ptr<Proto::Reply> ClientManager::Login(const std::shared_ptr<Proto::
 }
 
 std::shared_ptr<Proto::Reply> ClientManager::Logout(const std::shared_ptr<Proto::Logout> &logout) {
-  auto reply = Message<Proto::Reply>::New();
+  auto reply = std::make_shared<Proto::Reply>();
   const std::string &user = logout->user();
   std::lock_guard<std::mutex> lck(mtx_);
   if (clients_.size() == 1 && clients_.find(user) != clients_.end()) {

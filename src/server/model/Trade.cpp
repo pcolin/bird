@@ -16,7 +16,7 @@
 // }
 
 std::shared_ptr<Proto::Trade> Trade::Serialize() const {
-  auto t = Message<Proto::Trade>::New();
+  auto t = std::make_shared<Proto::Trade>();
   t->set_id(id);
   t->set_instrument(instrument->Id());
   t->set_exchange(instrument->Exchange());

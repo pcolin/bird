@@ -70,7 +70,7 @@ bool TestStrategy::OnStrategyOperate(const std::shared_ptr<Proto::StrategyOperat
 }
 
 OrderPtr TestStrategy::NewOrder(const Instrument *inst, Proto::Side side, base::PriceType price) {
-  auto ord = Message<Order>::New();
+  auto ord = std::make_shared<Order>();
   ord->instrument = inst;
   ord->strategy = name_;
   ord->price = price;

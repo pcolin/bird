@@ -31,7 +31,7 @@ void StrategySwitchDB::RegisterCallback(
 base::ProtoMessagePtr StrategySwitchDB::OnRequest(
     const std::shared_ptr<Proto::StrategySwitchReq> &msg) {
   LOG_INF << "StrategySwitch request: " << msg->ShortDebugString();
-  auto reply = Message<Proto::StrategySwitchRep>::New();
+  auto reply = std::make_shared<Proto::StrategySwitchRep>();
   if (msg->type() == Proto::RequestType::Get) {
     for (auto &cache : switches_) {
       for (auto &s : cache) {
@@ -51,7 +51,7 @@ base::ProtoMessagePtr StrategySwitchDB::OnRequest(
       } else {
         // auto sw = Message::NewProto<Proto::StrategySwitch>();
         // sw->CopyFrom(s);
-        cache.emplace(option, Message<Proto::StrategySwitch>::New(s));
+        cache.emplace(option, std::make_shared<Proto::StrategySwitch>(s));
       }
       sprintf(sql, "INSERT OR REPLACE INTO %s VALUES(%d, '%s', %d, %d, %d)", table_name_.c_str(),
               s.strategy(), option.c_str(), s.is_bid(), s.is_ask(), s.is_qr_cover());
@@ -70,7 +70,7 @@ int StrategySwitchDB::Callback(void *data, int argc, char **argv, char **col_nam
   const std::string option = argv[1];
   auto inst = instrument_db->FindOption(option);
   if (inst) {
-    auto sw = Message<Proto::StrategySwitch>::New();
+    auto sw = std::make_shared<Proto::StrategySwitch>();
     auto strategy = static_cast<Proto::StrategyType>(atoi(argv[0]));
     sw->set_strategy(strategy);
     sw->set_option(option);

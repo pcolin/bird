@@ -34,7 +34,7 @@ int main(int argc, char *args[]) {
   Proto::Exchange exchange;
   Proto::Exchange_Parse(EnvConfig::GetInstance()->GetString(EnvVar::EXCHANGE), &exchange);
   Logger::SetNetOutput([&](Logger::LogLevel lvl, const char *data, int n) {
-        auto info = Message<Proto::ServerInfo>::New();
+        auto info = std::make_shared<Proto::ServerInfo>();
         info->set_exchange(exchange);
         info->set_info(data, n);
         info->set_type(static_cast<Proto::InfoType>(lvl - Logger::PUBLISH));

@@ -37,7 +37,7 @@ void HitterDB::RegisterCallback(base::ProtoMessageDispatcher<base::ProtoMessageP
 
 base::ProtoMessagePtr HitterDB::OnRequest(const std::shared_ptr<Proto::HitterReq> &msg) {
   LOG_INF << "Hitter request: " << msg->ShortDebugString();
-  auto reply = Message<Proto::HitterRep>::New();
+  auto reply = std::make_shared<Proto::HitterRep>();
   if (msg->type() == Proto::RequestType::Get) {
     for (auto it : hitters_) {
       reply->add_hitters()->CopyFrom(*it.second);
@@ -60,7 +60,7 @@ base::ProtoMessagePtr HitterDB::OnRequest(const std::shared_ptr<Proto::HitterReq
             record_table_name_.c_str(), name.c_str());
         ExecSql(sql);
       } else {
-        hitters_.emplace(name, Message<Proto::HitterSpec>::New(h));
+        hitters_.emplace(name, std::make_shared<Proto::HitterSpec>(h));
       }
 
       for (auto &op : h.options()) {
@@ -97,7 +97,7 @@ int HitterDB::Callback(void *data, int argc, char **argv, char **col_name) {
   const std::string underlying = argv[2];
   auto inst = instrument_db->FindUnderlying(underlying);
   if (inst) {
-    auto hitter = Message<Proto::HitterSpec>::New();
+    auto hitter = std::make_shared<Proto::HitterSpec>();
     const std::string name = argv[0];
     hitter->set_name(name);
     hitter->set_pricer(argv[1]);

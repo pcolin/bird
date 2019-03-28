@@ -29,7 +29,7 @@ void HedgerDB::RegisterCallback(
 
 base::ProtoMessagePtr HedgerDB::OnRequest(const std::shared_ptr<Proto::HedgerReq> &msg) {
   LOG_INF << "Hedger request: " << msg->ShortDebugString();
-  auto reply = Message<Proto::HedgerRep>::New();
+  auto reply = std::make_shared<Proto::HedgerRep>();
   // if (msg->type() == Proto::RequestType::Get) {
   //   for (auto &it : hedgers_) {
   //     reply->add_hedger()->CopyFrom(*it.second);

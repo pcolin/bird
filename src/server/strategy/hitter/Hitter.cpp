@@ -12,8 +12,8 @@
 Hitter::Hitter(const std::string &name, DeviceManager *dm)
     : Strategy(name, dm),
       max_volume_(EnvConfig::GetInstance()->GetInt32(EnvVar::MAX_ORDER_SIZE)),
-      bid_(Message<Order>::New()), ask_(Message<Order>::New()),
-      statistic_(Message<Proto::StrategyStatistic>::New()) {
+      bid_(new Order()), ask_(new Order()),
+      statistic_(new Proto::StrategyStatistic()) {
   dispatcher_.RegisterCallback<Proto::PriceException>(
       std::bind(&Hitter::OnPriceException, this, std::placeholders::_1));
   dispatcher_.RegisterCallback<Proto::Credit>(
@@ -99,7 +99,8 @@ void Hitter::OnStart() {
 
 void Hitter::OnStop() {
   LOG_INF << "OnStop";
-  Middleware::GetInstance()->Publish(Message<Proto::StrategyStatistic>::New(*statistic_));
+  Middleware::GetInstance()->Publish(
+      std::make_shared<Proto::StrategyStatistic>(*statistic_));
 }
 
 void Hitter::OnPrice(const PricePtr &price) {
@@ -177,7 +178,8 @@ void Hitter::OnTrade(const TradePtr &trade) {
 }
 
 bool Hitter::OnHeartbeat(const std::shared_ptr<Proto::Heartbeat> &heartbeat) {
-  Middleware::GetInstance()->Publish(Message<Proto::StrategyStatistic>::New(*statistic_));
+  Middleware::GetInstance()->Publish(
+      std::make_shared<Proto::StrategyStatistic>(*statistic_));
 }
 
 bool Hitter::OnPriceException(const std::shared_ptr<Proto::PriceException> &msg) {
@@ -280,7 +282,7 @@ void Hitter::EvaluateLast(ParameterMap::iterator &it) {
         ask_->delta = theo.delta;
         ask_->credit = credit;
         ask_->note = Proto::HitType_Name(Proto::HitType::LastTrade);
-        auto ord = Message<Order>::New(ask_);
+        auto ord = std::make_shared<Order>(*ask_);
         if (!PositionManager::GetInstance()->TryFreeze(ord) && it->second->is_cover) {
           LOG_DBG << it->first->Id() << " hasn't enough position to cover";
           return;
@@ -314,7 +316,7 @@ void Hitter::EvaluateLast(ParameterMap::iterator &it) {
         bid_->delta = theo.delta;
         bid_->credit = credit;
         bid_->note = Proto::HitType_Name(Proto::HitType::LastTrade);
-        auto ord = Message<Order>::New(bid_);
+        auto ord = std::make_shared<Order>(*bid_);
         if (!PositionManager::GetInstance()->TryFreeze(ord) && it->second->is_cover) {
           LOG_DBG << it->first->Id() << " hasn't enough position to cover";
           return;
@@ -363,7 +365,7 @@ void Hitter::Evaluate(ParameterMap::iterator &it, Proto::HitType type) {
             stop_("order limit broken");
             return;
           }
-          auto ord = Message<Order>::New(ask_);
+          auto ord = std::make_shared<Order>(*ask_);
           ord->volume = std::min(size, max_volume_);
           if (it->second->is_cover && !PositionManager::GetInstance()->TryFreeze(ord)) {
             LOG_DBG << it->first->Id() << " hasn't enough position to cover";
@@ -400,7 +402,7 @@ void Hitter::Evaluate(ParameterMap::iterator &it, Proto::HitType type) {
             stop_("order limit broken");
             return;
           }
-          auto ord = Message<Order>::New(bid_);
+          auto ord = std::make_shared<Order>(*bid_);
           ord->volume = std::min(size, max_volume_);
           if (it->second->is_cover && !PositionManager::GetInstance()->TryFreeze(ord)) {
             LOG_DBG << it->first->Id() << " hasn't enough position to cover";

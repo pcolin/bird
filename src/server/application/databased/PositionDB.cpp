@@ -27,7 +27,7 @@ void PositionDB::RegisterCallback(base::ProtoMessageDispatcher<base::ProtoMessag
 
 base::ProtoMessagePtr PositionDB::OnRequest(const std::shared_ptr<Proto::PositionReq> &msg) {
   LOG_INF << "Position request: " << msg->ShortDebugString();
-  auto reply = Message<Proto::PositionRep>::New();
+  auto reply = std::make_shared<Proto::PositionRep>();
   assert (msg->type() == Proto::RequestType::Get);
   // if (msg->type() == Proto::RequestType::Get) {
     if (msg->instrument().empty()) {

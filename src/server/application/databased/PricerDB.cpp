@@ -32,7 +32,7 @@ void PricerDB::RegisterCallback(base::ProtoMessageDispatcher<base::ProtoMessageP
 
 base::ProtoMessagePtr PricerDB::OnRequest(const std::shared_ptr<Proto::PricerReq> &msg) {
   LOG_INF << "Pricer request: " << msg->ShortDebugString();
-  auto reply = Message<Proto::PricerRep>::New();
+  auto reply = std::make_shared<Proto::PricerRep>();
   if (msg->type() == Proto::RequestType::Get) {
     if (msg->name().empty()) {
       for (auto it : pricers_) {
@@ -67,7 +67,7 @@ base::ProtoMessagePtr PricerDB::OnRequest(const std::shared_ptr<Proto::PricerReq
       } else {
         // auto p = Message::NewProto<Proto::Pricer>();
         // p->CopyFrom(pricer);
-        pricers_.emplace(name, Message<Proto::Pricer>::New(pricer));
+        pricers_.emplace(name, std::make_shared<Proto::Pricer>(pricer));
       }
 
       // for (auto &op : pricer.options())
@@ -103,7 +103,7 @@ int PricerDB::Callback(void *data, int argc, char **argv, char **col_name) {
   const std::string underlying = argv[1];
   auto inst = instrument_db->FindUnderlying(underlying);
   if (inst) {
-    auto pricer = Message<Proto::Pricer>::New();
+    auto pricer = std::make_shared<Proto::Pricer>();
     const std::string name = argv[0];
     pricer->set_name(name);
     pricer->set_underlying(underlying);

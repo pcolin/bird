@@ -21,7 +21,7 @@ void UserDB::RegisterCallback(base::ProtoMessageDispatcher<base::ProtoMessagePtr
 
 base::ProtoMessagePtr UserDB::OnLogin(const std::shared_ptr<Proto::Login> &msg) {
   LOG_INF << "Login request: " << msg->ShortDebugString();
-  auto reply = Message<Proto::Reply>::New();
+  auto reply = std::make_shared<Proto::Reply>();
   auto it = cache_.find(msg->user());
   if (it != cache_.end()) {
     if (msg->password() != std::get<0>(it->second)) {

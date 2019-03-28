@@ -1,7 +1,7 @@
 #include "ParameterManager.h"
 #include "boost/format.hpp"
 #include "InstrumentManager.h"
-#include "Message.h"
+// #include "Message.h"
 #include "Middleware.h"
 #include "strategy/base/ClusterManager.h"
 #include "config/EnvConfig.h"
@@ -120,7 +120,7 @@ void ParameterManager::Init() {
             it = volatility_curves_.emplace(inst, std::make_shared<DateVolatilityMap>()).first;
           }
           auto date = boost::gregorian::from_undelimited_string(v.maturity());
-          auto curve = Message<Proto::VolatilityCurve>::New(v);
+          auto curve = std::make_shared<Proto::VolatilityCurve>(v);
           // curve->CopyFrom(v);
           (*it->second)[date] = curve;
           LOG_DBG << "Add volatility curve of " << v.underlying() << '@' << v.maturity();
@@ -311,7 +311,7 @@ ParameterManager::ProtoReplyPtr ParameterManager::OnSSRateReq(
     for (auto &r : req->rates()) {
       auto *inst = InstrumentManager::GetInstance()->FindId(r.underlying());
       if (inst) {
-        auto p = Message<Proto::SSRate>::New(r);
+        auto p = std::make_shared<Proto::SSRate>(r);
         // p->CopyFrom(r);
         auto *dm = ClusterManager::GetInstance()->FindDevice(inst);
         if (dm) {
@@ -383,7 +383,7 @@ ParameterManager::ProtoReplyPtr ParameterManager::OnVolatilityCurveReq(
     for (auto &vc : req->curves()) {
       auto *inst = InstrumentManager::GetInstance()->FindId(vc.underlying());
       if (inst) {
-        auto p = Message<Proto::VolatilityCurve>::New(vc);
+        auto p = std::make_shared<Proto::VolatilityCurve>(vc);
         // p->CopyFrom(vc);
         auto *dm = ClusterManager::GetInstance()->FindDevice(inst);
         if (dm) {
@@ -432,7 +432,7 @@ ParameterManager::ProtoReplyPtr ParameterManager::OnDestrikerReq(
         if (inst) {
           auto *dm = ClusterManager::GetInstance()->FindDevice(inst->HedgeUnderlying());
           if (dm) {
-            auto p = Message<Proto::Destriker>::New(d);
+            auto p = std::make_shared<Proto::Destriker>(d);
             dm->Publish(p);
           }
           destrikers_[inst] = d.destriker();

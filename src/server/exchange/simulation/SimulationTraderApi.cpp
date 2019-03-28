@@ -97,7 +97,7 @@ void SimulationTraderApi::MatchingProcess() {
   for (auto &inst : insts) {
     if (++i % 2 == 0) continue;
 
-    auto p = Message<Proto::Position>::New();
+    auto p = std::make_shared<Proto::Position>();
     p->set_instrument(inst->Id());
     p->set_exchange(inst->Exchange());
 
@@ -133,7 +133,7 @@ void SimulationTraderApi::MatchingProcess() {
     if (i % 12 == 0) {
       auto status = i % 9 ?
         Proto::InstrumentStatus::Trading : Proto::InstrumentStatus::Halt;
-      auto req = Message<Proto::InstrumentReq>::New();
+      auto req = std::make_shared<Proto::InstrumentReq>();
       req->set_type(Proto::RequestType::Set);
       req->set_exchange(Proto::Exchange::DCE);
       for (auto &inst : insts) {

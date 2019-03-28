@@ -687,7 +687,7 @@ void CtpTraderApi::SubmitOrder(const OrderPtr &order) {
   field.VolumeTotalOriginal = order->volume;
 
   {
-    auto copy = Message<Order>::New(order);
+    auto copy = std::make_shared<Order>(*order);
     copy->header.SetInterval(0);
     std::lock_guard<std::mutex> lck(ref_mtx_);
     order_refs_[order_ref_] = copy;

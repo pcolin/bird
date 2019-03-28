@@ -39,7 +39,7 @@ void QuoterDB::RegisterCallback(base::ProtoMessageDispatcher<base::ProtoMessageP
 
 base::ProtoMessagePtr QuoterDB::OnRequest(const std::shared_ptr<Proto::QuoterReq> &msg) {
   LOG_INF << "Quoter request: " << msg->ShortDebugString();
-  auto reply = Message<Proto::QuoterRep>::New();
+  auto reply = std::make_shared<Proto::QuoterRep>();
   if (msg->type() == Proto::RequestType::Get) {
     for (auto it : quoters_) {
       reply->add_quoters()->CopyFrom(*it.second);
@@ -76,7 +76,7 @@ base::ProtoMessagePtr QuoterDB::OnRequest(const std::shared_ptr<Proto::QuoterReq
       } else {
         // auto quoter = Message<Proto::QuoterSpec>::New();
         // quoter->CopyFrom(q);
-        quoters_.emplace(name, Message<Proto::QuoterSpec>::New(q));
+        quoters_.emplace(name, std::make_shared<Proto::QuoterSpec>(q));
       }
 
       for (auto &op : q.options()) {
@@ -176,7 +176,7 @@ int QuoterDB::Callback(void *data, int argc, char **argv, char **col_name) {
   const std::string underlying = argv[2];
   auto inst = instrument_db->FindUnderlying(underlying);
   if (inst) {
-    auto quoter = Message<Proto::QuoterSpec>::New();
+    auto quoter = std::make_shared<Proto::QuoterSpec>();
     const std::string name = argv[0];
     quoter->set_name(name);
     quoter->set_pricer(argv[1]);

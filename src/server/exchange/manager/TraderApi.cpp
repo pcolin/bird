@@ -90,7 +90,7 @@ void TraderApi::OnOrderResponse(const OrderPtr& order) {
 }
 
 void TraderApi::RejectOrder(const OrderPtr& order) {
-  auto ord = Message<Order>::New(order);
+  auto ord = std::make_shared<Order>(*order);
   ord->status = Proto::OrderStatus::Rejected;
   OnOrderResponse(ord);
 }

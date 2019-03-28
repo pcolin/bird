@@ -36,7 +36,7 @@ void MarketMakingStatisticDB::RegisterCallback(
 base::ProtoMessagePtr MarketMakingStatisticDB::OnRequest(
     const std::shared_ptr<Proto::MarketMakingStatisticReq> &msg) {
   LOG_INF << "MarketMakingStatistic request: " << msg->ShortDebugString();
-  auto reply = Message<Proto::MarketMakingStatisticRep>::New();
+  auto reply = std::make_shared<Proto::MarketMakingStatisticRep>();
   assert(msg->type() == Proto::RequestType::Get);
   for (auto &it : cache_) {
     reply->add_statistics()->CopyFrom(*it.second);
@@ -67,7 +67,7 @@ base::ProtoMessagePtr MarketMakingStatisticDB::OnUpdate(
 }
 
 int MarketMakingStatisticDB::Callback(void *data, int argc, char **argv, char **col_name) {
-  auto statistic = Message<Proto::MarketMakingStatistic>::New();
+  auto statistic = std::make_shared<Proto::MarketMakingStatistic>();
   std::string underlying = argv[0];
   statistic->set_underlying(underlying);
   statistic->set_date(argv[1]);

@@ -19,7 +19,7 @@ void InterestRateDB::RegisterCallback(
 
 base::ProtoMessagePtr InterestRateDB::OnRequest(const std::shared_ptr<Proto::InterestRateReq> &msg) {
   LOG_INF << "Interest rate request: " << msg->ShortDebugString();
-  auto reply = Message<Proto::InterestRateRep>::New();
+  auto reply = std::make_shared<Proto::InterestRateRep>();
   if (msg->type() == Proto::RequestType::Get) {
     for (auto &it : cache_) {
       auto *r = reply->add_rates();

@@ -9,8 +9,8 @@
 
 Dimer::Dimer(const std::string &name, DeviceManager *dm)
     : Strategy(name, dm),
-      bid_(Message<Order>::New()), ask_(Message<Order>::New()),
-      statistic_(Message<Proto::StrategyStatistic>::New()) {
+      bid_(new Order()), ask_(new Order()),
+      statistic_(new Proto::StrategyStatistic()) {
   dispatcher_.RegisterCallback<Proto::PriceException>(
       std::bind(&Dimer::OnPriceException, this, std::placeholders::_1));
   dispatcher_.RegisterCallback<Proto::SSRate>(
@@ -113,7 +113,8 @@ void Dimer::OnStop() {
       Cancel(it.second->ask, "stop");
     }
   }
-  Middleware::GetInstance()->Publish(Message<Proto::StrategyStatistic>::New(*statistic_));
+  Middleware::GetInstance()->Publish(
+      std::make_shared<Proto::StrategyStatistic>(*statistic_));
 }
 
 void Dimer::OnPrice(const PricePtr &price) {
@@ -161,7 +162,7 @@ void Dimer::OnPrice(const PricePtr &price) {
             bid_->theo = t.theo;
             bid_->delta = t.delta;
             bid_->credit = it->second->credit;
-            auto ord = Message<Order>::New(bid_);
+            auto ord = std::make_shared<Order>(*bid_);
             if (!PositionManager::GetInstance()->TryFreeze(ord) && it->second->cover) {
               LOG_DBG << it->first->Id() << " hasn't enough position to cover";
               break;
@@ -214,7 +215,7 @@ void Dimer::OnPrice(const PricePtr &price) {
             ask_->theo = t.theo;
             ask_->delta = t.delta;
             ask_->credit = it->second->credit;
-            auto ord = Message<Order>::New(ask_);
+            auto ord = std::make_shared<Order>(*ask_);
             if (!PositionManager::GetInstance()->TryFreeze(ord) && it->second->cover) {
               LOG_DBG << it->first->Id() << " hasn't enough position to cover";
               break;
@@ -363,7 +364,8 @@ void Dimer::OnTrade(const TradePtr &trade) {
 }
 
 bool Dimer::OnHeartbeat(const std::shared_ptr<Proto::Heartbeat> &heartbeat) {
-  Middleware::GetInstance()->Publish(Message<Proto::StrategyStatistic>::New(*statistic_));
+  Middleware::GetInstance()->Publish(
+      std::make_shared<Proto::StrategyStatistic>(*statistic_));
 }
 
 bool Dimer::OnPriceException(const std::shared_ptr<Proto::PriceException> &msg) {

@@ -314,5 +314,5 @@ void PositionManager::PublishPosition(PositionPtr &position) {
   // req->set_type(Proto::RequestType::Set);
   // req->set_exchange(exchange);
   // req->add_positions()->CopyFrom(*position);
-  Middleware::GetInstance()->Publish(Message<Proto::Position>::New(position));
+  Middleware::GetInstance()->Publish(std::make_shared<Proto::Position>(*position));
 }

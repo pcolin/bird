@@ -30,7 +30,7 @@ void VolatilityCurveDB::RegisterCallback(
 base::ProtoMessagePtr VolatilityCurveDB::OnRequest(
     const std::shared_ptr<Proto::VolatilityCurveReq> &msg) {
   LOG_INF << "Volatility curve request: " << msg->ShortDebugString();
-  auto reply = Message<Proto::VolatilityCurveRep>::New();
+  auto reply = std::make_shared<Proto::VolatilityCurveRep>();
   Proto::RequestType type = msg->type();
   if (type == Proto::RequestType::Get) {
     if (msg->underlying().empty()) {
@@ -68,7 +68,7 @@ base::ProtoMessagePtr VolatilityCurveDB::OnRequest(
       auto &vc = cache_[c.underlying()];
       auto it = vc.find(m);
       if (it == vc.end()) {
-        vc.emplace(m, Message<Proto::VolatilityCurve>::New(c));
+        vc.emplace(m, std::make_shared<Proto::VolatilityCurve>(c));
       } else {
         it->second->CopyFrom(c);
       }
@@ -99,7 +99,7 @@ int VolatilityCurveDB::Callback(void *data, int argc, char **argv, char **col_na
   const std::string underlying = argv[0];
   auto inst = instrument_db->FindUnderlying(underlying);
   if (inst) {
-    auto vc = Message<Proto::VolatilityCurve>::New();
+    auto vc = std::make_shared<Proto::VolatilityCurve>();
     vc->set_underlying(underlying);
     vc->set_maturity(argv[1]);
     vc->set_spot(atof(argv[2]));

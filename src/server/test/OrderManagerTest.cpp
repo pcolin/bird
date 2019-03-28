@@ -10,11 +10,11 @@ using namespace std;
 BOOST_AUTO_TEST_CASE(testOrderManager)
 {
   vector<OrderPtr> orders;
-  auto ord1 = Message<Order>::New();
+  auto ord1 = std::make_shared<Order>();
   ord1->status = Proto::OrderStatus::New;
   BOOST_CHECK(ord1);
   orders.push_back(ord1);
-  auto ord2 = Message<Order>::New();
+  auto ord2 = std::make_shared<Order>();
   ord2->status = Proto::OrderStatus::Filled;
   BOOST_CHECK(ord2);
   orders.push_back(ord2);
@@ -42,7 +42,7 @@ BOOST_AUTO_TEST_CASE(testOrderManager)
   BOOST_CHECK(ord23);
   BOOST_CHECK_EQUAL(ord2, ord23);
 
-  auto ord24 = Message<Order>::New(ord2);
+  auto ord24 = std::make_shared<Order>(*ord2);
   BOOST_CHECK(ord2 != ord24);
   BOOST_CHECK_EQUAL(ord2->id, ord24->id);
   BOOST_CHECK(ord2->status == ord24->status);

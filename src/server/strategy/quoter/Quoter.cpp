@@ -12,7 +12,7 @@
 #include "boost/format.hpp"
 
 Quoter::Quoter(const std::string &name, DeviceManager *dm)
-    : Strategy(name, dm), statistic_(Message<Proto::StrategyStatistic>::New()) {
+    : Strategy(name, dm), statistic_(new Proto::StrategyStatistic()) {
   dispatcher_.RegisterCallback<Proto::PriceException>(
       std::bind(&Quoter::OnPriceException, this, std::placeholders::_1));
   dispatcher_.RegisterCallback<Proto::RequestForQuote>(
@@ -44,7 +44,7 @@ Quoter::Quoter(const std::string &name, DeviceManager *dm)
     quote_ = amend_quote_ || EnvConfig::GetInstance()->GetBool(EnvVar::SUPPORT_QUOTE);
   }
 
-  bid_ = Message<Order>::New();
+  bid_ = std::make_shared<Order>();
   bid_->strategy = name_;
   // bid_->volume = quoter_->volume();
   bid_->strategy_type = Proto::StrategyType::Quoter;
@@ -53,7 +53,7 @@ Quoter::Quoter(const std::string &name, DeviceManager *dm)
   bid_->type = Proto::OrderType::Limit;
   bid_->status = Proto::OrderStatus::Local;
 
-  ask_ = Message<Order>::New();
+  ask_ = std::make_shared<Order>();
   ask_->strategy = name_;
   // ask_->volume = quoter_->volume();
   ask_->strategy_type = Proto::StrategyType::Quoter;
@@ -133,7 +133,8 @@ void Quoter::OnStop() {
   for (auto &it : parameters_) {
     CancelOrders(it.second, "stop");
   }
-  Middleware::GetInstance()->Publish(Message<Proto::StrategyStatistic>::New(*statistic_));
+  Middleware::GetInstance()->Publish(
+      std::make_shared<Proto::StrategyStatistic>(*statistic_));
 }
 
 void Quoter::OnPrice(const PricePtr &price) {
@@ -377,7 +378,8 @@ bool Quoter::OnHeartbeat(const std::shared_ptr<Proto::Heartbeat> &heartbeat) {
   LOG_DBG << heartbeat->ShortDebugString();
   CheckForAuction();
   CheckForQR();
-  Middleware::GetInstance()->Publish(Message<Proto::StrategyStatistic>::New(*statistic_));
+  Middleware::GetInstance()->Publish(
+      std::make_shared<Proto::StrategyStatistic>(*statistic_));
 }
 
 bool Quoter::OnPriceException(const std::shared_ptr<Proto::PriceException> &msg) {
@@ -762,12 +764,12 @@ void Quoter::ResubmitOrders(ParameterMap::iterator &it, const char *reason) {
     bid_->theo = ask_->theo = theo.theo;
     bid_->delta = ask_->delta = theo.delta;
     bid_->credit = ask_->credit = it->second->credit;
-    it->second->bid = Message<Order>::New(bid_);
+    it->second->bid = std::make_shared<Order>(*bid_);
     it->second->bid->header.SetTime();
     it->second->bid->ResetId();
     orders_.emplace(it->second->bid->id, it->second->bid);
     PositionManager::GetInstance()->TryFreeze(it->second->bid);
-    it->second->ask = Message<Order>::New(ask_);
+    it->second->ask = std::make_shared<Order>(*ask_);
     it->second->ask->header.SetTime();
     it->second->ask->ResetId();
     orders_.emplace(it->second->ask->id, it->second->ask);

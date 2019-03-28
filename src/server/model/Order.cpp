@@ -78,7 +78,7 @@ void Order::ResetId() {
 // }
 
 std::shared_ptr<Proto::Order> Order::Serialize() const {
-  std::shared_ptr<Proto::Order> ord = Message<Proto::Order>::New();
+  std::shared_ptr<Proto::Order> ord = std::make_shared<Proto::Order>();
   ord->set_id(id);
   ord->set_instrument(instrument->Id());
   ord->set_counter_id(counter_id);

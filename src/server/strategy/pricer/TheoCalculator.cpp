@@ -338,7 +338,7 @@ void TheoCalculator::CalculateAndPublish(const Option *call,
                                          const Option *put,
                                          Parameters &p,
                                          double time_value) {
-  auto call_matrix = Message<TheoMatrix>::New();
+  auto call_matrix = std::make_shared<TheoMatrix>();
   call_matrix->option = call;
   call_matrix->lower = lower_;
   call_matrix->upper = upper_;
@@ -346,7 +346,7 @@ void TheoCalculator::CalculateAndPublish(const Option *call,
   if (ParameterManager::GetInstance()->GetDestriker(call, call_adjust)) {
     call_adjust *= PositionManager::GetInstance()->GetNetPosition(call);
   }
-  auto put_matrix = Message<TheoMatrix>::New();
+  auto put_matrix = std::make_shared<TheoMatrix>();
   put_matrix->option = put;
   put_matrix->lower = lower_;
   put_matrix->upper = upper_;
@@ -398,7 +398,7 @@ void TheoCalculator::CalculateAndPublish(const Option *call,
 }
 
 void TheoCalculator::CalculateAndPublish(const Option *option, Parameters &p, double time_value) {
-  auto matrix = Message<TheoMatrix>::New();
+  auto matrix = std::make_shared<TheoMatrix>();
   matrix->option = option;
   matrix->lower = lower_;
   matrix->upper = upper_;

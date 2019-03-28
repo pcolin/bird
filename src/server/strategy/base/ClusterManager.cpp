@@ -38,7 +38,7 @@ void ClusterManager::Init() {
       std::lock_guard<std::mutex> lck(pricer_mtx_);
       for (auto &p : rep->pricers()) {
         LOG_INF << "Pricer: " << p.ShortDebugString();
-        pricers_.emplace(p.name(), Message<Proto::Pricer>::New(p));
+        pricers_.emplace(p.name(), std::make_shared<Proto::Pricer>(p));
       }
     } else {
       LOG_ERR << "Failed to sync pricers";
@@ -58,7 +58,7 @@ void ClusterManager::Init() {
         // auto *op = InstrumentManager::GetInstance()->FindId(s.option());
         // if (op)
         // {
-        auto sw = Message<Proto::StrategySwitch>::New(s);
+        auto sw = std::make_shared<Proto::StrategySwitch>(s);
         // sw->CopyFrom(s);
         switches_[s.strategy()][s.option()] = sw;
         // }
@@ -82,7 +82,7 @@ void ClusterManager::Init() {
         // auto *underlying = InstrumentManager::GetInstance()->FindId(c.underlying());
         // if (underlying)
         // {
-        auto credit = Message<Proto::Credit>::New(c);
+        auto credit = std::make_shared<Proto::Credit>(c);
         // credit->CopyFrom(c);
         auto date = boost::gregorian::from_undelimited_string(credit->maturity());
         credits_[c.strategy()][c.underlying()][date] = credit;
@@ -109,7 +109,7 @@ void ClusterManager::Init() {
       std::lock_guard<std::mutex> lck(quoter_mtx_);
       for (auto &q : rep->quoters()) {
         LOG_INF << "Quoter: " << q.ShortDebugString();
-        quoters_.emplace(q.name(), Message<Proto::QuoterSpec>::New(q));
+        quoters_.emplace(q.name(), std::make_shared<Proto::QuoterSpec>(q));
       }
     } else {
       LOG_ERR << "Failed to sync quoters";
@@ -127,7 +127,7 @@ void ClusterManager::Init() {
       std::lock_guard<std::mutex> lck(hitter_mtx_);
       for (auto &h : rep->hitters()) {
         LOG_INF << "Hitter: " << h.ShortDebugString();
-        hitters_.emplace(h.name(), Message<Proto::HitterSpec>::New(h));
+        hitters_.emplace(h.name(), std::make_shared<Proto::HitterSpec>(h));
       }
     } else {
       LOG_ERR << "Failed to sync hitters";
@@ -145,7 +145,7 @@ void ClusterManager::Init() {
       std::lock_guard<std::mutex> lck(dimer_mtx_);
       for (auto &d : rep->dimers()) {
         LOG_INF << "Dimer: " << d.ShortDebugString();
-        dimers_.emplace(d.name(), Message<Proto::DimerSpec>::New(d));
+        dimers_.emplace(d.name(), std::make_shared<Proto::DimerSpec>(d));
       }
     } else {
       LOG_ERR << "failed to sync dimers";
@@ -163,7 +163,7 @@ void ClusterManager::Init() {
       std::lock_guard<std::mutex> lck(hedger_mtx_);
       for (auto &h : rep->hedgers()) {
         LOG_INF << "Hedger: " << h.ShortDebugString();
-        hedgers_.emplace(h.name(), Message<Proto::HedgerSpec>::New(h));
+        hedgers_.emplace(h.name(), std::make_shared<Proto::HedgerSpec>(h));
       }
     } else {
       LOG_ERR << "failed to sync hedgers";
@@ -180,7 +180,8 @@ void ClusterManager::Init() {
     if (rep && rep->result().result()) {
       for (auto &s : rep->statistics()) {
         LOG_INF << "MarketMakingStatistic: " << s.ShortDebugString();
-        statistics_.emplace(s.underlying(), Message<Proto::MarketMakingStatistic>::New(s));
+        statistics_.emplace(s.underlying(),
+            std::make_shared<Proto::MarketMakingStatistic>(s));
       }
     } else {
       LOG_ERR << "failed to sync statistics";
@@ -357,7 +358,7 @@ ClusterManager::ProtoReplyPtr ClusterManager::OnPricerReq(
       for (auto &p : req->pricers()) {
         auto *underlying = InstrumentManager::GetInstance()->FindId(p.underlying());
         if (underlying) {
-          auto copy = Message<Proto::Pricer>::New(p);
+          auto copy = std::make_shared<Proto::Pricer>(p);
           // copy->CopyFrom(p);
           {
             std::lock_guard<std::mutex> lck(pricer_mtx_);
@@ -394,7 +395,7 @@ ClusterManager::ProtoReplyPtr ClusterManager::OnCreditReq(
     for (auto &c : req->credits()) {
       auto *underlying = InstrumentManager::GetInstance()->FindId(c.underlying());
       if (underlying) {
-        auto credit = Message<Proto::Credit>::New(c);
+        auto credit = std::make_shared<Proto::Credit>(c);
         // credit->CopyFrom(c);
         auto date = boost::gregorian::from_undelimited_string(c.maturity());
         {
@@ -420,7 +421,7 @@ ClusterManager::ProtoReplyPtr ClusterManager::OnQuoterReq(
       for (auto &q : req->quoters()) {
         auto *underlying = InstrumentManager::GetInstance()->FindId(q.underlying());
         if (underlying) {
-          auto quoter = Message<Proto::QuoterSpec>::New(q);
+          auto quoter = std::make_shared<Proto::QuoterSpec>(q);
           // quoter->CopyFrom(q);
           auto *dm = FindDevice(underlying);
           if (dm && dm->IsStrategyRunning(q.name())) {
@@ -456,7 +457,7 @@ ClusterManager::ProtoReplyPtr ClusterManager::OnStrategySwitchReq(
     for (auto &s : req->switches()) {
       auto *op = InstrumentManager::GetInstance()->FindId(s.option());
       if (op) {
-        auto sw = Message<Proto::StrategySwitch>::New(s);
+        auto sw = std::make_shared<Proto::StrategySwitch>(s);
         // sw->CopyFrom(s);
         {
           std::lock_guard<std::mutex> lck(switch_mtx_);

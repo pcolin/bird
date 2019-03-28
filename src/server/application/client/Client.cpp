@@ -36,7 +36,7 @@ void Send(const std::shared_ptr<google::protobuf::Message> &msg) {
 }
 
 void Login() {
-  auto m = Message<Proto::Login>::New();
+  auto m = std::make_shared<Proto::Login>();
   m->set_user("pengchong");
   m->set_password("pengchong");
   m->set_role(Proto::Role::Trader);
@@ -47,13 +47,13 @@ void Login() {
 }
 
 void Logout() {
-  auto m = Message<Proto::Logout>::New();
+  auto m = std::make_shared<Proto::Logout>();
   m->set_user("pengchong");
   Send(m);
 }
 
 void Play() {
-  auto m = Message<Proto::StrategyOperateReq>::New();
+  auto m = std::make_shared<Proto::StrategyOperateReq>();
   m->set_type(Proto::Set);
   auto *op = m->add_operates();
   op->set_name("test");
@@ -64,7 +64,7 @@ void Play() {
 }
 
 void Stop() {
-  auto m = Message<Proto::StrategyOperateReq>::New();
+  auto m = std::make_shared<Proto::StrategyOperateReq>();
   m->set_type(Proto::Set);
   auto *op = m->add_operates();
   op->set_name("test");

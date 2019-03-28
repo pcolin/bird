@@ -18,7 +18,7 @@ void CashLimitDB::RegisterCallback(base::ProtoMessageDispatcher<base::ProtoMessa
 
 base::ProtoMessagePtr CashLimitDB::OnRequest(const std::shared_ptr<Proto::CashLimitReq> &msg) {
   LOG_INF << "Cash limit request: " << msg->ShortDebugString();
-  auto reply = Message<Proto::CashLimitRep>::New();
+  auto reply = std::make_shared<Proto::CashLimitRep>();
   if (msg->type() == Proto::RequestType::Get) {
     for (auto &it : cache_) {
       reply->add_limits()->CopyFrom(*it.second);
@@ -34,7 +34,7 @@ base::ProtoMessagePtr CashLimitDB::OnRequest(const std::shared_ptr<Proto::CashLi
       } else {
         // auto lt = Message<Proto::CashLimit>::New(limit);
         // lt->CopyFrom(limit);
-        cache_.emplace(exchange, Message<Proto::CashLimit>::New(limit));
+        cache_.emplace(exchange, std::make_shared<Proto::CashLimit>(limit));
       }
       sprintf(sql, "INSERT OR REPLACE INTO %s VALUES(%d, %f)",
               table_name_.c_str(), static_cast<int32_t>(limit.exchange()), limit.limit());
@@ -55,7 +55,7 @@ base::ProtoMessagePtr CashLimitDB::OnRequest(const std::shared_ptr<Proto::CashLi
 }
 
 int CashLimitDB::Callback(void *data, int argc, char **argv, char **col_name) {
-  auto limit = Message<Proto::CashLimit>::New();
+  auto limit = std::make_shared<Proto::CashLimit>();
   int32_t exchange = atoi(argv[0]);
   limit->set_exchange(static_cast<Proto::Exchange>(exchange));
   limit->set_limit(atof(argv[1]));

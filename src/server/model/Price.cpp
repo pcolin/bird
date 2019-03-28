@@ -81,7 +81,7 @@
 // }
 
 std::shared_ptr<Proto::Price> Price::Serialize() const {
-  auto p = Message<Proto::Price>::New();
+  auto p = std::make_shared<Proto::Price>();
   p->set_instrument(instrument->Id());
   p->set_exchange(instrument->Exchange());
   if (last.price != base::PRICE_UNDEFINED) {
@@ -192,7 +192,7 @@ LogStream& operator<<(LogStream& stream, const PricePtr &price) {
 
 UnderlyingPrice::UnderlyingPrice(const Instrument *underlying)
     : underlying_(underlying),
-      price_(Message<Price>::New()) {}
+      price_(new Price()) {}
 
 void UnderlyingPrice::SetParameter(
     Proto::UnderlyingTheoType type,

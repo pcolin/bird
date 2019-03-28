@@ -37,7 +37,7 @@ void DimerDB::RegisterCallback(base::ProtoMessageDispatcher<base::ProtoMessagePt
 
 base::ProtoMessagePtr DimerDB::OnRequest(const std::shared_ptr<Proto::DimerReq> &msg) {
   LOG_INF << "Dimer request: " << msg->ShortDebugString();
-  auto reply = Message<Proto::DimerRep>::New();
+  auto reply = std::make_shared<Proto::DimerRep>();
   if (msg->type() == Proto::RequestType::Get) {
     for (auto &it : dimers_) {
       reply->add_dimers()->CopyFrom(*it.second);
@@ -60,7 +60,7 @@ base::ProtoMessagePtr DimerDB::OnRequest(const std::shared_ptr<Proto::DimerReq> 
             record_table_name_.c_str(), name.c_str());
         ExecSql(sql);
       } else {
-        dimers_.emplace(name, Message<Proto::DimerSpec>::New(d));
+        dimers_.emplace(name, std::make_shared<Proto::DimerSpec>(d));
       }
 
       for (auto &op : d.options()) {
@@ -97,7 +97,7 @@ int DimerDB::Callback(void *data, int argc, char **argv, char **col_name) {
   const std::string underlying = argv[2];
   auto inst = instrument_db->FindUnderlying(underlying);
   if (inst) {
-    auto dimer = Message<Proto::DimerSpec>::New();
+    auto dimer = std::make_shared<Proto::DimerSpec>();
     const std::string name = argv[0];
     dimer->set_name(name);
     dimer->set_pricer(argv[1]);

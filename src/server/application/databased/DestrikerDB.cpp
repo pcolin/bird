@@ -25,7 +25,7 @@ void DestrikerDB::RegisterCallback(base::ProtoMessageDispatcher<base::ProtoMessa
 
 base::ProtoMessagePtr DestrikerDB::OnRequest(const std::shared_ptr<Proto::DestrikerReq> &msg) {
   LOG_INF << "Destriker request: " << msg->ShortDebugString();
-  auto reply = Message<Proto::DestrikerRep>::New();
+  auto reply = std::make_shared<Proto::DestrikerRep>();
   Proto::RequestType type = msg->type();
   if (type == Proto::RequestType::Get) {
     for (auto &it : cache_) {

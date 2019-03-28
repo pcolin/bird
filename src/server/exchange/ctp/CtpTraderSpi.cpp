@@ -395,7 +395,7 @@ void CtpTraderSpi::OnRspQryDepthMarketData(CThostFtdcDepthMarketDataField* pDept
   if (bIsLast) {
     auto &instruments = InstrumentManager::GetInstance()->FindInstruments(nullptr);
     if (instruments.size() > 0) {
-      auto req = Message<Proto::InstrumentReq>::New();
+      auto req = std::make_shared<Proto::InstrumentReq>();
       req->set_type(Proto::RequestType::Set);
       req->set_exchange(instruments[0]->Exchange());
       for (const Instrument *inst : instruments) {
@@ -450,7 +450,7 @@ void CtpTraderSpi::OnRspQryInvestorPosition(CThostFtdcInvestorPositionField* pIn
       PositionPtr pos = nullptr;
       auto it = positions.find(inst);
       if (it == positions.end()) {
-        pos = Message<Proto::Position>::New();
+        pos = std::make_shared<Proto::Position>();
         pos->set_instrument(inst->Id());
         positions[inst] = pos;
       } else {
@@ -517,7 +517,7 @@ void CtpTraderSpi::OnRspOrderInsert(CThostFtdcInputOrderField* pInputOrder,
              nRequestID % bIsLast;
   auto ord = api_->RemoveOrder(pInputOrder->OrderRef);
   if (ord) {
-    auto update = Message<Order>::New(ord);
+    auto update = std::make_shared<Order>(*ord);
     update->status = Proto::OrderStatus::Rejected;
     update->note = std::move(err);
     api_->OnOrderResponse(update);
@@ -536,7 +536,7 @@ void CtpTraderSpi::OnErrRtnOrderInsert(CThostFtdcInputOrderField* pInputOrder,
              pInputOrder->InstrumentID % pInputOrder->OrderRef % pRspInfo->ErrorID % err;
   auto ord = api_->RemoveOrder(pInputOrder->OrderRef);
   if (ord) {
-    auto update = Message<Order>::New(ord);
+    auto update = std::make_shared<Order>(*ord);
     update->status = Proto::OrderStatus::Rejected;
     update->note = err;
     api_->OnOrderResponse(update);
@@ -560,18 +560,18 @@ void CtpTraderSpi::OnRtnOrder(CThostFtdcOrderField* pOrder) {
   if (pOrder->OrderStatus == THOST_FTDC_OST_Unknown) {
     auto ord = api_->FindAndUpdate(pOrder->OrderRef);
     if (ord) {
-      api_->OnOrderResponse(Message<Order>::New(ord));
+      api_->OnOrderResponse(std::make_shared<Order>(*ord));
     }
   } else if (pOrder->OrderStatus == THOST_FTDC_OST_NoTradeQueueing) {
     auto ord = api_->FindAndUpdate(pOrder->OrderRef, pOrder->OrderSysID);
     if (ord) {
-      api_->OnOrderResponse(Message<Order>::New(ord));
+      api_->OnOrderResponse(std::make_shared<Order>(*ord));
     }
   } else if (pOrder->OrderStatus == THOST_FTDC_OST_Canceled) {
     if (strlen(pOrder->OrderSysID) > 0) {
       auto ord = api_->RemoveOrder(pOrder->OrderRef);
       if (ord) {
-        auto update = Message<Order>::New(ord);
+        auto update = std::make_shared<Order>(*ord);
         update->executed_volume = pOrder->VolumeTraded;
         update->status = pOrder->VolumeTraded ? Proto::OrderStatus::PartialFilledCanceled :
                                                 Proto::OrderStatus::Canceled;
@@ -580,7 +580,7 @@ void CtpTraderSpi::OnRtnOrder(CThostFtdcOrderField* pOrder) {
     } else {
       auto ord = api_->RemoveOrder(pOrder->OrderRef);
       if (ord) {
-        auto update = Message<Order>::New(ord);
+        auto update = std::make_shared<Order>(*ord);
         update->counter_id = pOrder->OrderRef;
         update->status = Proto::OrderStatus::Rejected;
         update->note = base::GB2312ToUtf8(pOrder->StatusMsg);
@@ -593,7 +593,7 @@ void CtpTraderSpi::OnRtnOrder(CThostFtdcOrderField* pOrder) {
   else if (pOrder->OrderStatus == THOST_FTDC_OST_AllTraded) {
     auto ord = api_->FindAndUpdate(pOrder->OrderRef, pOrder->VolumeTraded);
     if (ord) {
-      api_->OnOrderResponse(Message<Order>::New(ord));
+      api_->OnOrderResponse(std::make_shared<Order>(*ord));
       // auto update = Message::NewOrder(ord);
       // update->executed_volume = pOrder->VolumeTraded;
       // update->status = Proto::OrderStatus::Filled;
@@ -602,7 +602,7 @@ void CtpTraderSpi::OnRtnOrder(CThostFtdcOrderField* pOrder) {
   } else if (pOrder->OrderStatus == THOST_FTDC_OST_PartTradedQueueing) {
     auto ord = api_->FindAndUpdate(pOrder->OrderRef, pOrder->VolumeTraded);
     if (ord) {
-      api_->OnOrderResponse(Message<Order>::New(ord));
+      api_->OnOrderResponse(std::make_shared<Order>(*ord));
     }
   } else {
     LOG_WAN << "Unexpected order status " << pOrder->OrderStatus;
@@ -625,7 +625,7 @@ void CtpTraderSpi::OnRtnTrade(CThostFtdcTradeField* pTrade) {
     //   ord = OrderManager::GetInstance()->FindOrder(pTrade->OrderSysID);
     // }
     if (ord) {
-      auto trade = Message<Trade>::New();
+      auto trade = std::make_shared<Trade>();
       trade->header.SetTime();
       trade->instrument = inst;
       trade->order_id = ord->id;
@@ -738,7 +738,7 @@ void CtpTraderSpi::OnRtnInstrumentStatus(CThostFtdcInstrumentStatusField* pInstr
   auto instruments = InstrumentManager::GetInstance()->FindInstruments(
       [&](const Instrument *inst) { return inst->Product() == pInstrumentStatus->InstrumentID; });
   if (instruments.size() > 0) {
-    auto req = Message<Proto::InstrumentReq>::New();
+    auto req = std::make_shared<Proto::InstrumentReq>();
     req->set_type(Proto::RequestType::Set);
     req->set_exchange(GetExchange(pInstrumentStatus->ExchangeID));
     auto status = GetInstrumentStatus(pInstrumentStatus->InstrumentStatus,
@@ -843,7 +843,7 @@ void CtpTraderSpi::UpdateOrder(const char *exchange_id,
                                Proto::OrderStatus status) {
   auto ord = OrderManager::GetInstance()->FindOrder(exchange_id);
   if (ord) {
-    auto update = Message<Order>::New(ord);
+    auto update = std::make_shared<Order>(*ord);
     update->executed_volume = volume;
     update->status = status;
     api_->OnOrderResponse(update);

@@ -1,6 +1,6 @@
 #include "Middleware.h"
 #include <sstream>
-#include "Message.h"
+// #include "Message.h"
 #include "ClientManager.h"
 #include "InstrumentManager.h"
 #include "ParameterManager.h"
@@ -90,7 +90,7 @@ std::shared_ptr<Proto::Reply> Middleware::OnOrderRequest(
     for (auto &ord : req->orders()) {
       auto *inst = InstrumentManager::GetInstance()->FindId(ord.instrument());
       if (inst) {
-        auto order = Message<Order>::New();
+        auto order = std::make_shared<Order>();
         order->instrument = inst;
         // order->id = ord.id();
         order->header.time = ord.time();
@@ -108,7 +108,7 @@ std::shared_ptr<Proto::Reply> Middleware::OnOrderRequest(
     for (auto &ord : req->orders()) {
       auto *inst = InstrumentManager::GetInstance()->FindId(ord.instrument());
       if (inst) {
-        auto order = Message<Order>::New();
+        auto order = std::make_shared<Order>();
         order->instrument = inst;
         order->id = ord.id();
         order->counter_id = ord.counter_id();
@@ -131,7 +131,7 @@ std::shared_ptr<Proto::Reply> Middleware::OnOrderRequest(
 
 void Middleware::RunTimer() {
   LOG_INF << "start middleware timer...";
-  auto heartbeat = Message<Proto::Heartbeat>::New();
+  auto heartbeat = std::make_shared<Proto::Heartbeat>();
   Proto::Exchange exchange;
   Proto::Exchange_Parse(EnvConfig::GetInstance()->GetString(EnvVar::EXCHANGE), &exchange);
   heartbeat->set_exchange(exchange);
@@ -233,7 +233,7 @@ void Middleware::RunResponder() {
       &ClusterManager::OnStrategyOperateReq, ClusterManager::GetInstance(),std::placeholders::_1));
   size_t n = 64;
   char *send_buf = new char[n];
-  auto reply = Message<Proto::Reply>::New();
+  auto reply = std::make_shared<Proto::Reply>();
   while (true) {
     char *recv_buf = NULL;
     int recv_bytes = nn_recv(sock, &recv_buf, NN_MSG, 0);
