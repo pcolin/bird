@@ -193,8 +193,11 @@ void CtpMdSpi::OnRtnDepthMarketData(CThostFtdcDepthMarketDataField* pDepthMarket
     //     p->Id() % p->Lowest() % p->Highest();
     //   /// to be done... publish InstrumentReq
     // }
+    // LOG_DBG << "before of publish OnRtnDepthMarketData";
     dm->Publish(price);
+    // LOG_DBG << "end of publish OnRtnDepthMarketData";
     monitor_.OnPrice(price);
+    // LOG_DBG << "end of OnRtnDepthMarketData";
   }
 }
 

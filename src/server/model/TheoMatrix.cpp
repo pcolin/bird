@@ -33,6 +33,8 @@ bool TheoMatrix::FindTheo(base::PriceType spot, TheoData &theo) const {
     // LOG_DBG << tick << " " << idx1 << " " << lower << theos[idx2].spot;
     if (likely(idx1 >= 0 && idx2 < 2 * DEPTH + 1 && theos[idx2])) {
       theo.spot = spot;
+      theo.volatility = theos[idx1].volatility;
+      theo.ss_rate = theos[idx1].ss_rate;
       theo.InterpolateFrom(theos[idx1], theos[idx2]);
       return true;
     }

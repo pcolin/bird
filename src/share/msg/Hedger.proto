@@ -14,6 +14,14 @@ message HedgerSpec
 {
   string name = 1;
   string underlying = 2;
+  double credit = 3;
+  double min_delta = 4;
+  double max_delta = 5;
+  double desire_delta = 6;
+  double delta_limit = 7;
+  int32 order_limit = 8;
+  int32 trade_limit = 9;
+  int32 size = 10;
 }
 
 message HedgerReq

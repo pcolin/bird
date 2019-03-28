@@ -104,106 +104,109 @@ bool CtpTraderApi::GetMMPrice(
     double &ask) {
   switch (option->Exchange()) {
     case Proto::Exchange::CFFEX : {
-      double t = option->RoundToTick(theo, Proto::RoundDirection::Nearest);
+      // double t = option->RoundToTick(theo, Proto::RoundDirection::Nearest);
+      const double tick = 0.2; /// option->Tick();
       if (option->Maturity() == first_maturity_) {
-        if (base::IsLessThan(t - 2.5, 100)) {
-          if (base::IsLessThan(t - 0.5, 20)) {
-            if (base::IsLessThan(t - 0.3, 10)) {
-              bid = t - 0.3;
-              ask = t + 0.3;
+        if (base::IsLessThan(theo - 2.5, 100 - tick)) {
+          if (base::IsLessThan(theo - 0.5, 20 - tick)) {
+            if (base::IsLessThan(theo - 0.3, 10 - tick)) {
+              bid = option->RoundToTick(theo - 0.3, Proto::Up);
+              ask = option->RoundToTick(theo + 0.3, Proto::Down);
             } else {
-              bid = std::max(t - 0.5, 10.0);
+              bid = option->RoundToTick(std::max(theo - 0.5, 10.0), Proto::Up);
               ask = bid + 1;
             }
-          } else if (base::IsLessThan(t - 1.3, 50)) {
-            bid = std::max(t - 1.3, 20.0);
+          } else if (base::IsLessThan(theo - 1.3, 50 - tick)) {
+            bid = option->RoundToTick(std::max(theo - 1.3, 20.0), Proto::Up);
             ask = bid + 2.6;
           } else {
-            bid = std::max(t - 2.5, 50.0);
+            bid = option->RoundToTick(std::max(theo - 2.5, 50.0), Proto::Up);
             ask = bid + 5;
           }
-        } else if (base::IsLessThan(t - 7.5, 500)) {
-          if (base::IsLessThan(t - 4, 250)) {
-            bid = std::max(t - 4, 100.0);
+        } else if (base::IsLessThan(theo - 7.5, 500 - tick)) {
+          if (base::IsLessThan(theo - 4, 250 - tick)) {
+            bid = option->RoundToTick(std::max(theo - 4, 100.0), Proto::Up);
             ask = bid + 8;
           } else {
-            bid = std::max(t - 7.5, 250.0);
+            bid = option->RoundToTick(std::max(theo - 7.5, 250.0), Proto::Up);
             ask = bid + 15;
           }
-        } else if (base::IsLessThan(t - 15, 1000)) {
-          bid = std::max(t - 15, 500.0);
+        } else if (base::IsLessThan(theo - 15, 1000 - tick)) {
+          bid = option->RoundToTick(std::max(theo - 15, 500.0), Proto::Up);
           ask = bid + 30;
-        } else if (base::IsLessThan(t - 30, 2000)) {
-          bid = std::max(t - 30, 1000.0);
+        } else if (base::IsLessThan(theo - 30, 2000 - tick)) {
+          bid = option->RoundToTick(std::max(theo - 30, 1000.0), Proto::Up);
           ask = bid + 60;
         } else {
-          bid = std::max(t - 60, 2000.0);
+          bid = option->RoundToTick(std::max(theo - 60, 2000.0), Proto::Up);
           ask = bid + 120;
         }
-        // if (base::IsLessThan(t - 0.3, 10)) {
-        //   bid = t - 0.3;
-        //   ask = t + 0.3;
-        // } else if (base::IsLessThan(t - 0.5, 20)) {
-        //   bid = std::max(t - 0.5, 10.0);
+        // if (base::IsLessThan(theo - 0.3, 10)) {
+        //   bid = theo - 0.3;
+        //   ask = theo + 0.3;
+        // } else if (base::IsLessThan(theo - 0.5, 20)) {
+        //   bid = std::max(theo - 0.5, 10.0);
         //   ask = bid + 1;
-        // } else if (base::IsLessThan(t - 1.3, 50)) {
-        //   bid = std::max(t - 1.3, 20.0);
+        // } else if (base::IsLessThan(theo - 1.3, 50)) {
+        //   bid = std::max(theo - 1.3, 20.0);
         //   ask = bid + 2.6;
-        // } else if (base::IsLessThan(t - 2.5, 100)) {
-        //   bid = std::max(t - 2.5, 50.0);
+        // } else if (base::IsLessThan(theo - 2.5, 100)) {
+        //   bid = std::max(theo - 2.5, 50.0);
         //   ask = bid + 5;
-        // } else if (base::IsLessThan(t - 4, 250)) {
-        //   bid = std::max(t - 4, 100.0);
+        // } else if (base::IsLessThan(theo - 4, 250)) {
+        //   bid = std::max(theo - 4, 100.0);
         //   ask = bid + 8;
-        // } else if (base::IsLessThan(t - 7.5, 500)) {
-        //   bid = std::max(t - 7.5, 250.0);
+        // } else if (base::IsLessThan(theo - 7.5, 500)) {
+        //   bid = std::max(theo - 7.5, 250.0);
         //   ask = bid + 15;
-        // } else if (base::IsLessThan(t - 15, 1000)) {
-        //   bid = std::max(t - 15, 500.0);
+        // } else if (base::IsLessThan(theo - 15, 1000)) {
+        //   bid = std::max(theo - 15, 500.0);
         //   ask = bid + 30;
-        // } else if (base::IsLessThan(t - 30, 2000)) {
-        //   bid = std::max(t - 30, 1000.0);
+        // } else if (base::IsLessThan(theo - 30, 2000)) {
+        //   bid = std::max(theo - 30, 1000.0);
         //   ask = bid + 60;
         // } else {
-        //   bid = std::max(t - 60, 2000.0);
+        //   bid = std::max(theo - 60, 2000.0);
         //   ask = bid + 120;
         // }
       } else {
-        if (base::IsLessThan(t - 4, 100)) {
-          if (base::IsLessThan(t - 1, 20)) {
-            if (base::IsLessThan(t - 0.5, 10)) {
-              bid = t - 0.5;
-              ask = t + 0.5;
+        if (base::IsLessThan(theo - 4, 100 - tick)) {
+          if (base::IsLessThan(theo - 1, 20 - tick)) {
+            if (base::IsLessThan(theo - 0.5, 10 - tick)) {
+              bid = option->RoundToTick(theo - 0.5, Proto::Up);
+              ask = option->RoundToTick(theo + 0.5, Proto::Down);
             } else {
-              bid = std::max(t - 1, 10.0);
+              bid = option->RoundToTick(std::max(theo - 1, 10.0), Proto::Up);
               ask = bid + 2;
             }
-          } else if (base::IsLessThan(t - 2, 50)) {
-            bid = std::max(t - 2, 20.0);
+          } else if (base::IsLessThan(theo - 2, 50 - tick)) {
+            bid = option->RoundToTick(std::max(theo - 2, 20.0), Proto::Up);
             ask = bid + 4;
           } else {
-            bid = std::max(t - 4, 50.0);
+            bid = option->RoundToTick(std::max(theo - 4, 50.0), Proto::Up);
             ask = bid + 8;
           }
-        } else if (base::IsLessThan(t - 12.5, 500)) {
-          if (base::IsLessThan(t - 7.5, 250)) {
-            bid = std::max(t - 7.5, 100.0);
+        } else if (base::IsLessThan(theo - 12.5, 500 - tick)) {
+          if (base::IsLessThan(theo - 7.5, 250 - tick)) {
+            bid = option->RoundToTick(std::max(theo - 7.5, 100.0), Proto::Up);
             ask = bid + 15;
           } else {
-            bid = std::max(t - 12.5, 250.0);
+            bid = option->RoundToTick(std::max(theo - 12.5, 250.0), Proto::Up);
             ask = bid + 25;
           }
-        } else if (base::IsLessThan(t - 25, 1000)) {
-          bid = std::max(t - 25, 500.0);
+        } else if (base::IsLessThan(theo - 25, 1000 - tick)) {
+          bid = option->RoundToTick(std::max(theo - 25, 500.0), Proto::Up);
           ask = bid + 50;
-        } else if (base::IsLessThan(t - 50, 2000)) {
-          bid = std::max(t - 50, 1000.0);
+        } else if (base::IsLessThan(theo - 50, 2000 - tick)) {
+          bid = option->RoundToTick(std::max(theo - 50, 1000.0), Proto::Up);
           ask = bid + 100;
         } else {
-          bid = std::max(t - 100, 2000.0);
+          bid = option->RoundToTick(std::max(theo - 100, 2000.0), Proto::Up);
           ask = bid + 200;
         }
       }
+      LOG_DBG << boost::format("%1%: mm price(%2%, %3%), theo(%4%)") % option->Id() %
+          bid % ask % theo;
       return true;
     }
     case Proto::Exchange::SHFE : {
@@ -275,56 +278,56 @@ bool CtpTraderApi::GetMMPrice(
       }
     }
     case Proto::Exchange::CZCE : {
-      double t = option->RoundToTick(theo, Proto::RoundDirection::Nearest);
+      double theo = option->RoundToTick(theo, Proto::RoundDirection::Nearest);
       switch (option->Product()[0]) {
         case 'S' : {
-          if (base::IsLessThan(t - 3, 100)) {
-            if (base::IsLessThan(t - 2, 50)) {
-              bid = t - 2;
-              ask = t + 2;
+          if (base::IsLessThan(theo - 3, 100)) {
+            if (base::IsLessThan(theo - 2, 50)) {
+              bid = theo - 2;
+              ask = theo + 2;
             } else {
-              bid = std::max(t - 3, 50.0);
+              bid = std::max(theo - 3, 50.0);
               ask = bid + 6;
             }
-          } else if (base::IsLessThan(t - 8, 300)) {
-            if (base::IsLessThan(t - 4, 200)) {
-              bid = std::max(t - 4, 100.0);
+          } else if (base::IsLessThan(theo - 8, 300)) {
+            if (base::IsLessThan(theo - 4, 200)) {
+              bid = std::max(theo - 4, 100.0);
               ask = bid + 8;
             } else {
-              bid = std::max(t - 8, 200.0);
+              bid = std::max(theo - 8, 200.0);
               ask = bid + 16;
             }
-          } else if (base::IsLessThan(t - 12, 500)) {
-            bid = std::max(t - 12, 300.0);
+          } else if (base::IsLessThan(theo - 12, 500)) {
+            bid = std::max(theo - 12, 300.0);
             ask = bid + 24;
           } else {
-            bid = std::max(t - 20, 500.0);
+            bid = std::max(theo - 20, 500.0);
             ask = bid + 40;
           }
           return true;
         }
         case 'C' : {
-          if (base::IsLessThan(t - 6, 300)) {
-            if (base::IsLessThan(t - 4, 150)) {
-              bid = t - 4;
-              ask = t + 4;
+          if (base::IsLessThan(theo - 6, 300)) {
+            if (base::IsLessThan(theo - 4, 150)) {
+              bid = theo - 4;
+              ask = theo + 4;
             } else {
-              bid = std::max(t - 6, 150.0);
+              bid = std::max(theo - 6, 150.0);
               ask = bid + 12;
             }
-          } else if (base::IsLessThan(t - 24, 1000)) {
-            if (base::IsLessThan(t - 12, 600)) {
-              bid = std::max(t - 12, 300.0);
+          } else if (base::IsLessThan(theo - 24, 1000)) {
+            if (base::IsLessThan(theo - 12, 600)) {
+              bid = std::max(theo - 12, 300.0);
               ask = bid + 24;
             } else {
-              bid = std::max(t - 24, 600.0);
+              bid = std::max(theo - 24, 600.0);
               ask = bid + 48;
             }
-          } else if (base::IsLessThan(t - 40, 1500)) {
-            bid = std::max(t - 40, 1000.0);
+          } else if (base::IsLessThan(theo - 40, 1500)) {
+            bid = std::max(theo - 40, 1000.0);
             ask = bid + 80;
           } else {
-            bid = std::max(t - 60, 1500.0);
+            bid = std::max(theo - 60, 1500.0);
             ask = bid + 120;
           }
           return true;
@@ -345,75 +348,75 @@ bool CtpTraderApi::GetQRPrice(
     double &ask) {
   switch (option->Exchange()) {
     case Proto::Exchange::CFFEX : {
-      double t = option->RoundToTick(theo, Proto::RoundDirection::Nearest);
+      double theo = option->RoundToTick(theo, Proto::RoundDirection::Nearest);
       if (option->Maturity() == first_maturity_) {
-        if (base::IsLessThan(t - 2.5, 100)) {
-          if (base::IsLessThan(t - 0.5, 20)) {
-            if (base::IsLessThan(t - 0.3, 10)) {
-              bid = t - 0.3;
-              ask = t + 0.3;
+        if (base::IsLessThan(theo - 2.5, 100)) {
+          if (base::IsLessThan(theo - 0.5, 20)) {
+            if (base::IsLessThan(theo - 0.3, 10)) {
+              bid = theo - 0.3;
+              ask = theo + 0.3;
             } else {
-              bid = std::max(t - 0.5, 10.0);
+              bid = std::max(theo - 0.5, 10.0);
               ask = bid + 1;
             }
-          } else if (base::IsLessThan(t - 1.3, 50)) {
-            bid = std::max(t - 1.3, 20.0);
+          } else if (base::IsLessThan(theo - 1.3, 50)) {
+            bid = std::max(theo - 1.3, 20.0);
             ask = bid + 2.6;
           } else {
-            bid = std::max(t - 2.5, 50.0);
+            bid = std::max(theo - 2.5, 50.0);
             ask = bid + 5;
           }
-        } else if (base::IsLessThan(t - 7.5, 500)) {
-          if (base::IsLessThan(t - 4, 250)) {
-            bid = std::max(t - 4, 100.0);
+        } else if (base::IsLessThan(theo - 7.5, 500)) {
+          if (base::IsLessThan(theo - 4, 250)) {
+            bid = std::max(theo - 4, 100.0);
             ask = bid + 8;
           } else {
-            bid = std::max(t - 7.5, 250.0);
+            bid = std::max(theo - 7.5, 250.0);
             ask = bid + 15;
           }
-        } else if (base::IsLessThan(t - 15, 1000)) {
-          bid = std::max(t - 15, 500.0);
+        } else if (base::IsLessThan(theo - 15, 1000)) {
+          bid = std::max(theo - 15, 500.0);
           ask = bid + 30;
-        } else if (base::IsLessThan(t - 30, 2000)) {
-          bid = std::max(t - 30, 1000.0);
+        } else if (base::IsLessThan(theo - 30, 2000)) {
+          bid = std::max(theo - 30, 1000.0);
           ask = bid + 60;
         } else {
-          bid = std::max(t - 60, 2000.0);
+          bid = std::max(theo - 60, 2000.0);
           ask = bid + 120;
         }
       } else {
-        if (base::IsLessThan(t - 4, 100)) {
-          if (base::IsLessThan(t - 1, 20)) {
-            if (base::IsLessThan(t - 0.5, 10)) {
-              bid = t - 0.5;
-              ask = t + 0.5;
+        if (base::IsLessThan(theo - 4, 100)) {
+          if (base::IsLessThan(theo - 1, 20)) {
+            if (base::IsLessThan(theo - 0.5, 10)) {
+              bid = theo - 0.5;
+              ask = theo + 0.5;
             } else {
-              bid = std::max(t - 1, 10.0);
+              bid = std::max(theo - 1, 10.0);
               ask = bid + 2;
             }
-          } else if (base::IsLessThan(t - 2, 50)) {
-            bid = std::max(t - 2, 20.0);
+          } else if (base::IsLessThan(theo - 2, 50)) {
+            bid = std::max(theo - 2, 20.0);
             ask = bid + 4;
           } else {
-            bid = std::max(t - 4, 50.0);
+            bid = std::max(theo - 4, 50.0);
             ask = bid + 8;
           }
-        } else if (base::IsLessThan(t - 12.5, 500)) {
-          if (base::IsLessThan(t - 7.5, 250)) {
-            bid = std::max(t - 7.5, 100.0);
+        } else if (base::IsLessThan(theo - 12.5, 500)) {
+          if (base::IsLessThan(theo - 7.5, 250)) {
+            bid = std::max(theo - 7.5, 100.0);
             ask = bid + 15;
           } else {
-            bid = std::max(t - 12.5, 250.0);
+            bid = std::max(theo - 12.5, 250.0);
             ask = bid + 25;
           }
-        } else if (base::IsLessThan(t - 25, 1000)) {
-          bid = std::max(t - 25, 500.0);
+        } else if (base::IsLessThan(theo - 25, 1000)) {
+          bid = std::max(theo - 25, 500.0);
           ask = bid + 50;
-        } else if (base::IsLessThan(t - 50, 2000)) {
-          bid = std::max(t - 50, 1000.0);
+        } else if (base::IsLessThan(theo - 50, 2000)) {
+          bid = std::max(theo - 50, 1000.0);
           ask = bid + 100;
         } else {
-          bid = std::max(t - 100, 2000.0);
+          bid = std::max(theo - 100, 2000.0);
           ask = bid + 200;
         }
       }
@@ -488,56 +491,56 @@ bool CtpTraderApi::GetQRPrice(
       }
     }
     case Proto::Exchange::CZCE : {
-      double t = option->RoundToTick(theo, Proto::RoundDirection::Nearest);
+      double theo = option->RoundToTick(theo, Proto::RoundDirection::Nearest);
       switch (option->Product()[0]) {
         case 'S' : {
-          if (base::IsLessThan(t - 4, 100)) {
-            if (base::IsLessThan(t - 3, 50)) {
-              bid = t - 3;
-              ask = t + 3;
+          if (base::IsLessThan(theo - 4, 100)) {
+            if (base::IsLessThan(theo - 3, 50)) {
+              bid = theo - 3;
+              ask = theo + 3;
             } else {
-              bid = std::max(t - 4, 50.0);
+              bid = std::max(theo - 4, 50.0);
               ask = bid + 8;
             }
-          } else if (base::IsLessThan(t - 12, 300)) {
-            if (base::IsLessThan(t - 8, 200)) {
-              bid = std::max(t - 8, 100.0);
+          } else if (base::IsLessThan(theo - 12, 300)) {
+            if (base::IsLessThan(theo - 8, 200)) {
+              bid = std::max(theo - 8, 100.0);
               ask = bid + 16;
             } else {
-              bid = std::max(t - 12, 200.0);
+              bid = std::max(theo - 12, 200.0);
               ask = bid + 24;
             }
-          } else if (base::IsLessThan(t - 20, 500)) {
-            bid = std::max(t - 20, 300.0);
+          } else if (base::IsLessThan(theo - 20, 500)) {
+            bid = std::max(theo - 20, 300.0);
             ask = bid + 40;
           } else {
-            bid = std::max(t - 30, 500.0);
+            bid = std::max(theo - 30, 500.0);
             ask = bid + 60;
           }
           return true;
         }
         case 'C' : {
-          if (base::IsLessThan(t - 12, 300)) {
-            if (base::IsLessThan(t - 6, 150)) {
-              bid = t - 6;
-              ask = t + 6;
+          if (base::IsLessThan(theo - 12, 300)) {
+            if (base::IsLessThan(theo - 6, 150)) {
+              bid = theo - 6;
+              ask = theo + 6;
             } else {
-              bid = std::max(t - 12, 150.0);
+              bid = std::max(theo - 12, 150.0);
               ask = bid + 24;
             }
-          } else if (base::IsLessThan(t - 40, 1000)) {
-            if (base::IsLessThan(t - 24, 600)) {
-              bid = std::max(t - 24, 300.0);
+          } else if (base::IsLessThan(theo - 40, 1000)) {
+            if (base::IsLessThan(theo - 24, 600)) {
+              bid = std::max(theo - 24, 300.0);
               ask = bid + 48;
             } else {
-              bid = std::max(t - 40, 600.0);
+              bid = std::max(theo - 40, 600.0);
               ask = bid + 80;
             }
-          } else if (base::IsLessThan(t - 60, 1500)) {
-            bid = std::max(t - 60, 1000.0);
+          } else if (base::IsLessThan(theo - 60, 1500)) {
+            bid = std::max(theo - 60, 1000.0);
             ask = bid + 120;
           } else {
-            bid = std::max(t - 80, 1500.0);
+            bid = std::max(theo - 80, 1500.0);
             ask = bid + 160;
           }
           return true;

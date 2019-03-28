@@ -329,6 +329,8 @@ void TheoCalculator::Recalculate(ParametersMap::value_type &value) {
                       });
     LOG_DBG << "parallel with " << counts[count % 5];
     ++count;
+  } else {
+    LOG_ERR << "failed to get parameter of product " << underlying->Product();
   }
 }
 
@@ -382,9 +384,14 @@ void TheoCalculator::CalculateAndPublish(const Option *call,
     put_matrix->theos[i].delta = put_theo.delta;
     put_matrix->theos[i].gamma = put_theo.gamma;
     put_matrix->theos[i].theta = put_theo.theta;
-    // LOG_TRA << boost::format("Calculate %1%: s(%2%), v(%3%), r(%4%), q(%5%), t(%6%), "
-    //     "theo(%7%), delta(%8%), gamma(%9%), theta(%10%)") % op->Id() % s % v % r % q %
-    //   t % theo.theo % theo.delta % theo.gamma % theo.theta;
+    LOG_DBG << boost::format("calculate %1%: s(%2%), v(%3%), r(%4%), q(%5%), t(%6%), "
+        "theo(%7%), delta(%8%), gamma(%9%), theta(%10%)") % call->Id() % s % v % p.rate %
+        p.basis % time_value % call_theo.theo % call_theo.delta % call_theo.gamma %
+        call_theo.theta;
+    // LOG_DBG << boost::format("calculate %1%: s(%2%), v(%3%), r(%4%), q(%5%), t(%6%), "
+    //     "theo(%7%), delta(%8%), gamma(%9%), theta(%10%)") % put->Id() % s % v % p.rate %
+    //     p.basis % time_value % put_theo.theo % put_theo.delta % put_theo.gamma %
+    //     put_theo.theta;
   }
   dm_->Publish(call_matrix);
   dm_->Publish(put_matrix);

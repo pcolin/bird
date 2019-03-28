@@ -38,13 +38,18 @@ foreach(proto_file ${PROTO_FILES})
   string(REPLACE ".proto" ".pb.cc" abs_file_cc ${proto_file})
   string(REPLACE "../../share/msg/" "" file_cc ${abs_file_cc})
   list(APPEND CC_FILES ${file_cc})
+  #add_custom_command(
+  #  OUTPUT ${file_h} ${file_cc}
+  #  COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/../../share/tools/protobuf/src/protoc
+  #  ARGS -I${CMAKE_CURRENT_SOURCE_DIR}/../../share/tools/protobuf/src --cpp_out . ${CMAKE_CURRENT_SOURCE_DIR}/${proto_file} --proto_path='${CMAKE_CURRENT_SOURCE_DIR}/../../share/msg'
+  #  DEPENDS ${proto_file})
   add_custom_command(
     OUTPUT ${file_h} ${file_cc}
-    COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/../../share/tools/protobuf/src/protoc
-    ARGS -I${CMAKE_CURRENT_SOURCE_DIR}/../../share/tools/protobuf/src --cpp_out . ${CMAKE_CURRENT_SOURCE_DIR}/${proto_file} --proto_path='${CMAKE_CURRENT_SOURCE_DIR}/../../share/msg'
+    COMMAND ${3RD_LIBRARY_DIR}/protobuf/bin/protoc
+    ARGS --cpp_out . ${CMAKE_CURRENT_SOURCE_DIR}/${proto_file} --proto_path='${CMAKE_CURRENT_SOURCE_DIR}/../../share/msg'
     DEPENDS ${proto_file})
 endforeach()
 
-add_library(protomsg ${CC_FILES})
+add_library(protomsg SHARED ${CC_FILES})
 target_link_libraries(protomsg protobuf pthread)
 add_custom_target(PROTOC ALL DEPENDS ${PROTO_FILES})

@@ -6,9 +6,10 @@
 #include "boost/date_time/gregorian/gregorian.hpp"
 #include "boost/date_time/posix_time/posix_time.hpp"
 
-ProductParameterDB::ProductParameterDB(ConcurrentSqliteDB &db,
-                                         const std::string &table_name,
-                                         const std::string &holiday_table_name)
+ProductParameterDB::ProductParameterDB(
+    ConcurrentSqliteDB &db,
+    const std::string &table_name,
+    const std::string &holiday_table_name)
     : DbBase(db, table_name), holiday_table_name_(holiday_table_name) {}
 
 void ProductParameterDB::RefreshCache() {
@@ -137,7 +138,8 @@ int ProductParameterDB::ParameterCallback(void *data, int argc, char **argv, cha
   p->set_product(argv[0]);
   p->set_exchange(static_cast<Proto::Exchange>(atoi(argv[1])));
   ParseTradingSession(argv[2], std::bind(&Proto::ProductParameter::add_sessions, p.get()));
-  ParseTradingSession(argv[3], std::bind(&Proto::ProductParameter::add_maturity_sessions, p.get()));
+  ParseTradingSession(argv[3], std::bind(
+        &Proto::ProductParameter::add_maturity_sessions, p.get()));
   p->set_charm_start_time(argv[4]);
 
   auto &cache = *static_cast<ProductParameterMap*>(data);
@@ -146,7 +148,7 @@ int ProductParameterDB::ParameterCallback(void *data, int argc, char **argv, cha
 }
 
 void ProductParameterDB::ParseTradingSession(char *data,
-                                             std::function<Proto::TradingSession*()> func) {
+    std::function<Proto::TradingSession*()> func) {
   char *beg = data, *first = data, *second = data, *pos = data + 1;
   while (*pos != 0) {
     if (*pos == '-') {

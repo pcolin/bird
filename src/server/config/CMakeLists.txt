@@ -1,2 +1,2 @@
-ADD_LIBRARY(config EnvConfig.cpp)
+ADD_LIBRARY(config SHARED EnvConfig.cpp)
 TARGET_LINK_LIBRARIES(config logger)

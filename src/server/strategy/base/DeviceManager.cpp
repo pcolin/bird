@@ -64,8 +64,10 @@ void DeviceManager::Init() {
 
 void DeviceManager::Publish(PricePtr &price) {
   /// add adjusted price to be done...
+  // LOG_DBG << "publish price of " << price->instrument->Id();
   if (price->instrument == underlying_) {
     double theo = theo_.ApplyElastic(price, hedger_ ? hedger_->OpenDelta() : 0);
+    // LOG_DBG << "after apply elastic " << underlying_prices_.size();
     if (underlying_prices_.size() > 0) {
       double min = theo, max = theo;
       for (double p : underlying_prices_) {
@@ -74,6 +76,7 @@ void DeviceManager::Publish(PricePtr &price) {
         else if (p > max)
           max = p;
       }
+      LOG_INF << boost::format("min:%1%, max:%2%") % min % max;
       // if (underlying_->ConvertToTick(max - min) > warn_tick_change_) {
       if (base::IsMoreThan(max - min, max_price_change_)) {
         normal_ = false;
@@ -101,6 +104,7 @@ void DeviceManager::Publish(PricePtr &price) {
     }
     underlying_prices_.push_back(theo);
   }
+  // LOG_DBG << "before publish to all";
 
   // Publish<PricePtr>(price);
   int64_t seq = rb_.Next();

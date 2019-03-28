@@ -10,7 +10,7 @@
 #include "strategy/base/DeviceManager.h"
 #include "strategy/base/ClusterManager.h"
 #include "config/EnvConfig.h"
-#include "pubsub.h"
+#include "nanomsg/pubsub.h"
 #include "boost/format.hpp"
 
 Middleware* Middleware::GetInstance() {
@@ -30,12 +30,12 @@ void Middleware::Init() {
 base::ProtoMessagePtr Middleware::Request(const google::protobuf::Message &request) {
   int req = nn_socket(AF_SP, NN_REQ);
   if (req < 0) {
-    LOG_ERR << "Failed to create req socket: " << nn_strerror(nn_errno());
+    LOG_ERR << "failed to create req socket: " << nn_strerror(nn_errno());
     return nullptr;
   }
   const std::string addr = EnvConfig::GetInstance()->GetString(EnvVar::REQ_ADDR);
   if (nn_connect(req, addr.c_str()) < 0) {
-    LOG_ERR << "Failed to connect req socket: " << nn_strerror(nn_errno());
+    LOG_ERR << "failed to connect req socket: " << nn_strerror(nn_errno());
     nn_close(req);
     return nullptr;
   }
@@ -45,27 +45,27 @@ base::ProtoMessagePtr Middleware::Request(const google::protobuf::Message &reque
   char *buffer = base::EncodeProtoMessage(request, n);
   if (buffer) {
     if (nn_send(req, buffer, n, 0) > 0) {
-      LOG_INF << "Success to send: " << request.ShortDebugString();
+      LOG_INF << "success to send: " << request.ShortDebugString();
       void *msg = NULL;
       int rc = nn_recv(req, &msg, NN_MSG, 0);
       if (rc > 0) {
-        LOG_DBG << boost::format("Receive %1% bytes: %2%") % rc % base::GetString(msg, rc);
+        LOG_DBG << boost::format("receive %1% bytes: %2%") % rc % base::GetString(msg, rc);
         reply = base::ProtoMessagePtr(base::DecodeProtoMessage(msg, rc));
         if (reply) {
-          LOG_INF << "Success to decode message: " << reply->ShortDebugString();
+          LOG_INF << "success to decode message: " << reply->ShortDebugString();
         } else {
-          LOG_INF << "Failed to decode message";
+          LOG_INF << "failed to decode message";
         }
         nn_freemsg(msg);
       } else {
-        LOG_ERR << "Failed to receive message: " << nn_strerror(nn_errno());
+        LOG_ERR << "failed to receive message: " << nn_strerror(nn_errno());
       }
     } else {
-      LOG_ERR << "Failed to send message: " << nn_strerror(nn_errno());
+      LOG_ERR << "failed to send message: " << nn_strerror(nn_errno());
     }
     delete[] buffer;
   } else {
-    LOG_ERR << "Failed to encode message";
+    LOG_ERR << "failed to encode message";
   }
   nn_close(req);
   return reply;
@@ -130,7 +130,7 @@ std::shared_ptr<Proto::Reply> Middleware::OnOrderRequest(
 }
 
 void Middleware::RunTimer() {
-  LOG_INF << "Start middleware timer...";
+  LOG_INF << "start middleware timer...";
   auto heartbeat = Message<Proto::Heartbeat>::New();
   Proto::Exchange exchange;
   Proto::Exchange_Parse(EnvConfig::GetInstance()->GetString(EnvVar::EXCHANGE), &exchange);
@@ -145,15 +145,15 @@ void Middleware::RunTimer() {
 }
 
 void Middleware::RunPublisher() {
-  LOG_INF << "Start middleware publishing thread...";
+  LOG_INF << "start middleware publishing thread...";
   int pub = nn_socket(AF_SP, NN_PUB);
   if (pub < 0) {
-    LOG_ERR << "Failed to create pub socket: " << nn_strerror(nn_errno());
+    LOG_ERR << "failed to create pub socket: " << nn_strerror(nn_errno());
     return;
   }
   const std::string pub_addr = EnvConfig::GetInstance()->GetString(EnvVar::BIND_SUB_ADDR);
   if (nn_bind(pub, pub_addr.c_str()) < 0) {
-    LOG_ERR << "Failed to bind pub socket: " << nn_strerror(nn_errno());
+    LOG_ERR << "failed to bind pub socket(" << pub_addr << "):" << nn_strerror(nn_errno());
     nn_close(pub);
     return;
   }
@@ -167,15 +167,15 @@ void Middleware::RunPublisher() {
       if (size > 0) {
         size_t bytes  = nn_send(pub, buf, size, 0);
         if (unlikely(bytes != size)) {
-          LOG_ERR << boost::format("Failed to publish message(%1% != %2%)") % bytes % size;
+          LOG_ERR << boost::format("failed to publish message(%1% != %2%)") % bytes % size;
         } else {
           // LOG_INF << boost::format("Success to publish %1%: %2%") % messages[i]->GetTypeName() %
           //   messages[i]->ShortDebugString();
-          LOG_INF << "Publish " << messages[i]->GetTypeName() << ":"
+          LOG_TRA << "publish " << messages[i]->GetTypeName() << ":"
                   << messages[i]->ShortDebugString();
         }
       } else {
-        LOG_ERR << boost::format("Failed to encode %1%: %2%") % messages[i]->GetTypeName() %
+        LOG_ERR << boost::format("failed to encode %1%: %2%") % messages[i]->GetTypeName() %
                    messages[i]->ShortDebugString();
       }
     }
@@ -184,15 +184,15 @@ void Middleware::RunPublisher() {
 }
 
 void Middleware::RunResponder() {
-  LOG_INF << "Start middleware responder thread...";
+  LOG_INF << "start middleware responder thread...";
   int sock = nn_socket(AF_SP, NN_REP);
   if (sock < 0) {
-    LOG_ERR << "Failed to create responser socket: " << nn_strerror(nn_errno());
+    LOG_ERR << "failed to create responser socket: " << nn_strerror(nn_errno());
     return;
   }
   const std::string addr = EnvConfig::GetInstance()->GetString(EnvVar::BIND_REQ_ADDR);
   if (nn_bind(sock, addr.c_str()) < 0) {
-    LOG_ERR << "Failed to bind responser socket: " << nn_strerror(nn_errno());
+    LOG_ERR << "failed to bind responser socket: " << nn_strerror(nn_errno());
     nn_close(sock);
     return;
   }
@@ -253,21 +253,21 @@ void Middleware::RunResponder() {
         Publish(msg);
       } else {
         reply->set_result(false);
-        reply->set_error("Decode message failed");
-        LOG_ERR << "Failed to decode proto message";
+        reply->set_error("decode message failed");
+        LOG_ERR << "failed to decode proto message";
       }
       size_t size = base::EncodeProtoMessage(*reply, &send_buf, n);
       if (size > 0) {
         size_t bytes = nn_send(sock, send_buf, size, 0);
         if (unlikely(bytes != size)) {
-          LOG_ERR << boost::format("Failed to send message(%1% != %2%)") % bytes % size;
+          LOG_ERR << boost::format("failed to send message(%1% != %2%)") % bytes % size;
         }
       }
       nn_freemsg(recv_buf);
     } else { // if (nn_errno() != EINTR)
       // reply->set_result(false);
       // reply->set_error("Receive message failed");
-      LOG_ERR << "Failed to receive message: " << nn_strerror(nn_errno());
+      LOG_ERR << "failed to receive message: " << nn_strerror(nn_errno());
     }
     // LOG_INF << reply->ShortDebugString();
   }

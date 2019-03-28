@@ -7,8 +7,7 @@ import "Strategy.proto";
 import "Request.proto";
 import "Reply.proto";
 
-enum Side
-{
+enum Side {
   Buy = 0;
   Sell = 1;
   BuyCover = 2;
@@ -19,20 +18,17 @@ enum Side
   SellCoverYesterday = 7;
 }
 
-enum TimeCondition
-{
+enum TimeCondition {
   GTD = 0;
   IOC = 1;
 }
 
-enum OrderType
-{
+enum OrderType {
   Limit = 0;
   Market = 1;
 }
 
-enum OrderStatus
-{
+enum OrderStatus {
   Undefined = 0;
   Local = 1;
   Submitted = 2;
@@ -44,15 +40,13 @@ enum OrderStatus
   Rejected = 8;
 }
 
-enum OrderAction
-{
+enum OrderAction {
   Submit = 0;
   Cancel = 1;
   Amend = 2;
 }
 
-message Order
-{
+message Order {
   uint64 id = 1;
   string instrument = 2;
   string counter_id = 3;
@@ -60,36 +54,39 @@ message Order
   string quote_id = 5;
   string strategy = 6;
   string note = 7;
-  double price = 8;
-  double avg_executed_price = 9;
-  int32 volume = 10;
-  int32 executed_volume = 11;
-  Exchange exchange = 12;
-  StrategyType strategy_type = 13;
-  Side side = 14;
-  TimeCondition time_condition = 15;
-  OrderType type = 16;
-  OrderStatus status = 17;
-  uint64 time = 18;
-  int32 latency = 19;
+  double spot = 8;
+  double theo = 9;
+  double delta = 10;
+  double volatility = 11;
+  double ss_rate = 12;
+  double credit = 13;
+  double price = 14;
+  double avg_executed_price = 15;
+  int32 volume = 16;
+  int32 executed_volume = 17;
+  Exchange exchange = 18;
+  StrategyType strategy_type = 19;
+  Side side = 20;
+  TimeCondition time_condition = 21;
+  OrderType type = 22;
+  OrderStatus status = 23;
+  uint64 time = 24;
+  int32 latency = 25;
 }
 
-message OrderRequest
-{
+message OrderRequest {
   OrderAction action = 1;
   repeated Order orders = 2;
 }
 
-message OrderReq
-{
+message OrderReq {
   RequestType type = 1;
   Exchange exchange = 2;
   string user = 3;
   repeated Order orders = 4;
 }
 
-message OrderRep
-{
+message OrderRep {
   repeated Order orders = 1;
   Reply result = 2;
 }

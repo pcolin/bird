@@ -21,6 +21,12 @@ Order::Order()
 Order::Order(const Proto::Order &ord)
     : header(MsgType::Order),
       id(ord.id()),
+      spot(ord.spot()),
+      theo(ord.theo()),
+      delta(ord.delta()),
+      volatility(ord.volatility()),
+      ss_rate(ord.ss_rate()),
+      credit(ord.credit()),
       price(ord.price()),
       volume(ord.volume()),
       strategy_type(ord.strategy_type()),
@@ -79,6 +85,12 @@ std::shared_ptr<Proto::Order> Order::Serialize() const {
   ord->set_exchange_id(exchange_id);
   ord->set_quote_id(quote_id);
   ord->set_note(note);
+  ord->set_spot(spot);
+  ord->set_theo(theo);
+  ord->set_delta(delta);
+  ord->set_volatility(volatility);
+  ord->set_ss_rate(ss_rate);
+  ord->set_credit(credit);
   ord->set_price(price);
   ord->set_avg_executed_price(avg_executed_price);
   ord->set_volume(volume);
@@ -105,6 +117,12 @@ void Order::Serialize(Proto::Order *order) const {
   order->set_exchange_id(exchange_id);
   order->set_quote_id(quote_id);
   order->set_note(note);
+  order->set_spot(spot);
+  order->set_theo(theo);
+  order->set_delta(delta);
+  order->set_volatility(volatility);
+  order->set_ss_rate(ss_rate);
+  order->set_credit(credit);
   order->set_price(price);
   order->set_avg_executed_price(avg_executed_price);
   order->set_volume(volume);
@@ -133,8 +151,8 @@ LogStream& operator<<(LogStream& stream, const OrderPtr &order) {
       Proto::OrderStatus_Name(order->status);
 
     if (order->spot > 0 && order->theo > 0) {
-      stream << boost::format(" Theo(%1%) Spot(%2%) Volatility(%3%) SSRate(%4%)") %
-        order->theo % order->spot % order->volatility % order->ss_rate;
+      stream << boost::format(" Theo(%1%) Delta(%2%) Spot(%3%) Vol(%4%) SSR(%5%)") %
+        order->theo % order->delta % order->spot % order->volatility % order->ss_rate;
     }
     if (order->credit > 0) {
       stream << boost::format(" Credit(%1%)") % order->credit;

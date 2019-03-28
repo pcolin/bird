@@ -8,8 +8,8 @@
 #include "base/common/ProtoMessageCoder.h"
 #include "base/common/ProtoMessageDispatcher.h"
 #include "Order.pb.h"
-#include "nn.h"
-#include "reqrep.h"
+#include "nanomsg/nn.h"
+#include "nanomsg/reqrep.h"
 
 class Middleware {
  public:

@@ -1,1 +1,1 @@
-ADD_LIBRARY(disruptor STATIC Sequencer.cpp SingleProducerSequencer.cpp)
+ADD_LIBRARY(disruptor SHARED Sequencer.cpp SingleProducerSequencer.cpp)

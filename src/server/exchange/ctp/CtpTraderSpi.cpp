@@ -123,6 +123,11 @@ void CtpTraderSpi::OnRspQryInstrument(CThostFtdcInstrumentField* pInstrument,
       future->Id(id);
       future->Underlying(future);
       future->Maturity(boost::gregorian::from_undelimited_string(pInstrument->ExpireDate)); /// DCE
+      if (pInstrument->IsTrading) {
+        future->Status(Proto::InstrumentStatus::Trading);
+      } else {
+        future->Status(Proto::InstrumentStatus::Halt);
+      }
       if (id == it->second.hedge_underlying) {
         future->HedgeUnderlying(future);
         InstrumentManager::GetInstance()->Add(future);
@@ -150,6 +155,18 @@ void CtpTraderSpi::OnRspQryInstrument(CThostFtdcInstrumentField* pInstrument,
       op->ExerciseType(Proto::American);
       auto maturity = boost::gregorian::from_undelimited_string(pInstrument->ExpireDate);
       op->Maturity(maturity); /// DCE
+      if (pInstrument->IsTrading) {
+        auto product = ParameterManager::GetInstance()->GetProduct(pInstrument->ProductID);
+        if (!product || product->IsTradingTime(maturity)) {
+          op->Status(Proto::InstrumentStatus::Trading);
+        } else {
+          op->Status(Proto::InstrumentStatus::PreOpen);
+        }
+      } else {
+        op->Status(Proto::InstrumentStatus::Halt);
+      }
+      LOG_DBG << boost::format("set %1% status: %2%") % id %
+        Proto::InstrumentStatus_Name(op->Status());
       if (maturity < first_maturity_) {
         first_maturity_ = maturity;
       }
@@ -162,18 +179,6 @@ void CtpTraderSpi::OnRspQryInstrument(CThostFtdcInstrumentField* pInstrument,
     inst->Symbol(pInstrument->InstrumentID);
     inst->Product(pInstrument->ProductID);
     inst->Exchange(exchange);
-    if (pInstrument->IsTrading) {
-      auto product = ParameterManager::GetInstance()->GetProduct(pInstrument->ProductID);
-      if (!product || product->IsTradingTime(inst->Maturity())) {
-        inst->Status(Proto::InstrumentStatus::Trading);
-      } else {
-        inst->Status(Proto::InstrumentStatus::PreOpen);
-      }
-    } else {
-      inst->Status(Proto::InstrumentStatus::Halt);
-    }
-    LOG_DBG << boost::format("set %1% status: %2%") % inst->Id() %
-               Proto::InstrumentStatus_Name(inst->Status());
     inst->Currency(Proto::Currency::CNY);
     inst->Tick(pInstrument->PriceTick);
     inst->Multiplier(pInstrument->VolumeMultiple);
@@ -200,6 +205,7 @@ void CtpTraderSpi::OnRspQryInstrument(CThostFtdcInstrumentField* pInstrument,
                                      config_[it.second].hedge_underlying);
       assert(hedge_undl);
       it.first->HedgeUnderlying(hedge_undl);
+      it.first->Status(hedge_undl->Status());
       InstrumentManager::GetInstance()->Add(it.first);
       LOG_INF << boost::format("Add Option %1%, Hedge Underlying %2%") %
                  it.first->Id() % hedge_undl->Id();
@@ -224,46 +230,48 @@ void CtpTraderSpi::OnRspQryInstrumentCommissionRate(
     CThostFtdcRspInfoField* pRspInfo,
     int nRequestID,
     bool bIsLast) {
-  if (pRspInfo && pRspInfo->ErrorID != 0) {
+  if (unlikely(pRspInfo && pRspInfo->ErrorID != 0)) {
     LOG_ERR << boost::format("Failed to query future commission rate: %1%(%2%).") %
                pRspInfo->ErrorID % base::GB2312ToUtf8(pRspInfo->ErrorMsg);
     return;
   }
-  LOG_INF << boost::format("OnRspQryInstrumentCommissionRate: InstrumentID(%1%), BrokerID(%2%), "
-                           "InvestorID(%3%), OpenRatioByMoney(%4%), OpenRatioByVolume(%5%), "
-                           "CloseRatioByMoney(%6%), CloseRatioByVolume(%7%), "
-                           "CloseTodayRatioByMoney(%8%), CloseTodayRatioByVolume(%9%)") %
-             pInstrumentCommissionRate->InstrumentID % pInstrumentCommissionRate->BrokerID %
-             pInstrumentCommissionRate->InvestorID % pInstrumentCommissionRate->OpenRatioByMoney %
-             pInstrumentCommissionRate->OpenRatioByVolume %
-             pInstrumentCommissionRate->CloseRatioByMoney %
-             pInstrumentCommissionRate->CloseRatioByVolume %
-             pInstrumentCommissionRate->CloseTodayRatioByMoney %
-             pInstrumentCommissionRate->CloseTodayRatioByVolume;
+  if (pInstrumentCommissionRate) {
+    LOG_INF << boost::format("OnRspQryInstrumentCommissionRate: InstrumentID(%1%), BrokerID(%2%), "
+                             "InvestorID(%3%), OpenRatioByMoney(%4%), OpenRatioByVolume(%5%), "
+                             "CloseRatioByMoney(%6%), CloseRatioByVolume(%7%), "
+                             "CloseTodayRatioByMoney(%8%), CloseTodayRatioByVolume(%9%)") %
+               pInstrumentCommissionRate->InstrumentID % pInstrumentCommissionRate->BrokerID %
+               pInstrumentCommissionRate->InvestorID % pInstrumentCommissionRate->OpenRatioByMoney %
+               pInstrumentCommissionRate->OpenRatioByVolume %
+               pInstrumentCommissionRate->CloseRatioByMoney %
+               pInstrumentCommissionRate->CloseRatioByVolume %
+               pInstrumentCommissionRate->CloseTodayRatioByMoney %
+               pInstrumentCommissionRate->CloseTodayRatioByVolume;
 
-  /// to be done...
-  auto instruments = InstrumentManager::GetInstance()->FindInstruments(
-      [&](const Instrument *inst) {
-        return inst->Product() == pInstrumentCommissionRate->InstrumentID;
-      });
-  if (instruments.size() > 0) {
-    if (pInstrumentCommissionRate->OpenRatioByMoney > 0 ||
-        pInstrumentCommissionRate->CloseRatioByMoney > 0 ||
-        pInstrumentCommissionRate->CloseTodayRatioByMoney > 0) {
-      for(auto *instrument : instruments) {
-        Instrument *inst = const_cast<Instrument*>(instrument);
-        inst->CommissionType(Proto::CommissionType::Money);
-        inst->OpenCommission(pInstrumentCommissionRate->OpenRatioByMoney);
-        inst->CloseCommission(pInstrumentCommissionRate->CloseRatioByMoney);
-        inst->CloseTodayCommission(pInstrumentCommissionRate->CloseTodayRatioByMoney);
-      }
-    } else {
-      for(auto *instrument : instruments) {
-        Instrument *inst = const_cast<Instrument*>(instrument);
-        inst->CommissionType(Proto::CommissionType::Volume);
-        inst->OpenCommission(pInstrumentCommissionRate->OpenRatioByVolume);
-        inst->CloseCommission(pInstrumentCommissionRate->CloseRatioByVolume);
-        inst->CloseTodayCommission(pInstrumentCommissionRate->CloseTodayRatioByVolume);
+    /// to be done...
+    auto instruments = InstrumentManager::GetInstance()->FindInstruments(
+        [&](const Instrument *inst) {
+          return inst->Product() == pInstrumentCommissionRate->InstrumentID;
+        });
+    if (instruments.size() > 0) {
+      if (pInstrumentCommissionRate->OpenRatioByMoney > 0 ||
+          pInstrumentCommissionRate->CloseRatioByMoney > 0 ||
+          pInstrumentCommissionRate->CloseTodayRatioByMoney > 0) {
+        for(auto *instrument : instruments) {
+          Instrument *inst = const_cast<Instrument*>(instrument);
+          inst->CommissionType(Proto::CommissionType::Money);
+          inst->OpenCommission(pInstrumentCommissionRate->OpenRatioByMoney);
+          inst->CloseCommission(pInstrumentCommissionRate->CloseRatioByMoney);
+          inst->CloseTodayCommission(pInstrumentCommissionRate->CloseTodayRatioByMoney);
+        }
+      } else {
+        for(auto *instrument : instruments) {
+          Instrument *inst = const_cast<Instrument*>(instrument);
+          inst->CommissionType(Proto::CommissionType::Volume);
+          inst->OpenCommission(pInstrumentCommissionRate->OpenRatioByVolume);
+          inst->CloseCommission(pInstrumentCommissionRate->CloseRatioByVolume);
+          inst->CloseTodayCommission(pInstrumentCommissionRate->CloseTodayRatioByVolume);
+        }
       }
     }
   }
@@ -284,39 +292,41 @@ void CtpTraderSpi::OnRspQryOptionInstrCommRate(
     return;
   }
 
-  LOG_INF << boost::format("OnRspQryOptionInstrCommRate: InstrumentID(%1%), BrokerID(%2%), "
-                           "InvestorID(%3%), OpenRatioByMoney(%4%), OpenRatioByVolume(%5%), "
-                           "CloseRatioByMoney(%6%), CloseRatioByVolume(%7%), "
-                           "CloseTodayRatioByMoney(%8%), CloseTodayRatioByVolume(%9%)") %
-             pOptionInstrCommRate->InstrumentID % pOptionInstrCommRate->BrokerID %
-             pOptionInstrCommRate->InvestorID % pOptionInstrCommRate->OpenRatioByMoney %
-             pOptionInstrCommRate->OpenRatioByVolume % pOptionInstrCommRate->CloseRatioByMoney %
-             pOptionInstrCommRate->CloseRatioByVolume %
-             pOptionInstrCommRate->CloseTodayRatioByMoney %
-             pOptionInstrCommRate->CloseTodayRatioByVolume;
+  if (pOptionInstrCommRate) {
+    LOG_INF << boost::format("OnRspQryOptionInstrCommRate: InstrumentID(%1%), BrokerID(%2%), "
+                             "InvestorID(%3%), OpenRatioByMoney(%4%), OpenRatioByVolume(%5%), "
+                             "CloseRatioByMoney(%6%), CloseRatioByVolume(%7%), "
+                             "CloseTodayRatioByMoney(%8%), CloseTodayRatioByVolume(%9%)") %
+               pOptionInstrCommRate->InstrumentID % pOptionInstrCommRate->BrokerID %
+               pOptionInstrCommRate->InvestorID % pOptionInstrCommRate->OpenRatioByMoney %
+               pOptionInstrCommRate->OpenRatioByVolume % pOptionInstrCommRate->CloseRatioByMoney %
+               pOptionInstrCommRate->CloseRatioByVolume %
+               pOptionInstrCommRate->CloseTodayRatioByMoney %
+               pOptionInstrCommRate->CloseTodayRatioByVolume;
 
-  /// to be done...
-  auto instruments = InstrumentManager::GetInstance()->FindInstruments(
-      [&](const Instrument *inst) {
-        return inst->Product() == pOptionInstrCommRate->InstrumentID;
-      });
-  if (instruments.size() > 0) {
-    if (pOptionInstrCommRate->OpenRatioByMoney > 0 || pOptionInstrCommRate->CloseRatioByMoney > 0 ||
-        pOptionInstrCommRate->CloseTodayRatioByMoney > 0) {
-      for(auto *instrument : instruments) {
-        Instrument *inst = const_cast<Instrument*>(instrument);
-        inst->CommissionType(Proto::CommissionType::Money);
-        inst->OpenCommission(pOptionInstrCommRate->OpenRatioByMoney);
-        inst->CloseCommission(pOptionInstrCommRate->CloseRatioByMoney);
-        inst->CloseTodayCommission(pOptionInstrCommRate->CloseTodayRatioByMoney);
-      }
-    } else {
-      for(auto *instrument : instruments) {
-        Instrument *inst = const_cast<Instrument*>(instrument);
-        inst->CommissionType(Proto::CommissionType::Volume);
-        inst->OpenCommission(pOptionInstrCommRate->OpenRatioByVolume);
-        inst->CloseCommission(pOptionInstrCommRate->CloseRatioByVolume);
-        inst->CloseTodayCommission(pOptionInstrCommRate->CloseTodayRatioByVolume);
+    /// to be done...
+    auto instruments = InstrumentManager::GetInstance()->FindInstruments(
+        [&](const Instrument *inst) {
+          return inst->Product() == pOptionInstrCommRate->InstrumentID;
+        });
+    if (instruments.size() > 0) {
+      if (pOptionInstrCommRate->OpenRatioByMoney > 0 || pOptionInstrCommRate->CloseRatioByMoney > 0 ||
+          pOptionInstrCommRate->CloseTodayRatioByMoney > 0) {
+        for(auto *instrument : instruments) {
+          Instrument *inst = const_cast<Instrument*>(instrument);
+          inst->CommissionType(Proto::CommissionType::Money);
+          inst->OpenCommission(pOptionInstrCommRate->OpenRatioByMoney);
+          inst->CloseCommission(pOptionInstrCommRate->CloseRatioByMoney);
+          inst->CloseTodayCommission(pOptionInstrCommRate->CloseTodayRatioByMoney);
+        }
+      } else {
+        for(auto *instrument : instruments) {
+          Instrument *inst = const_cast<Instrument*>(instrument);
+          inst->CommissionType(Proto::CommissionType::Volume);
+          inst->OpenCommission(pOptionInstrCommRate->OpenRatioByVolume);
+          inst->CloseCommission(pOptionInstrCommRate->CloseRatioByVolume);
+          inst->CloseTodayCommission(pOptionInstrCommRate->CloseTodayRatioByVolume);
+        }
       }
     }
   }

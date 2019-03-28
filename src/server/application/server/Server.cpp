@@ -6,6 +6,7 @@
 #include "base/common/Dtoa.h"
 #include "base/logger/Logging.h"
 #include "Server.pb.h"
+#include "Strategy.pb.h"
 #include "config/EnvConfig.h"
 #include "exchange/manager/ExchangeManager.h"
 #include "model/Middleware.h"
@@ -65,41 +66,37 @@ int main(int argc, char *args[]) {
   LOG_PUB << "Initialization is done:)";
   LOG_INF << "==================================================";
 
-  // ///// test
-  // std::this_thread::sleep_for(std::chrono::seconds(3));
-  // //// const Instrument* inst = InstrumentManager::GetInstance()->FindId("SR801");
-  // const std::string id = "m1809";
-  // const Instrument* inst = InstrumentManager::GetInstance()->FindId(id);
-  // if (inst)
-  // {
-  //   auto *dm = ClusterManager::GetInstance()->FindDevice(inst);
-  //   if (dm)
-  //   {
-  //     auto s = dm->FindStrategyDevice("m1809_P");
-  //     if (s)
-  //     {
-  //       LOG_INF << "Start pricing strategy";
-  //       s->Start();
-  //       // std::this_thread::sleep_for(std::chrono::seconds(600));
-  //       // s->Stop();
-  //     }
-  //     else
-  //     {
-  //       LOG_ERR << "Failed to find pricing strategy.";
-  //     }
-  //   }
-  //   else
-  //   {
-  //     LOG_ERR << "Can't find device " << inst->Id();
-  //   }
-  // }
-  // else
-  // {
-  //   LOG_ERR << "Can't find instrument " << id;
-  // }
-  //std::this_thread::sleep_for(std::chrono::seconds(60));
-  //OrderManager::GetInstance()->Dump();
   ///// test
+  std::this_thread::sleep_for(std::chrono::seconds(10));
+  //// const Instrument* inst = InstrumentManager::GetInstance()->FindId("SR801");
+  const std::string id = "IF1904";
+  const Instrument* inst = InstrumentManager::GetInstance()->FindId(id);
+  if (inst)
+  {
+    auto *dm = ClusterManager::GetInstance()->FindDevice(inst);
+    if (dm)
+    {
+      Proto::StrategyOperate op;
+      op.set_name("IF1904_Q");
+      op.set_underlying("IF1904");
+      op.set_operate(Proto::Start);
+      dm->OnStrategyOperate("test", op);
+      std::this_thread::sleep_for(std::chrono::seconds(600));
+      op.set_operate(Proto::Stop);
+      dm->OnStrategyOperate("test", op);
+    }
+    else
+    {
+      LOG_ERR << "Can't find device " << inst->Id();
+    }
+  }
+  else
+  {
+    LOG_ERR << "Can't find instrument " << id;
+  }
+  std::this_thread::sleep_for(std::chrono::seconds(60));
+  OrderManager::GetInstance()->Dump();
+  /// test
 
   std::unique_lock<std::mutex> lck(mtx);
   cv.wait(lck);

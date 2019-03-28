@@ -65,9 +65,9 @@ protected:
   void RespondingQR(const std::shared_ptr<Proto::RequestForQuote> &rfq);
 
   bool Check(ParameterMap::iterator &it);
-  void CalculateAndResubmit(ParameterMap::iterator &it);
-  void ResubmitOrders(ParameterMap::iterator &it);
-  void CancelOrders(const std::shared_ptr<Parameter> &parameter);
+  void CalculateAndResubmit(ParameterMap::iterator &it, const char *reason);
+  void ResubmitOrders(ParameterMap::iterator &it, const char *reason);
+  void CancelOrders(const ParameterPtr &parameter, const char *reason);
   TraderApi *api_ = nullptr;
 
   std::shared_ptr<Proto::QuoterSpec> quoter_;

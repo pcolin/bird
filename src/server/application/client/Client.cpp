@@ -1,6 +1,6 @@
 #include <iostream>
-#include "nn.h"
-#include "reqrep.h"
+#include "nanomsg/nn.h"
+#include "nanomsg/reqrep.h"
 #include "Login.pb.h"
 #include "Strategy.pb.h"
 #include "base/common/ProtoMessageCoder.h"
@@ -17,7 +17,7 @@ void Send(const std::shared_ptr<google::protobuf::Message> &msg) {
   if (size > 0) {
     size_t bytes = nn_send(sock, buf, size, 0);
     if (unlikely(bytes != size)) {
-      cout << "Failed to send message(" << bytes << " != " << size << endl;
+      cout << "failed to send message(" << bytes << " != " << size << endl;
       return;
     }
     char *recv_buf = NULL;
@@ -27,10 +27,10 @@ void Send(const std::shared_ptr<google::protobuf::Message> &msg) {
       if (m) {
         cout << m->GetTypeName() << " " << m->ShortDebugString() << endl;
       } else {
-        cout << "Failed to decode message." << endl;
+        cout << "failed to decode message." << endl;
       }
     } else {
-      cout << "Failed to receive reply message." << endl;
+      cout << "failed to receive reply message." << endl;
     }
   }
 }
@@ -78,19 +78,19 @@ int main(int argc, char *argv[]) {
   cout << "Hello client." << endl;
   sock = nn_socket(AF_SP, NN_REQ);
   if (sock < 0) {
-    cout << "Failed to create socket" << endl;
+    cout << "failed to create socket" << endl;
     return -1;
   }
   // if (nn_connect(sock, "ipc:///tmp/reqrep.ipc") < 0)
   if (nn_connect(sock, "tcp://172.28.1.53:8005") < 0) {
-    cout << "Failed to connect socket" << endl;
+    cout << "failed to connect socket" << endl;
     return -1;
   }
 
   char ch;
   bool running = true;
   while (running) {
-    cout << "Press a key(1: Login|2: Logout|3: Play|4: Stop|q: exit)" << endl;
+    cout << "press a key(1: Login|2: Logout|3: Play|4: Stop|q: exit)" << endl;
     cin >> ch;
     switch (ch) {
       case '1': {

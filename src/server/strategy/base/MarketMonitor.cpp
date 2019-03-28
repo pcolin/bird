@@ -197,6 +197,7 @@ void MarketMonitor::OnTrade(const TradePtr &trade) {
 }
 
 bool MarketMonitor::OnHeartbeat(const std::shared_ptr<Proto::Heartbeat> &heartbeat) {
+  LOG_DBG << heartbeat->ShortDebugString();
   CancelTimeoutQR();
   QuotingStatistic();
 }

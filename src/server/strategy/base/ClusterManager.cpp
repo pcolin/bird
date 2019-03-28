@@ -148,7 +148,7 @@ void ClusterManager::Init() {
         dimers_.emplace(d.name(), Message<Proto::DimerSpec>::New(d));
       }
     } else {
-      LOG_ERR << "Failed to sync dimers";
+      LOG_ERR << "failed to sync dimers";
     }
   }
 
@@ -166,7 +166,7 @@ void ClusterManager::Init() {
         hedgers_.emplace(h.name(), Message<Proto::HedgerSpec>::New(h));
       }
     } else {
-      LOG_ERR << "Failed to sync hedgers";
+      LOG_ERR << "failed to sync hedgers";
     }
   }
 
@@ -183,7 +183,7 @@ void ClusterManager::Init() {
         statistics_.emplace(s.underlying(), Message<Proto::MarketMakingStatistic>::New(s));
       }
     } else {
-      LOG_ERR << "Failed to sync statistics";
+      LOG_ERR << "failed to sync statistics";
     }
   }
 }
@@ -195,10 +195,10 @@ DeviceManager* ClusterManager::AddDevice(const Instrument *underlying) {
       DeviceManager *device = new DeviceManager(underlying);
       device->Init();
       devices_.insert(std::make_pair(underlying, device));
-      LOG_INF << "Create device manager for underlying " << underlying->Id();
+      LOG_INF << "create device manager for underlying " << underlying->Id();
       return device;
     } else {
-      LOG_ERR << "Duplicated underlying " << underlying->Id();
+      LOG_ERR << "duplicated underlying " << underlying->Id();
       return it->second;
     }
   }

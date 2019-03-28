@@ -21,8 +21,8 @@
 #include "Strategy.pb.h"
 #include "MarketMakingStatistic.pb.h"
 
-#include "nn.h"
-#include "pubsub.h"
+#include "nanomsg/nn.h"
+#include "nanomsg/pubsub.h"
 
 #include <thread>
 #include <boost/format.hpp>

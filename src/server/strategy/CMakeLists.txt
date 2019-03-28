@@ -1,4 +1,4 @@
-ADD_LIBRARY(strategy
+ADD_LIBRARY(strategy SHARED
   base/Strategy.cpp
   base/StrategyDevice.cpp
   base/DeviceManager.cpp

@@ -1,0 +1,13 @@
+prefix=/home/test/bird/src/server/3rd_library/tcmalloc
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+
+Name: gperftools
+Version: 2.7
+Description: Performance tools for C++
+URL: http://code.google.com/p/gperftools/
+Requires:
+Libs: -L${libdir} -ltcmalloc_minimal
+Libs.private: -pthread -lpthread
+Cflags: -I${includedir}

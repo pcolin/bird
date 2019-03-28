@@ -198,8 +198,8 @@ void UnderlyingPrice::SetParameter(
     Proto::UnderlyingTheoType type,
     double elastic,
     double elastic_limit) {
-  LOG_INF << boost::format("%1%: type(%2%), elastic(%3%), elastic limit(%4%)") % underlying_->Id()
-             % Proto::UnderlyingTheoType_Name(type) % elastic % elastic_limit;
+  LOG_INF << boost::format("%1%: type(%2%), elastic(%3%), elastic limit(%4%)") %
+    underlying_->Id() % Proto::UnderlyingTheoType_Name(type) % elastic % elastic_limit;
   std::lock_guard<std::mutex> lck(mtx_);
   type_ = type;
   elastic_ = elastic;
@@ -218,8 +218,8 @@ PriceType UnderlyingPrice::ApplyElastic(PricePtr &price, double delta) {
       price->adjust = -std::min(elastic_ * delta / base::MILLION, elastic_limit_);
     }
     price->adjusted_price += price->adjust;
-    LOG_INF << boost::format("%1%: theo adjusted %2% -> %3%") % underlying_->Id() % Get()
-               % price->adjusted_price;
+    LOG_INF << boost::format("%1%: theo adjusted %2% -> %3%") % underlying_->Id() % theo_
+      % price->adjusted_price;
   }
 
   *price_ = *price;
@@ -230,7 +230,8 @@ PriceType UnderlyingPrice::ApplyElastic(PricePtr &price, double delta) {
 
 bool UnderlyingPrice::ApplyElastic(double delta) {
   std::lock_guard<std::mutex> lck(mtx_);
-  if (price_->instrument && !base::IsEqual(elastic_, 0) && !base::IsEqual(elastic_limit_, 0)) {
+  if (price_->instrument && !base::IsEqual(elastic_, 0) &&
+      !base::IsEqual(elastic_limit_, 0)) {
     PriceType adjust;
     if (base::IsLessThan(delta, 0)) {
       adjust = std::min(elastic_ * (-delta) / base::MILLION, elastic_limit_);
@@ -241,8 +242,8 @@ bool UnderlyingPrice::ApplyElastic(double delta) {
     if (base::IsMoreOrEqual(fabs(adjust - adjust_), underlying_->Tick())) {
       price_->adjust = adjust;
       price_->adjusted_price = CalcTheo(price_) + adjust;
-      LOG_PUB << boost::format("%1%: theo  adjusted by delta %2%(%3%) -> %4%(%5%)")
-                 % underlying_->Id() % Get() % adjust_ % price_->adjusted_price % adjust;
+      LOG_PUB << boost::format("%1%: theo  adjusted by delta %2%(%3%) -> %4%(%5%)") %
+        underlying_->Id() % theo_ % adjust_ % price_->adjusted_price % adjust;
       adjust_ = adjust;
       theo_ = price_->adjusted_price;
       return true;
@@ -252,6 +253,8 @@ bool UnderlyingPrice::ApplyElastic(double delta) {
 }
 
 base::PriceType UnderlyingPrice::CalcTheo(const PricePtr &p) const {
+  LOG_DBG << "calc theo of " << p->instrument->Id() << " with " <<
+    Proto::UnderlyingTheoType_Name(type_);
   if (p->bids[0] && p->asks[0]) {
     switch (type_) {
       case Proto::Midpoint:
